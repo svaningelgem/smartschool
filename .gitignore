@@ -1,0 +1,7 @@
+.idea/
+dist/
+
+*.iml
+credentials.yml
+cookies.txt
+.coverage
