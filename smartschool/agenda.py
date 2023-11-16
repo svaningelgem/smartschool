@@ -1,93 +1,16 @@
 from __future__ import annotations
 
 import time
-import xml.etree.ElementTree as ET
-from abc import ABC, abstractmethod
-from datetime import date
-from typing import ClassVar, Iterator, TypeVar
-from xml.sax.saxutils import quoteattr
+from typing import TYPE_CHECKING, ClassVar
 
-from .common import xml_to_dict
+from ._xml_interface import SmartschoolXML
 from .objects import AgendaHour, AgendaLesson, AgendaMomentInfo
-from .session import session
 
-_T = TypeVar("_T")
-
-
-class AgendaXML(ABC):
-    def _construct_command(self) -> str:
-        txt = "<request><command>"
-        txt += f"<subsystem>{self._subsystem}</subsystem>"
-        txt += f"<action>{self._action}</action>"
-        txt += "<params>"
-
-        for k, v in self._params.items():
-            txt += f'<param name="{quoteattr(k)}"><![CDATA[{v}]]></param>'
-
-        txt += "</params></command></request>"
-        return txt
-
-    def __iter__(self) -> Iterator[_T]:
-        yield from self._xml()
-
-    def _xml(self, date_to_use: date | None = None):
-        today = date_to_use or date.today()
-        current_week = today.strftime("%Y-%U")
-        if current_week in self.cache:
-            return self.cache[current_week]
-
-        response = session.post(
-            "/?module=Agenda&file=dispatcher",
-            data={"command": self._construct_command()},
-            headers={
-                "X-Requested-With": "XMLHttpRequest",
-            },
-        )
-
-        root = ET.fromstring(response.text)
-
-        all_entries = []
-        as_obj = self._object_to_instantiate
-        for el in root.findall(self._xpath):
-            as_dict = xml_to_dict(el)
-            self._post_process_element(as_dict)
-            obj = as_obj(**as_dict)
-            all_entries.append(obj)
-
-        self.cache[current_week] = all_entries
-
-        return self.cache[current_week]
-
-    @property
-    @abstractmethod
-    def _subsystem(self) -> str:
-        """Returns the subsystem to request the info from."""
-
-    @property
-    @abstractmethod
-    def _action(self) -> str:
-        """Returns the action to send."""
-
-    @property
-    @abstractmethod
-    def _params(self) -> dict:
-        """Returns the parameters to send."""
-
-    @property
-    @abstractmethod
-    def _xpath(self) -> str:
-        """Returns the xpath to investigate."""
-
-    @property
-    @abstractmethod
-    def _object_to_instantiate(self) -> type[_T]:
-        """Returns the object to instantiate."""
-
-    def _post_process_element(self, element: dict) -> None:  # noqa: B027
-        """By default, this doesn't do anything, but you can adjust it when needed."""
+if TYPE_CHECKING:
+    from datetime import date
 
 
-class AgendaLessons(AgendaXML):
+class SmartschoolLessons(SmartschoolXML):
     """
     Interface to the retrieval of lessons for a certain date.
 
@@ -124,7 +47,7 @@ class AgendaLessons(AgendaXML):
     - someSubjectsEmpty
     """
 
-    cache: ClassVar[dict[str, list[AgendaLessons]]] = {}
+    cache: ClassVar[dict[str, list[SmartschoolLessons]]] = {}
 
     @property
     def _xpath(self) -> str:
@@ -162,7 +85,7 @@ class AgendaLessons(AgendaXML):
         }
 
 
-class AgendaHours(AgendaXML):
+class SmartschoolHours(SmartschoolXML):
     """
     Interface to the retrieval of periods (called Hours in smartschool).
 
@@ -175,7 +98,7 @@ class AgendaHours(AgendaXML):
     - title: how it is called in the agenda
     """
 
-    cache: ClassVar[dict[str, list[AgendaHours]]] = {}
+    cache: ClassVar[dict[str, list[SmartschoolHours]]] = {}
 
     @property
     def _xpath(self) -> str:
@@ -205,7 +128,7 @@ class AgendaHours(AgendaXML):
         raise ValueError(f"Couldn't find {hourId}")
 
 
-class AgendaMomentInfos(AgendaXML):
+class SmartschoolMomentInfos(SmartschoolXML):
     """
     Interface to the retrieval of one particular moment (a book-symbol in smartschool).
 

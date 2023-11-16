@@ -3,6 +3,8 @@ from typing import Iterator
 from .objects import StudentSupportLink
 from .session import session
 
+__all__ = ["StudentSupportLinks"]
+
 
 class StudentSupportLinks:
     """
@@ -19,6 +21,6 @@ class StudentSupportLinks:
     """
 
     def __iter__(self) -> Iterator[StudentSupportLink]:
-        json = session.json(f"/student-support/api/v1/")
+        json = session.json("/student-support/api/v1/")
         for result in json:
             yield StudentSupportLink(**result)

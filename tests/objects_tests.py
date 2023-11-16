@@ -14,6 +14,8 @@ def test_convert_to_datetime() -> None:
     with pytest.raises(ValueError, match="No timezone information found in this date"):
         convert_to_datetime(expected.replace(tzinfo=None))
 
+    assert convert_to_datetime("2023-09-01 01:02") == expected.replace(second=0, tzinfo=None)
+
 
 def test_convert_to_date() -> None:
     expected = date(2023, 9, 1)

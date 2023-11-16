@@ -33,6 +33,7 @@ __all__ = [
     "get_all_values_from_form",
     "make_filesystem_safe",
     "as_float",
+    "xml_to_dict",
 ]
 
 _used_bs4_option = None

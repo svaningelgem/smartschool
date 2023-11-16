@@ -1,5 +1,6 @@
 import os
 import re
+import sys
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from urllib.parse import parse_qs, quote_plus
@@ -35,11 +36,13 @@ def _clear_caches_from_agenda() -> None:
     try:
         yield
     finally:
-        import smartschool.agenda
+        for name, mod in sys.modules.items():
+            if not name.startswith("smartschool"):
+                continue
 
-        for v in vars(smartschool.agenda).values():
-            if isinstance(v, type) and hasattr(v, "cache"):
-                v.cache.clear()
+            for v in vars(mod).values():
+                if isinstance(v, type) and hasattr(v, "cache") and not isinstance(v.cache, property):
+                    v.cache.clear()
 
 
 @pytest.fixture(autouse=True)

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<server>
+    <response>
+        <status>ok</status>
+        <actions>
+            <action>
+                <subsystem>message list</subsystem>
+                <command>rebuild</command>
+                <data>
+                    <messages>
+                        <message>
+                            <id>123456</id>
+                            <from>Teacher</from>
+                            <fromImage>https://userpicture20.smartschool.be/User/TeacherImage</fromImage>
+                            <subject>Re: LO les</subject>
+                            <date>2023-11-16 08:24</date>
+                            <status>1</status>
+                            <attachment>0</attachment>
+                            <unread>1</unread>
+                            <label>0</label>
+                            <deleted>0</deleted>
+                            <allowreply>1</allowreply>
+                            <allowreplyenabled>1</allowreplyenabled>
+                            <hasreply>0</hasreply>
+                            <hasForward>0</hasForward>
+                            <realBox>inbox</realBox>
+                            <sendDate/>
+                        </message>
+                        <message>
+                            <id>7890123</id>
+                            <from>Student</from>
+                            <fromImage>https://userpicture20.smartschool.be/User/StudentImage</fromImage>
+                            <subject>Frans</subject>
+                            <date>2023-11-14 09:55</date>
+                            <status>1</status>
+                            <attachment>0</attachment>
+                            <unread>1</unread>
+                            <label>0</label>
+                            <deleted>0</deleted>
+                            <allowreply>1</allowreply>
+                            <allowreplyenabled>1</allowreplyenabled>
+                            <hasreply>0</hasreply>
+                            <hasForward>0</hasForward>
+                            <realBox>inbox</realBox>
+                            <sendDate/>
+                        </message>
+                    </messages>
+                </data>
+            </action>
+            <action>
+                <subsystem>message list</subsystem>
+                <command>changetext</command>
+                <data>
+                    <changeTextXml>
+                        <postboxName>Postvak in</postboxName>
+                    </changeTextXml>
+                </data>
+            </action>
+            <action>
+                <subsystem>message list</subsystem>
+                <command>rebuildfinish</command>
+                <data>
+                    <message/>
+                </data>
+            </action>
+        </actions>
+    </response>
+</server>

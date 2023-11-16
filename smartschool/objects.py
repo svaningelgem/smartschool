@@ -15,7 +15,11 @@ def convert_to_datetime(x: str | datetime) -> datetime:
         if x.tzinfo is None:
             raise ValueError("No timezone information found in this date")
         return x
-    return datetime.strptime(x, "%Y-%m-%dT%H:%M:%S%z")
+
+    try:
+        return datetime.strptime(x, "%Y-%m-%dT%H:%M:%S%z")
+    except ValueError:  # 2023-11-16 08:24
+        return datetime.strptime(x, "%Y-%m-%d %H:%M")
 
 
 def convert_to_date(x: str | date | datetime) -> date:
@@ -303,9 +307,9 @@ class AgendaLesson:
 
     @property
     def hour_details(self) -> AgendaHour:
-        from .agenda import AgendaHours
+        from .agenda import SmartschoolHours
 
-        return AgendaHours().search_by_hourId(self.hourID)
+        return SmartschoolHours().search_by_hourId(self.hourID)
 
 
 @dataclass
@@ -333,10 +337,31 @@ class AgendaMomentInfo:
 
 @dataclass
 class StudentSupportLink:
-    id: str 
-    name: str 
-    description: str 
-    icon: str 
-    link: Url 
-    cleanLink: str 
-    isVisible: bool 
+    id: str
+    name: str
+    description: str
+    icon: str
+    link: Url
+    cleanLink: str
+    isVisible: bool
+
+
+@dataclass
+class Message:
+    id: int
+    fromImage: Url
+    subject: str
+    date: DateTime
+    status: int
+    attachment: bool
+    unread: bool
+    label: bool
+    deleted: bool
+    allowreply: bool
+    allowreplyenabled: bool
+    hasreply: bool
+    hasForward: bool
+    realBox: str
+    sendDate: DateTime | None
+
+    from_: str = Field(alias="from")

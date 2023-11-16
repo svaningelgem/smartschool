@@ -1,10 +1,10 @@
 import pytest
 
-from smartschool.agenda import AgendaMomentInfos
+from smartschool import SmartschoolMomentInfos
 
 
 def test_agenda_moment_info_normal_flow():
-    sut = list(AgendaMomentInfos("3732340"))
+    sut = list(SmartschoolMomentInfos("3732340"))
 
     assert len(sut) == 1
     assert sut[0].className == "AAR1 - Lotte Peeters - 223"
@@ -14,11 +14,11 @@ def test_agenda_moment_info_normal_flow():
 
 def test_moment_info_fails_with_empty_moment():
     with pytest.raises(ValueError, match="Please provide a valid MomentID"):
-        AgendaMomentInfos("        ")
+        SmartschoolMomentInfos("        ")
 
 
 def test_agenda_moment_info_no_assignments():
-    sut = list(AgendaMomentInfos("3732340"))
+    sut = list(SmartschoolMomentInfos("3732340"))
 
     assert len(sut) == 1
     assert sut[0].className == "AAR1 - Lotte Peeters - 223"
@@ -26,7 +26,7 @@ def test_agenda_moment_info_no_assignments():
 
 
 def test_agenda_moment_info_multiple_assignments():
-    sut = list(AgendaMomentInfos("3732340"))
+    sut = list(SmartschoolMomentInfos("3732340"))
 
     assert len(sut) == 1
     assert sut[0].className == "AAR1 - Lotte Peeters - 223"
