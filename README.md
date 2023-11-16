@@ -18,7 +18,9 @@ for course in Courses():
 
 - [AgendaLessons](src/smartschool/agenda.py)
 - [AgendaHours](src/smartschool/agenda.py)
+- [AgendaMomentInfos](src/smartschool/agenda.py)
 - [TopNavCourses](src/smartschool/courses.py)
 - [Courses](src/smartschool/courses.py)
 - [FutureTasks](src/smartschool/objects.py)
+- [Periods](src/smartschool/periods.py)
 - [Results](src/smartschool/results.py)
