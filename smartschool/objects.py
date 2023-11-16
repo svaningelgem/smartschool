@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import base64
 from datetime import date, datetime
 from typing import Annotated, Literal
 
@@ -347,13 +348,13 @@ class StudentSupportLink:
 
 
 @dataclass
-class Message:
+class ShortMessage:
     id: int
     fromImage: Url
     subject: str
     date: DateTime
     status: int
-    attachment: bool
+    attachment: int
     unread: bool
     label: bool
     deleted: bool
@@ -363,5 +364,46 @@ class Message:
     hasForward: bool
     realBox: str
     sendDate: DateTime | None
-
     from_: str = Field(alias="from")
+
+
+@dataclass
+class FullMessage:
+    id: int
+    to: str | None
+    subject: str
+    date: DateTime
+    body: str
+    status: int
+    attachment: int
+    unread: bool
+    label: bool
+    receivers: list[str]
+    ccreceivers: list[str]
+    bccreceivers: list[str]
+    senderPicture: str
+    markedInLVS: None
+    fromTeam: int
+    totalNrOtherToReciviers: int
+    totalnrOtherCcReceivers: int
+    totalnrOtherBccReceivers: int
+    canReply: bool
+    hasReply: bool
+    hasForward: bool
+    sendDate: DateTime | None
+    from_: str = Field(alias="from")
+
+
+@dataclass
+class Attachment:
+    fileID: int
+    name: str
+    mime: str
+    size: str
+    icon: str
+    wopiAllowed: bool
+    order: int
+
+    def download(self) -> bytes:
+        resp = session.get(f"/?module=Messages&file=download&fileID={self.fileID}&target=0")
+        return base64.b64decode(resp.content)

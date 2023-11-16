@@ -27,4 +27,6 @@ for course in Courses():
 - [Periods](src/smartschool/periods.py)
 - [Results](src/smartschool/results.py)
 - [StudentSupportLinks](src/smartschool/student_support.py)
-- [Messages](src/smartschool/messages.py)
+- [MessageHeaders](src/smartschool/messages.py)
+- [Message](src/smartschool/messages.py)
+- [Attachments](src/smartschool/messages.py)

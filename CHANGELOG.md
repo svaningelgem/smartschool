@@ -1,3 +1,6 @@
+# 0.1.3
+* Added fetching of 1 specific message and its attachments.
+
 # 0.1.2
 * Added StudentSupportLinks
 * Added Messages

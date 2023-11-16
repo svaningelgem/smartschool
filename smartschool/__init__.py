@@ -4,7 +4,7 @@ from .agenda import SmartschoolHours, SmartschoolLessons, SmartschoolMomentInfos
 from .courses import Courses, TopNavCourses
 from .credentials import EnvCredentials, PathCredentials
 from .logger import setup_logger
-from .messages import BoxType, Messages, SortField, SortOrder
+from .messages import Attachments, BoxType, Message, MessageHeaders, SortField, SortOrder
 from .objects import FutureTasks
 from .periods import Periods
 from .results import Results
@@ -24,11 +24,13 @@ __all__ = [
     "SortField",
     "SortOrder",
     "BoxType",
-    "Messages",
+    "MessageHeaders",
     "StudentSupportLinks",
     "SmartschoolHours",
     "SmartschoolLessons",
     "SmartschoolMomentInfos",
+    "Message",
+    "Attachments",
 ]
 
 logger = setup_logger(logging.DEBUG)

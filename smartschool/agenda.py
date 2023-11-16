@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, ClassVar
 from ._xml_interface import SmartschoolXML
 from .objects import AgendaHour, AgendaLesson, AgendaMomentInfo
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from datetime import date
 
 

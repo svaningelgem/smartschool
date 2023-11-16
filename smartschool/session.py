@@ -14,7 +14,7 @@ from requests import Session
 
 from .common import bs4_html, get_all_values_from_form
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from requests import Response
 
     from .credentials import Credentials

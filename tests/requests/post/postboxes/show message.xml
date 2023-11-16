@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<server>
+    <response>
+        <status>ok</status>
+        <actions>
+            <action>
+                <subsystem>show message</subsystem>
+                <command>rebuild</command>
+                <data>
+                    <message>
+                        <id>123456</id>
+                        <from>Teacher</from>
+                        <to/>
+                        <subject>Griezelfestijn</subject>
+                        <date>2023-10-08 11:56</date>
+                        <body>&lt;p&gt;Beste&lt;/p&gt;</body>
+                        <status>1</status>
+                        <attachment>2</attachment>
+                        <unread>1</unread>
+                        <label>0</label>
+                        <receivers/>
+                        <ccreceivers>
+                            <to>Person1</to>
+                            <to>Person2</to>
+                        </ccreceivers>
+                        <bccreceivers>
+                            <to>Parent</to>
+                        </bccreceivers>
+                        <senderPicture>initials_T</senderPicture>
+                        <markedInLVS/>
+                        <fromTeam>0</fromTeam>
+                        <totalNrOtherToReciviers>0</totalNrOtherToReciviers>
+                        <totalnrOtherCcReceivers>0</totalnrOtherCcReceivers>
+                        <totalnrOtherBccReceivers>0</totalnrOtherBccReceivers>
+                        <canReply>1</canReply>
+                        <hasReply>0</hasReply>
+                        <hasForward>0</hasForward>
+                        <sendDate/>
+                    </message>
+                </data>
+            </action>
+        </actions>
+    </response>
+</server>

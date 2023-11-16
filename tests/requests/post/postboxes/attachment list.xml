@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<server>
+    <response>
+        <status>ok</status>
+        <actions>
+            <action>
+                <subsystem>show attachments</subsystem>
+                <command>rebuild</command>
+                <data>
+                    <attachmentlist>
+                        <attachment>
+                            <fileID>123</fileID>
+                            <name>Oproep figuranten en helpers.pdf</name>
+                            <mime>PDF-bestand</mime>
+                            <size>123.48 KiB</size>
+                            <icon>mime_pdf</icon>
+                            <wopiAllowed>1</wopiAllowed>
+                            <order>0</order>
+                        </attachment>
+                        <attachment>
+                            <fileID>345</fileID>
+                            <name>Poster griezelfestijn.pdf</name>
+                            <mime>PDF-bestand</mime>
+                            <size>1377.97 KiB</size>
+                            <icon>mime_pdf</icon>
+                            <wopiAllowed>1</wopiAllowed>
+                            <order>1</order>
+                        </attachment>
+                    </attachmentlist>
+                </data>
+            </action>
+        </actions>
+    </response>
+</server>
