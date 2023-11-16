@@ -10,6 +10,7 @@ import re
 import smtplib
 import sys
 import traceback
+import xml.etree.ElementTree as ET
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from enum import Enum, auto
@@ -205,3 +206,27 @@ def make_filesystem_safe(name: str) -> str:
 
 def as_float(txt: str) -> float:
     return float(txt.replace(",", "."))
+
+
+def xml_to_dict(element, *, depth: int = 0):
+    if depth == 0 and isinstance(element, str):
+        element = ET.XML(element.strip())
+
+    result = {}
+
+    for child in element:
+        tag = child.tag
+        if len(child) == 0:  # Leaf node?
+            child_data = child.text
+        else:
+            child_data = xml_to_dict(child)
+
+        if tag in result:
+            if not isinstance(result[tag], list):
+                # If the tag already exists, convert it to a list
+                result[tag] = [result[tag]]
+            result[tag].append(child_data)
+        else:
+            result[tag] = child_data
+
+    return result

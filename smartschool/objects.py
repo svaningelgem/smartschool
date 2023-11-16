@@ -10,19 +10,21 @@ from .common import as_float
 from .session import session
 
 
-def convert_to_datetime(x: str) -> datetime:
+def convert_to_datetime(x: str | datetime) -> datetime:
     if isinstance(x, datetime):
+        if x.tzinfo is None:
+            raise ValueError("No timezone information found in this date")
         return x
     return datetime.strptime(x, "%Y-%m-%dT%H:%M:%S%z")
 
 
-def convert_to_date(x: str) -> date:
+def convert_to_date(x: str | date | datetime) -> date:
     if isinstance(x, datetime):
         return x.date()
     if isinstance(x, date):
         return x
 
-    return datetime.strptime(x, "%Y-%m-%d")
+    return datetime.strptime(x, "%Y-%m-%d").date()
 
 
 Url = Annotated[str, BeforeValidator(lambda x: session.create_url(x))]
@@ -69,9 +71,15 @@ class _User:
 
 
 @dataclass
+class DateRange:
+    start: DateTime
+    end: DateTime
+
+
+@dataclass
 class SkoreWorkYear:
     id: int
-    dateRange: dict[str, DateTime]
+    dateRange: DateRange
 
 
 @dataclass
@@ -298,3 +306,26 @@ class AgendaLesson:
         from .agenda import AgendaHours
 
         return AgendaHours().search_by_hourId(self.hourID)
+
+
+@dataclass
+class AgendaMomentInfoAssignment:
+    startAssignment: str
+    start: str
+    end: str
+    type: str
+    description: str
+    atdescription: str
+    freedeadline: str
+    warning: str
+    assignmentInfo: str
+    assignmentDeadline: str
+
+
+@dataclass
+class AgendaMomentInfo:
+    className: str
+    subject: str
+    materials: str | None
+    momentID: str
+    assignments: list[AgendaMomentInfoAssignment]

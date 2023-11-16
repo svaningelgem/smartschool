@@ -1,0 +1,22 @@
+{
+  "courseFilters": [{
+    "title": "Vakken",
+    "type": "own"
+  }
+  ],
+  "own": [{
+    "name": "Aardrijkskunde_3_LOP_2023-2024",
+    "descr": "",
+    "icon": "earth",
+    "url": "/?module=News\u0026file=coursenews\u0026courseID=3885\u0026ssID=49",
+    "teacher": "Peeters Lotte"
+  }, {
+    "name": "bibliotheek",
+    "descr": "Schoolbibliotheek_23-24",
+    "icon": "books",
+    "url": "/?module=News\u0026file=coursenews\u0026courseID=845\u0026ssID=49",
+    "teacher": "Verbanck Annelies"
+  }
+  ],
+  "courseManagementLink": null
+}

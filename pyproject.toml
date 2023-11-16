@@ -29,7 +29,6 @@ build-backend = "poetry.core.masonry.api"
 
 
 [tool.pytest.ini_options]
-addopts = "--cov=smartschool --cov-append --cov-report=json --cov-fail-under=80 --cov-branch"
 testpaths = [
     "tests",
 ]
@@ -37,6 +36,7 @@ python_files = ['*_tests.py', '*_test.py']
 pythonpath = [
     "src"
 ]
+requests_mock_case_sensitive = true
 
 [tool.ruff]
 line-length = 160

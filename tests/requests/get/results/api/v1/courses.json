@@ -1,0 +1,80 @@
+[{
+  "id": 1173,
+  "name": "Aardrijkskunde",
+  "graphic": {
+    "type": "icon",
+    "value": "earth"
+  },
+  "teachers": [{
+    "id": "49_9423_0",
+    "pictureHash": "initials_LP",
+    "pictureUrl": "https://userpicture20.smartschool.be/User/Userimage/hashimage/hash/initials_LP/plain/1/res/128",
+    "description": {
+      "startingWithFirstName": "",
+      "startingWithLastName": ""
+    },
+    "name": {
+      "startingWithFirstName": "Lotte Peeters",
+      "startingWithLastName": "Peeters Lotte"
+    },
+    "sort": "peeters-lotte"
+  }
+  ],
+  "class": {
+    "identifier": "49_3467",
+    "id": 3467,
+    "platformId": 49,
+    "name": "3ENW",
+    "type": "K",
+    "icon": "briefcase"
+  },
+  "skoreClassId": 6104,
+  "parentCourseId": null,
+  "skoreWorkYear": {
+    "id": 32,
+    "dateRange": {
+      "start": "2023-09-01T00:00:00+02:00",
+      "end": "2024-08-31T00:00:00+02:00"
+    }
+  }
+}, {
+  "id": 1179,
+  "name": "Biologie",
+  "graphic": {
+    "type": "icon",
+    "value": "tree"
+  },
+  "teachers": [{
+    "id": "49_2825_0",
+    "pictureHash": "initials_CV",
+    "pictureUrl": "https://userpicture20.smartschool.be/User/Userimage/hashimage/hash/initials_CV/plain/1/res/128",
+    "description": {
+      "startingWithFirstName": "",
+      "startingWithLastName": ""
+    },
+    "name": {
+      "startingWithFirstName": "Carla Verhoelst",
+      "startingWithLastName": "Verhoelst Carla"
+    },
+    "sort": "verhoelst-carla"
+  }
+  ],
+  "class": {
+    "identifier": "49_3467",
+    "id": 3467,
+    "platformId": 49,
+    "name": "3ENW",
+    "type": "K",
+    "icon": "briefcase"
+  },
+  "skoreClassId": 6104,
+  "parentCourseId": null,
+  "skoreWorkYear": {
+    "id": 32,
+    "dateRange": {
+      "start": "2023-09-01T00:00:00+02:00",
+      "end": "2024-08-31T00:00:00+02:00"
+    }
+  }
+}
+]

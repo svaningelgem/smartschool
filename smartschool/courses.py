@@ -37,6 +37,8 @@ class Courses:
 
     This structure is different from the `TopNavCourses` results.
 
+    To reproduce: go to "Results", one of the XHR calls is this one
+
     Example:
     -------
     >>> for course in Courses():

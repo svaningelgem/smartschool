@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<server>
+    <response>
+        <status>ok</status>
+        <actions>
+            <action>
+                <subsystem>agenda</subsystem>
+                <command>handle tooltip info</command>
+                <data>
+                    <results>
+                        <title/>
+                        <subtitle/>
+                        <info>
+                            <class>
+                                <className>AAR1 - Lotte Peeters - 223</className>
+                                <subject show="1" hide="0">Toets + Thema 2: Bevolking in het systeem aarde 1. Demografie pagina 60 - 69</subject>
+                                <assignments />
+                                <momentID>3732340</momentID>
+                                <materials hidden="0"/>
+                            </class>
+                        </info>
+                    </results>
+                </data>
+            </action>
+        </actions>
+    </response>
+</server>
