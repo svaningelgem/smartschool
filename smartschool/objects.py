@@ -329,3 +329,14 @@ class AgendaMomentInfo:
     materials: str | None
     momentID: str
     assignments: list[AgendaMomentInfoAssignment]
+
+
+@dataclass
+class StudentSupportLink:
+    id: str 
+    name: str 
+    description: str 
+    icon: str 
+    link: Url 
+    cleanLink: str 
+    isVisible: bool 

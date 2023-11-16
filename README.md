@@ -26,3 +26,4 @@ for course in Courses():
 - [FutureTasks](src/smartschool/objects.py)
 - [Periods](src/smartschool/periods.py)
 - [Results](src/smartschool/results.py)
+- [StudentSupportLinks](src/smartschool/student_support.py)

@@ -1,0 +1,17 @@
+[{
+  "id": "bel_1712",
+  "name": "1712",
+  "description": "Hulplijn voor vragen over geweld, misbruik en kindermishandeling. Gratis en anoniem.",
+  "icon": "logo_bel_1712",
+  "link": "/student-support/go-to/bel_1712",
+  "cleanLink": "1712.be",
+  "isVisible": true
+}, {
+  "id": "autisme_chat",
+  "name": "Autisme chat",
+  "description": "Heb je autisme? Of je broer/zus, ouder, vriend(in)? Je kan anoniem chatten met een begeleider. We luisteren naar je en denken met je mee!",
+  "icon": "logo_autisme_chat",
+  "link": "/student-support/go-to/autisme_chat",
+  "cleanLink": "www.ligaautismevlaanderen.be/autismechat",
+  "isVisible": true
+}]
