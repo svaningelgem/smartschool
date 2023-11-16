@@ -1,5 +1,7 @@
 # Smartschool parser
 
+[![codecov](https://codecov.io/gh/svaningelgem/smartschool/graph/badge.svg?token=U0A3H3K4L0)](https://codecov.io/gh/svaningelgem/smartschool)
+
 Unofficial interpreter to interface against smartschool's website.
 
 ## How to use?
