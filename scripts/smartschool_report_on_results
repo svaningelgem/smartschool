@@ -105,10 +105,21 @@ def build_text(
 
     email_subject += f"{course_name} - {test_name} - {my_points}"
 
-    if result.graphic.percentage >= 0.75:
-        email_subject = "✔ " + email_subject
+    limits = {
+        1.0: "🥈",
+        0.9: "👍",
+        0.7: "✔",
+        0.5: "🌫",
+    }
+
+    for min_pct, symbol in limits.items():
+        if result.graphic.percentage >= min_pct:
+            icon = symbol
+            break
     else:
-        email_subject = "😢 " + email_subject
+        icon = "😡"
+
+    email_subject = f"{icon} {email_subject}"
 
     return text, email_subject
 
