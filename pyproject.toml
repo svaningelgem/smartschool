@@ -10,6 +10,8 @@ packages = [{include = "smartschool", from = "src"}]
 
 [tool.poetry.urls]
 "Source Code" = "https://github.com/svaningelgem/smartschool"
+"Changelog" = "https://github.com/svaningelgem/smartschool/blob/master/CHANGELOG.md"
+"License" = "https://github.com/svaningelgem/smartschool/blob/master/LICENSE"
 
 [tool.poetry.scripts]
 smartschool_report_on_results = {reference = "scripts/smartschool_report_on_results", type = "file"}
