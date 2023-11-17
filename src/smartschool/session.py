@@ -60,6 +60,8 @@ class Smartschool:
         creds.validate()
         session.creds = creds
 
+        session.get('/login')  # This will either log you in, or redirect to the main page. Refreshing the cookies in the meanwhile
+
         return session
 
     def __post_init__(self):
