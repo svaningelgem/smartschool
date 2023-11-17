@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from abc import ABC
+from abc import ABC, ABCMeta
 from enum import Enum
 
-from ._xml_interface import SmartschoolXML
+from ._xml_interface import SmartschoolXML, SmartschoolXML_NoCache
 from .objects import Attachment, FullMessage, ShortMessage
 
 __all__ = ["SortField", "SortOrder", "BoxType", "MessageHeaders", "Message", "Attachments"]
@@ -30,7 +30,11 @@ class BoxType(Enum):
     TRASH = "trash"
 
 
-class MessageHeaders(SmartschoolXML):
+class _MessagesPoster:
+    _url = '/?module=Messages&file=dispatcher'
+
+
+class MessageHeaders(_MessagesPoster, SmartschoolXML_NoCache):
     """
     Interfaces the mailbox principle in Smartschool.
 
@@ -44,8 +48,6 @@ class MessageHeaders(SmartschoolXML):
     Frans
     """
 
-    __is_cached__ = False
-
     def __init__(
         self,
         box_type: BoxType = BoxType.INBOX,
@@ -53,6 +55,8 @@ class MessageHeaders(SmartschoolXML):
         sort_order: SortOrder = SortOrder.DESC,
         already_seen_message_ids: list[int] | None = None,
     ):
+        super().__init__()
+
         self.box_type = box_type
         self.sort_by = sort_by
         self.sort_order = sort_order
@@ -87,10 +91,10 @@ class MessageHeaders(SmartschoolXML):
         return ShortMessage
 
 
-class _FetchOneMessage(SmartschoolXML, ABC):
-    __is_cached__ = False
-
+class _FetchOneMessage(_MessagesPoster, SmartschoolXML, ABC):
     def __init__(self, msg_id: int, box_type: BoxType = BoxType.INBOX):
+        super().__init__()
+
         self.msg_id = msg_id
         self.box_type = box_type
 
@@ -105,6 +109,12 @@ class _FetchOneMessage(SmartschoolXML, ABC):
             "boxType": self.box_type.value,
             "limitList": "true",
         }
+
+    def _get_from_cache(self) -> object:
+        return self.cache[(self.msg_id, self.box_type)]
+
+    def _store_into_cache(self, obj: object) -> None:
+        self.cache[(self.msg_id, self.box_type)] = obj
 
 
 class Message(_FetchOneMessage):

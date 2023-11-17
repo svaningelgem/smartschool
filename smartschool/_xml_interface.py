@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
-from datetime import date
+import contextlib
+from abc import ABC, ABCMeta, abstractmethod
+from datetime import date, datetime
 from typing import Iterator, TypeVar
 from xml.etree import ElementTree as ET
 from xml.sax.saxutils import quoteattr
@@ -12,8 +13,19 @@ from .session import session
 _T = TypeVar("_T")
 
 
-class SmartschoolXML(ABC):
-    __is_cached__ = True
+class _SmartschoolXMLMeta(ABCMeta):
+    """
+    The metaclass will ONLY create this cache dictionary ones per class instantiation.
+
+    Effectively giving each derived class I make their own dictionary.
+    """
+    def __new__(cls, name, bases, dct):
+        dct['cache'] = {}
+        return super().__new__(cls, name, bases, dct)
+
+
+class SmartschoolXML(ABC, metaclass=_SmartschoolXMLMeta):
+    cache: dict  # Type hint for the dynamically added attribute
 
     def _construct_command(self) -> str:
         txt = "<request><command>"
@@ -30,14 +42,29 @@ class SmartschoolXML(ABC):
     def __iter__(self) -> Iterator[_T]:
         yield from self._xml()
 
-    def _xml(self, date_to_use: date | None = None):
-        today = date_to_use or date.today()
-        current_week = today.strftime("%Y-%U")
-        if self.__is_cached__ and current_week in self.cache:
-            return self.cache[current_week]
+    @abstractmethod
+    def _get_from_cache(self) -> object:
+        """
+        Retrieves information from the cache.
+
+        Throws a `KeyError` when not found.
+        """
+
+    @abstractmethod
+    def _store_into_cache(self, obj: object) -> None:
+        """Stores the current value into the cache."""
+
+    @property
+    @abstractmethod
+    def _url(self) -> str:
+        """What URL should I post this to?"""
+
+    def _xml(self):
+        with contextlib.suppress(KeyError):
+            return self._get_from_cache()
 
         response = session.post(
-            "/?module=Agenda&file=dispatcher",
+            self._url,
             data={"command": self._construct_command()},
             headers={
                 "X-Requested-With": "XMLHttpRequest",
@@ -54,15 +81,9 @@ class SmartschoolXML(ABC):
             obj = as_obj(**as_dict)
             all_entries.append(obj)
 
-        self.cache[current_week] = all_entries
+        self._store_into_cache(all_entries)
 
         return all_entries
-
-    @property
-    def cache(self) -> dict:
-        if self.__is_cached__:
-            raise NotImplementedError("You should add a `cache: ClassVar[dict]` to your derived class.")
-        return {}
 
     @property
     @abstractmethod
@@ -90,4 +111,29 @@ class SmartschoolXML(ABC):
         """Returns the object to instantiate."""
 
     def _post_process_element(self, element: dict) -> None:  # noqa: B027
-        """By default, this doesn't do anything, but you can adjust it when needed."""
+        """By default, this doesn't do anything, but you can adjust the parsed XML when needed."""
+
+
+class SmartschoolXML_WeeklyCache(SmartschoolXML, ABC):
+    @property
+    def _cache_key(self):
+        # Week number
+        today = (self.timestamp_to_use or date.today())
+        return today.strftime("%Y-%U")
+
+    def _get_from_cache(self) -> object:
+        return self.cache[self._cache_key]
+
+    def _store_into_cache(self, obj: object) -> None:
+        self.cache[self._cache_key] = obj
+
+    def __init__(self, timestamp_to_use: datetime | None = None):
+        self.timestamp_to_use = timestamp_to_use
+
+
+class SmartschoolXML_NoCache(SmartschoolXML, ABC):
+    def _get_from_cache(self) -> object:
+        raise KeyError
+
+    def _store_into_cache(self, _: object) -> None:
+        return

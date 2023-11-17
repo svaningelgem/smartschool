@@ -1,16 +1,25 @@
 from __future__ import annotations
 
 import time
-from typing import TYPE_CHECKING, ClassVar
+from abc import ABC
+from datetime import datetime
+from typing import TYPE_CHECKING
 
-from ._xml_interface import SmartschoolXML
+from ._xml_interface import SmartschoolXML_WeeklyCache
 from .objects import AgendaHour, AgendaLesson, AgendaMomentInfo
 
 if TYPE_CHECKING:  # pragma: no cover
-    from datetime import date
+    pass
 
 
-class SmartschoolLessons(SmartschoolXML):
+class AgendaPoster(SmartschoolXML_WeeklyCache, ABC):
+    """
+    Caches the information on a weekly basis, and posts to the mentioned URL
+    """
+    _url: str = "/?module=Agenda&file=dispatcher"
+
+
+class SmartschoolLessons(AgendaPoster):
     """
     Interface to the retrieval of lessons for a certain date.
 
@@ -47,8 +56,6 @@ class SmartschoolLessons(SmartschoolXML):
     - someSubjectsEmpty
     """
 
-    cache: ClassVar[dict[str, list[SmartschoolLessons]]] = {}
-
     @property
     def _xpath(self) -> str:
         return ".//lesson"
@@ -67,7 +74,7 @@ class SmartschoolLessons(SmartschoolXML):
 
     @property
     def _params(self) -> dict:
-        now = int(time.time())
+        now = (self.timestamp_to_use or datetime.now()).timestamp()
         in_5_days = now + 5 * 24 * 3600
 
         return {
@@ -85,7 +92,7 @@ class SmartschoolLessons(SmartschoolXML):
         }
 
 
-class SmartschoolHours(SmartschoolXML):
+class SmartschoolHours(AgendaPoster):
     """
     Interface to the retrieval of periods (called Hours in smartschool).
 
@@ -97,8 +104,6 @@ class SmartschoolHours(SmartschoolXML):
     - end: HH:MM ending time
     - title: how it is called in the agenda
     """
-
-    cache: ClassVar[dict[str, list[SmartschoolHours]]] = {}
 
     @property
     def _xpath(self) -> str:
@@ -120,15 +125,15 @@ class SmartschoolHours(SmartschoolXML):
     def _params(self) -> dict:
         return {"date": int(time.time())}
 
-    def search_by_hourId(self, hourId: str, *, date_to_use: date | None = None):
-        for hour in self._xml(date_to_use):
+    def search_by_hourId(self, hourId: str):
+        for hour in self._xml():
             if hour.hourID == hourId:
                 return hour
 
         raise ValueError(f"Couldn't find {hourId}")
 
 
-class SmartschoolMomentInfos(SmartschoolXML):
+class SmartschoolMomentInfos(AgendaPoster):
     """
     Interface to the retrieval of one particular moment (a book-symbol in smartschool).
 
@@ -140,10 +145,9 @@ class SmartschoolMomentInfos(SmartschoolXML):
     - end: HH:MM ending time
     - title: how it is called in the agenda
     """
-
-    cache: ClassVar[dict[str, list[AgendaMomentInfo]]] = {}
-
     def __init__(self, moment_id: str):
+        super().__init__()
+
         moment_id = str(moment_id).strip()
         if not moment_id:
             raise ValueError("Please provide a valid MomentID")
