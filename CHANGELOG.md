@@ -1,3 +1,6 @@
+# 0.1.8
+*
+
 # 0.1.7
 * Cleaning up login sequence: ensure the cookies are refreshed the first time you're using it.
 
