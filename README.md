@@ -34,3 +34,21 @@ for course in Courses():
 - [AdjustMessageLabel](src/smartschool/messages.py)
 - [MessageMoveToArchive](src/smartschool/messages.py)
 - [MessageMoveToTrash](src/smartschool/messages.py)
+
+
+## Contributing?
+To get started (I always use mamba/conda to create an environment)
+```bash
+git clone https://github.com/svaningelgem/smartschool.git
+cd smartschool
+mamba create -n smartschool python=3.11
+mamba activate smartschool
+pip install poetry
+poetry install
+```
+Now you can start contributing.
+
+To run the test suite:
+```bash
+poetry run pytest
+```

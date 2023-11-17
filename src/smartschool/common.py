@@ -10,6 +10,7 @@ import re
 import smtplib
 import sys
 import traceback
+import warnings
 import xml.etree.ElementTree as ET
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -17,7 +18,7 @@ from enum import Enum, auto
 from pathlib import Path
 from typing import Any, Callable, Literal
 
-from bs4 import BeautifulSoup, FeatureNotFound
+from bs4 import BeautifulSoup, FeatureNotFound, GuessedAtParserWarning
 from pydantic import RootModel
 from pydantic.dataclasses import is_pydantic_dataclass
 from requests import Response
@@ -164,7 +165,9 @@ def bs4_html(html: str | bytes | Response) -> BeautifulSoup:
             return parsed
 
     _used_bs4_option = {}
-    return BeautifulSoup(html)
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=GuessedAtParserWarning)
+        return BeautifulSoup(html)
 
 
 def get_all_values_from_form(html, form_selector):

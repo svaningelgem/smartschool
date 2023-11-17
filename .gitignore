@@ -3,6 +3,7 @@
 .pytest_cache/
 dist/
 .cache/
+__pycache__/
 
 *.iml
 credentials.yml
