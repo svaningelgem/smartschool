@@ -3,8 +3,9 @@ from io import StringIO
 from pathlib import Path
 
 import pytest
+from bs4 import BeautifulSoup, FeatureNotFound
 
-from smartschool.common import IsSaved, as_float, capture_and_email_all_exceptions, make_filesystem_safe, save, send_email, xml_to_dict
+from smartschool.common import IsSaved, as_float, bs4_html, capture_and_email_all_exceptions, make_filesystem_safe, save, send_email, xml_to_dict
 
 
 def test_xml_to_dict():
@@ -36,7 +37,7 @@ def test_xml_to_dict():
 
 
 def test_save(mocker, tmp_path):
-    mocker.patch('smartschool.common.CACHE', new=Path.cwd())
+    mocker.patch("smartschool.common.CACHE", new=Path.cwd())
 
     assert save(type_="todo", course_name="test", id_="123", data="Test") == IsSaved.NEW
     assert save(type_="todo", course_name="test", id_="123", data="Test") == IsSaved.SAME
@@ -53,13 +54,13 @@ def test_send_email(mocker):
 
     send_email(subject="Test", text="Just a test", email_to="me@myself.ai", email_from="me@myself.ai")
 
-    server.assert_any_call('localhost')
+    server.assert_any_call("localhost")
 
     sendmail_call = server().__enter__().sendmail
-    assert sendmail_call.call_args.kwargs['from_addr'] == 'me@myself.ai'
-    assert sendmail_call.call_args.kwargs['to_addrs'] == ['me@myself.ai']
-    assert sendmail_call.call_args.kwargs['msg'].startswith('Content-Type: multipart/alternative; boundary')
-    assert "Subject: Test" in sendmail_call.call_args.kwargs['msg']
+    assert sendmail_call.call_args.kwargs["from_addr"] == "me@myself.ai"
+    assert sendmail_call.call_args.kwargs["to_addrs"] == ["me@myself.ai"]
+    assert sendmail_call.call_args.kwargs["msg"].startswith("Content-Type: multipart/alternative; boundary")
+    assert "Subject: Test" in sendmail_call.call_args.kwargs["msg"]
 
 
 def test_multi_email_on_windows(mocker):
@@ -86,22 +87,21 @@ def test_make_filesystem_safe():
 
 
 def test_capture_and_email_all_exceptions(mocker):
-    send_email = mocker.patch('smartschool.common.send_email')
+    send_email = mocker.patch("smartschool.common.send_email")
 
     @capture_and_email_all_exceptions(email_from="me@myself.ai", email_to="me@myself.ai")
     def test():
         raise KeyError
 
     target = StringIO()
-    with contextlib.redirect_stdout(target):
-        with pytest.raises(SystemExit):
-            test()
+    with contextlib.redirect_stdout(target), pytest.raises(SystemExit):
+        test()
 
     send_email.assert_called_once()
 
 
 def test_capture_and_email_all_exceptions_no_exception(mocker):
-    send_email = mocker.patch('smartschool.common.send_email')
+    send_email = mocker.patch("smartschool.common.send_email")
 
     @capture_and_email_all_exceptions(email_from="me@myself.ai", email_to="me@myself.ai")
     def test():
@@ -113,5 +113,19 @@ def test_capture_and_email_all_exceptions_no_exception(mocker):
 
     send_email.assert_not_called()
 
-    assert '[common_tests.test] Start' in target.getvalue()
-    assert '[common_tests.test] Finished' in target.getvalue()
+    assert "[common_tests.test] Start" in target.getvalue()
+    assert "[common_tests.test] Finished" in target.getvalue()
+
+
+def test_bs4_html():
+    sut = bs4_html("<html />")
+
+    assert isinstance(sut, BeautifulSoup)
+
+
+def test_bs4_html_no_good_options(mocker):
+    mocker.patch("smartschool.common._used_bs4_option", new=None)
+    mocker.patch("smartschool.common.BeautifulSoup", side_effect=[FeatureNotFound, FeatureNotFound, FeatureNotFound, BeautifulSoup("<html />")])
+
+    sut = bs4_html("<html />")
+    assert isinstance(sut, BeautifulSoup)

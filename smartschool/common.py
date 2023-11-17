@@ -105,7 +105,9 @@ def send_email(
         )
 
 
-def capture_and_email_all_exceptions(email_from: str | list[str], email_to: str | list[str], subject: str = "[⚠Smartschool parser⚠] Something went wrong") -> Callable:
+def capture_and_email_all_exceptions(
+    email_from: str | list[str], email_to: str | list[str], subject: str = "[⚠Smartschool parser⚠] Something went wrong"
+) -> Callable:
     def decorator(func):
         @functools.wraps(func)
         def inner(*args, **kwargs):
@@ -132,7 +134,9 @@ def capture_and_email_all_exceptions(email_from: str | list[str], email_to: str 
             return result
 
         return inner
+
     return decorator
+
 
 def bs4_html(html: str | bytes | Response) -> BeautifulSoup:
     global _used_bs4_option
@@ -147,7 +151,7 @@ def bs4_html(html: str | bytes | Response) -> BeautifulSoup:
         {"features": "html.parser"},
     ]
 
-    for kw in possible_options:
+    for kw in possible_options:  # pragma: no branch
         if kw is None:
             continue
 
@@ -177,36 +181,33 @@ def get_all_values_from_form(html, form_selector):
         if "name" not in attrs:
             continue
 
-        if tag_name != "select":
-            inputs.append(
-                {
-                    "name": attrs.get("name"),
-                    "value": attrs.get("value", ""),
-                }
-            )
-        else:  # select
-            raise ValueError("Check if this code works. Possible issue with getting the value if the value tag isn't set.")
-
-            select_options = []
-            value = ""
-            for select_option in input_tag.find_all("option"):
-                option_value = select_option.attrs.get("value")
-                if option_value:
-                    select_options.append(option_value)
-                    if "selected" in select_option.attrs:
-                        value = option_value
-            if not value and select_options:
-                # if the default is not set, and there are options, take the first option as default
-                value = select_options[0]
-            # add the select to the inputs list
-            inputs.append({"name": attrs.get("name"), "values": select_options, "value": value})
+        assert tag_name != "select", "Check if this code works. Possible issue with getting the value if the value tag isn't set"
+        inputs.append(
+            {
+                "name": attrs.get("name"),
+                "value": attrs.get("value", ""),
+            }
+        )
+        #     select_options = []
+        #     value = ""
+        #     for select_option in input_tag.find_all("option"):
+        #         option_value = select_option.attrs.get("value")
+        #         if option_value:
+        #             select_options.append(option_value)
+        #             if "selected" in select_option.attrs:
+        #                 value = option_value
+        #     if not value and select_options:
+        #         # if the default is not set, and there are options, take the first option as default
+        #         value = select_options[0]
+        #     # add the select to the inputs list
+        #     inputs.append({"name": attrs.get("name"), "values": select_options, "value": value})
 
     return inputs
 
 
 def make_filesystem_safe(name: str) -> str:
     name = re.sub("[^-_a-z0-9.]+", "_", name, flags=re.IGNORECASE)
-    name = re.sub('_{2,}', '_', name)
+    name = re.sub("_{2,}", "_", name)
     return name
 
 

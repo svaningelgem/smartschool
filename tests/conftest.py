@@ -75,6 +75,6 @@ def tmp_path(tmp_path) -> Path:
     original_dir = Path.cwd()
     try:
         os.chdir(tmp_path)
-        yield
+        yield tmp_path
     finally:
         os.chdir(original_dir)
