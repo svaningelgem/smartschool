@@ -1,5 +1,4 @@
 import pytest
-
 from smartschool import SmartschoolHours
 from smartschool.objects import AgendaHour
 

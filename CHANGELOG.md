@@ -1,6 +1,8 @@
 # 0.1.5
 * Bump minimal Python version to 3.11
 * Setting the scripts executable.
+* Fixing remote calls that needed the 'XMLHttpRequest' to be set.
+* Adding `smartschool_report_on_future_tasks` to report on future tasks.
 
 # 0.1.4
 * Better caching mechanism

@@ -1,0 +1,114 @@
+#!/usr/bin/env python
+from collections import defaultdict
+from datetime import date, datetime, timedelta
+
+from smartschool import Courses, FutureTasks, PathCredentials, Periods, Smartschool, SmartschoolHours, SmartschoolLessons, SmartschoolMomentInfos
+from smartschool.common import IsSaved, save, send_email
+from smartschool.objects import AgendaHour, FutureTaskOneTask
+
+session = Smartschool.start(PathCredentials())
+assert 'email_from' in session.creds.other_info
+assert 'email_to' in session.creds.other_info
+
+
+def _is_equal_task(a: FutureTaskOneTask, b: FutureTaskOneTask) -> bool:
+    return (a.course, a.hourID, a.label, a.description, a.date) ==(b.course, b.hourID, b.label, b.description, b.date)
+
+
+def _email_text(task: FutureTaskOneTask) -> str:
+    hour: AgendaHour = SmartschoolHours().search_by_hourId(task.hourID)
+
+    return (
+        f"date: {task.date}\n"
+        f"lesuur: {hour.title}e lesuur\n"
+        f"time: {hour.start} -> {hour.end}\n"
+        f"les: {task.course}\n"
+        "\n"
+        f"{task.label}:\n"
+        f"  {task.description}\n"
+    )
+
+
+def process_task(task: FutureTaskOneTask, all_tasks: dict) -> None:
+    """Stores in an array + report if it's a new/updated task."""
+
+    course_name = task.course
+    hour: AgendaHour = SmartschoolHours().search_by_hourId(task.hourID)
+    when = task.date
+
+    all_tasks[when][hour.title].append(task)
+
+    status = save(type_="todo", course_name=course_name, id_=task.assignmentID, data=task, is_eq=_is_equal_task)
+    if status == IsSaved.SAME:
+        return
+
+    subject = f"📑 [{when} {hour.title}e lesuur] {course_name} ({task.label})"
+    if status != IsSaved.NEW:
+        subject = f"⚠⚠ {subject}"  # There is an update...
+
+    text = _email_text(task)
+
+    send_email(subject=subject, text=text, email_from=session.creds.other_info['email_from'], email_to=session.creds.other_info['email_to'])
+
+
+def _next_weekday() -> date | None:
+    now = datetime.now()
+
+    if now.hour in [12, 20] and now.isoweekday() == 3:  # Wednesday
+        ...  # Ok
+    elif now.hour in [17, 20] and now.isoweekday() != 3:  # !Wednesday
+        ...  # Ok
+    else:
+        return None
+
+    next_weekday = now + timedelta(days=1)
+    while next_weekday.isoweekday() in [6, 7]:  # Saturday, Sunday
+        next_weekday += timedelta(days=1)
+
+    return next_weekday.date()
+
+
+def report_tasks_for_next_day(all_tasks: dict):
+    next_weekday = _next_weekday()
+    if not next_weekday:
+        return
+
+    if next_weekday not in all_tasks:
+        return  # No tasks for 'tomorrow'
+
+    tasks = all_tasks[next_weekday]
+
+    text = []
+    for uur, tasks in sorted(tasks.items(), key=lambda x: x[0]):  # type: str, list[FutureTaskOneTask]
+        for task in tasks:
+            text.append(_email_text(task))
+
+    text = "\n---------------------------------------\n\n".join(text)
+
+    status = save('todo', '.email', str(next_weekday), data=text, extension='txt')
+    if status == IsSaved.SAME:
+        return  # Don't re-send if nothing changed
+
+    subject=f"🍕 Todo list {next_weekday}"
+    if status != IsSaved.NEW:
+        subject = f"⚠⚠ {subject}"  # There is an update...
+    send_email(
+        subject=subject,
+        text=text, email_from=session.creds.other_info['email_from'], email_to=session.creds.other_info['email_to'])
+
+
+def main():
+    all_tasks: dict[date, dict[str, list]] = defaultdict(lambda: defaultdict(list))
+
+    for day in FutureTasks().days:
+        for course in day.courses:
+            assert not course.items.materials, "Please correct the model to include this information."
+
+            for task in course.items.tasks:
+                process_task(task, all_tasks)
+    
+    report_tasks_for_next_day(all_tasks)
+
+
+if __name__ == '__main__':
+    main()

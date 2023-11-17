@@ -13,6 +13,7 @@ packages = [{include = "smartschool", from = "src"}]
 
 [tool.poetry.scripts]
 smartschool_report_on_results = {reference = "scripts/smartschool_report_on_results", type = "file"}
+smartschool_report_on_future_tasks = {reference = "scripts/smartschool_report_on_future_tasks", type = "file"}
 
 [tool.poetry.dependencies]
 python = "^3.11"

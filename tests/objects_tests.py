@@ -1,7 +1,6 @@
 from datetime import date, datetime, time, timedelta, timezone
 
 import pytest
-
 from smartschool.objects import convert_to_date, convert_to_datetime
 
 

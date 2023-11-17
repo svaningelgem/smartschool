@@ -249,9 +249,8 @@ class FutureTasks:
     >>> for day in FutureTasks().days:
     >>>     for course in day.courses:
     >>>         print("Course:", course.course_title)
-    >>>         for item in course.items:
-    >>>             for task in item.tasks:
-    >>>                 print("Task:", task.description)
+    >>>         for task in course.items.tasks:
+    >>>             print("Task:", task.description)
     Course: 2 - AAR1, Lotte Peeters
     Task: Toets 3. De koolstofcyclus in het systeem aarde pagina 42 - 47
     """
@@ -262,7 +261,16 @@ class FutureTasks:
 
     def __post_init__(self):
         """I need to do this here because when I do it in Agenda, it'll not lazily load it. But in this way, I load it on construction."""
-        json = session.json("/Agenda/Futuretasks/getFuturetasks")
+        json = session.json(
+            "/Agenda/Futuretasks/getFuturetasks",
+            method="post",
+            data={
+                "lastAssignmentID": 0,
+                "lastDate": "",
+                "filterType": "false",
+                "filterID": "false",
+            },
+        )
 
         self.days = []
         for d in json["days"]:

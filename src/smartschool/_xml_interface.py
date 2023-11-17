@@ -38,7 +38,7 @@ class SmartschoolXML(ABC, metaclass=_SmartschoolXMLMeta):
         txt += "<params>"
 
         for k, v in self._params.items():
-            txt += f'<param name="{quoteattr(k)}"><![CDATA[{v}]]></param>'
+            txt += f"<param name={quoteattr(k)}><![CDATA[{v}]]></param>"
 
         txt += "</params></command></request>"
         return txt
@@ -79,9 +79,6 @@ class SmartschoolXML(ABC, metaclass=_SmartschoolXMLMeta):
         response = session.post(
             self._url,
             data={"command": self._construct_command()},
-            headers={
-                "X-Requested-With": "XMLHttpRequest",
-            },
         )
 
         root = ET.fromstring(response.text)

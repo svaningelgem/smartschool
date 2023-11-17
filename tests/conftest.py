@@ -7,7 +7,6 @@ from urllib.parse import parse_qs, quote_plus
 
 import pytest
 from requests_mock import ANY
-
 from smartschool import EnvCredentials, Smartschool
 
 
@@ -47,7 +46,7 @@ def _clear_caches_from_agenda() -> None:
 
 @pytest.fixture(autouse=True)
 def _setup_automated_fixtures_for_agenda_calls(request, requests_mock) -> None:
-    def text_callback(req, context) -> str:
+    def text_callback(req, _) -> str:
         try:
             xml = parse_qs(req.body)["command"][0]
 
@@ -55,7 +54,7 @@ def _setup_automated_fixtures_for_agenda_calls(request, requests_mock) -> None:
             action = re.search("<action>(.*?)</action>", xml).group(1)
         except (AttributeError, KeyError):
             specific_filename = Path(__file__).parent.joinpath(
-                "requests", req.method.lower(), *req.path.split("/"), quote_plus(req.query), f"{request.node.name}.json"
+                "requests", req.method.lower(), *map(str.lower, req.path.split("/")), quote_plus(req.query), f"{request.node.name}.json"
             )
             default_filename = specific_filename.parent.with_suffix(".json")
         else:
