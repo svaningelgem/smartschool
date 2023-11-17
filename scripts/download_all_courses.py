@@ -1,6 +1,6 @@
-from smartschool import Courses, PathCredentials, SmartSchool, logger
+from smartschool import Courses, PathCredentials, Smartschool, logger
 
-SmartSchool.start(PathCredentials())
+Smartschool.start(PathCredentials())
 for course in Courses():
     logger.info("Processing %s", course.name)
 

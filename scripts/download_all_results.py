@@ -1,7 +1,7 @@
-from smartschool import PathCredentials, SmartSchool, logger
+from smartschool import PathCredentials, Smartschool, logger
 from smartschool.periods import Periods
 
-SmartSchool.start(PathCredentials())
+Smartschool.start(PathCredentials())
 for result in Periods():
     logger.info("Processing %s", result.name)
 

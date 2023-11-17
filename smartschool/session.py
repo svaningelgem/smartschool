@@ -20,11 +20,11 @@ if TYPE_CHECKING:  # pragma: no cover
     from .credentials import Credentials
 
 
-def handle_cookies_and_login(func):
+def _handle_cookies_and_login(func):
     @functools.wraps(func)
-    def inner(self: SmartSchool, *args, **kwargs):
+    def inner(self: Smartschool, *args, **kwargs):
         if self.creds is None:
-            raise RuntimeError("Please start smartschool first via: `SmartSchool.start(PathCredentials())`")
+            raise RuntimeError("Please start smartschool first via: `Smartschool.start(PathCredentials())`")
 
         resp = func(self, *args, **kwargs)
 
@@ -47,7 +47,7 @@ def handle_cookies_and_login(func):
 
 
 @dataclass
-class SmartSchool:
+class Smartschool:
     creds: Credentials = None
 
     already_logged_on: bool = field(init=False, default=False)
@@ -72,11 +72,11 @@ class SmartSchool:
     def create_url(self, url: str) -> str:
         return urljoin(self._url, url)
 
-    @handle_cookies_and_login
+    @_handle_cookies_and_login
     def post(self, url, *args, **kwargs) -> Response:
         return self._session.post(self.create_url(url), *args, **kwargs)
 
-    @handle_cookies_and_login
+    @_handle_cookies_and_login
     def get(self, url, *args, **kwargs) -> Response:
         return self._session.get(self.create_url(url), *args, **kwargs)
 
@@ -122,4 +122,4 @@ class SmartSchool:
         return f"{self.__class__.__name__}(for: {self.creds.username})"
 
 
-session: SmartSchool = SmartSchool()
+session: Smartschool = Smartschool()

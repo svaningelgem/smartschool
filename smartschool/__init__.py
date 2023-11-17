@@ -20,13 +20,13 @@ from .messages import (
 from .objects import FutureTasks
 from .periods import Periods
 from .results import Results
-from .session import SmartSchool
+from .session import Smartschool
 from .student_support import StudentSupportLinks
 
 __all__ = [
     "PathCredentials",
     "EnvCredentials",
-    "SmartSchool",
+    "Smartschool",
     "logger",
     "Courses",
     "TopNavCourses",

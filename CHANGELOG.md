@@ -4,6 +4,8 @@
 * Added AdjustMessageLabel
 * Added MessageMoveToArchive
 * Added MessageMoveToTrash
+* Renamed `SmartSchool` to `Smartschool`.
+* Increased test coverage
 
 # 0.1.3
 * Added fetching of 1 specific message and its attachments.

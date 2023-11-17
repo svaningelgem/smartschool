@@ -8,7 +8,7 @@ from urllib.parse import parse_qs, quote_plus
 import pytest
 from requests_mock import ANY
 
-from smartschool import EnvCredentials, SmartSchool
+from smartschool import EnvCredentials, Smartschool
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -24,7 +24,7 @@ def _setup_smartschool_for_tests() -> None:
                 monkeypatch.setenv("SMARTSCHOOL_PASSWORD", "delu")
                 monkeypatch.setenv("SMARTSCHOOL_MAIN_URL", "site")
 
-                SmartSchool.start(EnvCredentials())
+                Smartschool.start(EnvCredentials())
 
                 yield
         finally:
