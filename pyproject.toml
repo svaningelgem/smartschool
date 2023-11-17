@@ -15,7 +15,7 @@ packages = [{include = "smartschool", from = "src"}]
 smartschool_report_on_results = {reference = "scripts/smartschool_report_on_results", type = "file"}
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.11"
 bs4 = "^0.0.1"
 requests = "^2.31"
 pyyaml = "^6.0"

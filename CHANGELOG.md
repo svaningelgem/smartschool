@@ -1,5 +1,5 @@
 # 0.1.5
-*
+* Bump minimal Python version to 3.11
 
 # 0.1.4
 * Better caching mechanism
