@@ -1,11 +1,12 @@
 import contextlib
+from copy import deepcopy
 from io import StringIO
 from pathlib import Path
 
 import pytest
 from bs4 import BeautifulSoup, FeatureNotFound
-
 from smartschool.common import IsSaved, as_float, bs4_html, capture_and_email_all_exceptions, make_filesystem_safe, save, send_email, xml_to_dict
+from smartschool.objects import Student
 
 
 def test_xml_to_dict():
@@ -36,9 +37,7 @@ def test_xml_to_dict():
     }
 
 
-def test_save(mocker, tmp_path):
-    mocker.patch("smartschool.common.CACHE", new=Path.cwd())
-
+def test_save(tmp_path: Path) -> None:
     assert save(type_="todo", course_name="test", id_="123", data="Test") == IsSaved.NEW
     assert save(type_="todo", course_name="test", id_="123", data="Test") == IsSaved.SAME
     assert save(type_="todo", course_name="test", id_="123", data="Test2") == "Test"  # Returns the old data
@@ -46,6 +45,24 @@ def test_save(mocker, tmp_path):
     assert save(type_="todo", course_name="test", id_="456", data={"Test": 456}) == IsSaved.NEW
     assert save(type_="todo", course_name="test", id_="456", data={"Test": 456}) == IsSaved.SAME
     assert save(type_="todo", course_name="test", id_="456", data={"Test": 789}) == {"Test": 456}
+
+
+def test_save_as_pydantic_dataclass(tmp_path: Path) -> None:
+    sut = Student(
+        id="a",
+        pictureHash="b",
+        pictureUrl="c",
+        description={"startingWithFirstName": "d", "startingWithLastName": "e"},
+        name={"startingWithFirstName": "f", "startingWithLastName": "g"},
+        sort="h",
+    )
+    original = deepcopy(sut)
+
+    assert save(type_="todo", course_name="test", id_="123", data=sut) == IsSaved.NEW
+    assert save(type_="todo", course_name="test", id_="123", data=sut) == IsSaved.SAME
+
+    sut.id = "i"
+    assert save(type_="todo", course_name="test", id_="123", data=sut) == original
 
 
 def test_send_email(mocker):

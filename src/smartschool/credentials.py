@@ -13,6 +13,8 @@ class Credentials(ABC):
     password: str
     main_url: str
 
+    other_info: dict | None = None
+
     def validate(self) -> None:
         self.username = (self.username or "").strip()
         self.password = (self.password or "").strip()
@@ -38,9 +40,11 @@ class PathCredentials(Credentials):
         self.filename = Path(self.filename)
 
         cred_file: dict = yaml.safe_load(self.filename.read_text(encoding="utf8"))
-        self.username = cred_file.get("username")
-        self.password = cred_file.get("password")
-        self.main_url = cred_file.get("main_url")
+        self.username = cred_file.pop("username", None)
+        self.password = cred_file.pop("password", None)
+        self.main_url = cred_file.pop("main_url", None)
+
+        self.other_info = cred_file
 
 
 @dataclass

@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from functools import cached_property
 from http.cookiejar import LWPCookieJar
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Self
 from urllib.parse import urljoin
 
 from requests import Session
@@ -54,11 +54,12 @@ class Smartschool:
     _session: Session = field(init=False, default_factory=Session)
 
     @classmethod
-    def start(cls, creds: Credentials) -> None:
+    def start(cls, creds: Credentials) -> Self:
         global session
 
         creds.validate()
         session.creds = creds
+        return session
 
     def __post_init__(self):
         self._session.headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/109.0"

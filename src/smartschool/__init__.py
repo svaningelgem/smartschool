@@ -19,7 +19,7 @@ from .messages import (
 )
 from .objects import FutureTasks
 from .periods import Periods
-from .results import Results
+from .results import ResultDetail, Results
 from .session import Smartschool
 from .student_support import StudentSupportLinks
 
@@ -48,6 +48,7 @@ __all__ = [
     "MessageMoveToArchive",
     "MessageMoveToTrash",
     "MessageLabel",
+    "ResultDetail",
 ]
 
 logger = setup_logger(logging.DEBUG)

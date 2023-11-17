@@ -1,0 +1,140 @@
+#!/usr/bin/env python
+
+from smartschool import PathCredentials, Results, Smartschool, logger
+from smartschool.common import IsSaved, capture_and_email_all_exceptions, save, send_email
+from smartschool.objects import Result
+
+session = Smartschool.start(PathCredentials())
+assert 'email_from' in session.creds.other_info
+assert 'email_to' in session.creds.other_info
+
+
+def is_punten_json_the_same(previous: dict, current: dict) -> bool:
+    if previous == current:  # No need to dig into it...
+        return True
+
+    check_keys_for_equality = [
+        "identifier",
+        "graphic/type",
+        "graphic/color",
+        "graphic/value",
+        "graphic/description",
+        "courses/0/name",
+        "teachers/0/name/startingWithFirstName",
+        "feedback/0/user/name/startingWithFirstName",
+        "feedback/0/text",
+        "feedback/1/user/name/startingWithFirstName",
+        "feedback/1/text",
+        "feedback/2/user/name/startingWithFirstName",
+        "feedback/2/text",
+        "feedback/3/user/name/startingWithFirstName",
+        "feedback/3/text",
+        "feedback/4/user/name/startingWithFirstName",
+        "feedback/4/text",
+        "feedback/5/user/name/startingWithFirstName",
+        "feedback/5/text",
+    ]
+
+    def _grab_sub(d: dict, key: list[str]) -> dict | list | str | None:
+        if not key or d is None:
+            return d
+
+        current_key: str = key.pop(0)
+        if key:
+            if current_key.isnumeric():
+                try:
+                    return _grab_sub(d[int(current_key)], key)
+                except IndexError:  # Index out of range
+                    return ""
+                except Exception:
+                    pass
+
+            return _grab_sub(d.get(current_key, None), key)
+
+        return d.get(current_key, None)
+
+    try:
+        for key in check_keys_for_equality:
+            prev = _grab_sub(previous, key.split("/"))
+            curr = _grab_sub(current, key.split("/"))
+
+            if prev != curr:
+                return False
+    except:
+        print("Current: ", current)
+        print("Previous: ", previous)
+        raise
+
+    return True
+
+
+def build_text(
+    is_update: bool,
+    result: Result,
+) -> tuple[str, str]:
+    course_name = result.courses[0].name
+    teacher_names = [teacher.name.startingWithFirstName for teacher in result.courses[0].teachers]
+    test_name = result.name
+
+    achieved = f"{result.graphic.achieved_points:.2f}".rstrip('0').rstrip('.')
+    total = f"{result.graphic.total_points:.2f}".rstrip('0').rstrip('.')
+    pct = f"{100 * result.graphic.percentage:.2f}".rstrip('0').rstrip('.')
+
+    my_points = f"{achieved}/{total} ({pct}%)"
+
+    text = (
+        f"Course: {course_name}\n"
+        f"Test: {test_name}\n"
+        "\n"
+        f"Points: {my_points}\n"
+        "\n"
+    )
+    for teacher_name in teacher_names:
+        text += f"Teacher: {teacher_name}\n"
+    text += "\n"
+
+    if result.feedback:
+        text += "Feedback:\n"
+        for fb in result.feedback:
+            text += f"{fb.user.name.startingWithFirstName}: {fb.text}\n"
+
+    if is_update:
+        email_subject = "UPDATE: "
+    else:
+        email_subject = "NEW: "
+
+    email_subject += f"{course_name} - {test_name} - {my_points}"
+
+    if result.graphic.percentage >= 0.75:
+        email_subject = "✔ " + email_subject
+    else:
+        email_subject = "😢 " + email_subject
+
+    return text, email_subject
+
+
+def process_result(result: Result) -> None:
+    logger.info("Processing %s", result.name)
+
+    assert len(result.courses) == 1, f"Multiple courses? {result.courses}"
+
+    course_name = result.courses[0].name  # FE: 'Frans'
+    id_ = result.identifier
+
+    status = save("punten", course_name, id_, result, is_punten_json_the_same)
+
+    if status == IsSaved.SAME:
+        return
+
+    text, subject = build_text(result=result, is_update=status != IsSaved.NEW)
+    send_email(subject=subject, text=text, email_from=session.creds.other_info['email_from'], email_to=session.creds.other_info['email_to'])
+
+
+@capture_and_email_all_exceptions(email_from=session.creds.other_info['email_from'], email_to=session.creds.other_info['email_to'])
+def main():
+    for result in Results():
+        process_result(result)
+
+
+if __name__ == '__main__':
+    main()

@@ -1,10 +1,10 @@
 from itertools import count
 from typing import Iterator
 
-from .objects import Result
+from .objects import Result, ResultWithDetails
 from .session import session
 
-__all__ = ["Results"]
+__all__ = ["Results", "ResultDetail"]
 
 
 RESULTS_PER_PAGE = 50
@@ -31,3 +31,12 @@ class Results:
 
             if len(json) < RESULTS_PER_PAGE:
                 break
+
+
+class ResultDetail:
+    def __init__(self, result_id: str):
+        self.result_id = result_id
+
+    def get(self) -> ResultWithDetails:
+        json = session.json(f"/results/api/v1/evaluations/{self.result_id}")
+        return ResultWithDetails(**json)

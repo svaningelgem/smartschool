@@ -1,14 +1,18 @@
 [tool.poetry]
 name = "smartschool"
-version = "0.1.3"
+version = "0.1.4"
 description = "Unofficial API interface to the smartschool system."
 authors = ["Steven 'KaReL' Van Ingelgem <steven@vaningelgem.be>"]
 readme = "README.md"
 homepage = "https://github.com/svaningelgem/smartschool"
 license = "GPL-3.0"
+packages = [{include = "smartschool", from = "src"}]
 
 [tool.poetry.urls]
 "Source Code" = "https://github.com/svaningelgem/smartschool"
+
+[tool.poetry.scripts]
+smartschool_report_on_results = {reference = "scripts/smartschool_report_on_results", type = "file"}
 
 [tool.poetry.dependencies]
 python = "^3.10"

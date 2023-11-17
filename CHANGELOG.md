@@ -4,8 +4,11 @@
 * Added AdjustMessageLabel
 * Added MessageMoveToArchive
 * Added MessageMoveToTrash
+* Added ResultDetails
 * Renamed `SmartSchool` to `Smartschool`.
 * Increased test coverage
+* Code cleanup
+* Added `smartschool_report_on_results` script to send emails about new results.
 
 # 0.1.3
 * Added fetching of 1 specific message and its attachments.

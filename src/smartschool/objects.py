@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import base64
 from datetime import date, datetime
+from functools import cached_property
 from typing import Annotated, Literal
 
 from pydantic import AliasChoices, BeforeValidator
@@ -50,13 +51,17 @@ class ResultGraphic:
     value: int
     description: str
 
-    @property
+    @cached_property
     def achieved_points(self) -> float:
         return as_float(self.description.split("/")[0])
 
-    @property
+    @cached_property
     def total_points(self) -> float:
         return as_float(self.description.split("/")[1])
+
+    @property
+    def percentage(self) -> float:
+        return self.achieved_points / self.total_points
 
 
 @dataclass
@@ -104,7 +109,7 @@ class Period:
     icon: str
     skoreWorkYear: SkoreWorkYear
     isActive: bool
-    class_: Class_ = Field(alias="class")
+    class_: Class_ = Field(validation_alias=AliasChoices("class", "class_"))
 
 
 @dataclass
@@ -127,7 +132,7 @@ class Course:
     skoreClassId: int
     parentCourseId: None | int
     skoreWorkYear: SkoreWorkYear
-    class_: Class_ = Field(alias="class")
+    class_: Class_ = Field(validation_alias=AliasChoices("class", "class_"))
 
 
 @dataclass
@@ -173,7 +178,7 @@ class ResultDetails:
     teachers: list[Teacher]
     dateChanged: DateTime
     userChanged: Teacher
-    class_: Class_ = Field(alias="class")
+    class_: Class_ = Field(validation_alias=AliasChoices("class", "class_"))
 
 
 @dataclass
@@ -364,7 +369,7 @@ class ShortMessage:
     hasForward: bool
     realBox: str
     sendDate: DateTime | None
-    from_: str = Field(alias="from")
+    from_: str = Field(validation_alias=AliasChoices("from", "from_"))
 
 
 @dataclass
@@ -391,7 +396,7 @@ class FullMessage:
     hasReply: bool
     hasForward: bool
     sendDate: DateTime | None
-    from_: str = Field(alias="from")
+    from_: str = Field(validation_alias=AliasChoices("from", "from_"))
 
 
 @dataclass
@@ -419,4 +424,4 @@ class MessageChanged:
 class MessageDeletionStatus:
     msgID: int
     boxType: str
-    is_deleted: bool = Field(alias="status")
+    is_deleted: bool = Field(validation_alias=AliasChoices("status", "is_deleted"))

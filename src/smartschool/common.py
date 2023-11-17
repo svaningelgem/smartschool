@@ -15,17 +15,15 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from enum import Enum, auto
 from pathlib import Path
-from typing import Callable, Literal
+from typing import Any, Callable, Literal
 
 from bs4 import BeautifulSoup, FeatureNotFound
+from pydantic import RootModel
+from pydantic.dataclasses import is_pydantic_dataclass
 from requests import Response
-
-CACHE = Path(__file__).parent / ".cache"
-
 
 __all__ = [
     "send_email",
-    "CACHE",
     "capture_and_email_all_exceptions",
     "save",
     "IsSaved",
@@ -46,14 +44,17 @@ class IsSaved(Enum):
 
 
 def save(
-    type_: Literal["agenda", "punten", "todo"], course_name: str, id_: str, data: dict | str, is_eq: Callable = operator.eq, extension: str = "json"
+    type_: Literal["agenda", "punten", "todo"], course_name: str, id_: str, data: dict | str | Any, is_eq: Callable = operator.eq, extension: str = "json"
 ) -> IsSaved | dict | str:
-    save_as = CACHE / f"_{type_}/{course_name}/{id_}.{extension}"
+    save_as = Path.cwd() / f".cache/_{type_}/{course_name}/{id_}.{extension}"
     save_as.parent.mkdir(exist_ok=True, parents=True)
     data_was_dict = isinstance(data, dict)
+    data_was_object = is_pydantic_dataclass(data.__class__)
 
     if data_was_dict:
         to_write = json.dumps(data, indent=4)
+    elif data_was_object:
+        to_write = RootModel[data.__class__](data).model_dump_json(indent=4)
     else:
         to_write = data
 
@@ -62,8 +63,10 @@ def save(
         return IsSaved.NEW
 
     old_data = save_as.read_text(encoding="utf8")
-    if data_was_dict:
+    if data_was_dict or data_was_object:
         old_data = json.loads(old_data)
+    if data_was_object:
+        old_data = data.__class__(**old_data)
 
     if is_eq(data, old_data):
         return IsSaved.SAME
