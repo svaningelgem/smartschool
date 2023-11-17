@@ -68,3 +68,13 @@ def _setup_automated_fixtures_for_agenda_calls(request, requests_mock) -> None:
         return default_filename.read_text(encoding="utf8")
 
     requests_mock.register_uri(ANY, ANY, text=text_callback)
+
+
+@pytest.fixture()
+def tmp_path(tmp_path) -> Path:
+    original_dir = Path.cwd()
+    try:
+        os.chdir(tmp_path)
+        yield
+    finally:
+        os.chdir(original_dir)

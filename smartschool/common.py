@@ -47,7 +47,7 @@ class IsSaved(Enum):
 
 def save(
     type_: Literal["agenda", "punten", "todo"], course_name: str, id_: str, data: dict | str, is_eq: Callable = operator.eq, extension: str = "json"
-) -> IsSaved | dict:
+) -> IsSaved | dict | str:
     save_as = CACHE / f"_{type_}/{course_name}/{id_}.{extension}"
     save_as.parent.mkdir(exist_ok=True, parents=True)
     data_was_dict = isinstance(data, dict)
@@ -91,9 +91,11 @@ def send_email(
 
     if platform.system() == "Windows":
         print("=================== On Linux we would have sent this: ===================")
-        print(message.as_string())
+        print(f"Subject: {subject}")
+        print("")
+        print(text)
         print("=========================================================================")
-        return  # I put this here, so I can still debug 'message.as_string()'
+        return
 
     with smtplib.SMTP("localhost") as server:
         server.sendmail(
@@ -103,33 +105,34 @@ def send_email(
         )
 
 
-def capture_and_email_all_exceptions(func, email_from: str | list[str], email_to: str | list[str]) -> Callable:
-    @functools.wraps(func)
-    def inner(*args, **kwargs):
-        frm = inspect.stack()[1]
-        module_name = Path(frm.filename)
-        function_signature = f"{module_name.stem}.{func.__name__}"
+def capture_and_email_all_exceptions(email_from: str | list[str], email_to: str | list[str], subject: str = "[⚠Smartschool parser⚠] Something went wrong") -> Callable:
+    def decorator(func):
+        @functools.wraps(func)
+        def inner(*args, **kwargs):
+            frm = inspect.stack()[1]
+            module_name = Path(frm.filename)
+            function_signature = f"{module_name.stem}.{func.__name__}"
 
-        print(f"[{function_signature}] Start")
-        try:
-            result = func(*args, **kwargs)
-        except Exception as ex:
-            print(f"[{function_signature}] An exception happened: {ex}")
+            print(f"[{function_signature}] Start")
+            try:
+                result = func(*args, **kwargs)
+            except Exception as ex:
+                print(f"[{function_signature}] An exception happened: {ex}")
 
-            send_email(
-                email_to=email_to,
-                email_from=email_from,
-                subject="Salco parser: something went wrong!!",
-                text="".join(traceback.format_exception(None, ex, ex.__traceback__)),
-            )
+                send_email(
+                    email_to=email_to,
+                    email_from=email_from,
+                    subject=subject,
+                    text="".join(traceback.format_exception(None, ex, ex.__traceback__)),
+                )
 
-            sys.exit(1)
+                sys.exit(1)
 
-        print(f"[{function_signature}] Finished")
-        return result
+            print(f"[{function_signature}] Finished")
+            return result
 
-    return inner
-
+        return inner
+    return decorator
 
 def bs4_html(html: str | bytes | Response) -> BeautifulSoup:
     global _used_bs4_option
@@ -202,7 +205,9 @@ def get_all_values_from_form(html, form_selector):
 
 
 def make_filesystem_safe(name: str) -> str:
-    return re.sub("[^-_a-z0-9.]+", "", name, flags=re.IGNORECASE)
+    name = re.sub("[^-_a-z0-9.]+", "_", name, flags=re.IGNORECASE)
+    name = re.sub('_{2,}', '_', name)
+    return name
 
 
 def as_float(txt: str) -> float:
