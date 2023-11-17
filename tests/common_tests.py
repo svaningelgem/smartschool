@@ -1,10 +1,11 @@
 import contextlib
+import warnings
 from copy import deepcopy
 from io import StringIO
 from pathlib import Path
 
 import pytest
-from bs4 import BeautifulSoup, FeatureNotFound
+from bs4 import BeautifulSoup, FeatureNotFound, GuessedAtParserWarning
 from smartschool.common import IsSaved, as_float, bs4_html, capture_and_email_all_exceptions, make_filesystem_safe, save, send_email, xml_to_dict
 from smartschool.objects import Student
 
@@ -142,7 +143,10 @@ def test_bs4_html():
 
 def test_bs4_html_no_good_options(mocker):
     mocker.patch("smartschool.common._used_bs4_option", new=None)
-    mocker.patch("smartschool.common.BeautifulSoup", side_effect=[FeatureNotFound, FeatureNotFound, FeatureNotFound, BeautifulSoup("<html />")])
+
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=GuessedAtParserWarning)
+        mocker.patch("smartschool.common.BeautifulSoup", side_effect=[FeatureNotFound, FeatureNotFound, FeatureNotFound, BeautifulSoup("<html />")])
 
     sut = bs4_html("<html />")
     assert isinstance(sut, BeautifulSoup)
