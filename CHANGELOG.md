@@ -1,3 +1,6 @@
+# 0.1.7
+* Cleaning up login sequence: ensure the cookies are refreshed the first time you're using it.
+
 # 0.1.6
 * More fixes for 'XMLHttpRequest's.
 * Open a new connection first thing, so we can be sure the cookies are fresh enough for usage.

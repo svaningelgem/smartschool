@@ -1,4 +1,3 @@
-from pathlib import Path
 
 import pytest
 from smartschool.session import session
@@ -11,24 +10,15 @@ def test_smartschool_not_started_yet(mocker):
         session.get("/")
 
 
-def test_smartschool_not_logged_on_yet(requests_mock):
-    counter = 0
-
+def test_smartschool_already_logged_on(mocker, requests_mock):
     def fake_redirect_to_login(req, context):
-        nonlocal counter
-
         req.url = "https://site"
+        return "ok"
 
-        if counter == 0:
-            req.url += "/login"
+    mocker.patch.object(session, "already_logged_on", new=False)
+    requests_mock.get("/login", text=fake_redirect_to_login)
 
-        counter += 1
-
-        return Path(__file__).parent.joinpath("requests", "login.html").read_text(encoding="utf8")
-
-    requests_mock.get("/", text=fake_redirect_to_login)
-    requests_mock.post("/login", text=fake_redirect_to_login)
-    session.get("/")
+    session.get("/login")
 
 
 def test_smartschool_repr():

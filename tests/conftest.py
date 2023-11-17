@@ -45,7 +45,7 @@ def _clear_caches_from_agenda() -> None:
 
 
 @pytest.fixture(autouse=True)
-def _setup_automated_fixtures_for_agenda_calls(request, requests_mock) -> None:
+def _setup_requests_mocker(request, requests_mock) -> None:
     def text_callback(req, _) -> str:
         try:
             xml = parse_qs(req.body)["command"][0]
@@ -67,6 +67,9 @@ def _setup_automated_fixtures_for_agenda_calls(request, requests_mock) -> None:
         return default_filename.read_text(encoding="utf8")
 
     requests_mock.register_uri(ANY, ANY, text=text_callback)
+
+    requests_mock.get("/login", text=Path(__file__).parent.joinpath("requests", "get", "login.json").read_text(encoding="utf8"))
+    requests_mock.post("/login", text="ok")
 
 
 @pytest.fixture()

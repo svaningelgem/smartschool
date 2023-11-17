@@ -3,6 +3,7 @@ from __future__ import annotations
 import contextlib
 import functools
 import json
+import time
 from dataclasses import dataclass, field
 from functools import cached_property
 from http.cookiejar import LWPCookieJar
@@ -26,18 +27,9 @@ def _handle_cookies_and_login(func):
         if self.creds is None:
             raise RuntimeError("Please start smartschool first via: `Smartschool.start(PathCredentials())`")
 
+        self._try_login()
+
         resp = func(self, *args, **kwargs)
-
-        did_a_login = False
-        if resp.url.endswith("/login") and not self.already_logged_on:
-            self.already_logged_on = True  # Prevent loops
-            resp = self._do_login(resp)
-            did_a_login = True
-
-        assert not resp.url.endswith("/login"), "Still login?"
-
-        if did_a_login:
-            resp = func(self, *args, **kwargs)
 
         self._session.cookies.save(ignore_discard=True)
 
@@ -50,8 +42,22 @@ def _handle_cookies_and_login(func):
 class Smartschool:
     creds: Credentials = None
 
-    already_logged_on: bool = field(init=False, default=False)
+    already_logged_on: bool = field(init=False, default=None)
     _session: Session = field(init=False, default_factory=Session)
+
+    def _try_login(self) -> None:
+        if self.already_logged_on is None:
+            # Created in the last 10 minutes? Assume we're still logged on...
+            self.already_logged_on = self.cookie_file.exists() and self.cookie_file.stat().st_mtime > (time.time() - 600)
+
+        if self.already_logged_on:
+            return
+
+        self.already_logged_on = True
+
+        resp = session.get("/login")  # This will either log you in, or redirect to the main page. Refreshing the cookies in the meanwhile
+        if resp.url.endswith("/login"):  # Not redirect >> do log in
+            session._do_login(resp)
 
     @classmethod
     def start(cls, creds: Credentials) -> Self:
@@ -60,15 +66,16 @@ class Smartschool:
         creds.validate()
         session.creds = creds
 
-        session.get('/login')  # This will either log you in, or redirect to the main page. Refreshing the cookies in the meanwhile
-
         return session
 
-    def __post_init__(self):
-        self._session.headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/109.0"
-        # self._session.headers["X-Requested-With"] = "XMLHttpRequest"
+    @property
+    def cookie_file(self) -> Path:
+        return Path.cwd() / "cookies.txt"
 
-        cookie_jar = LWPCookieJar(Path.cwd() / "cookies.txt")
+    def __post_init__(self):
+        self._session.headers["User-Agent"] = "unofficial Smartschool API interface"
+
+        cookie_jar = LWPCookieJar(self.cookie_file)
         with contextlib.suppress(FileNotFoundError):
             cookie_jar.load(ignore_discard=True)
 
