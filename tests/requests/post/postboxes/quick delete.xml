@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<server>
+    <response>
+        <status>ok</status>
+        <actions>
+            <action>
+                <subsystem>message list</subsystem>
+                <command>finish quick delete</command>
+                <data>
+                    <details>
+                        <msgID>123</msgID>
+                        <boxType>inbox</boxType>
+                        <status>1</status>
+                    </details>
+                </data>
+            </action>
+        </actions>
+    </response>
+</server>

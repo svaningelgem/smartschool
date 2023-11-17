@@ -3,19 +3,14 @@ from __future__ import annotations
 import time
 from abc import ABC
 from datetime import datetime
-from typing import TYPE_CHECKING
 
 from ._xml_interface import SmartschoolXML_WeeklyCache
 from .objects import AgendaHour, AgendaLesson, AgendaMomentInfo
 
-if TYPE_CHECKING:  # pragma: no cover
-    pass
-
 
 class AgendaPoster(SmartschoolXML_WeeklyCache, ABC):
-    """
-    Caches the information on a weekly basis, and posts to the mentioned URL
-    """
+    """Caches the information on a weekly basis, and posts to the mentioned URL."""
+
     _url: str = "/?module=Agenda&file=dispatcher"
 
 
@@ -145,6 +140,7 @@ class SmartschoolMomentInfos(AgendaPoster):
     - end: HH:MM ending time
     - title: how it is called in the agenda
     """
+
     def __init__(self, moment_id: str):
         super().__init__()
 

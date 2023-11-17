@@ -1,3 +1,10 @@
+# 0.1.4
+* Better caching mechanism
+* Added MarkMessageUnread
+* Added AdjustMessageLabel
+* Added MessageMoveToArchive
+* Added MessageMoveToTrash
+
 # 0.1.3
 * Added fetching of 1 specific message and its attachments.
 

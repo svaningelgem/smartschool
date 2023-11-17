@@ -30,3 +30,7 @@ for course in Courses():
 - [MessageHeaders](src/smartschool/messages.py)
 - [Message](src/smartschool/messages.py)
 - [Attachments](src/smartschool/messages.py)
+- [MarkMessageUnread](src/smartschool/messages.py)
+- [AdjustMessageLabel](src/smartschool/messages.py)
+- [MessageMoveToArchive](src/smartschool/messages.py)
+- [MessageMoveToTrash](src/smartschool/messages.py)

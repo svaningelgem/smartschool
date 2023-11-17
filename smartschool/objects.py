@@ -4,7 +4,7 @@ import base64
 from datetime import date, datetime
 from typing import Annotated, Literal
 
-from pydantic import BeforeValidator
+from pydantic import AliasChoices, BeforeValidator
 from pydantic.dataclasses import Field, dataclass
 
 from .common import as_float
@@ -407,3 +407,16 @@ class Attachment:
     def download(self) -> bytes:
         resp = session.get(f"/?module=Messages&file=download&fileID={self.fileID}&target=0")
         return base64.b64decode(resp.content)
+
+
+@dataclass
+class MessageChanged:
+    id: int
+    new: int = Field(validation_alias=AliasChoices("status", "label", "new"))
+
+
+@dataclass
+class MessageDeletionStatus:
+    msgID: int
+    boxType: str
+    is_deleted: bool = Field(alias="status")

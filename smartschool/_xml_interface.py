@@ -2,13 +2,16 @@ from __future__ import annotations
 
 import contextlib
 from abc import ABC, ABCMeta, abstractmethod
-from datetime import date, datetime
-from typing import Iterator, TypeVar
+from datetime import date
+from typing import TYPE_CHECKING, Iterator, TypeVar
 from xml.etree import ElementTree as ET
 from xml.sax.saxutils import quoteattr
 
 from .common import xml_to_dict
 from .session import session
+
+if TYPE_CHECKING:  # pragma: no cover
+    from datetime import datetime
 
 _T = TypeVar("_T")
 
@@ -19,8 +22,9 @@ class _SmartschoolXMLMeta(ABCMeta):
 
     Effectively giving each derived class I make their own dictionary.
     """
+
     def __new__(cls, name, bases, dct):
-        dct['cache'] = {}
+        dct["cache"] = {}
         return super().__new__(cls, name, bases, dct)
 
 
@@ -42,6 +46,15 @@ class SmartschoolXML(ABC, metaclass=_SmartschoolXMLMeta):
     def __iter__(self) -> Iterator[_T]:
         yield from self._xml()
 
+    def get(self) -> _T:
+        """
+        Retrieve only the first entry.
+
+        This is particularly useful when you want to fetch just one entry, and don't want to use the `list(Class())[0]` syntax.
+        Instead, you can use `Class().get()`.
+        """
+        return next(iter(self))
+
     @abstractmethod
     def _get_from_cache(self) -> object:
         """
@@ -57,7 +70,7 @@ class SmartschoolXML(ABC, metaclass=_SmartschoolXMLMeta):
     @property
     @abstractmethod
     def _url(self) -> str:
-        """What URL should I post this to?"""
+        """The URL where the data should be posted to."""
 
     def _xml(self):
         with contextlib.suppress(KeyError):
@@ -110,7 +123,7 @@ class SmartschoolXML(ABC, metaclass=_SmartschoolXMLMeta):
     def _object_to_instantiate(self) -> type[_T]:
         """Returns the object to instantiate."""
 
-    def _post_process_element(self, element: dict) -> None:  # noqa: B027
+    def _post_process_element(self, element: dict) -> None:
         """By default, this doesn't do anything, but you can adjust the parsed XML when needed."""
 
 
@@ -118,7 +131,7 @@ class SmartschoolXML_WeeklyCache(SmartschoolXML, ABC):
     @property
     def _cache_key(self):
         # Week number
-        today = (self.timestamp_to_use or date.today())
+        today = self.timestamp_to_use or date.today()
         return today.strftime("%Y-%U")
 
     def _get_from_cache(self) -> object:

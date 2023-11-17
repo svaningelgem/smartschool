@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<server>
+    <response>
+        <status>ok</status>
+        <actions>
+            <action>
+                <subsystem>message list</subsystem>
+                <command>status</command>
+                <data>
+                    <message>
+                        <id>123</id>
+                        <status>0</status>
+                    </message>
+                </data>
+            </action>
+        </actions>
+    </response>
+</server>

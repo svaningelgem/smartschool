@@ -1,12 +1,27 @@
 from __future__ import annotations
 
-from abc import ABC, ABCMeta
+from abc import ABC
 from enum import Enum
+from typing import Iterator
+from urllib.parse import quote_plus
 
 from ._xml_interface import SmartschoolXML, SmartschoolXML_NoCache
-from .objects import Attachment, FullMessage, ShortMessage
+from .objects import Attachment, FullMessage, MessageChanged, MessageDeletionStatus, ShortMessage
+from .session import session
 
-__all__ = ["SortField", "SortOrder", "BoxType", "MessageHeaders", "Message", "Attachments"]
+__all__ = [
+    "SortField",
+    "SortOrder",
+    "BoxType",
+    "MessageHeaders",
+    "Message",
+    "Attachments",
+    "MarkMessageUnread",
+    "AdjustMessageLabel",
+    "MessageMoveToArchive",
+    "MessageMoveToTrash",
+    "MessageLabel",
+]
 
 
 class SortField(Enum):
@@ -30,8 +45,16 @@ class BoxType(Enum):
     TRASH = "trash"
 
 
+class MessageLabel(Enum):
+    NO_FLAG = 0
+    GREEN_FLAG = 1
+    YELLOW_FLAG = 2
+    RED_FLAG = 3
+    BLUE_FLAG = 4
+
+
 class _MessagesPoster:
-    _url = '/?module=Messages&file=dispatcher'
+    _url = "/?module=Messages&file=dispatcher"
 
 
 class MessageHeaders(_MessagesPoster, SmartschoolXML_NoCache):
@@ -179,3 +202,114 @@ class Attachments(_FetchOneMessage):
     @property
     def _object_to_instantiate(self) -> type[Attachment]:
         return Attachment
+
+
+class MarkMessageUnread(_FetchOneMessage):
+    @property
+    def _action(self) -> str:
+        return "mark message unread"
+
+    @property
+    def _xpath(self) -> str:
+        return ".//data/message"
+
+    @property
+    def _object_to_instantiate(self) -> type[MessageChanged]:
+        return MessageChanged
+
+    @property
+    def _params(self) -> dict:
+        return {
+            "boxType": self.box_type.value,
+            "boxID": "0",
+            "msgID": self.msg_id,
+            "clAction": "status",
+        }
+
+
+class AdjustMessageLabel(_FetchOneMessage):
+    def __init__(self, msg_id: int, box_type: BoxType = BoxType.INBOX, label: MessageLabel = MessageLabel.NO_FLAG):
+        super().__init__(msg_id, box_type)
+        self.label = label
+
+    @property
+    def _action(self) -> str:
+        return "save msglabel"
+
+    @property
+    def _xpath(self) -> str:
+        return ".//data/message"
+
+    @property
+    def _object_to_instantiate(self) -> type[MessageChanged]:
+        return MessageChanged
+
+    @property
+    def _params(self) -> dict:
+        return {
+            "boxType": self.box_type.value,
+            "msgLabel": self.label.value,
+            "msgID": self.msg_id,
+            "clAction": "label",
+        }
+
+
+class MessageMoveToArchive:
+    """
+    Archiving is weird.
+
+    It's not following the XML protocol... Providing the same interface as the other XMLs though.
+    """
+
+    def __init__(self, msg_id: int | list[int]):
+        super().__init__()
+
+        if not isinstance(msg_id, list):
+            msg_id = [msg_id]
+
+        self.msg_ids = msg_id
+
+    def get(self) -> MessageChanged:
+        return next(iter(self))
+
+    def __iter__(self) -> Iterator[MessageChanged]:
+        construction = "&".join("msgIDs%5B%5D=" + quote_plus(str(msg_id)) for msg_id in self.msg_ids)
+
+        resp = session.post(
+            "/Messages/Xhr/archivemessages",
+            data=construction,
+            headers={
+                "X-Requested-With": "XMLHttpRequest",
+            },
+        )
+
+        success = resp.json()["success"]
+        for msg_id in self.msg_ids:
+            yield MessageChanged(id=msg_id, new=1 if msg_id in success else 0)
+
+
+class MessageMoveToTrash(_MessagesPoster, SmartschoolXML_NoCache):
+    def __init__(self, msg_id: int):
+        super().__init__()
+
+        self.msg_id = msg_id
+
+    @property
+    def _subsystem(self) -> str:
+        return "postboxes"
+
+    @property
+    def _action(self) -> str:
+        return "quick delete"
+
+    @property
+    def _xpath(self) -> str:
+        return ".//data/details"
+
+    @property
+    def _object_to_instantiate(self) -> type[MessageDeletionStatus]:
+        return MessageDeletionStatus
+
+    @property
+    def _params(self) -> dict:
+        return {"msgID": self.msg_id}
