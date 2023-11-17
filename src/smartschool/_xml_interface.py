@@ -78,7 +78,10 @@ class SmartschoolXML(ABC, metaclass=_SmartschoolXMLMeta):
 
         response = session.post(
             self._url,
-            data={"command": self._construct_command()},
+            data={"command": self._construct_command(),},
+            headers={
+                "X-Requested-With": "XMLHttpRequest",
+            },
         )
 
         root = ET.fromstring(response.text)

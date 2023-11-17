@@ -270,6 +270,9 @@ class FutureTasks:
                 "filterType": "false",
                 "filterID": "false",
             },
+            headers={
+                "X-Requested-With": "XMLHttpRequest",
+            },
         )
 
         self.days = []

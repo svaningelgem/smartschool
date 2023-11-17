@@ -278,6 +278,9 @@ class MessageMoveToArchive:
         resp = session.post(
             "/Messages/Xhr/archivemessages",
             data=construction,
+            headers={
+                "X-Requested-With": "XMLHttpRequest",
+            },
         )
 
         success = resp.json()["success"]

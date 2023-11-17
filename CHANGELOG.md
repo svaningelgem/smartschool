@@ -1,5 +1,5 @@
 # 0.1.6
-*
+* More fixes for 'XMLHttpRequest's.
 
 # 0.1.5
 * Bump minimal Python version to 3.11

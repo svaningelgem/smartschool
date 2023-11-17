@@ -59,11 +59,12 @@ class Smartschool:
 
         creds.validate()
         session.creds = creds
+
         return session
 
     def __post_init__(self):
         self._session.headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/109.0"
-        self._session.headers["X-Requested-With"] = "XMLHttpRequest"
+        # self._session.headers["X-Requested-With"] = "XMLHttpRequest"
 
         cookie_jar = LWPCookieJar(Path.cwd() / "cookies.txt")
         with contextlib.suppress(FileNotFoundError):
