@@ -1,5 +1,5 @@
 # 0.1.8
-*
+* _bugfix_: FutureTasks had a bug in it which prevented it from loading moved tasks.
 
 # 0.1.7
 * Cleaning up login sequence: ensure the cookies are refreshed the first time you're using it.
