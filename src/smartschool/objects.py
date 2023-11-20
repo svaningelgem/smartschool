@@ -11,7 +11,6 @@ from pydantic.dataclasses import Field, dataclass
 from .common import as_float
 from .session import session
 
-
 String = constr(strip_whitespace=True)
 
 
