@@ -9,7 +9,7 @@ assert 'email_from' in session.creds.other_info
 assert 'email_to' in session.creds.other_info
 
 
-def is_punten_json_the_same(previous: dict, current: dict) -> bool:
+def is_punten_json_the_same(previous: Result, current: Result) -> bool:
     if previous == current:  # No need to dig into it...
         return True
 
@@ -20,7 +20,7 @@ def is_punten_json_the_same(previous: dict, current: dict) -> bool:
         "graphic/value",
         "graphic/description",
         "courses/0/name",
-        "teachers/0/name/startingWithFirstName",
+        "courses/0/teachers/0/name/startingWithFirstName",
         "feedback/0/user/name/startingWithFirstName",
         "feedback/0/text",
         "feedback/1/user/name/startingWithFirstName",
@@ -35,23 +35,22 @@ def is_punten_json_the_same(previous: dict, current: dict) -> bool:
         "feedback/5/text",
     ]
 
-    def _grab_sub(d: dict, key: list[str]) -> dict | list | str | None:
+    def _grab_sub(d: Result | dict, key: list[str]) -> dict | list | str | None:
         if not key or d is None:
             return d
 
-        current_key: str = key.pop(0)
-        if key:
-            if current_key.isnumeric():
-                try:
-                    return _grab_sub(d[int(current_key)], key)
-                except IndexError:  # Index out of range
+        obj = d
+        for piece in key:
+            if piece.isnumeric():
+                piece = int(piece)
+                if piece >= len(obj):  # Not enough inside this array >> Just assume it's an empty string
                     return ""
-                except Exception:
-                    pass
 
-            return _grab_sub(d.get(current_key, None), key)
+                obj = obj[piece]
+            else:
+                obj = getattr(obj, piece)
 
-        return d.get(current_key, None)
+        return obj
 
     try:
         for key in check_keys_for_equality:
@@ -60,7 +59,8 @@ def is_punten_json_the_same(previous: dict, current: dict) -> bool:
 
             if prev != curr:
                 return False
-    except:
+    except Exception as ex:
+        print(f"Exception received: {ex.__class__.__name__} ({ex})")
         print("Current: ", current)
         print("Previous: ", previous)
         raise

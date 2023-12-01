@@ -1,5 +1,5 @@
 # 0.1.9
-*
+* _bugfix_: The result comparison has been fixed.
 
 # 0.1.8
 * _bugfix_: FutureTasks had a bug in it which prevented it from loading moved tasks.
