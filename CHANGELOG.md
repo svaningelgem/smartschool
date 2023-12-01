@@ -1,3 +1,6 @@
+# 0.2.0
+*
+
 # 0.1.9
 * _bugfix_: The result comparison has been fixed.
 
