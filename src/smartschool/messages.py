@@ -69,6 +69,7 @@ class MessageHeaders(_MessagesPoster, SmartschoolXML_NoCache):
     >>>     print(message.subject)
     Re: LO les
     Frans
+
     """
 
     def __init__(
@@ -151,6 +152,7 @@ class Message(_FetchOneMessage):
     >>> message: FullMessage = list(Message(123))[0]
     >>> message.subject
     Griezelfestijn
+
     """
 
     @property
@@ -189,6 +191,7 @@ class Attachments(_FetchOneMessage):
     >>>     print(attachment.name)
     Oproep figuranten en helpers.pdf
     Poster griezelfestijn.pdf
+
     """
 
     @property

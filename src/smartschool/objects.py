@@ -255,6 +255,7 @@ class FutureTasks:
     >>>             print("Task:", task.description)
     Course: 2 - AAR1, Lotte Peeters
     Task: Toets 3. De koolstofcyclus in het systeem aarde pagina 42 - 47
+
     """
 
     days: list[FutureTaskOneDay] = Field(default_factory=list)

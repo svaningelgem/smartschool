@@ -21,6 +21,7 @@ class Results:
     >>> for result in Results():
     >>>     print(result.name)
     Repetitie hoofdstuk 1
+
     """
 
     def __iter__(self) -> Iterator[Result]:
