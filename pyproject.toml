@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "smartschool"
-version = "0.2.0"
+version = "0.3.0"
 description = "Unofficial API interface to the smartschool system."
 authors = ["Steven 'KaReL' Van Ingelgem <steven@vaningelgem.be>"]
 readme = "README.md"
