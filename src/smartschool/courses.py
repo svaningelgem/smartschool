@@ -21,6 +21,7 @@ class TopNavCourses:
     >>>     print(course.name)
     Aardrijkskunde_3_LOP_2023-2024
     bibliotheek
+
     """
 
     @cached_property
@@ -45,6 +46,7 @@ class Courses:
     >>>     print(course.name)
     Aardrijkskunde
     Biologie
+
     """
 
     @cached_property

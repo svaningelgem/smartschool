@@ -18,6 +18,7 @@ class StudentSupportLinks:
     >>>     print(link.name)
     1712
     Autisme chat
+
     """
 
     def __iter__(self) -> Iterator[StudentSupportLink]:
