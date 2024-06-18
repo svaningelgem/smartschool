@@ -19,16 +19,16 @@ smartschool_report_on_future_tasks = {reference = "scripts/smartschool_report_on
 
 [tool.poetry.dependencies]
 python = "^3.11"
-bs4 = "^0.0.1"
-requests = "^2.31"
-pyyaml = "^6.0"
-pydantic = "^2.5"
+bs4 = "*"
+requests = "*"
+pyyaml = "*"
+pydantic = "*"
 
 [tool.poetry.group.dev.dependencies]
-pytest-mock = "^3.12"
-pytest-cov = "^4.1"
-requests-mock = "^1.11"
-ruff = "^0.1"
+pytest-mock = "*"
+pytest-cov = "*"
+requests-mock = "*"
+ruff = "*"
 
 [build-system]
 requires = ["poetry-core"]
@@ -49,6 +49,7 @@ requests_mock_case_sensitive = true
 line-length = 160
 fix = true
 
+[tool.ruff.lint]
 select = [
     "E", # pycodestyle
     "W", # pycodestyle
@@ -111,14 +112,14 @@ ignore = [
     "D103",  # Missing docstring in public function
 ]
 
-[tool.ruff.pycodestyle]
+[tool.ruff.lint.pycodestyle]
 max-doc-length = 160
 
-[tool.ruff.flake8-tidy-imports]
+[tool.ruff.lint.flake8-tidy-imports]
 ban-relative-imports = "all"
 
-[tool.ruff.flake8-type-checking]
+[tool.ruff.lint.flake8-type-checking]
 strict = true
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "tests/**/*.py" = ["D100", "D103", "B018", "FBT001"]
