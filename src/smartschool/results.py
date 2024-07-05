@@ -1,6 +1,7 @@
 from itertools import count
 from typing import Iterator
 
+from .exceptions import DownloadError
 from .objects import Result, ResultWithDetails
 from .session import session
 
@@ -26,7 +27,11 @@ class Results:
 
     def __iter__(self) -> Iterator[Result]:
         for page_nr in count(start=1):  # pragma: no branch
-            json = session.json(f"/results/api/v1/evaluations/?pageNumber={page_nr}&itemsOnPage={RESULTS_PER_PAGE}")
+            downloaded_webpage = session.get(f"/results/api/v1/evaluations/?pageNumber={page_nr}&itemsOnPage={RESULTS_PER_PAGE}")
+            if not downloaded_webpage or not downloaded_webpage.content:
+                raise DownloadError("No JSON was returned for the results?!")
+
+            json = downloaded_webpage.json()
             for result in json:
                 yield Result(**result)
 
@@ -39,5 +44,9 @@ class ResultDetail:
         self.result_id = result_id
 
     def get(self) -> ResultWithDetails:
-        json = session.json(f"/results/api/v1/evaluations/{self.result_id}")
+        downloaded_webpage = session.get(f"/results/api/v1/evaluations/{self.result_id}")
+        if not downloaded_webpage or not downloaded_webpage.content:
+            raise DownloadError("No JSON was returned for the details?!")
+
+        json = downloaded_webpage.json()
         return ResultWithDetails(**json)

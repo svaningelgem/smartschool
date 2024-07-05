@@ -3,6 +3,7 @@ import logging
 from .agenda import SmartschoolHours, SmartschoolLessons, SmartschoolMomentInfos
 from .courses import Courses, TopNavCourses
 from .credentials import EnvCredentials, PathCredentials
+from .exceptions import DownloadError, SmartSchoolException
 from .logger import setup_logger
 from .messages import (
     AdjustMessageLabel,
@@ -49,6 +50,9 @@ __all__ = [
     "MessageMoveToTrash",
     "MessageLabel",
     "ResultDetail",
+    # Exceptions
+    "SmartSchoolException",
+    "DownloadError",
 ]
 
 logger = setup_logger(logging.DEBUG)
