@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from smartschool import PathCredentials, Results, Smartschool, logger
+from smartschool import PathCredentials, Results, Smartschool, logger, DownloadError
 from smartschool.common import IsSaved, capture_and_email_all_exceptions, save, send_email
 from smartschool.objects import Result
 
@@ -143,8 +143,11 @@ def process_result(result: Result) -> None:
 
 @capture_and_email_all_exceptions(email_from=session.creds.other_info['email_from'], email_to=session.creds.other_info['email_to'])
 def main():
-    for result in Results():
-        process_result(result)
+    try:
+        for result in Results():
+            process_result(result)
+    except DownloadError:
+        ...
 
 
 if __name__ == '__main__':
