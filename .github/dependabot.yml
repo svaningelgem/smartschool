@@ -1,10 +1,10 @@
+# https://docs.github.com/en/code-security/supply-chain-security/keeping-your-dependencies-updated-automatically/configuration-options-for-dependency-updates
 version: 2
 updates:
-  # GitHub Actions
-  - package-ecosystem: github-actions
+  - package-ecosystem: "github-actions"
     directory: '/'
     schedule:
-      interval: monthly
+      interval: "weekly"
     ignore:
       - dependency-name: '*'
         update-types: ['version-update:semver-patch']
@@ -12,8 +12,12 @@ updates:
       prefix: ci
     labels: ['skip changelog']
 
-  # Build system
   - package-ecosystem: "poetry"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
