@@ -35,6 +35,43 @@ for course in Courses():
 - [MessageMoveToArchive](src/smartschool/messages.py)
 - [MessageMoveToTrash](src/smartschool/messages.py)
 
+## Authentication
+
+This library now supports Smartschool's two-factor authentication which requires a birth date verification. You must provide your birth date in YYYY-MM-DD format when setting up credentials.
+
+### Environment Variables
+
+```sh
+export SMARTSCHOOL_USERNAME="your_username"
+export SMARTSCHOOL_PASSWORD="your_password"
+export SMARTSCHOOL_URL="your_school.smartschool.be"
+export SMARTSCHOOL_BIRTH_DATE="YYYY-MM-DD"  # Your birth date
+```
+
+### JSON Configuration
+
+```json
+{
+  "username": "your_username",
+  "password": "your_password",
+  "main_url": "your_school.smartschool.be",
+  "birth_date": "YYYY-MM-DD"
+}
+```
+
+### Usage Example
+
+```python
+from smartschool import Smartschool, EnvCredentials, PathCredentials
+
+# Using environment variables
+creds = EnvCredentials()
+
+# Or using a config file
+# creds = PathCredentials("credentials.json")
+
+session = Smartschool.start(creds)
+```
 
 ## Contributing?
 To get started (I always use mamba/conda to create an environment)

@@ -42,7 +42,7 @@ def _handle_cookies_and_login(func):
 class Smartschool:
     creds: Credentials = None
 
-    already_logged_on: bool = field(init=False, default=None)
+    already_logged_on: bool = field(init(init=False, default=None)
     _session: Session = field(init=False, default_factory=Session)
 
     def _try_login(self) -> None:
@@ -107,6 +107,7 @@ class Smartschool:
         return json_
 
     def _do_login(self, response: Response) -> Response:
+        """Handle the login process including potential 2FA verification."""
         html = bs4_html(response)
         inputs = get_all_values_from_form(html, 'form[name="login_form"]')
 
@@ -124,7 +125,71 @@ class Smartschool:
 
         assert final == 3, "We're missing something here!"
 
-        return self.post(response.url, data=data)
+        # Submit the login form
+        login_response = self.post(response.url, data=data)
+        
+        # Check if we need to complete 2FA verification (birth date)
+        if self._is_verification_page(login_response):
+            return self._complete_verification(login_response)
+        
+        return login_response
+
+    def _is_verification_page(self, response: Response) -> bool:
+        """Check if the current page is a verification page requiring additional authentication."""
+        html = bs4_html(response)
+        
+        # Look for the verification form
+        verification_form = html.select('form[name="account_verification_form"]')
+        
+        # Also check for specific phrases that appear on the verification page
+        security_question = html.select('div:contains("geboortedatum"), div:contains("date de naissance")')
+        
+        return bool(verification_form) or bool(security_question)
+
+    def _complete_verification(self, response: Response) -> Response:
+        """Complete the verification step by submitting the birth date."""
+        html = bs4_html(response)
+        
+        # Get the verification form fields
+        inputs = get_all_values_from_form(html, 'form[name="account_verification_form"]')
+        
+        if not inputs:
+            # Fall back to finding by ID if name attribute is not present
+            inputs = get_all_values_from_form(html, 'form:has(input#account_verification_form__token)')
+        
+        if not inputs:
+            raise RuntimeError("Could not find verification form fields")
+        
+        # Prepare the verification data
+        verification_data = {}
+        security_question_field = None
+        
+        for input_ in inputs:
+            # The security question field typically contains "_security_question_answer" in its name
+            if "_security_question_answer" in input_["name"]:
+                security_question_field = input_["name"]
+            else:
+                # Copy all other fields with their values
+                verification_data[input_["name"]] = input_["value"]
+        
+        if not security_question_field:
+            raise RuntimeError("Could not find security question field in verification form")
+        
+        # Add the birth date to the verification data
+        if not hasattr(self.creds, 'birth_date') or not self.creds.birth_date:
+            raise RuntimeError("Birth date is required for verification but not provided in credentials")
+        
+        verification_data[security_question_field] = self.creds.birth_date
+        
+        # Submit the verification form
+        verification_url = response.url
+        verification_response = self.post(verification_url, data=verification_data)
+        
+        # Check if verification was successful
+        if self._is_verification_page(verification_response):
+            raise RuntimeError("Verification failed. Check that the birth date is correct and in YYYY-MM-DD format.")
+        
+        return verification_response
 
     @cached_property
     def _url(self) -> str:

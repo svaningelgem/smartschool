@@ -187,26 +187,27 @@ def get_all_values_from_form(html, form_selector):
         if "name" not in attrs:
             continue
 
-        assert tag_name != "select", "Check if this code works. Possible issue with getting the value if the value tag isn't set"
-        inputs.append(
-            {
-                "name": attrs.get("name"),
-                "value": attrs.get("value", ""),
-            }
-        )
-        #     select_options = []
-        #     value = ""
-        #     for select_option in input_tag.find_all("option"):
-        #         option_value = select_option.attrs.get("value")
-        #         if option_value:
-        #             select_options.append(option_value)
-        #             if "selected" in select_option.attrs:
-        #                 value = option_value
-        #     if not value and select_options:
-        #         # if the default is not set, and there are options, take the first option as default
-        #         value = select_options[0]
-        #     # add the select to the inputs list
-        #     inputs.append({"name": attrs.get("name"), "values": select_options, "value": value})
+        if tag_name == "select":
+            select_options = []
+            value = ""
+            for select_option in input_tag.find_all("option"):
+                option_value = select_option.attrs.get("value")
+                if option_value:
+                    select_options.append(option_value)
+                    if "selected" in select_option.attrs:
+                        value = option_value
+            if not value and select_options:
+                # if the default is not set, and there are options, take the first option as default
+                value = select_options[0]
+            # add the select to the inputs list
+            inputs.append({"name": attrs.get("name"), "values": select_options, "value": value})
+        else:
+            inputs.append(
+                {
+                    "name": attrs.get("name"),
+                    "value": attrs.get("value", ""),
+                }
+            )
 
     return inputs
 
