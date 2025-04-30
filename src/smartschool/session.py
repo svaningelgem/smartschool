@@ -47,7 +47,7 @@ class Smartschool:
 
     def _try_login(self) -> None:
         if self.already_logged_on is None:
-            # Created in the last 10 minutes? Assume we're still logged on...
+            # Created in the last  minutes? Assume we're still logged on...
             self.already_logged_on = self.cookie_file.exists() and self.cookie_file.stat().st_mtime > (time.time() - 600)
 
         if self.already_logged_on:
