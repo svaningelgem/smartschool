@@ -23,6 +23,7 @@ bs4 = "*"
 requests = "*"
 pyyaml = "*"
 pydantic = "*"
+logprise = "*"
 
 [tool.poetry.group.dev.dependencies]
 pytest-mock = "*"
