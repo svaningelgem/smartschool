@@ -70,10 +70,13 @@ def _setup_requests_mocker(request, requests_mock) -> None:
 
     requests_mock.register_uri(ANY, ANY, text=text_callback)
 
-    requests_mock.get("/login", text=Path(__file__).parent.joinpath("requests", "get", "login.json").read_text(encoding="utf8"))
-    requests_mock.post("/login", status_code=302, headers={"Location": "/account-verification"})
-    requests_mock.get("/account-verification", text=Path(__file__).parent.joinpath("requests", "get", "account-verification.json").read_text(encoding="utf8"))
-    requests_mock.post("/account-verification", text="ok")
+    login_link: str = "/login"
+    account_verification_link: str = "/account-verification"
+
+    requests_mock.get(login_link, text=Path(__file__).parent.joinpath("requests", "get", "login.json").read_text(encoding="utf8"))
+    requests_mock.post(login_link, status_code=302, headers={"Location": account_verification_link})
+    requests_mock.get(account_verification_link, text=Path(__file__).parent.joinpath("requests", "get", "account-verification.json").read_text(encoding="utf8"))
+    requests_mock.post(account_verification_link, text="ok")
 
 
 @pytest.fixture
