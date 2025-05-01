@@ -59,3 +59,27 @@ def test_path_credentials_empty(monkeypatch, make_empty, tmp_path: Path):
 
     with pytest.raises(RuntimeError, match="Please verify and correct these attribute"):
         PathCredentials(_create_credentials_file(tmp_path)).validate()
+
+
+def test_credentials_exporting_as_dict_with_other_info():
+    sut = EnvCredentials()
+    sut.other_info = {"test": "something"}
+
+    assert sut.as_dict() == {
+        'username': 'bumba',
+        'password': 'delu',
+        'main_url': 'site',
+        'birthday': '1234-56-78',
+        'other_info': {'test': 'something'},
+    }
+
+
+def test_credentials_exporting_as_dict_without_other_info():
+    sut = EnvCredentials()
+
+    assert sut.as_dict() == {
+        'username': 'bumba',
+        'password': 'delu',
+        'main_url': 'site',
+        'birthday': '1234-56-78',
+    }
