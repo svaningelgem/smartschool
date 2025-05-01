@@ -5,11 +5,6 @@ from smartschool import PathCredentials, Results, Smartschool, DownloadError
 from smartschool.common import IsSaved, save, send_email
 from smartschool.objects import Result
 
-session = Smartschool.start(PathCredentials())
-assert 'email_from' in session.creds.other_info
-assert 'email_to' in session.creds.other_info
-
-
 def is_punten_json_the_same(previous: Result, current: Result) -> bool:
     if previous == current:  # No need to dig into it...
         return True
@@ -125,7 +120,7 @@ def build_text(
     return text, email_subject
 
 
-def process_result(result: Result) -> None:
+def process_result(session: Smartschool, result: Result) -> None:
     logger.info("Processing %s", result.name)
 
     assert len(result.courses) == 1, f"Multiple courses? {result.courses}"
@@ -144,8 +139,12 @@ def process_result(result: Result) -> None:
 
 def main():
     try:
-        for result in Results():
-            process_result(result)
+        session = Smartschool(PathCredentials())
+        assert 'email_from' in session.creds.other_info
+        assert 'email_to' in session.creds.other_info
+
+        for result in Results(session):
+            process_result(session, result)
     except DownloadError:
         ...
 

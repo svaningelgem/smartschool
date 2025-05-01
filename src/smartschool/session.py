@@ -38,12 +38,23 @@ def _handle_cookies_and_login(func):
     return inner
 
 
-@dataclass
 class Smartschool:
-    creds: Credentials = None
+    _creds: Credentials = None
 
     already_logged_on: bool = field(init=False, default=None)
     _session: Session = field(init=False, default_factory=Session)
+
+    def __init__(self, creds: Credentials) -> None:
+        self.creds = creds
+
+    @property
+    def creds(self) -> Credentials:
+        return self._creds
+
+    @creds.setter
+    def creds(self, creds: Credentials) -> None:
+        creds.validate()
+        self._creds = creds
 
     def _try_login(self) -> None:
         if self.already_logged_on is None:
@@ -55,18 +66,9 @@ class Smartschool:
 
         self.already_logged_on = True
 
-        resp = session.get("/login")  # This will either log you in, or redirect to the main page. Refreshing the cookies in the meanwhile
+        resp = self.get("/login")  # This will either log you in, or redirect to the main page. Refreshing the cookies in the meanwhile
         if resp.url.endswith("/login"):  # Not redirect >> do log in
-            session._do_login(resp)
-
-    @classmethod
-    def start(cls, creds: Credentials) -> Self:
-        global session
-
-        creds.validate()
-        session.creds = creds
-
-        return session
+            self._do_login(resp)
 
     @property
     def cookie_file(self) -> Path:
@@ -132,6 +134,3 @@ class Smartschool:
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(for: {self.creds.username})"
-
-
-session: Smartschool = Smartschool()
