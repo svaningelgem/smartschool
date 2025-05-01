@@ -1,4 +1,5 @@
 import pytest
+
 from smartschool.session import session
 
 

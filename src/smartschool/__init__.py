@@ -1,10 +1,7 @@
-import logging
-
 from .agenda import SmartschoolHours, SmartschoolLessons, SmartschoolMomentInfos
 from .courses import Courses, TopNavCourses
 from .credentials import EnvCredentials, PathCredentials
 from .exceptions import DownloadError, SmartSchoolException
-from .logger import setup_logger
 from .messages import (
     AdjustMessageLabel,
     Attachments,
@@ -25,34 +22,31 @@ from .session import Smartschool
 from .student_support import StudentSupportLinks
 
 __all__ = [
-    "PathCredentials",
-    "EnvCredentials",
-    "Smartschool",
-    "logger",
-    "Courses",
-    "TopNavCourses",
-    "Results",
-    "Periods",
-    "FutureTasks",
-    "SortField",
-    "SortOrder",
+    "AdjustMessageLabel",
+    "Attachments",
     "BoxType",
+    "Courses",
+    "DownloadError",
+    "EnvCredentials",
+    "FutureTasks",
+    "MarkMessageUnread",
+    "Message",
     "MessageHeaders",
-    "StudentSupportLinks",
+    "MessageLabel",
+    "MessageMoveToArchive",
+    "MessageMoveToTrash",
+    "PathCredentials",
+    "Periods",
+    "ResultDetail",
+    "Results",
+    # Exceptions
+    "SmartSchoolException",
+    "Smartschool",
     "SmartschoolHours",
     "SmartschoolLessons",
     "SmartschoolMomentInfos",
-    "Message",
-    "Attachments",
-    "MarkMessageUnread",
-    "AdjustMessageLabel",
-    "MessageMoveToArchive",
-    "MessageMoveToTrash",
-    "MessageLabel",
-    "ResultDetail",
-    # Exceptions
-    "SmartSchoolException",
-    "DownloadError",
+    "SortField",
+    "SortOrder",
+    "StudentSupportLinks",
+    "TopNavCourses",
 ]
-
-logger = setup_logger(logging.DEBUG)

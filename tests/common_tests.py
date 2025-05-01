@@ -4,9 +4,9 @@ from copy import deepcopy
 from io import StringIO
 from pathlib import Path
 
-import pytest
 from bs4 import BeautifulSoup, FeatureNotFound, GuessedAtParserWarning
-from smartschool.common import IsSaved, as_float, bs4_html, capture_and_email_all_exceptions, make_filesystem_safe, save, send_email, xml_to_dict
+
+from smartschool.common import IsSaved, as_float, bs4_html, make_filesystem_safe, save, send_email, xml_to_dict
 from smartschool.objects import Student
 
 
@@ -102,37 +102,6 @@ def test_as_float():
 
 def test_make_filesystem_safe():
     assert make_filesystem_safe("1 23?34_ab-'\".xml") == "1_23_34_ab-_.xml"
-
-
-def test_capture_and_email_all_exceptions(mocker):
-    send_email = mocker.patch("smartschool.common.send_email")
-
-    @capture_and_email_all_exceptions(email_from="me@myself.ai", email_to="me@myself.ai")
-    def test():
-        raise KeyError
-
-    target = StringIO()
-    with contextlib.redirect_stdout(target), pytest.raises(SystemExit):
-        test()
-
-    send_email.assert_called_once()
-
-
-def test_capture_and_email_all_exceptions_no_exception(mocker):
-    send_email = mocker.patch("smartschool.common.send_email")
-
-    @capture_and_email_all_exceptions(email_from="me@myself.ai", email_to="me@myself.ai")
-    def test():
-        return 42
-
-    target = StringIO()
-    with contextlib.redirect_stdout(target):
-        assert test() == 42
-
-    send_email.assert_not_called()
-
-    assert "[common_tests.test] Start" in target.getvalue()
-    assert "[common_tests.test] Finished" in target.getvalue()
 
 
 def test_bs4_html():

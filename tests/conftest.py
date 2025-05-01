@@ -7,6 +7,7 @@ from urllib.parse import parse_qs, quote_plus
 
 import pytest
 from requests_mock import ANY
+
 from smartschool import EnvCredentials, Smartschool
 
 
@@ -72,7 +73,7 @@ def _setup_requests_mocker(request, requests_mock) -> None:
     requests_mock.post("/login", text="ok")
 
 
-@pytest.fixture()
+@pytest.fixture
 def tmp_path(tmp_path) -> Path:
     original_dir = Path.cwd()
     try:

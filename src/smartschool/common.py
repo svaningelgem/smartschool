@@ -1,15 +1,11 @@
 from __future__ import annotations
 
 import contextlib
-import functools
-import inspect
 import json
 import operator
 import platform
 import re
 import smtplib
-import sys
-import traceback
 import warnings
 import xml.etree.ElementTree as ET
 from email.mime.multipart import MIMEMultipart
@@ -24,14 +20,13 @@ from pydantic.dataclasses import is_pydantic_dataclass
 from requests import Response
 
 __all__ = [
-    "send_email",
-    "capture_and_email_all_exceptions",
-    "save",
     "IsSaved",
+    "as_float",
     "bs4_html",
     "get_all_values_from_form",
     "make_filesystem_safe",
-    "as_float",
+    "save",
+    "send_email",
     "xml_to_dict",
 ]
 
@@ -107,39 +102,6 @@ def send_email(
             to_addrs=email_to,
             msg=message.as_string(),
         )
-
-
-def capture_and_email_all_exceptions(
-    email_from: str | list[str], email_to: str | list[str], subject: str = "[⚠Smartschool parser⚠] Something went wrong"
-) -> Callable:
-    def decorator(func):
-        @functools.wraps(func)
-        def inner(*args, **kwargs):
-            frm = inspect.stack()[1]
-            module_name = Path(frm.filename)
-            function_signature = f"{module_name.stem}.{func.__name__}"
-
-            print(f"[{function_signature}] Start")
-            try:
-                result = func(*args, **kwargs)
-            except Exception as ex:
-                print(f"[{function_signature}] An exception happened: {ex}")
-
-                send_email(
-                    email_to=email_to,
-                    email_from=email_from,
-                    subject=subject,
-                    text="".join(traceback.format_exception(None, ex, ex.__traceback__)),
-                )
-
-                sys.exit(1)
-
-            print(f"[{function_signature}] Finished")
-            return result
-
-        return inner
-
-    return decorator
 
 
 def bs4_html(html: str | bytes | Response) -> BeautifulSoup:

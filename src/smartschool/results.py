@@ -1,11 +1,11 @@
+from collections.abc import Iterator
 from itertools import count
-from typing import Iterator
 
 from .exceptions import DownloadError
 from .objects import Result, ResultWithDetails
 from .session import session
 
-__all__ = ["Results", "ResultDetail"]
+__all__ = ["ResultDetail", "Results"]
 
 
 RESULTS_PER_PAGE = 50

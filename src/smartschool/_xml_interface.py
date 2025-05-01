@@ -3,7 +3,7 @@ from __future__ import annotations
 import contextlib
 from abc import ABC, ABCMeta, abstractmethod
 from datetime import date
-from typing import TYPE_CHECKING, Iterator, TypeVar
+from typing import TYPE_CHECKING, TypeVar
 from xml.etree import ElementTree as ET
 from xml.sax.saxutils import quoteattr
 
@@ -11,6 +11,7 @@ from .common import xml_to_dict
 from .session import session
 
 if TYPE_CHECKING:  # pragma: no cover
+    from collections.abc import Iterator
     from datetime import datetime
 
 _T = TypeVar("_T")

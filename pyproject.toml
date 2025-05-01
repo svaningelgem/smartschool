@@ -49,6 +49,7 @@ requests_mock_case_sensitive = true
 [tool.ruff]
 line-length = 160
 fix = true
+unsafe-fixes = true
 
 [tool.ruff.lint]
 select = [
