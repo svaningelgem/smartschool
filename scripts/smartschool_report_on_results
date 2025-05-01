@@ -58,9 +58,9 @@ def is_punten_json_the_same(previous: Result, current: Result) -> bool:
             if prev != curr:
                 return False
     except Exception as ex:
-        print(f"Exception received: {ex.__class__.__name__} ({ex})")
-        print("Current: ", current)
-        print("Previous: ", previous)
+        logger.error("Current: ", current)
+        logger.error("Previous: ", previous)
+        logger.exception(ex)
         raise
 
     return True

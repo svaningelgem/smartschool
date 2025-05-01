@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Literal
 
 from bs4 import BeautifulSoup, FeatureNotFound, GuessedAtParserWarning
+from logprise import logger
 from pydantic import RootModel
 from pydantic.dataclasses import is_pydantic_dataclass
 from requests import Response
@@ -89,14 +90,14 @@ def send_email(
     message["To"] = ", ".join(email_to)
     message.attach(MIMEText(text, "plain", "utf8"))
 
-    print(f"Sending email >> {subject}")
+    logger.info(f"Sending email >> {subject}")
 
     if platform.system() == "Windows":
-        print("=================== On Linux we would have sent this: ===================")
-        print(f"Subject: {subject}")
-        print("")
-        print(text)
-        print("=========================================================================")
+        logger.info("=================== On Linux we would have sent this: ===================")
+        logger.info(f"Subject: {subject}")
+        logger.info("")
+        logger.info(text)
+        logger.info("=========================================================================")
         return
 
     with smtplib.SMTP("localhost") as server:
