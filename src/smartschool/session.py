@@ -4,7 +4,6 @@ import contextlib
 import functools
 import json
 import time
-from dataclasses import dataclass, field
 from functools import cached_property
 from http.cookiejar import LWPCookieJar
 from pathlib import Path
@@ -13,7 +12,7 @@ from urllib.parse import urljoin
 
 from requests import Session
 
-from .common import bs4_html, get_all_values_from_form
+from .common import fill_form
 
 if TYPE_CHECKING:  # pragma: no cover
     from requests import Response
@@ -28,10 +27,8 @@ def _handle_cookies_and_login(func):
             raise RuntimeError("Please start smartschool first via: `Smartschool.start(PathCredentials())`")
 
         self._try_login()
-
         resp = func(self, *args, **kwargs)
-
-        self._session.cookies.save(ignore_discard=True)
+        self._save_cookies()
 
         return resp
 
@@ -39,13 +36,12 @@ def _handle_cookies_and_login(func):
 
 
 class Smartschool:
-    _creds: Credentials = None
-
-    already_logged_on: bool = field(init=False, default=None)
-    _session: Session = field(init=False, default_factory=Session)
-
-    def __init__(self, creds: Credentials) -> None:
-        self.creds = creds
+    def __init__(self, creds: Credentials | None = None) -> None:
+        self.already_logged_on: bool | None = None
+        self._initialize_session()
+        self._creds: Credentials | None = creds
+        if creds:
+            creds.validate()
 
     @property
     def creds(self) -> Credentials:
@@ -67,14 +63,23 @@ class Smartschool:
         self.already_logged_on = True
 
         resp = self.get("/login")  # This will either log you in, or redirect to the main page. Refreshing the cookies in the meanwhile
-        if resp.url.endswith("/login"):  # Not redirect >> do log in
-            self._do_login(resp)
+        if resp.url.endswith("/login"):
+            resp = self._do_login(resp)
+        if resp.url.endswith("/account-verification"):
+            self._do_login_verification(resp)
+
+    @classmethod
+    def start(cls, creds: Credentials) -> Self:
+        global session
+        session.creds = creds
+        return session
 
     @property
     def cookie_file(self) -> Path:
         return Path.cwd() / "cookies.txt"
 
-    def __post_init__(self):
+    def _initialize_session(self):
+        self._session: Session = Session()
         self._session.headers["User-Agent"] = "unofficial Smartschool API interface"
 
         cookie_jar = LWPCookieJar(self.cookie_file)
@@ -109,24 +114,28 @@ class Smartschool:
         return json_
 
     def _do_login(self, response: Response) -> Response:
-        html = bs4_html(response)
-        inputs = get_all_values_from_form(html, 'form[name="login_form"]')
-
-        final = 0
-        data = {}
-        for input_ in inputs:
-            if "username" in input_["name"]:
-                data[input_["name"]] = self.creds.username
-                final |= 1
-            elif "password" in input_["name"]:
-                data[input_["name"]] = self.creds.password
-                final |= 2
-            else:
-                data[input_["name"]] = input_["value"]
-
-        assert final == 3, "We're missing something here!"
-
+        data = fill_form(
+            response,
+            'form[name="login_form"]',
+            {
+                "username": self.creds.username,
+                "password": self.creds.password,
+            },
+        )
         return self.post(response.url, data=data)
+
+    def _do_login_verification(self, response: Response) -> Response:
+        data = fill_form(
+            response,
+            'form[name="account_verification_form"]',
+            {
+                "security_question_answer": self.creds.birthday,
+            },
+        )
+        return self.post(response.url, data=data)
+
+    def _save_cookies(self) -> None:
+        self._session.cookies.save(ignore_discard=True)
 
     @cached_property
     def _url(self) -> str:
@@ -134,3 +143,6 @@ class Smartschool:
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(for: {self.creds.username})"
+
+
+session = Smartschool()

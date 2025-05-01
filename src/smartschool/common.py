@@ -12,12 +12,15 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from enum import Enum, auto
 from pathlib import Path
-from typing import Any, Callable, Literal
+from typing import TYPE_CHECKING, Any, Callable, Literal
 
 from bs4 import BeautifulSoup, FeatureNotFound, GuessedAtParserWarning
 from pydantic import RootModel
 from pydantic.dataclasses import is_pydantic_dataclass
 from requests import Response
+
+if TYPE_CHECKING:
+    import bs4
 
 __all__ = [
     "IsSaved",
@@ -132,7 +135,7 @@ def bs4_html(html: str | bytes | Response) -> BeautifulSoup:
         return BeautifulSoup(html)
 
 
-def get_all_values_from_form(html, form_selector):
+def get_all_values_from_form(html: bs4.BeautifulSoup, form_selector: str):
     form = html.select(form_selector)
     assert len(form) == 1, f"We should have only 1 form. We got {len(form)}!"
     form = form[0]
@@ -171,6 +174,26 @@ def get_all_values_from_form(html, form_selector):
         #     inputs.append({"name": attrs.get("name"), "values": select_options, "value": value})
 
     return inputs
+
+
+def fill_form(response: Response, form_selector, values: dict[str, str]) -> dict[str, str]:
+    html = bs4_html(response)
+    inputs = get_all_values_from_form(html, form_selector)
+
+    data = {}
+    values = values.copy()
+
+    for input_ in inputs:
+        name = input_["name"]
+        for key, _value in values.items():
+            if key in name:
+                data[name] = values.pop(key)
+                break
+        else:
+            data[name] = input_["value"]
+
+    assert len(values) == 0, f"You didn't use: {sorted(values)}"
+    return data
 
 
 def make_filesystem_safe(name: str) -> str:
