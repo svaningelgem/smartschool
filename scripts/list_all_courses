@@ -1,0 +1,8 @@
+#!/usr/bin/env python
+from logprise import logger
+
+from smartschool import Smartschool, PathCredentials, Courses
+
+Smartschool.start(PathCredentials())
+for course in Courses():
+    logger.info(course.name)

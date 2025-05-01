@@ -1,2 +1,4 @@
+scripts/list_all_courses text eol=lf
+scripts/smartschool_report_on_future_tasks text eol=lf
 scripts/smartschool_report_on_results text eol=lf
 *.py text eol=lf
