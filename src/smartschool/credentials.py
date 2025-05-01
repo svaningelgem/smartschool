@@ -34,6 +34,18 @@ class Credentials(ABC):
         if error:
             raise RuntimeError(f"Please verify and correct these attributes: {error}")
 
+    def as_dict(self) -> dict[str, str | dict]:
+        data: dict = {
+            "username": self.username,
+            "password": self.password,
+            "birthday": self.birthday,
+            "main_url": self.main_url,
+        }
+
+        if self.other_info:
+            data["other_info"] = self.other_info
+
+        return data
 
 @dataclass
 class PathCredentials(Credentials):
@@ -56,5 +68,5 @@ class EnvCredentials(Credentials):
     def __post_init__(self):
         self.username = os.getenv("SMARTSCHOOL_USERNAME")
         self.password = os.getenv("SMARTSCHOOL_PASSWORD")
-        self.password = os.getenv("SMARTSCHOOL_BIRTHDAY")
         self.main_url = os.getenv("SMARTSCHOOL_MAIN_URL")
+        self.birthday = os.getenv("SMARTSCHOOL_BIRTHDAY")

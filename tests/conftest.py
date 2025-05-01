@@ -23,6 +23,7 @@ def _setup_smartschool_for_tests() -> None:
                 monkeypatch.setenv("SMARTSCHOOL_USERNAME", "bumba")
                 monkeypatch.setenv("SMARTSCHOOL_PASSWORD", "delu")
                 monkeypatch.setenv("SMARTSCHOOL_MAIN_URL", "site")
+                monkeypatch.setenv("SMARTSCHOOL_BIRTHDAY", "1234-56-78")
 
                 Smartschool.start(EnvCredentials())
 

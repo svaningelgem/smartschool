@@ -1,38 +1,30 @@
 from pathlib import Path
 
 import pytest
+import yaml
 
 from smartschool import EnvCredentials, PathCredentials
 
 
-@pytest.fixture(autouse=True)
-def _set_default_envvars(monkeypatch):
-    monkeypatch.setenv("SMARTSCHOOL_USERNAME", "user")
-    monkeypatch.setenv("SMARTSCHOOL_PASSWORD", "pass")
-    monkeypatch.setenv("SMARTSCHOOL_MAIN_URL", "site")
+def _create_credentials_file(tmp_path: Path):
+    file = tmp_path.joinpath("creds.yml")
 
-
-def _create_credentials_file(user: str = "", pass_: str = "", url: str = ""):
-    file = Path("credentials.yml")
-
-    file.write_text(
-        f"""
-        username: {user}
-        password: {pass_}
-        main_url: {url}
-    """
-    )
+    with file.open(mode="w", encoding="utf8") as fp:
+        yaml.dump(EnvCredentials().as_dict(), fp)
 
     return file
 
 
 def test_env_credentials():
+    # This information comes from conftest.py:"_setup_smartschool_for_tests"
+
     sut = EnvCredentials()
     sut.validate()
 
-    assert sut.username == "user"
-    assert sut.password == "pass"
+    assert sut.username == "bumba"
+    assert sut.password == "delu"
     assert sut.main_url == "site"
+    assert sut.birthday == "1234-56-78"
 
 
 @pytest.mark.parametrize("make_empty", ["SMARTSCHOOL_USERNAME", "SMARTSCHOOL_PASSWORD", "SMARTSCHOOL_MAIN_URL"])
@@ -43,23 +35,22 @@ def test_env_credentials_empty(monkeypatch, make_empty):
         EnvCredentials().validate()
 
 
-def test_path_credentials():
-    args = {
-        "user": "user",
-        "pass_": "pass",
-        "url": "site",
-    }
-    sut = PathCredentials(_create_credentials_file(**args))
+def test_path_credentials(tmp_path: Path):
+    sut = PathCredentials(_create_credentials_file(tmp_path))
     sut.validate()
 
-    assert sut.username == "user"
-    assert sut.password == "pass"
+    assert sut.username == "bumba"
+    assert sut.password == "delu"
     assert sut.main_url == "site"
+    assert sut.birthday == "1234-56-78"
 
 
-@pytest.mark.parametrize("make_empty", ["user", "pass_", "url"])
-def test_path_credentials_empty(monkeypatch, make_empty):
-    args = {"user": "user", "pass_": "pass", "url": "site", make_empty: ""}
+@pytest.mark.parametrize("make_empty", ["USERNAME",
+                                        "PASSWORD",
+                                        "MAIN_URL",
+                                        "BIRTHDAY",])
+def test_path_credentials_empty(monkeypatch, make_empty, tmp_path: Path):
+    monkeypatch.setenv(f"SMARTSCHOOL_{make_empty}", "")
 
     with pytest.raises(RuntimeError, match="Please verify and correct these attribute"):
-        PathCredentials(_create_credentials_file(**args)).validate()
+        PathCredentials(_create_credentials_file(tmp_path)).validate()

@@ -4,7 +4,7 @@ from smartschool.session import session
 
 
 def test_smartschool_not_started_yet(mocker):
-    mocker.patch.object(session, "creds", new=None)
+    mocker.patch.object(session, "_creds", new=None)
 
     with pytest.raises(RuntimeError, match="Please start smartschool first via"):
         session.get("/")
