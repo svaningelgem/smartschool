@@ -1,5 +1,6 @@
 import pytest
 from requests_mock import ANY
+
 from smartschool import DownloadError, ResultDetail, Results
 
 

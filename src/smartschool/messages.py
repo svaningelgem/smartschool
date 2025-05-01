@@ -2,25 +2,28 @@ from __future__ import annotations
 
 from abc import ABC
 from enum import Enum
-from typing import Iterator
+from typing import TYPE_CHECKING
 from urllib.parse import quote_plus
 
 from ._xml_interface import SmartschoolXML, SmartschoolXML_NoCache
 from .objects import Attachment, FullMessage, MessageChanged, MessageDeletionStatus, ShortMessage
 from .session import session
 
+if TYPE_CHECKING:
+    from collections.abc import Iterator
+
 __all__ = [
-    "SortField",
-    "SortOrder",
-    "BoxType",
-    "MessageHeaders",
-    "Message",
-    "Attachments",
-    "MarkMessageUnread",
     "AdjustMessageLabel",
+    "Attachments",
+    "BoxType",
+    "MarkMessageUnread",
+    "Message",
+    "MessageHeaders",
+    "MessageLabel",
     "MessageMoveToArchive",
     "MessageMoveToTrash",
-    "MessageLabel",
+    "SortField",
+    "SortOrder",
 ]
 
 

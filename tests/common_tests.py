@@ -4,9 +4,10 @@ from copy import deepcopy
 from io import StringIO
 from pathlib import Path
 
-import pytest
+import pytest_mock
 from bs4 import BeautifulSoup, FeatureNotFound, GuessedAtParserWarning
-from smartschool.common import IsSaved, as_float, bs4_html, capture_and_email_all_exceptions, make_filesystem_safe, save, send_email, xml_to_dict
+
+from smartschool.common import IsSaved, as_float, bs4_html, fill_form, make_filesystem_safe, save, send_email, xml_to_dict
 from smartschool.objects import Student
 
 
@@ -104,37 +105,6 @@ def test_make_filesystem_safe():
     assert make_filesystem_safe("1 23?34_ab-'\".xml") == "1_23_34_ab-_.xml"
 
 
-def test_capture_and_email_all_exceptions(mocker):
-    send_email = mocker.patch("smartschool.common.send_email")
-
-    @capture_and_email_all_exceptions(email_from="me@myself.ai", email_to="me@myself.ai")
-    def test():
-        raise KeyError
-
-    target = StringIO()
-    with contextlib.redirect_stdout(target), pytest.raises(SystemExit):
-        test()
-
-    send_email.assert_called_once()
-
-
-def test_capture_and_email_all_exceptions_no_exception(mocker):
-    send_email = mocker.patch("smartschool.common.send_email")
-
-    @capture_and_email_all_exceptions(email_from="me@myself.ai", email_to="me@myself.ai")
-    def test():
-        return 42
-
-    target = StringIO()
-    with contextlib.redirect_stdout(target):
-        assert test() == 42
-
-    send_email.assert_not_called()
-
-    assert "[common_tests.test] Start" in target.getvalue()
-    assert "[common_tests.test] Finished" in target.getvalue()
-
-
 def test_bs4_html():
     sut = bs4_html("<html />")
 
@@ -150,3 +120,31 @@ def test_bs4_html_no_good_options(mocker):
 
     sut = bs4_html("<html />")
     assert isinstance(sut, BeautifulSoup)
+
+
+def test_fill_form(mocker: pytest_mock.MockerFixture):
+    # Create sample HTML content with a form
+    html_content = """
+    <form>
+        <input name="username" value="default_user">
+        <input name="password" value="default_pass">
+        <input name="email" value="default_email">
+    </form>
+    """
+    html = BeautifulSoup(html_content, "html.parser")
+
+    # Mock bs4_html to return our test HTML
+    mocker.patch("smartschool.common.bs4_html", return_value=html)
+
+    # Create mock Response object
+    response = mocker.Mock()
+    response.text = str(html)
+
+    # Define values to fill
+    values = {"username": "test_user", "email": "test@example.com"}
+
+    # Call the function
+    result = fill_form(response, "form", values)
+
+    # Assert the result matches expectations
+    assert result == {"username": "test_user", "password": "default_pass", "email": "test@example.com"}

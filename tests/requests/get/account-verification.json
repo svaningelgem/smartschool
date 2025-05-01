@@ -1,0 +1,169 @@
+
+
+<!DOCTYPE html>
+<!--
+  ___ __  __   _   ___ _____ ___  ___ _  _  ___   ___  _
+ / __|  \/  | /_\ | _ \_   _/ __|/ __| || |/ _ \ / _ \| |
+ \__ \ |\/| |/ _ \|   / | | \__ \ (__| __ | (_) | (_) | |__
+ |___/_|  |_/_/ \_\_|_\ |_| |___/\___|_||_|\___/ \___/|____|
+
+Did you know you can get paid to read other people's code?
+
+We're looking for PHP developers.
+Join us: https://www.smartschool.be/jobs
+-->
+<html>
+    <head>
+                    <title>Paridaensinstituut - Smartschool</title>
+            <meta charset="utf-8">
+            <meta http-equiv="x-ua-compatible" content="ie=edge">
+                            <link rel="icon" href="https://static4.smart-school.net/smsc/svg/favicon/favicon.svg">
+                <link rel="mask-icon" href="https://static6.smart-school.net/smsc/svg/favicon/mask-icon.svg" color="#ff520e">
+                <link rel="apple-touch-icon" href="https://static6.smart-school.net/smsc/img/favicon/apple-touch-icon.png">
+                <link rel="manifest" href="/manifest.json">
+                                            <meta name="viewport" content="width=device-width, initial-scale=1">
+                    
+                
+        <!-- jQuery & jQueryUI -->
+                    <script type="text/javascript" src="https://static2.smart-school.net/smsc/resources/jquery/3.7.1/jquery.min.rev-b45000df9c.js"></script>
+    
+                    <script type="text/javascript" src="https://static4.smart-school.net/smsc/resources/jqueryui/1.14.1/jquery-ui.min.rev-14ab40f62a.js"></script>
+    
+                    <link href="https://static2.smart-school.net/smsc/resources/jqueryui/1.14.1/jquery-ui.min.rev-2ab22dc27c.css" rel="stylesheet" />
+    
+
+        
+                        <link href="https://static2.smart-school.net/production/Authentication/login/main-built.rev-5aabeb0fcc.css" rel="stylesheet" />
+    
+                <!-- TinyMCE HEAD -->
+                                    <!-- javascriptContent HEAD -->
+            <script type="text/javascript">
+        if(!window.SMSC) window.SMSC = {};
+        if(!window.SMSC.languagehash) window.SMSC.languageHash = {};
+
+                    window.SMSC.languageHash['general_legacy'] = {
+                'nl': { 
+                    'version': '57721f4647'
+                },
+                'fr': { 
+                    'version': '1aeafb2883' 
+                },
+            };
+                    window.SMSC.languageHash['general_buttons'] = {
+                'nl': { 
+                    'version': '7abdc48f11'
+                },
+                'fr': { 
+                    'version': 'a4d55886c3' 
+                },
+            };
+                    window.SMSC.languageHash['component_period'] = {
+                'nl': { 
+                    'version': 'fac1701aaf'
+                },
+                'fr': { 
+                    'version': 'd2452b87a2' 
+                },
+            };
+                    window.SMSC.languageHash['component_dialog'] = {
+                'nl': { 
+                    'version': '93217f21a5'
+                },
+                'fr': { 
+                    'version': '6103450d6b' 
+                },
+            };
+                    window.SMSC.languageHash['component_router'] = {
+                'nl': { 
+                    'version': '1b293acd0f'
+                },
+                'fr': { 
+                    'version': '9f669c0a38' 
+                },
+            };
+                    window.SMSC.languageHash['component_sidebar'] = {
+                'nl': { 
+                    'version': 'e7148be298'
+                },
+                'fr': { 
+                    'version': 'd35aaf2b67' 
+                },
+            };
+            </script>
+
+        <!-- javascriptURL HEAD -->
+                        
+                <!-- javascriptContent HEAD -->
+                        
+                    </head>
+    <body class=" modern-ui modern-ui--larger-font">
+        		<div id="smscMain" class="smscMain showLeftNav" tabindex="-1">
+			        <div class="login-app">
+        <div class="login-app__container">
+            <div class="login-app__left">
+                	
+<div class="js-hero-image hero-image">
+    <picture>
+		        <source type="image/jpeg" srcset="/asset/view/5785c822-375e-411b-9808-7ff6c73b9059/04-03_lente_default.jpg">
+			        		<img loading="lazy" data-image="/asset/view/5785c822-375e-411b-9808-7ff6c73b9059/04-03_lente_default.jpg"/>
+					    </picture>
+
+	</div>
+
+
+            </div>
+
+            <div class="login-app__right">
+                <div class="login-app__top">
+                    <div class="login-app__platform-indicator"></div>
+                                            <a href="http://www.paridaens.be" target="_blank" class="login-app__school-logo" style='background-image: url(/logo)'></a>
+                                        <div class="login-app__form">
+                        <form class="form" name="account_verification_form" method="post">
+                        <div>
+                            
+                                                            <div style="font-weight: bold; margin-bottom: 8px;">
+                                                                                                                Wat is <mark background-color: #FFD5CE; color: #4D251F; padding: 1px 2px;>de geboortedatum van het kind</mark> waarvoor je wilt aanmelden?
+                                                                    </div>
+                                <div class="float-label"><input type="date" id="account_verification_form__security_question_answer" name="account_verification_form[_security_question_answer]" required="required" placeholder="bv. 2003-04-28" class="float-label__input"  /></div>
+                                                    </div>
+                                                <button class="smscButton blue login-app__button--top-margin" type="submit">
+                            Doorgaan
+                        </button>
+                        <input type="hidden" id="account_verification_form__token" name="account_verification_form[_token]" class="float-label__input"  value="some_token" /></form>
+
+                        <a href="/logout" class="login-app__linkbutton login-app__linkbutton--back">
+                            Terug naar aanmelden
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+		</div>
+                                    
+        <!-- javascript variables -->
+        <script type="text/javascript">var SMSC = SMSC || {};</script>
+                                            <script type="text/javascript">$.extend(true, SMSC, JSON.parse('null'));</script>
+
+            <script type="text/javascript">$.extend(true, SMSC, JSON.parse('\u007B\u0022quickSearch\u0022\u003A\u007B\u0022quicksearch.search_placeholder\u0022\u003A\u0022Zoeken...\u0022,\u0022quicksearch.search_option_own\u002Dplatform\u002Donly\u0022\u003A\u0022Enkel\u0020in\u0020eigen\u0020platform\u0020zoeken\u0022,\u0022quicksearch.search_option_include\u002Ddeleted\u0022\u003A\u0022Ook\u0020\u003Cspan\u0020style\u003D\\\u0022color\u003A\u0023E30000\u003B\u0020font\u002Dweight\u003A\u0020bold\u003B\\\u0022\u003Everwijderde\u003C\\\/span\u003E\u0020gebruikers\u0020tonen\u0022,\u0022quicksearch.default_deleted_string\u0022\u003A\u0022verwijderd\u0022,\u0022quicksearch.search_not_found\u0022\u003A\u0022We\u0020hebben\u0020__SEARCHSTRING__\u0020niet\u0020gevonden.\u0020Probeer\u0020een\u0020andere\u0020zoekterm.\u0022,\u0022quicksearch.search_subtitle_suggestions\u0022\u003A\u0022Suggesties\u0022,\u0022quicksearch.currentUser\u0022\u003A\u0022Aangemelde\u0020gebruiker\u0022,\u0022quicksearch.me\u0022\u003A\u0022Mezelf\u0022,\u0022quicksearch.all_students\u0022\u003A\u0022Alle\u0020leerlingen\u0022,\u0022planner.user_role.1\u0022\u003A\u0022Alle\u0020leerlingen\u0022,\u0022quicksearch.unassigned\u0022\u003A\u0022Niemand\u0022,\u0022quicksearch.search_subtitle_favourites\u0022\u003A\u0022Favorieten\u0022,\u0022quicksearch.mark_as_favourite\u0022\u003A\u0022Toevoegen\u0020aan\u0020favorieten\u0022,\u0022quicksearch.discard_as_favourite\u0022\u003A\u0022Verwijderen\u0020uit\u0020favorieten\u0022,\u0022quicksearch.co_account_type_\u002D1\u0022\u003A\u0022hoofdaccounts\u0022,\u0022quicksearch.co_account_type_\u002D2\u0022\u003A\u0022alle\u0020co\u002Daccounts\u0022,\u0022property.co\u002Daccount\u002Dtype.main\u0022\u003A\u0022Hoofdaccounts\u0022,\u0022bubble_coaccountfilter_title\u0022\u003A\u0022Specifieke\u0020accounttypes\u0020voor\u0020deze\u0020groep\\\/klas\u0020selecteren\u0022,\u0022bubble_coaccountfilter_tokeninput_emptystate\u0022\u003A\u0022Zoek\u0020naar\u0020accounttypes\u0022,\u0022bubble_coaccountfilter_quickfilter_title\u0022\u003A\u0022Snelle\u0020filters\u0022,\u0022quicksearch_clear_selection\u0022\u003A\u0022Selectie\u0020verwijderen\u0022,\u0022\u0025quick\u002Dsearch.co\u002Daccount\u002Dfilter.main\u002Daccounts\u0025\u0022\u003A\u0022Hoofdaccounts\u0022,\u0022\u0025quick\u002Dsearch.co\u002Daccount\u002Dfilter.all\u002Dco\u002Daccounts\u0025\u0022\u003A\u0022alle\u0020Co\u002Daccounts\u0022,\u0022\u0025quick\u002Dsearch.co\u002Daccount\u002Dfilter.non\u002Dprofessional\u002Dco\u002Daccounts\u0025\u0022\u003A\u0022Familie\u0022\u007D,\u0022vars\u0022\u003A\u007B\u0022locale\u0022\u003A\u0022nl\u0022,\u0022userPictureDomain\u0022\u003A\u0022https\u003A\\\/\\\/userpicture20.smartschool.be\u0022,\u0022currentUser\u0022\u003A\u007B\u0022userIdentifier\u0022\u003A\u002249_10880_2\u0022,\u0022userPictureHash\u0022\u003A\u002249_5dc5902b\u002D050d\u002D461f\u002D9c4d\u002Db24a5e67627e\u0022,\u0022userPictureUrl\u0022\u003A\u0022https\u003A\\\/\\\/userpicture20.smartschool.be\\\/User\\\/Userimage\\\/hashimage\\\/hash\\\/49_5dc5902b\u002D050d\u002D461f\u002D9c4d\u002Db24a5e67627e\\\/plain\\\/1\\\/res\\\/128\u0022,\u0022name\u0022\u003A\u0022Steven\u0020Van\u0020Ingelgem\u0022,\u0022nameReverse\u0022\u003A\u0022Van\u0020Ingelgem\u0020Steven\u0022,\u0022description\u0022\u003A\u0022Vader\u0020van\u0020Alex\u0020Van\u0020Ingelgem\u0022,\u0022descriptionReverse\u0022\u003A\u0022Vader\u0020van\u0020Van\u0020Ingelgem\u0020Alex\u0022\u007D,\u0022authenticatedUser\u0022\u003A\u007B\u0022id\u0022\u003A\u002249_10880_2\u0022,\u0022pictureHash\u0022\u003A\u002249_5dc5902b\u002D050d\u002D461f\u002D9c4d\u002Db24a5e67627e\u0022,\u0022pictureUrl\u0022\u003A\u0022https\u003A\\\/\\\/userpicture20.smartschool.be\\\/User\\\/Userimage\\\/hashimage\\\/hash\\\/49_5dc5902b\u002D050d\u002D461f\u002D9c4d\u002Db24a5e67627e\\\/plain\\\/1\\\/res\\\/128\u0022,\u0022description\u0022\u003A\u007B\u0022startingWithFirstName\u0022\u003A\u0022Vader\u0020van\u0020Alex\u0020Van\u0020Ingelgem\u0022,\u0022startingWithLastName\u0022\u003A\u0022Vader\u0020van\u0020Van\u0020Ingelgem\u0020Alex\u0022\u007D,\u0022name\u0022\u003A\u007B\u0022startingWithFirstName\u0022\u003A\u0022Steven\u0020Van\u0020Ingelgem\u0022,\u0022startingWithLastName\u0022\u003A\u0022Van\u0020Ingelgem\u0020Steven\u0022\u007D,\u0022sort\u0022\u003A\u0022vaningelgem\u002Dalex\u0022,\u0022deleted\u0022\u003Afalse\u007D,\u0022tinyMCEVersion\u0022\u003A\u00226.8.5\u0022,\u0022ssID\u0022\u003A49\u007D\u007D'));</script>
+
+            <script type="text/javascript">$.extend(true, SMSC, JSON.parse('\u007B\u0022wopiConfig\u0022\u003A\u007B\u0022wopiActions\u0022\u003A\u007B\u0022pdf\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Pdf\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/mime_pdf\\\/mime_pdf_16x16.png\u0022\u007D\u007D,\u0022csv\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Excel\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Excel\u002Dcolor\\\/Excel\u002Dcolor_16x16.png\u0022\u007D,\u0022convert\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Excel\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Excel\u002Dcolor\\\/Excel\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022ods\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Excel\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Excel\u002Dcolor\\\/Excel\u002Dcolor_16x16.png\u0022\u007D,\u0022edit\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Excel\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Excel\u002Dcolor\\\/Excel\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022xls\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Excel\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Excel\u002Dcolor\\\/Excel\u002Dcolor_16x16.png\u0022\u007D,\u0022convert\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Excel\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Excel\u002Dcolor\\\/Excel\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022xlsb\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Excel\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Excel\u002Dcolor\\\/Excel\u002Dcolor_16x16.png\u0022\u007D,\u0022edit\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Excel\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Excel\u002Dcolor\\\/Excel\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022xlsm\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Excel\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Excel\u002Dcolor\\\/Excel\u002Dcolor_16x16.png\u0022\u007D,\u0022edit\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Excel\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Excel\u002Dcolor\\\/Excel\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022xlsx\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Excel\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Excel\u002Dcolor\\\/Excel\u002Dcolor_16x16.png\u0022\u007D,\u0022edit\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Excel\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Excel\u002Dcolor\\\/Excel\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022odp\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022PowerPoint\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/PowerPoint\u002Dcolor\\\/PowerPoint\u002Dcolor_16x16.png\u0022\u007D,\u0022edit\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022PowerPoint\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/PowerPoint\u002Dcolor\\\/PowerPoint\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022pot\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022PowerPoint\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/PowerPoint\u002Dcolor\\\/PowerPoint\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022potm\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022PowerPoint\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/PowerPoint\u002Dcolor\\\/PowerPoint\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022potx\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022PowerPoint\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/PowerPoint\u002Dcolor\\\/PowerPoint\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022pps\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022PowerPoint\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/PowerPoint\u002Dcolor\\\/PowerPoint\u002Dcolor_16x16.png\u0022\u007D,\u0022convert\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022PowerPoint\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/PowerPoint\u002Dcolor\\\/PowerPoint\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022ppsm\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022PowerPoint\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/PowerPoint\u002Dcolor\\\/PowerPoint\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022ppsx\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022PowerPoint\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/PowerPoint\u002Dcolor\\\/PowerPoint\u002Dcolor_16x16.png\u0022\u007D,\u0022edit\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022PowerPoint\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/PowerPoint\u002Dcolor\\\/PowerPoint\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022ppt\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022PowerPoint\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/PowerPoint\u002Dcolor\\\/PowerPoint\u002Dcolor_16x16.png\u0022\u007D,\u0022convert\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022PowerPoint\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/PowerPoint\u002Dcolor\\\/PowerPoint\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022pptm\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022PowerPoint\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/PowerPoint\u002Dcolor\\\/PowerPoint\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022pptx\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022PowerPoint\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/PowerPoint\u002Dcolor\\\/PowerPoint\u002Dcolor_16x16.png\u0022\u007D,\u0022edit\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022PowerPoint\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/PowerPoint\u002Dcolor\\\/PowerPoint\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022vdw\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Visio\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Visio\u002Dcolor\\\/Visio\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022vsd\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Visio\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Visio\u002Dcolor\\\/Visio\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022vsdm\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Visio\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Visio\u002Dcolor\\\/Visio\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022vsdx\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Visio\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Visio\u002Dcolor\\\/Visio\u002Dcolor_16x16.png\u0022\u007D,\u0022edit\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Visio\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Visio\u002Dcolor\\\/Visio\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022wopitest\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022WopiTest\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/WopiTest\u002Dcolor\\\/WopiTest\u002Dcolor_16x16.png\u0022\u007D,\u0022edit\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022WopiTest\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/WopiTest\u002Dcolor\\\/WopiTest\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022wopitestx\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022WopiTest\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/WopiTest\u002Dcolor\\\/WopiTest\u002Dcolor_16x16.png\u0022\u007D,\u0022edit\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022WopiTest\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/WopiTest\u002Dcolor\\\/WopiTest\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022doc\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Word\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Word\u002Dcolor\\\/Word\u002Dcolor_16x16.png\u0022\u007D,\u0022convert\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Word\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Word\u002Dcolor\\\/Word\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022docm\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Word\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Word\u002Dcolor\\\/Word\u002Dcolor_16x16.png\u0022\u007D,\u0022edit\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Word\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Word\u002Dcolor\\\/Word\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022docx\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Word\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Word\u002Dcolor\\\/Word\u002Dcolor_16x16.png\u0022\u007D,\u0022edit\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Word\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Word\u002Dcolor\\\/Word\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022dot\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Word\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Word\u002Dcolor\\\/Word\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022dotm\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Word\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Word\u002Dcolor\\\/Word\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022dotx\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Word\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Word\u002Dcolor\\\/Word\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022odt\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Word\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Word\u002Dcolor\\\/Word\u002Dcolor_16x16.png\u0022\u007D,\u0022edit\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Word\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Word\u002Dcolor\\\/Word\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022rtf\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Word\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Word\u002Dcolor\\\/Word\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022b\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022WordPrague\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/WordPrague\u002Dcolor\\\/WordPrague\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022fluid\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022WordPrague\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/WordPrague\u002Dcolor\\\/WordPrague\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022note\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022WordPrague\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/WordPrague\u002Dcolor\\\/WordPrague\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022whiteboard\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022WordPrague\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/WordPrague\u002Dcolor\\\/WordPrague\u002Dcolor_16x16.png\u0022\u007D\u007D\u007D,\u0022allowCreate\u0022\u003Atrue\u007D\u007D'));</script>
+
+
+          
+        <!-- javascriptContent Body  -->
+                                
+                        <!-- Javascript_Body_Urls -->
+                        
+                <!-- Javascript_requirejs_Urls -->
+                        
+        		<!-- Javascript_legacy_stealjs_Urls -->
+                        
+                
+        <!-- Javascript_symfony -->
+                            <script type="text/javascript" src="https://static4.smart-school.net/production/Authentication/login/main-built.rev-0a072143cd.js"></script>
+    
+                    
+
+            </body>
+</html>

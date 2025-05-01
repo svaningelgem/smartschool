@@ -23,6 +23,7 @@ bs4 = "*"
 requests = "*"
 pyyaml = "*"
 pydantic = "*"
+logprise = "*"
 
 [tool.poetry.group.dev.dependencies]
 pytest-mock = "*"
@@ -34,6 +35,20 @@ ruff = "*"
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
+
+[tool.coverage.report]
+exclude_also = [
+    'def __repr__',
+    'if self.debug:',
+    'if settings.DEBUG',
+    'raise AssertionError',
+    'raise NotImplementedError',
+    'if 0:',
+    'if __name__ == .__main__.:',
+    'if TYPE_CHECKING:',
+    'class .*\bProtocol\):',
+    '@(abc\.)?abstractmethod',
+]
 
 [tool.pytest.ini_options]
 testpaths = [
@@ -48,6 +63,7 @@ requests_mock_case_sensitive = true
 [tool.ruff]
 line-length = 160
 fix = true
+unsafe-fixes = true
 
 [tool.ruff.lint]
 select = [

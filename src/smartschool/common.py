@@ -1,37 +1,35 @@
 from __future__ import annotations
 
 import contextlib
-import functools
-import inspect
 import json
 import operator
 import platform
 import re
 import smtplib
-import sys
-import traceback
 import warnings
 import xml.etree.ElementTree as ET
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from enum import Enum, auto
 from pathlib import Path
-from typing import Any, Callable, Literal
+from typing import TYPE_CHECKING, Any, Callable, Literal
 
 from bs4 import BeautifulSoup, FeatureNotFound, GuessedAtParserWarning
 from pydantic import RootModel
 from pydantic.dataclasses import is_pydantic_dataclass
 from requests import Response
 
+if TYPE_CHECKING:
+    import bs4
+
 __all__ = [
-    "send_email",
-    "capture_and_email_all_exceptions",
-    "save",
     "IsSaved",
+    "as_float",
     "bs4_html",
     "get_all_values_from_form",
     "make_filesystem_safe",
-    "as_float",
+    "save",
+    "send_email",
     "xml_to_dict",
 ]
 
@@ -109,39 +107,6 @@ def send_email(
         )
 
 
-def capture_and_email_all_exceptions(
-    email_from: str | list[str], email_to: str | list[str], subject: str = "[⚠Smartschool parser⚠] Something went wrong"
-) -> Callable:
-    def decorator(func):
-        @functools.wraps(func)
-        def inner(*args, **kwargs):
-            frm = inspect.stack()[1]
-            module_name = Path(frm.filename)
-            function_signature = f"{module_name.stem}.{func.__name__}"
-
-            print(f"[{function_signature}] Start")
-            try:
-                result = func(*args, **kwargs)
-            except Exception as ex:
-                print(f"[{function_signature}] An exception happened: {ex}")
-
-                send_email(
-                    email_to=email_to,
-                    email_from=email_from,
-                    subject=subject,
-                    text="".join(traceback.format_exception(None, ex, ex.__traceback__)),
-                )
-
-                sys.exit(1)
-
-            print(f"[{function_signature}] Finished")
-            return result
-
-        return inner
-
-    return decorator
-
-
 def bs4_html(html: str | bytes | Response) -> BeautifulSoup:
     global _used_bs4_option
 
@@ -170,7 +135,7 @@ def bs4_html(html: str | bytes | Response) -> BeautifulSoup:
         return BeautifulSoup(html)
 
 
-def get_all_values_from_form(html, form_selector):
+def get_all_values_from_form(html: bs4.BeautifulSoup, form_selector: str):
     form = html.select(form_selector)
     assert len(form) == 1, f"We should have only 1 form. We got {len(form)}!"
     form = form[0]
@@ -209,6 +174,26 @@ def get_all_values_from_form(html, form_selector):
         #     inputs.append({"name": attrs.get("name"), "values": select_options, "value": value})
 
     return inputs
+
+
+def fill_form(response: Response, form_selector, values: dict[str, str]) -> dict[str, str]:
+    html = bs4_html(response)
+    inputs = get_all_values_from_form(html, form_selector)
+
+    data = {}
+    values = values.copy()
+
+    for input_ in inputs:
+        name = input_["name"]
+        for key, _value in values.items():
+            if key in name:
+                data[name] = values.pop(key)
+                break
+        else:
+            data[name] = input_["value"]
+
+    assert len(values) == 0, f"You didn't use: {sorted(values)}"
+    return data
 
 
 def make_filesystem_safe(name: str) -> str:

@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 from functools import cached_property
-from typing import Iterator
+from typing import TYPE_CHECKING
 
 from .objects import Course, CourseCondensed
 from .session import session
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
 
 __all__ = ["Courses", "TopNavCourses"]
 

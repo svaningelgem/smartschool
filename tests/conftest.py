@@ -7,6 +7,7 @@ from urllib.parse import parse_qs, quote_plus
 
 import pytest
 from requests_mock import ANY
+
 from smartschool import EnvCredentials, Smartschool
 
 
@@ -22,6 +23,7 @@ def _setup_smartschool_for_tests() -> None:
                 monkeypatch.setenv("SMARTSCHOOL_USERNAME", "bumba")
                 monkeypatch.setenv("SMARTSCHOOL_PASSWORD", "delu")
                 monkeypatch.setenv("SMARTSCHOOL_MAIN_URL", "site")
+                monkeypatch.setenv("SMARTSCHOOL_BIRTHDAY", "1234-56-78")
 
                 Smartschool.start(EnvCredentials())
 
@@ -68,11 +70,16 @@ def _setup_requests_mocker(request, requests_mock) -> None:
 
     requests_mock.register_uri(ANY, ANY, text=text_callback)
 
-    requests_mock.get("/login", text=Path(__file__).parent.joinpath("requests", "get", "login.json").read_text(encoding="utf8"))
-    requests_mock.post("/login", text="ok")
+    login_link: str = "/login"
+    account_verification_link: str = "/account-verification"
+
+    requests_mock.get(login_link, text=Path(__file__).parent.joinpath("requests", "get", "login.json").read_text(encoding="utf8"))
+    requests_mock.post(login_link, status_code=302, headers={"Location": account_verification_link})
+    requests_mock.get(account_verification_link, text=Path(__file__).parent.joinpath("requests", "get", "account-verification.json").read_text(encoding="utf8"))
+    requests_mock.post(account_verification_link, text="ok")
 
 
-@pytest.fixture()
+@pytest.fixture
 def tmp_path(tmp_path) -> Path:
     original_dir = Path.cwd()
     try:
