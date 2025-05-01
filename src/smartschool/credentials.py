@@ -47,6 +47,7 @@ class Credentials(ABC):
 
         return data
 
+
 @dataclass
 class PathCredentials(Credentials):
     filename: str | Path = field(default=Path.cwd().joinpath("credentials.yml"))

@@ -1,5 +1,6 @@
 import pytest
 
+from smartschool import EnvCredentials, Smartschool
 from smartschool.session import session
 
 
@@ -23,3 +24,11 @@ def test_smartschool_already_logged_on(mocker, requests_mock):
 
 def test_smartschool_repr():
     assert repr(session) == "Smartschool(for: bumba)"
+
+
+def test_smartschool_without_params():
+    assert Smartschool().creds is None
+
+
+def test_smartschool_with_credentials():
+    assert Smartschool(EnvCredentials()).creds is not None

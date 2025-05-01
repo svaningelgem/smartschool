@@ -45,10 +45,15 @@ def test_path_credentials(tmp_path: Path):
     assert sut.birthday == "1234-56-78"
 
 
-@pytest.mark.parametrize("make_empty", ["USERNAME",
-                                        "PASSWORD",
-                                        "MAIN_URL",
-                                        "BIRTHDAY",])
+@pytest.mark.parametrize(
+    "make_empty",
+    [
+        "USERNAME",
+        "PASSWORD",
+        "MAIN_URL",
+        "BIRTHDAY",
+    ],
+)
 def test_path_credentials_empty(monkeypatch, make_empty, tmp_path: Path):
     monkeypatch.setenv(f"SMARTSCHOOL_{make_empty}", "")
 

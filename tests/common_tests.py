@@ -4,9 +4,10 @@ from copy import deepcopy
 from io import StringIO
 from pathlib import Path
 
+import pytest_mock
 from bs4 import BeautifulSoup, FeatureNotFound, GuessedAtParserWarning
 
-from smartschool.common import IsSaved, as_float, bs4_html, make_filesystem_safe, save, send_email, xml_to_dict
+from smartschool.common import IsSaved, as_float, bs4_html, fill_form, make_filesystem_safe, save, send_email, xml_to_dict
 from smartschool.objects import Student
 
 
@@ -119,3 +120,31 @@ def test_bs4_html_no_good_options(mocker):
 
     sut = bs4_html("<html />")
     assert isinstance(sut, BeautifulSoup)
+
+
+def test_fill_form(mocker: pytest_mock.MockerFixture):
+    # Create sample HTML content with a form
+    html_content = """
+    <form>
+        <input name="username" value="default_user">
+        <input name="password" value="default_pass">
+        <input name="email" value="default_email">
+    </form>
+    """
+    html = BeautifulSoup(html_content, "html.parser")
+
+    # Mock bs4_html to return our test HTML
+    mocker.patch("smartschool.common.bs4_html", return_value=html)
+
+    # Create mock Response object
+    response = mocker.Mock()
+    response.text = str(html)
+
+    # Define values to fill
+    values = {"username": "test_user", "email": "test@example.com"}
+
+    # Call the function
+    result = fill_form(response, "form", values)
+
+    # Assert the result matches expectations
+    assert result == {"username": "test_user", "password": "default_pass", "email": "test@example.com"}
