@@ -5,10 +5,7 @@ from datetime import date, datetime, timedelta
 from smartschool import Courses, FutureTasks, PathCredentials, Periods, Smartschool, SmartschoolHours, SmartschoolLessons, SmartschoolMomentInfos
 from smartschool.common import IsSaved, save, send_email
 from smartschool.objects import AgendaHour, FutureTaskOneTask
-
-session = Smartschool.start(PathCredentials())
-assert 'email_from' in session.creds.other_info
-assert 'email_to' in session.creds.other_info
+from smartschool.session import session
 
 
 def _is_equal_task(a: FutureTaskOneTask, b: FutureTaskOneTask) -> bool:
@@ -99,6 +96,10 @@ def report_tasks_for_next_day(all_tasks: dict):
 
 def main():
     all_tasks: dict[date, dict[str, list]] = defaultdict(lambda: defaultdict(list))
+
+    Smartschool.start(PathCredentials())
+    assert 'email_from' in session.creds.other_info
+    assert 'email_to' in session.creds.other_info
 
     for day in FutureTasks().days:
         for course in day.courses:

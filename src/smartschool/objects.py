@@ -260,7 +260,7 @@ class FutureTasks:
 
     days: list[FutureTaskOneDay] = Field(default_factory=list)
     last_assignment_id: int = 0
-    last_date: Date = Field(default_factory=date.today)
+    last_date: Date | None = None
 
     def __post_init__(self):
         """I need to do this here because when I do it in Agenda, it'll not lazily load it. But in this way, I load it on construction."""
@@ -283,7 +283,7 @@ class FutureTasks:
             self.days.append(FutureTaskOneDay(**d))
 
         self.last_assignment_id = json["last_assignment_id"]
-        self.last_date = convert_to_date(json["last_date"])
+        self.last_date = convert_to_date(json["last_date"]) if json["last_date"] else None
 
 
 @dataclass

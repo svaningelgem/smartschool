@@ -4,9 +4,11 @@
 dist/
 .cache/
 __pycache__/
+logs/
 
 *.iml
 credentials.yml
 cookies.txt
 .coverage
 coverage.json
+*.log
