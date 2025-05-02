@@ -123,9 +123,9 @@ def build_text(
 
 
 def process_result(result: Result) -> None:
-    logger.info("Processing {}", result.name)
-
     assert len(result.courses) == 1, f"Multiple courses? {result.courses}"
+
+    logger.info("[{}] Processing '{}'", result.courses[0].name, result.name)
 
     course_name = result.courses[0].name  # FE: 'Frans'
     id_ = result.identifier
@@ -133,6 +133,7 @@ def process_result(result: Result) -> None:
     status = save("punten", course_name, id_, result, is_punten_json_the_same)
 
     if status == IsSaved.SAME:
+        logger.debug(" => Already processed")
         return
 
     text, subject = build_text(result=result, is_update=status != IsSaved.NEW)
