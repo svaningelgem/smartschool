@@ -1,9 +1,8 @@
 import os
 import re
 import sys
+from collections.abc import Generator
 from pathlib import Path
-from tempfile import TemporaryDirectory
-from typing import Generator
 from urllib.parse import parse_qs, quote_plus
 
 import pytest
@@ -18,7 +17,7 @@ def _setup_smartschool_for_tests(monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 
     try:
         os.chdir(tmp_path)
-        cache_path = tmp_path/".cache"
+        cache_path = tmp_path / ".cache"
         cache_path.mkdir(parents=True, exist_ok=True)
 
         monkeypatch.setenv("SMARTSCHOOL_USERNAME", "bumba")

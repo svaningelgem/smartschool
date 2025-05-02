@@ -2,7 +2,7 @@ from collections.abc import Iterator
 from itertools import count
 
 from .exceptions import DownloadError
-from .objects import Result, ResultWithDetails
+from .objects import ResultWithDetails, ResultWithoutDetails
 from .session import session
 
 __all__ = ["ResultDetail", "Results"]
@@ -24,7 +24,7 @@ class Results:
 
     """
 
-    def __iter__(self) -> Iterator[Result]:
+    def __iter__(self) -> Iterator[ResultWithoutDetails]:
         for page_nr in count(start=1):  # pragma: no branch
             downloaded_webpage = session.get(f"/results/api/v1/evaluations/?pageNumber={page_nr}&itemsOnPage={RESULTS_PER_PAGE}")
             if not downloaded_webpage or not downloaded_webpage.content:
@@ -32,7 +32,7 @@ class Results:
 
             json = downloaded_webpage.json()
             for result in json:
-                yield Result(**result)
+                yield ResultWithoutDetails(**result)
 
             if len(json) < RESULTS_PER_PAGE:
                 break

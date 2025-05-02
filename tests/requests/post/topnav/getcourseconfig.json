@@ -1,22 +1,30 @@
 {
-  "courseFilters": [{
-    "title": "Vakken",
-    "type": "own"
-  }
+  "courseFilters": [
+    {
+      "title": "Vakken",
+      "type": "own",
+      "icon": "folder_yellow"
+    }
   ],
-  "own": [{
-    "name": "Aardrijkskunde_3_LOP_2023-2024",
-    "descr": "",
-    "icon": "earth",
-    "url": "/?module=News\u0026file=coursenews\u0026courseID=3885\u0026ssID=49",
-    "teacher": "Peeters Lotte"
-  }, {
-    "name": "bibliotheek",
-    "descr": "Schoolbibliotheek_23-24",
-    "icon": "books",
-    "url": "/?module=News\u0026file=coursenews\u0026courseID=845\u0026ssID=49",
-    "teacher": "Verbanck Annelies"
-  }
+  "own": [
+    {
+      "id": 3887,
+      "platformId": 49,
+      "name": "Aardrijkskunde_4_LOPE_2024-2025",
+      "descr": "",
+      "icon": "earth",
+      "url": "\/planner\/course\/courseID\/3887\/ssID\/49",
+      "teacher": "Peeters Lotte"
+    },
+    {
+      "id": 4496,
+      "platformId": 49,
+      "name": "AV_tweede graad_24-25",
+      "descr": "",
+      "icon": "schoolbord",
+      "url": "\/planner\/course\/courseID\/4496\/ssID\/49",
+      "teacher": "De Keyser Indra"
+    }
   ],
   "courseManagementLink": null
 }

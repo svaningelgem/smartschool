@@ -1,7 +1,5 @@
-import contextlib
 import warnings
 from copy import deepcopy
-from io import StringIO
 from pathlib import Path
 
 import pytest_mock

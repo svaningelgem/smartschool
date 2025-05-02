@@ -11,7 +11,6 @@ import xml.etree.ElementTree as ET
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from enum import Enum, auto
-from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Literal
 
 from bs4 import BeautifulSoup, FeatureNotFound, GuessedAtParserWarning
@@ -19,7 +18,6 @@ from logprise import logger
 from pydantic import RootModel
 from pydantic.dataclasses import is_pydantic_dataclass
 from requests import Response
-
 
 if TYPE_CHECKING:
     import bs4

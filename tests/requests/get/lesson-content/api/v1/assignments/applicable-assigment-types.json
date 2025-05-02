@@ -1,0 +1,58 @@
+[
+  {
+    "id": "12657aa0-3b29-4977-925b-e2a0f133f2ba",
+    "platformId": 49,
+    "name": "-",
+    "abbreviation": "-",
+    "isVisible": true,
+    "weight": 1
+  },
+  {
+    "id": "e370bc94-afa5-4566-8641-cace8aca3a71",
+    "platformId": 49,
+    "name": "Examen",
+    "abbreviation": "EX",
+    "isVisible": true,
+    "weight": 1
+  },
+  {
+    "id": "a4538bc0-3041-40c1-a4bc-8d034c363de9",
+    "platformId": 49,
+    "name": "Huiswerk",
+    "abbreviation": "HU",
+    "isVisible": true,
+    "weight": 1
+  },
+  {
+    "id": "16062db8-c721-47de-9e69-9a8bcc2d4fb1",
+    "platformId": 49,
+    "name": "Meebrengen",
+    "abbreviation": "ME",
+    "isVisible": true,
+    "weight": 1
+  },
+  {
+    "id": "03464bcc-1384-49b8-b301-56d13daf0bfd",
+    "platformId": 49,
+    "name": "Repetitie",
+    "abbreviation": "RE",
+    "isVisible": true,
+    "weight": 1
+  },
+  {
+    "id": "19fd5caf-f6d5-4a18-9a3d-287645a8a5f4",
+    "platformId": 49,
+    "name": "Taak",
+    "abbreviation": "TA",
+    "isVisible": true,
+    "weight": 1
+  },
+  {
+    "id": "66a37f12-d79f-4d42-bfb6-9931fec8f0e0",
+    "platformId": 49,
+    "name": "Toets",
+    "abbreviation": "TO",
+    "isVisible": true,
+    "weight": 1
+  }
+]

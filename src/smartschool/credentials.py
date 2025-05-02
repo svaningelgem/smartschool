@@ -1,15 +1,14 @@
 from __future__ import annotations
 
 import os
-from abc import ABC
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Self, Final, ClassVar
+from typing import ClassVar
 
 import yaml
 
 
-class Credentials(ABC):
+class Credentials:
     username: str = ""
     password: str = ""
     birthday: str = ""
@@ -70,34 +69,14 @@ class PathCredentials(Credentials):
 
     def _find_credentials_file(self) -> Path:
         potential_paths = [self.filename]
-        potential_paths.extend(
-            p / self.filename.name
-            for p in self.filename.parents
-        )
-        potential_paths.extend(
-            p / self.filename.name
-            for p in Path.cwd().parents
-        )
-        potential_paths.append(
-            Path.home() / self.filename.name
-        )
-        potential_paths.append(
-            Path.home() / ".cache/smartschool" / self.filename.name
-        )
-        potential_paths.extend(
-            p / self._CREDENTIALS_NAME
-            for p in self.filename.parents
-        )
-        potential_paths.extend(
-            p / self._CREDENTIALS_NAME
-            for p in Path.cwd().parents
-        )
-        potential_paths.append(
-            Path.home() / self._CREDENTIALS_NAME
-        )
-        potential_paths.append(
-            Path.home() / f".cache/smartschool/{self._CREDENTIALS_NAME}"
-        )
+        potential_paths.extend(p / self.filename.name for p in self.filename.parents)
+        potential_paths.extend(p / self.filename.name for p in Path.cwd().parents)
+        potential_paths.append(Path.home() / self.filename.name)
+        potential_paths.append(Path.home() / ".cache/smartschool" / self.filename.name)
+        potential_paths.extend(p / self._CREDENTIALS_NAME for p in self.filename.parents)
+        potential_paths.extend(p / self._CREDENTIALS_NAME for p in Path.cwd().parents)
+        potential_paths.append(Path.home() / self._CREDENTIALS_NAME)
+        potential_paths.append(Path.home() / f".cache/smartschool/{self._CREDENTIALS_NAME}")
 
         already_seen = set()
         for p in potential_paths:

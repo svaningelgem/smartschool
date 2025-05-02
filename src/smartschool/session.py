@@ -3,6 +3,7 @@ from __future__ import annotations
 import contextlib
 import functools
 import json
+import re
 import time
 from functools import cached_property
 from http.cookiejar import LWPCookieJar
@@ -10,10 +11,11 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Self
 from urllib.parse import urljoin
 
+import yaml
 from logprise import logger
 from requests import Session
 
-from .common import fill_form
+from .common import bs4_html, fill_form
 
 if TYPE_CHECKING:  # pragma: no cover
     from requests import Response
@@ -39,12 +41,16 @@ def _handle_cookies_and_login(func):
 class Smartschool:
     def __init__(self, creds: Credentials | None = None) -> None:
         self._creds: Credentials | None = creds
+        self._authenticated_user: dict | None = None
         self.already_logged_on: bool | None = None
 
         self._initialize_session()
 
         if self.creds:
             self.creds.validate()
+
+            if self._authenticated_user_file.exists():
+                self._authenticated_user = yaml.safe_load(self._authenticated_user_file.read_text(encoding="utf8"))
 
     @property
     def creds(self) -> Credentials:
@@ -54,6 +60,31 @@ class Smartschool:
     def creds(self, creds: Credentials) -> None:
         creds.validate()
         self._creds = creds
+
+    @property
+    def authenticated_user(self) -> dict | None:
+        if self._authenticated_user is None:
+            self._try_login()
+
+        if self._authenticated_user is None:
+            raise ValueError("We couldn't retrieve the authenticated user somehow!")
+
+        return self._authenticated_user
+
+    @authenticated_user.setter
+    def authenticated_user(self, new_user: dict | None) -> None:
+        self._authenticated_user = new_user
+        if new_user and self.creds:
+            with self._authenticated_user_file.open(mode="w", encoding="utf8") as fp:
+                yaml.dump(new_user, fp)
+        else:
+            self._authenticated_user_file.unlink(missing_ok=True)
+
+    @property
+    def _authenticated_user_file(self) -> Path | None:
+        if self.creds:
+            return self.cache_path / "authenticated_user.yml"
+        return None
 
     def _try_login(self) -> None:
         if self.already_logged_on is None:
@@ -69,7 +100,8 @@ class Smartschool:
         if resp.url.endswith("/login"):
             resp = self._do_login(resp)
         if resp.url.endswith("/account-verification"):
-            self._do_login_verification(resp)
+            self._parse_login_information(resp)
+            resp = self._do_login_verification(resp)
 
     @classmethod
     def start(cls, creds: Credentials) -> Self:
@@ -83,7 +115,7 @@ class Smartschool:
 
     @property
     def cache_path(self) -> Path:
-        p = Path.home() / f".cache/smartschool"
+        p = Path.home() / ".cache/smartschool"
         if self.creds:
             p /= self.creds.username
 
@@ -154,6 +186,18 @@ class Smartschool:
             },
         )
         return self.post(response.url, data=data)
+
+    def _parse_login_information(self, response: Response) -> None:
+        html = bs4_html(response)
+        possible_scripts = [s for s in html.select("script") if s.get("src") is None and "extend" in s.text]
+        for script in possible_scripts:
+            txt = script.text
+            if match := re.search(r"JSON\s*\.\s*parse\s*\(\s*'(.*)'\s*\)\s*\)\s*;?\s*$", txt, flags=re.IGNORECASE):
+                result = re.sub(r"\\u([0-9a-fA-F]{4})", lambda m: chr(int(m.group(1), 16)), match.group(1))
+                data = json.loads(result.replace("\\\\", "\\"))
+                with contextlib.suppress(KeyError, TypeError, IndexError):
+                    self.authenticated_user = data["vars"]["authenticatedUser"]
+                return
 
     def _save_cookies(self) -> None:
         self._session.cookies.save(ignore_discard=True)
