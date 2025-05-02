@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Self
 from urllib.parse import urljoin
 
+from logprise import logger
 from requests import Session
 
 from .common import fill_form
@@ -37,11 +38,13 @@ def _handle_cookies_and_login(func):
 
 class Smartschool:
     def __init__(self, creds: Credentials | None = None) -> None:
-        self.already_logged_on: bool | None = None
-        self._initialize_session()
         self._creds: Credentials | None = creds
-        if creds:
-            creds.validate()
+        self.already_logged_on: bool | None = None
+
+        self._initialize_session()
+
+        if self.creds:
+            self.creds.validate()
 
     @property
     def creds(self) -> Credentials:
@@ -74,9 +77,23 @@ class Smartschool:
         session.creds = creds
         return session
 
+    @classmethod
+    def credentials(cls) -> Credentials:
+        return session.creds
+
+    @property
+    def cache_path(self) -> Path:
+        p = Path.home() / f".cache/smartschool"
+        if self.creds:
+            p /= self.creds.username
+
+        p.mkdir(parents=True, exist_ok=True)
+
+        return p
+
     @property
     def cookie_file(self) -> Path:
-        return Path.cwd() / "cookies.txt"
+        return self.cache_path / "cookies.txt"
 
     def _initialize_session(self):
         self._session: Session = Session()
@@ -114,6 +131,8 @@ class Smartschool:
         return json_
 
     def _do_login(self, response: Response) -> Response:
+        logger.info(f"Logging in with {self.creds.username}")
+
         data = fill_form(
             response,
             'form[name="login_form"]',
@@ -125,6 +144,8 @@ class Smartschool:
         return self.post(response.url, data=data)
 
     def _do_login_verification(self, response: Response) -> Response:
+        logger.info(f"2FA for {self.creds.username}")
+
         data = fill_form(
             response,
             'form[name="account_verification_form"]',

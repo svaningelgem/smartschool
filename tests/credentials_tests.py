@@ -36,7 +36,8 @@ def test_env_credentials_empty(monkeypatch, make_empty):
 
 
 def test_path_credentials(tmp_path: Path):
-    sut = PathCredentials(_create_credentials_file(tmp_path))
+    tmp_credentials = _create_credentials_file(tmp_path)
+    sut = PathCredentials(tmp_credentials)
     sut.validate()
 
     assert sut.username == "bumba"
@@ -63,7 +64,7 @@ def test_path_credentials_empty(monkeypatch, make_empty, tmp_path: Path):
 
 def test_credentials_exporting_as_dict_with_other_info():
     sut = EnvCredentials()
-    sut.other_info = {"test": "something"}
+    object.__setattr__(sut, "other_info", {"test": "something"})
 
     assert sut.as_dict() == {
         "username": "bumba",

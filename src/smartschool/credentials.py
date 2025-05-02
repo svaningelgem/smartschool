@@ -4,15 +4,16 @@ import os
 from abc import ABC
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Self, Final, ClassVar
 
 import yaml
 
 
 class Credentials(ABC):
-    username: str
-    password: str
-    birthday: str
-    main_url: str
+    username: str = ""
+    password: str = ""
+    birthday: str = ""
+    main_url: str = ""
 
     other_info: dict | None = None
 
@@ -26,9 +27,12 @@ class Credentials(ABC):
 
         error = []
         for required in required_fields:
-            value = (getattr(self, required) or "").strip()
-            setattr(self, required, value)
-            if not value:
+            original_value = getattr(self, required)
+            new_value = (original_value or "").strip()
+
+            object.__setattr__(self, required, new_value)
+
+            if not new_value:
                 error.append(required)
 
         if error:
@@ -48,26 +52,66 @@ class Credentials(ABC):
         return data
 
 
-@dataclass
+@dataclass(frozen=True)
 class PathCredentials(Credentials):
-    filename: str | Path = field(default=Path.cwd().joinpath("credentials.yml"))
+    _CREDENTIALS_NAME: ClassVar[str] = "credentials.yml"
+    filename: str | Path = ""
 
     def __post_init__(self):
-        self.filename = Path(self.filename)
+        object.__setattr__(self, "filename", self._find_credentials_file())
 
         cred_file: dict = yaml.safe_load(self.filename.read_text(encoding="utf8"))
-        self.username = cred_file.pop("username", None)
-        self.password = cred_file.pop("password", None)
-        self.main_url = cred_file.pop("main_url", None)
-        self.birthday = cred_file.pop("birthday", None)
+        object.__setattr__(self, "username", cred_file.pop("username", ""))
+        object.__setattr__(self, "password", cred_file.pop("password", ""))
+        object.__setattr__(self, "main_url", cred_file.pop("main_url", ""))
+        object.__setattr__(self, "birthday", cred_file.pop("birthday", ""))
 
-        self.other_info = cred_file
+        object.__setattr__(self, "other_info", cred_file)
+
+    def _find_credentials_file(self) -> Path:
+        potential_paths = [self.filename]
+        potential_paths.extend(
+            p / self.filename.name
+            for p in self.filename.parents
+        )
+        potential_paths.extend(
+            p / self.filename.name
+            for p in Path.cwd().parents
+        )
+        potential_paths.append(
+            Path.home() / self.filename.name
+        )
+        potential_paths.append(
+            Path.home() / ".cache/smartschool" / self.filename.name
+        )
+        potential_paths.extend(
+            p / self._CREDENTIALS_NAME
+            for p in self.filename.parents
+        )
+        potential_paths.extend(
+            p / self._CREDENTIALS_NAME
+            for p in Path.cwd().parents
+        )
+        potential_paths.append(
+            Path.home() / self._CREDENTIALS_NAME
+        )
+        potential_paths.append(
+            Path.home() / f".cache/smartschool/{self._CREDENTIALS_NAME}"
+        )
+
+        already_seen = set()
+        for p in potential_paths:
+            if p not in already_seen and p.exists():
+                return p
+            already_seen.add(p)
+
+        raise FileNotFoundError(self.filename)
 
 
-@dataclass
+@dataclass(frozen=True)
 class EnvCredentials(Credentials):
     def __post_init__(self):
-        self.username = os.getenv("SMARTSCHOOL_USERNAME")
-        self.password = os.getenv("SMARTSCHOOL_PASSWORD")
-        self.main_url = os.getenv("SMARTSCHOOL_MAIN_URL")
-        self.birthday = os.getenv("SMARTSCHOOL_BIRTHDAY")
+        object.__setattr__(self, "username", os.getenv("SMARTSCHOOL_USERNAME", ""))
+        object.__setattr__(self, "password", os.getenv("SMARTSCHOOL_PASSWORD", ""))
+        object.__setattr__(self, "main_url", os.getenv("SMARTSCHOOL_MAIN_URL", ""))
+        object.__setattr__(self, "birthday", os.getenv("SMARTSCHOOL_BIRTHDAY", ""))

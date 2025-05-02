@@ -3,6 +3,7 @@ import re
 import sys
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import Generator
 from urllib.parse import parse_qs, quote_plus
 
 import pytest
@@ -11,25 +12,26 @@ from requests_mock import ANY
 from smartschool import EnvCredentials, Smartschool
 
 
-@pytest.fixture(scope="session", autouse=True)
-def _setup_smartschool_for_tests() -> None:
+@pytest.fixture(autouse=True)
+def _setup_smartschool_for_tests(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Generator[None, None, None]:
     original_dir = Path.cwd()
 
-    with TemporaryDirectory() as tmp_dir:  # Because cookies.txt will be written
-        os.chdir(tmp_dir)
+    try:
+        os.chdir(tmp_path)
+        cache_path = tmp_path/".cache"
+        cache_path.mkdir(parents=True, exist_ok=True)
 
-        try:
-            with pytest.MonkeyPatch.context() as monkeypatch:
-                monkeypatch.setenv("SMARTSCHOOL_USERNAME", "bumba")
-                monkeypatch.setenv("SMARTSCHOOL_PASSWORD", "delu")
-                monkeypatch.setenv("SMARTSCHOOL_MAIN_URL", "site")
-                monkeypatch.setenv("SMARTSCHOOL_BIRTHDAY", "1234-56-78")
+        monkeypatch.setenv("SMARTSCHOOL_USERNAME", "bumba")
+        monkeypatch.setenv("SMARTSCHOOL_PASSWORD", "delu")
+        monkeypatch.setenv("SMARTSCHOOL_MAIN_URL", "site")
+        monkeypatch.setenv("SMARTSCHOOL_BIRTHDAY", "1234-56-78")
 
-                Smartschool.start(EnvCredentials())
+        monkeypatch.setattr(Smartschool, "cache_path", cache_path)
+        Smartschool.start(EnvCredentials())
 
-                yield
-        finally:
-            os.chdir(original_dir)
+        yield
+    finally:
+        os.chdir(original_dir)
 
 
 @pytest.fixture(autouse=True)

@@ -20,6 +20,7 @@ from pydantic import RootModel
 from pydantic.dataclasses import is_pydantic_dataclass
 from requests import Response
 
+
 if TYPE_CHECKING:
     import bs4
 
@@ -46,7 +47,10 @@ class IsSaved(Enum):
 def save(
     type_: Literal["agenda", "punten", "todo"], course_name: str, id_: str, data: dict | str | Any, is_eq: Callable = operator.eq, extension: str = "json"
 ) -> IsSaved | dict | str:
-    save_as = Path.cwd() / f".cache/_{type_}/{course_name}/{id_}.{extension}"
+    from .session import session  # Prevent circular import
+
+    save_as = session.cache_path / f"_{type_}/{course_name}/{id_}.{extension}"
+
     save_as.parent.mkdir(exist_ok=True, parents=True)
     data_was_dict = isinstance(data, dict)
     data_was_object = is_pydantic_dataclass(data.__class__)

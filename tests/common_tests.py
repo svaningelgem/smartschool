@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest_mock
 from bs4 import BeautifulSoup, FeatureNotFound, GuessedAtParserWarning
+from logprise import logger
 
 from smartschool.common import IsSaved, as_float, bs4_html, fill_form, make_filesystem_safe, save, send_email, xml_to_dict
 from smartschool.objects import Student
@@ -86,14 +87,14 @@ def test_multi_email_on_windows(mocker):
     mocker.patch("platform.system", return_value="Windows")
     server = mocker.patch("smtplib.SMTP")
 
-    target = StringIO()
-    with contextlib.redirect_stdout(target):
-        send_email(subject="Test", text="Just a test", email_to=["me@myself.ai", "me2@myself.ai"], email_from="me@myself.ai")
+    data_outputted = []
+    mocker.patch.object(logger, "info", lambda x: data_outputted.append(x))
 
+    send_email(subject="Test", text="Just a test", email_to=["me@myself.ai", "me2@myself.ai"], email_from="me@myself.ai")
     server.assert_not_called()
 
-    assert "Subject: Test" in target.getvalue()
-    assert "Just a test" in target.getvalue()
+    assert "Subject: Test" in data_outputted
+    assert "Just a test" in data_outputted
 
 
 def test_as_float():
