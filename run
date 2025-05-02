@@ -1,0 +1,24 @@
+#!/bin/bash -e
+
+
+cd "$(dirname "$0")"
+export PYTHONPATH="$PWD"
+export PYTHON="/opt/miniforge3/envs/smartschool/bin/python"
+
+(
+  flock --nonblock --exclusive 200
+
+  [[ -d logs ]] || mkdir logs
+  find logs -mtime +100 -type f -print0 | xargs -0 --no-run-if-empty rm
+
+  logfile="logs/$(date +'%Y-%m-%d').log";
+  rm -f latest.log
+  ln -s "$logfile" latest.log
+
+  echo "RESULTS-REPORT" |& tee -a "$logfile"
+  $PYTHON scripts/smartschool_report_on_results |& tee -a "$logfile"
+
+#  echo "FUTURE-TASKS-REPORT" |& tee -a "$logfile"
+#  $PYTHON scripts/smartschool_report_on_future_tasks |& tee -a "$logfile"
+
+) 200>/var/lock/smartschool.lock
