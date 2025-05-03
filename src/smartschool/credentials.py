@@ -67,21 +67,31 @@ class PathCredentials(Credentials):
 
         object.__setattr__(self, "other_info", cred_file)
 
-    def _find_credentials_file(self) -> Path:
+    def _find_credentials_file(self) -> Path | None:
         potential_paths = [self.filename]
-        potential_paths.extend(p / self.filename.name for p in self.filename.parents)
-        potential_paths.extend(p / self.filename.name for p in Path.cwd().parents)
-        potential_paths.append(Path.home() / self.filename.name)
-        potential_paths.append(Path.home() / ".cache/smartschool" / self.filename.name)
-        potential_paths.extend(p / self._CREDENTIALS_NAME for p in self.filename.parents)
+
+        if isinstance(self.filename, Path):
+            potential_paths.extend(p / self.filename.name for p in self.filename.parents)
+            potential_paths.extend(p / self.filename.name for p in Path.cwd().parents)
+            potential_paths.append(Path.home() / self.filename.name)
+            potential_paths.append(Path.home() / ".cache/smartschool" / self.filename.name)
+            potential_paths.extend(p / self._CREDENTIALS_NAME for p in self.filename.parents)
+
         potential_paths.extend(p / self._CREDENTIALS_NAME for p in Path.cwd().parents)
         potential_paths.append(Path.home() / self._CREDENTIALS_NAME)
         potential_paths.append(Path.home() / f".cache/smartschool/{self._CREDENTIALS_NAME}")
 
         already_seen = set()
         for p in potential_paths:
+            if not p:
+                continue
+
+            if not isinstance(p, Path):
+                p = Path(p).resolve().absolute()
+
             if p not in already_seen and p.exists():
                 return p
+
             already_seen.add(p)
 
         raise FileNotFoundError(self.filename)

@@ -564,6 +564,14 @@ class PlannedElementJoinIds:
 
 
 @dataclass
+class PlannedElementAssignmentType:
+    id: UUID
+    name: String
+    abbreviation: String
+    isVisible: bool
+    weight: int
+
+@dataclass
 class PlannedElement:
     id: UUID
     platformId: int
@@ -580,6 +588,11 @@ class PlannedElement:
     pinned: bool
     color: String
     joinIds: PlannedElementJoinIds
+
+    name: String = ""
+    assignmentType: PlannedElementAssignmentType = None
+    resolvedStatus: String = ""
+    onlineSession: String | None = None
 
 
 @dataclass

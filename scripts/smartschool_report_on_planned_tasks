@@ -1,0 +1,98 @@
+#!/usr/bin/env python
+from collections import defaultdict
+from datetime import date
+
+from _common_tasks_stuff import _next_weekday, _email_text
+from smartschool import PathCredentials, Smartschool
+from smartschool.common import IsSaved, save, send_email
+from smartschool.objects import FutureTaskOneTask, PlannedElement
+from smartschool.planner import PlannedElements
+from smartschool.session import session
+
+
+def _is_equal_task(a: PlannedElement, b: PlannedElement) -> bool:
+    return (
+        [c.name for c in a.courses],
+        a.period.dateTimeFrom,
+        a.period.dateTimeTo,
+        a.assignmentType.name,
+        a.name
+    ) == (
+        [c.name for c in b.courses],
+        b.period.dateTimeFrom,
+        b.period.dateTimeTo,
+        b.assignmentType.name,
+        b.name
+    )
+
+
+def process_task(task: PlannedElement, all_tasks: dict) -> None:
+    """Stores in an array + report if it's a new/updated task."""
+    next_weekday = _next_weekday()
+    is_for_next_day = next_weekday < task.period.dateTimeFrom.date() or next_weekday > task.period.dateTimeTo.date()
+
+    course_name: str = task.courses[0].name
+    hour: str = task.period.dateTimeFrom.strftime("%H:%M")
+    when: str = task.period.dateTimeFrom.strftime("%Y-%m-%d")
+
+    text = _email_text(
+        hour_start=task.period.dateTimeFrom,
+        hour_end=task.period.dateTimeTo,
+        course_name=course_name,
+        task_label=task.assignmentType.name,
+        description=task.name,
+    )
+
+    if is_for_next_day:
+        all_tasks[when][hour].append(text)
+
+    status = save(type_="todo", course_name=course_name, id_=task.assignmentType.id, data=task, is_eq=_is_equal_task)
+    if status == IsSaved.SAME:
+        return
+
+    subject = f"📑 [{when} {hour}] {course_name} ({task.name})"
+    if status != IsSaved.NEW:
+        subject = f"⚠⚠ {subject}"  # There is an update...
+
+    send_email(subject=subject, text=text, email_from=session.creds.other_info['email_from'],
+               email_to=session.creds.other_info['email_to'])
+
+
+def report_tasks_for_next_day(all_tasks: dict):
+    for dag, rest in all_tasks.items():
+        text = []
+
+        for _, tasks in sorted(rest.items(), key=lambda x: x[0]):  # type: str, list[PlannedElement]
+            for task in tasks:
+                text.append(task)
+
+        text = "\n---------------------------------------\n\n".join(text)
+
+        status = save('todo', '.email', dag, data=text, extension='txt')
+        if status == IsSaved.SAME:
+            continue  # Don't re-send if nothing changed
+
+        subject = f"🍕 Todo list {dag}"
+        if status != IsSaved.NEW:
+            subject = f"⚠⚠ {subject}"  # There is an update...
+
+        send_email(
+            subject=subject,
+            text=text, email_from=session.creds.other_info['email_from'], email_to=session.creds.other_info['email_to'])
+
+
+def main():
+    all_tasks: dict[date, dict[str, list]] = defaultdict(lambda: defaultdict(list))
+
+    Smartschool.start(PathCredentials())
+    assert 'email_from' in session.creds.other_info
+    assert 'email_to' in session.creds.other_info
+
+    for element in PlannedElements():
+        process_task(element, all_tasks)
+
+    report_tasks_for_next_day(all_tasks)
+
+
+if __name__ == '__main__':
+    main()

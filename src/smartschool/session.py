@@ -9,7 +9,7 @@ from functools import cached_property
 from http.cookiejar import LWPCookieJar
 from pathlib import Path
 from typing import TYPE_CHECKING, Self
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlencode
 
 import yaml
 from logprise import logger
@@ -102,6 +102,7 @@ class Smartschool:
         if resp.url.endswith("/account-verification"):
             self._parse_login_information(resp)
             resp = self._do_login_verification(resp)
+        self._parse_login_information(resp)
 
     @classmethod
     def start(cls, creds: Credentials) -> Self:
@@ -153,6 +154,12 @@ class Smartschool:
         if method.lower() == "post":
             r = self.post(url, *args, **kwargs)
         else:
+            if "data" in kwargs:
+                data = urlencode(kwargs.pop("data"))
+                if "?" in url:
+                    url += "&" + data
+                else:
+                    url += "?" + data
             r = self.get(url, *args, **kwargs)
 
         json_ = r.text
@@ -197,7 +204,7 @@ class Smartschool:
                 data = json.loads(result.replace("\\\\", "\\"))
                 with contextlib.suppress(KeyError, TypeError, IndexError):
                     self.authenticated_user = data["vars"]["authenticatedUser"]
-                return
+                    return
 
     def _save_cookies(self) -> None:
         self._session.cookies.save(ignore_discard=True)

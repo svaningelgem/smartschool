@@ -14,11 +14,12 @@ class ApplicableAssignmentTypes:
 
 class PlannedElements:
     from_date: date = datetime.now(tz=ZoneInfo("Europe/Brussels")).replace(hour=0, minute=0, second=0, microsecond=0)
-    till_date: date = from_date + timedelta(days=5, seconds=-1)
+    till_date: date = from_date + timedelta(days=34, seconds=-1)
 
     def __iter__(self) -> Iterator[PlannedElement]:
-        for element in session.json(
+        data = session.json(
             f"/planner/api/v1/planned-elements/user/{session.authenticated_user['id']}",
-            data={"from": self.from_date.isoformat(), "till": self.till_date.isoformat()},
-        ):
+            data={"from": self.from_date.isoformat(), "to": self.till_date.isoformat(), "types": "planned-assignments,planned-to-dos"},
+        )
+        for element in data:
             yield PlannedElement(**element)
