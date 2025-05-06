@@ -3,6 +3,7 @@ import re
 import sys
 from collections.abc import Generator
 from pathlib import Path
+from typing import Any, Generator
 from urllib.parse import parse_qs, quote_plus
 
 import pytest
@@ -34,7 +35,7 @@ def _setup_smartschool_for_tests(monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 
 
 @pytest.fixture(autouse=True)
-def _clear_caches_from_agenda() -> None:
+def _clear_caches_from_agenda() -> Generator[None, Any, None]:
     try:
         yield
     finally:
@@ -81,7 +82,7 @@ def _setup_requests_mocker(request, requests_mock) -> None:
 
 
 @pytest.fixture
-def tmp_path(tmp_path) -> Path:
+def tmp_path(tmp_path) -> Generator[Any, Any, None]:
     original_dir = Path.cwd()
     try:
         os.chdir(tmp_path)

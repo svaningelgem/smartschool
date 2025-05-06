@@ -3,11 +3,11 @@
 from logprise import logger
 from smartschool import PathCredentials, Results, Smartschool, DownloadError
 from smartschool.common import IsSaved, save, send_email
-from smartschool.objects import Result
+from smartschool.objects import ResultWithoutDetails
 from smartschool.session import session
 
 
-def is_punten_json_the_same(previous: Result, current: Result) -> bool:
+def is_punten_json_the_same(previous: ResultWithoutDetails, current: ResultWithoutDetails) -> bool:
     if previous == current:  # No need to dig into it...
         return True
 
@@ -33,15 +33,15 @@ def is_punten_json_the_same(previous: Result, current: Result) -> bool:
         "feedback/5/text",
     ]
 
-    def _grab_sub(d: Result | dict, key: list[str]) -> dict | list | str | None:
-        if not key or d is None:
+    def _grab_sub(d: ResultWithoutDetails | dict, k: list[str]) -> dict | list | str | None:
+        if not k or d is None:
             return d
 
         obj = d
-        for piece in key:
+        for piece in k:
             if piece.isnumeric():
                 piece = int(piece)
-                if piece >= len(obj):  # Not enough inside this array >> Just assume it's an empty string
+                if piece >= len(obj):  # Not enough inside this array >> Assume it's an empty string
                     return ""
 
                 obj = obj[piece]
@@ -68,7 +68,7 @@ def is_punten_json_the_same(previous: Result, current: Result) -> bool:
 
 def build_text(
     is_update: bool,
-    result: Result,
+    result: ResultWithoutDetails,
 ) -> tuple[str, str]:
     course_name = result.courses[0].name
     teacher_names = [teacher.name.startingWithFirstName for teacher in result.courses[0].teachers]
@@ -110,19 +110,18 @@ def build_text(
         0.5: "🌫",
     }
 
+    icon = "😡"
     for min_pct, symbol in limits.items():
         if result.graphic.percentage >= min_pct:
             icon = symbol
             break
-    else:
-        icon = "😡"
 
     email_subject = f"{icon} {email_subject}"
 
     return text, email_subject
 
 
-def process_result(result: Result) -> None:
+def process_result(result: ResultWithoutDetails) -> None:
     assert len(result.courses) == 1, f"Multiple courses? {result.courses}"
 
     logger.info("[{}] Processing '{}'", result.courses[0].name, result.name)
