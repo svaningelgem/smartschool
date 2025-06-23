@@ -12,8 +12,8 @@ from requests_mock import ANY
 from smartschool import EnvCredentials, Smartschool
 
 
-@pytest.fixture(autouse=True)
-def _setup_smartschool_for_tests(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Generator[None, None, None]:
+@pytest.fixture
+def session(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Generator[Smartschool, None, None]:
     original_dir = Path.cwd()
 
     try:
@@ -24,12 +24,10 @@ def _setup_smartschool_for_tests(monkeypatch: pytest.MonkeyPatch, tmp_path: Path
         monkeypatch.setenv("SMARTSCHOOL_USERNAME", "bumba")
         monkeypatch.setenv("SMARTSCHOOL_PASSWORD", "delu")
         monkeypatch.setenv("SMARTSCHOOL_MAIN_URL", "site")
-        monkeypatch.setenv("SMARTSCHOOL_BIRTHDAY", "1234-56-78")
+        monkeypatch.setenv("SMARTSCHOOL_MFA", "1234-56-78")
 
         monkeypatch.setattr(Smartschool, "cache_path", cache_path)
-        Smartschool.start(EnvCredentials())
-
-        yield
+        yield Smartschool(EnvCredentials())
     finally:
         os.chdir(original_dir)
 

@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 from abc import ABC
+from dataclasses import dataclass
 from enum import Enum
 from typing import TYPE_CHECKING
 from urllib.parse import quote_plus
 
 from ._xml_interface import SmartschoolXML, SmartschoolXML_NoCache
 from .objects import Attachment, FullMessage, MessageChanged, MessageDeletionStatus, ShortMessage
-from .session import session
+from .session import SessionMixin
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -260,7 +261,8 @@ class AdjustMessageLabel(_FetchOneMessage):
         }
 
 
-class MessageMoveToArchive:
+@dataclass
+class MessageMoveToArchive(SessionMixin):
     """
     Archiving is weird.
 
@@ -281,7 +283,7 @@ class MessageMoveToArchive:
     def __iter__(self) -> Iterator[MessageChanged]:
         construction = "&".join("msgIDs%5B%5D=" + quote_plus(str(msg_id)) for msg_id in self.msg_ids)
 
-        resp = session.post(
+        resp = self.session.post(
             "/Messages/Xhr/archivemessages",
             data=construction,
             headers={

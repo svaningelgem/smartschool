@@ -1,16 +1,19 @@
 from collections.abc import Iterator
+from dataclasses import dataclass
 from itertools import count
+from typing import Iterable
 
 from .exceptions import DownloadError
 from .objects import ResultWithDetails, ResultWithoutDetails
-from .session import session
 
 __all__ = ["ResultDetail", "Results"]
 
+from .session import SessionMixin
+
 RESULTS_PER_PAGE = 50
 
-
-class Results:
+@dataclass
+class Results(SessionMixin, Iterable[ResultWithoutDetails]):
     """
     Interfaces with the evaluations of smartschool.
 
@@ -26,7 +29,7 @@ class Results:
 
     def __iter__(self) -> Iterator[ResultWithoutDetails]:
         for page_nr in count(start=1):  # pragma: no branch
-            downloaded_webpage = session.get(f"/results/api/v1/evaluations/?pageNumber={page_nr}&itemsOnPage={RESULTS_PER_PAGE}")
+            downloaded_webpage = self.session.get(f"/results/api/v1/evaluations/?pageNumber={page_nr}&itemsOnPage={RESULTS_PER_PAGE}")
             if not downloaded_webpage or not downloaded_webpage.content:
                 raise DownloadError("No JSON was returned for the results?!")
 
@@ -38,12 +41,12 @@ class Results:
                 break
 
 
-class ResultDetail:
-    def __init__(self, result_id: str):
-        self.result_id = result_id
+@dataclass
+class ResultDetail(SessionMixin, Iterable[ResultWithDetails]):
+    result_id: str
 
     def get(self) -> ResultWithDetails:
-        downloaded_webpage = session.get(f"/results/api/v1/evaluations/{self.result_id}")
+        downloaded_webpage = self.session.get(f"/results/api/v1/evaluations/{self.result_id}")
         if not downloaded_webpage or not downloaded_webpage.content:
             raise DownloadError("No JSON was returned for the details?!")
 

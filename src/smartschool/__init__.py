@@ -15,7 +15,7 @@ from .messages import (
     SortField,
     SortOrder,
 )
-from .objects import FutureTasks
+from .future_tasks import FutureTasks
 from .periods import Periods
 from .results import ResultDetail, Results
 from .session import Smartschool

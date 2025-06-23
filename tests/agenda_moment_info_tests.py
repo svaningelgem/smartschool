@@ -1,10 +1,10 @@
 import pytest
 
-from smartschool import SmartschoolMomentInfos
+from smartschool import SmartschoolMomentInfos, Smartschool
 
 
-def test_agenda_moment_info_normal_flow():
-    sut = list(SmartschoolMomentInfos("3732340"))
+def test_agenda_moment_info_normal_flow(session: Smartschool):
+    sut = list(SmartschoolMomentInfos(session, "3732340"))
 
     assert len(sut) == 1
     assert sut[0].className == "AAR1 - Lotte Peeters - 223"
