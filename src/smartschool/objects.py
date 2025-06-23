@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from datetime import date, datetime
+from datetime import date, datetime, tzinfo
 from functools import cached_property
 from typing import Annotated, Literal
 
@@ -18,7 +18,7 @@ UUID = constr(pattern=re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]
 
 def convert_to_datetime(x: str | String | datetime | None) -> datetime:
     if x is None:
-        return datetime.now()
+        return datetime.now().astimezone()
 
     if isinstance(x, datetime):
         if x.tzinfo is None:
