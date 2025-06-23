@@ -59,16 +59,17 @@ class PathCredentials(Credentials):
         to_investigate = self.filename
         potential_paths = [to_investigate]
 
-        if isinstance(to_investigate, str) and to_investigate:
-            to_investigate = Path(to_investigate)
+        if to_investigate:
+            if isinstance(to_investigate, str):
+                to_investigate = Path(to_investigate)
 
-        if isinstance(to_investigate, Path):
             potential_paths.extend(p / to_investigate.name for p in to_investigate.parents)
             potential_paths.extend(p / to_investigate.name for p in Path.cwd().parents)
             potential_paths.append(Path.home() / to_investigate.name)
             potential_paths.append(Path.home() / ".cache/smartschool" / to_investigate.name)
             potential_paths.extend(p / self._CREDENTIALS_NAME for p in to_investigate.parents)
 
+        potential_paths.append(Path.cwd() / self._CREDENTIALS_NAME)
         potential_paths.extend(p / self._CREDENTIALS_NAME for p in Path.cwd().parents)
         potential_paths.append(Path.home() / self._CREDENTIALS_NAME)
         potential_paths.append(Path.home() / f".cache/smartschool/{self._CREDENTIALS_NAME}")
@@ -96,10 +97,9 @@ class EnvCredentials(Credentials):
             object.__setattr__(self, field, os.getenv(f"SMARTSCHOOL_{field.upper()}", ""))
 
 
-@dataclass
+@dataclass(frozen=True)
 class AppCredentials(Credentials):
-    def __init__(self, username, password, main_url, mfa):
-        self.username = username
-        self.password = password
-        self.main_url = main_url
-        self.mfa = mfa
+    username: str
+    password: str
+    main_url: str
+    mfa: str
