@@ -1,9 +1,8 @@
-from collections.abc import Iterator
+from collections.abc import Iterable, Iterator
 from dataclasses import dataclass
-from typing import Iterable
 
 from .objects import StudentSupportLink
-from .session import  SessionMixin
+from .session import SessionMixin
 
 __all__ = ["StudentSupportLinks"]
 

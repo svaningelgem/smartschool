@@ -1,11 +1,17 @@
-from collections.abc import Iterator
+from __future__ import annotations
+
+from collections.abc import Iterable
 from dataclasses import dataclass, field
-from datetime import date, datetime, timedelta
-from typing import Iterable
+from datetime import datetime, timedelta
+from typing import TYPE_CHECKING
 from zoneinfo import ZoneInfo
 
 from .objects import ApplicableAssignmentType, PlannedElement
 from .session import SessionMixin
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
+    from datetime import date
 
 
 @dataclass
@@ -17,7 +23,7 @@ class ApplicableAssignmentTypes(SessionMixin, Iterable[ApplicableAssignmentType]
 
 @dataclass
 class PlannedElements(SessionMixin, Iterable[PlannedElement]):
-    from_date: date = field(default_factory=lambda : datetime.now(tz=ZoneInfo("Europe/Brussels")).replace(hour=0, minute=0, second=0, microsecond=0))
+    from_date: date = field(default_factory=lambda: datetime.now(tz=ZoneInfo("Europe/Brussels")).replace(hour=0, minute=0, second=0, microsecond=0))
     till_date: date | None = None
 
     def __post_init__(self):

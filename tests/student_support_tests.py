@@ -1,4 +1,4 @@
-from smartschool import StudentSupportLinks, Smartschool
+from smartschool import Smartschool, StudentSupportLinks
 
 
 def test_support_links_happy_flow(session: Smartschool):

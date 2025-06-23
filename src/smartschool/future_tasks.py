@@ -1,4 +1,4 @@
-from typing import Iterable, Iterator
+from collections.abc import Iterator
 
 from smartschool.objects import FutureTaskOneDay
 from smartschool.session import SessionMixin

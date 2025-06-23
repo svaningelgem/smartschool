@@ -29,8 +29,6 @@ __all__ = [
     "send_email",
     "xml_to_dict",
 ]
-
-
 _used_bs4_option = None
 
 
@@ -41,8 +39,13 @@ class IsSaved(Enum):
 
 
 def save(
-        session: "Smartschool",
-    type_: Literal["agenda", "punten", "todo"], course_name: str, id_: str, data: dict | str | Any, is_eq: Callable = operator.eq, extension: str = "json"
+    session: "Smartschool",  # noqa: UP037, F821
+    type_: Literal["agenda", "punten", "todo"],
+    course_name: str,
+    id_: str,
+    data: dict | str | Any,
+    is_eq: Callable = operator.eq,
+    extension: str = "json",
 ) -> IsSaved | dict | str:
     save_as = session.cache_path / f"_{type_}/{course_name}/{id_}.{extension}"
 

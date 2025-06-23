@@ -1,7 +1,10 @@
 from datetime import date
+from typing import TYPE_CHECKING
 
 from smartschool import FutureTasks, Smartschool
-from smartschool.objects import FutureTaskOneDay
+
+if TYPE_CHECKING:
+    from smartschool.objects import FutureTaskOneDay
 
 
 def test_future_tasks_normal_flow(session: Smartschool):

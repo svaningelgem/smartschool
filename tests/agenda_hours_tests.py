@@ -1,6 +1,6 @@
 import pytest
 
-from smartschool import SmartschoolHours, Smartschool
+from smartschool import Smartschool, SmartschoolHours
 from smartschool.objects import AgendaHour
 
 

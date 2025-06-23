@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import base64
 import re
 from datetime import date, datetime
 from functools import cached_property
@@ -11,7 +10,6 @@ from typing import Annotated, Literal
 from pydantic import AliasChoices, BeforeValidator, constr
 from pydantic.dataclasses import Field, dataclass
 
-from .session import Smartschool
 from .common import as_float
 
 String = constr(strip_whitespace=True)

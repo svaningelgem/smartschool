@@ -2,14 +2,17 @@ from __future__ import annotations
 
 import time
 from abc import ABC
-from dataclasses import dataclass, InitVar
+from dataclasses import dataclass
 from datetime import datetime
-from typing import ClassVar
+from typing import TYPE_CHECKING, ClassVar
 
 from . import objects
 from ._xml_interface import SmartschoolXML_WeeklyCache
 from .objects import AgendaHour, AgendaMomentInfo
-from .session import SessionMixin, Smartschool
+from .session import SessionMixin
+
+if TYPE_CHECKING:
+    from .session import Smartschool
 
 
 class AgendaPoster(SmartschoolXML_WeeklyCache, ABC):
@@ -138,6 +141,7 @@ class SmartschoolHours(AgendaPoster):
 
         raise ValueError(f"Couldn't find {hourId}")
 
+
 class SmartschoolMomentInfos(AgendaPoster):
     """
     Interface to the retrieval of one particular moment (a book-symbol in smartschool).
@@ -150,6 +154,7 @@ class SmartschoolMomentInfos(AgendaPoster):
     - end: HH:MM ending time
     - title: how it is called in the agenda
     """
+
     def __init__(self, session: Smartschool, moment_id: str):
         super().__init__(session=session)
 

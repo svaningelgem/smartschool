@@ -1,10 +1,10 @@
 import pytest
 
-from smartschool import SmartschoolMomentInfos, Smartschool
+from smartschool import Smartschool, SmartschoolMomentInfos
 
 
 def test_agenda_moment_info_normal_flow(session: Smartschool):
-    sut = list(SmartschoolMomentInfos( session, "3732340"))
+    sut = list(SmartschoolMomentInfos(session, "3732340"))
 
     assert len(sut) == 1
     assert sut[0].className == "AAR1 - Lotte Peeters - 223"
@@ -18,7 +18,7 @@ def test_moment_info_fails_with_empty_moment(session: Smartschool):
 
 
 def test_agenda_moment_info_no_assignments(session: Smartschool):
-    sut = list(SmartschoolMomentInfos(session,"3732340"))
+    sut = list(SmartschoolMomentInfos(session, "3732340"))
 
     assert len(sut) == 1
     assert sut[0].className == "AAR1 - Lotte Peeters - 223"
@@ -26,7 +26,7 @@ def test_agenda_moment_info_no_assignments(session: Smartschool):
 
 
 def test_agenda_moment_info_multiple_assignments(session: Smartschool):
-    sut = list(SmartschoolMomentInfos(session,"3732340"))
+    sut = list(SmartschoolMomentInfos(session, "3732340"))
 
     assert len(sut) == 1
     assert sut[0].className == "AAR1 - Lotte Peeters - 223"

@@ -35,7 +35,7 @@ def test_env_credentials_empty(monkeypatch, make_empty):
         EnvCredentials().validate()
 
 
-def test_path_credentials(tmp_path: Path, session:Smartschool):
+def test_path_credentials(tmp_path: Path, session: Smartschool):
     tmp_credentials = _create_credentials_file(tmp_path)
     sut = PathCredentials(tmp_credentials)
     sut.validate()
@@ -55,14 +55,14 @@ def test_path_credentials(tmp_path: Path, session:Smartschool):
         "MFA",
     ],
 )
-def test_path_credentials_empty(monkeypatch, make_empty, tmp_path: Path, session:Smartschool):
+def test_path_credentials_empty(monkeypatch, make_empty, tmp_path: Path, session: Smartschool):
     monkeypatch.setenv(f"SMARTSCHOOL_{make_empty}", "")
 
     with pytest.raises(RuntimeError, match="Please verify and correct these attribute"):
         PathCredentials(_create_credentials_file(tmp_path)).validate()
 
 
-def test_credentials_exporting_as_dict_with_other_info(session:Smartschool):
+def test_credentials_exporting_as_dict_with_other_info(session: Smartschool):
     sut = EnvCredentials()
     object.__setattr__(sut, "other_info", {"test": "something"})
 
@@ -75,7 +75,7 @@ def test_credentials_exporting_as_dict_with_other_info(session:Smartschool):
     }
 
 
-def test_credentials_exporting_as_dict_without_other_info(session:Smartschool):
+def test_credentials_exporting_as_dict_without_other_info(session: Smartschool):
     sut = EnvCredentials()
 
     assert sut.as_dict() == {

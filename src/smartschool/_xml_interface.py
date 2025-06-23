@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import contextlib
-from abc import ABC, ABCMeta, abstractmethod
+from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import date
 from typing import TYPE_CHECKING, TypeVar
@@ -9,11 +9,11 @@ from xml.etree import ElementTree as ET
 from xml.sax.saxutils import quoteattr
 
 from .common import xml_to_dict
-
-from collections.abc import Iterator
-from datetime import datetime
-
 from .session import SessionMixin
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
+    from datetime import datetime
 
 _T = TypeVar("_T")
 

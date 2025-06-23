@@ -2,11 +2,10 @@ import json
 from unittest.mock import patch
 
 import pytest
+import requests
 import yaml
 
-import requests
-from smartschool import SmartSchoolAuthenticationError
-from smartschool import Smartschool
+from smartschool import Smartschool, SmartSchoolAuthenticationError
 
 
 def test_smartschool_not_started_yet():
@@ -31,7 +30,7 @@ class TestSmartschoolInitialization:
 
     def test_initialization_with_credentials(self, mock_credentials, tmp_path):
         """Should initialize properly with credentials."""
-        with patch('smartschool.session.Path.home', return_value=tmp_path):
+        with patch("smartschool.session.Path.home", return_value=tmp_path):
             ss = Smartschool(creds=mock_credentials)
 
             assert ss.creds == mock_credentials
@@ -41,7 +40,7 @@ class TestSmartschoolInitialization:
 
     def test_initialization_without_credentials(self, tmp_path):
         """Should initialize without credentials."""
-        with patch('smartschool.session.Path.home', return_value=tmp_path):
+        with patch("smartschool.session.Path.home", return_value=tmp_path):
             ss = Smartschool()
 
             assert ss.creds is None
@@ -108,7 +107,7 @@ class TestSmartschoolAuthentication:
             yaml.dump(authenticated_user_data, f)
 
         # Create new session that should load the file
-        with patch('smartschool.session.Path.home', return_value=tmp_path):
+        with patch("smartschool.session.Path.home", return_value=tmp_path):
             new_session = Smartschool(creds=session.creds)
             assert new_session._authenticated_user == authenticated_user_data
 
@@ -211,45 +210,46 @@ class TestAuthenticationFlow:
     def test_2fa_without_pyotp(self, session, monkeypatch, mocker):
         """Should raise error when 2FA needed but pyotp not available."""
         # Mock pyotp as None in the session module
-        monkeypatch.setattr('smartschool.session.pyotp', None)
+        monkeypatch.setattr("smartschool.session.pyotp", None)
 
         # Create a fresh session instance to ensure the None pyotp is used
-        mock_response = mocker.Mock(spec=requests.Response, url = "https://site/2fa")
+        mock_response = mocker.Mock(spec=requests.Response, url="https://site/2fa")
 
         with pytest.raises(SmartSchoolAuthenticationError, match="2FA verification requires 'pyotp'"):
             session._handle_auth_redirect(mock_response)
 
     def test_2fa_success(self, session, mocker):
         """Should handle 2FA authentication successfully when pyotp is available."""
-        with patch('smartschool.session.pyotp') as mock_pyotp:
+        with patch("smartschool.session.pyotp") as mock_pyotp:
             # Setup mock TOTP
             mock_totp = mock_pyotp.TOTP.return_value
             mock_totp.now.return_value = "123456"
 
-            mock_response = mocker.Mock(spec=requests.Response, url="https://site/2fa", status_code=302, )
+            mock_response = mocker.Mock(
+                spec=requests.Response,
+                url="https://site/2fa",
+                status_code=302,
+            )
 
             # This should complete without error
             result = session._handle_auth_redirect(mock_response)
-            assert result.url == 'https://site/dashboard'
+            assert result.url == "https://site/dashboard"
 
     def test_2fa_not_returning_200(self, session, requests_mock, mocker):
-        with patch('smartschool.session.pyotp') as mock_pyotp:
+        with patch("smartschool.session.pyotp"):
             requests_mock.get("https://site/2fa/api/v1/config", status_code=304)
+            mock_response = mocker.Mock(spec=requests.Response, url="https://site/2fa", status_code=302)
             with pytest.raises(SmartSchoolAuthenticationError, match="Could not access 2FA API endpoint"):
-                mock_response = mocker.Mock(spec=requests.Response, url="https://site/2fa", status_code=302, )
                 session._handle_auth_redirect(mock_response)
 
     def test_2fa_unsupported_mechanism(self, session, requests_mock, mocker):
         """Should raise error for unsupported 2FA mechanisms."""
         # Mock config response without googleAuthenticator
-        with patch('smartschool.session.pyotp') as mock_pyotp:
-            requests_mock.get(
-                "https://site/2fa/api/v1/config",
-                json={"possibleAuthenticationMechanisms": ["sms"]}
-            )
+        with patch("smartschool.session.pyotp"):
+            requests_mock.get("https://site/2fa/api/v1/config", json={"possibleAuthenticationMechanisms": ["sms"]})
 
+            mock_response = mocker.Mock(spec=requests.Response, url="https://site/2fa")
             with pytest.raises(SmartSchoolAuthenticationError, match="Only googleAuthenticator 2FA is supported"):
-                mock_response = mocker.Mock(spec=requests.Response, url="https://site/2fa")
                 session._handle_auth_redirect(mock_response)
 
 
@@ -264,7 +264,7 @@ class TestSmartschoolProperties:
 
     def test_cache_path_without_credentials(self, tmp_path):
         """Should create cache path without username when no credentials."""
-        with patch('smartschool.session.Path.home', return_value=tmp_path):
+        with patch("smartschool.session.Path.home", return_value=tmp_path):
             ss = Smartschool()
             cache_path = ss.cache_path
 
@@ -273,7 +273,7 @@ class TestSmartschoolProperties:
 
     def test_authenticated_user_file_without_credentials(self, tmp_path):
         """Should return None for authenticated user file without credentials."""
-        with patch('smartschool.session.Path.home', return_value=tmp_path):
+        with patch("smartschool.session.Path.home", return_value=tmp_path):
             ss = Smartschool()
             assert ss._authenticated_user_file is None
 

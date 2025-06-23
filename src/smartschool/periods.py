@@ -1,6 +1,5 @@
 from collections.abc import Iterator
 from dataclasses import dataclass
-from typing import Iterable
 
 from .objects import Period
 from .session import SessionMixin

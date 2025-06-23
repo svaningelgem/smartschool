@@ -7,7 +7,6 @@ from typing import ClassVar, Final
 
 import yaml
 
-
 required_fields: Final[list[str]] = ["username", "password", "main_url", "mfa"]
 
 

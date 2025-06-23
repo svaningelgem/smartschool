@@ -5,12 +5,13 @@ from functools import cached_property
 from typing import TYPE_CHECKING
 
 from .objects import Course, CourseCondensed
-from .session import Smartschool, SessionMixin
+from .session import SessionMixin
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
 
 __all__ = ["Courses", "TopNavCourses"]
+
 
 @dataclass
 class TopNavCourses(SessionMixin):
@@ -25,6 +26,7 @@ class TopNavCourses(SessionMixin):
     >>>     print(course.name)
     Aardrijkskunde_3_LOP_2023-2024
     bibliotheek
+
     """
 
     @cached_property
@@ -33,6 +35,7 @@ class TopNavCourses(SessionMixin):
 
     def __iter__(self) -> Iterator[CourseCondensed]:
         yield from self._list
+
 
 @dataclass
 class Courses(SessionMixin):
@@ -49,6 +52,7 @@ class Courses(SessionMixin):
     >>>     print(course.name)
     Aardrijkskunde
     Biologie
+
     """
 
     @cached_property

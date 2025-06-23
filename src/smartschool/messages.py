@@ -10,10 +10,12 @@ from urllib.parse import quote_plus
 from . import objects
 from ._xml_interface import SmartschoolXML, SmartschoolXML_NoCache
 from .objects import FullMessage, MessageChanged, MessageDeletionStatus, ShortMessage
-from .session import SessionMixin, Smartschool
+from .session import SessionMixin
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
+
+    from .session import Smartschool
 
 __all__ = [
     "AdjustMessageLabel",
@@ -123,7 +125,7 @@ class MessageHeaders(_MessagesPoster, SmartschoolXML_NoCache):
 
 
 class _FetchOneMessage(_MessagesPoster, SmartschoolXML, ABC):
-    def __init__(self, session:Smartschool,msg_id: int, box_type: BoxType = BoxType.INBOX):
+    def __init__(self, session: Smartschool, msg_id: int, box_type: BoxType = BoxType.INBOX):
         super().__init__(session=session)
 
         self.msg_id = msg_id
@@ -159,6 +161,7 @@ class Message(_FetchOneMessage):
     >>> message: FullMessage = list(Message(123))[0]
     >>> message.subject
     Griezelfestijn
+
     """
 
     @property
@@ -244,7 +247,7 @@ class MarkMessageUnread(_FetchOneMessage):
 
 
 class AdjustMessageLabel(_FetchOneMessage):
-    def __init__(self, session:Smartschool,msg_id: int, box_type: BoxType = BoxType.INBOX, label: MessageLabel = MessageLabel.NO_FLAG):
+    def __init__(self, session: Smartschool, msg_id: int, box_type: BoxType = BoxType.INBOX, label: MessageLabel = MessageLabel.NO_FLAG):
         super().__init__(session, msg_id, box_type)
         self.label = label
 
@@ -278,7 +281,7 @@ class MessageMoveToArchive(SessionMixin):
     It's not following the XML protocol... Providing the same interface as the other XMLs though.
     """
 
-    def __init__(self, session:Smartschool,msg_id: int | list[int]):
+    def __init__(self, session: Smartschool, msg_id: int | list[int]):
         super().__init__(session=session)
 
         if not isinstance(msg_id, list):
@@ -306,7 +309,7 @@ class MessageMoveToArchive(SessionMixin):
 
 
 class MessageMoveToTrash(_MessagesPoster, SmartschoolXML_NoCache):
-    def __init__(self, session:Smartschool,msg_id: int):
+    def __init__(self, session: Smartschool, msg_id: int):
         super().__init__(session=session)
 
         self.msg_id = msg_id

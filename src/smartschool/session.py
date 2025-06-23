@@ -1,5 +1,4 @@
 from __future__ import annotations
-from urllib.parse import urlparse
 
 import contextlib
 import json
@@ -9,7 +8,7 @@ from functools import cached_property
 from http.cookiejar import LWPCookieJar
 from pathlib import Path
 from typing import TYPE_CHECKING
-from urllib.parse import urlencode, urljoin
+from urllib.parse import urlencode, urljoin, urlparse
 
 import yaml
 from logprise import logger
@@ -25,6 +24,7 @@ except ImportError:
 
 if TYPE_CHECKING:  # pragma: no cover
     from requests import Response
+
     from .credentials import Credentials
 
 
@@ -133,7 +133,7 @@ class Smartschool(Session):
             raise RuntimeError("Smartschool instance must have valid credentials.")
 
         # Convert relative URLs to absolute
-        full_url = self.create_url(url) if not url.startswith('http') else url
+        full_url = self.create_url(url) if not url.startswith("http") else url
 
         # Make the request
         response = super().request(method, full_url, **kwargs)
@@ -155,12 +155,12 @@ class Smartschool(Session):
     def json(self, url, method: str = "get", **kwargs) -> dict:
         """Handle JSON responses with potential double encoding."""
         if method.lower() == "post":
-            r = self.request('POST', url, **kwargs)
+            r = self.request("POST", url, **kwargs)
         else:
             if "data" in kwargs:
                 data = urlencode(kwargs.pop("data"))
                 url += ("&" if "?" in url else "?") + data
-            r = self.request('GET', url, **kwargs)
+            r = self.request("GET", url, **kwargs)
 
         json_ = r.text
         while isinstance(json_, str):
@@ -172,31 +172,37 @@ class Smartschool(Session):
     def _do_login(self, response: Response) -> Response:
         """Handle login form submission."""
         logger.info(f"Logging in with {self.creds.username}")
-        data = fill_form(response, 'form[name="login_form"]', {
-            "username": self.creds.username,
-            "password": self.creds.password,
-        })
-        return super().request('POST', response.url, data=data, allow_redirects=True)
+        data = fill_form(
+            response,
+            'form[name="login_form"]',
+            {
+                "username": self.creds.username,
+                "password": self.creds.password,
+            },
+        )
+        return super().request("POST", response.url, data=data, allow_redirects=True)
 
     def _do_login_verification(self, response: Response) -> Response:
         """Handle account verification (birthday)."""
         logger.info(f"Account verification for {self.creds.username}")
-        data = fill_form(response, 'form[name="account_verification_form"]', {
-            "security_question_answer": self.creds.mfa,
-        })
-        return super().request('POST', response.url, data=data, allow_redirects=True)
+        data = fill_form(
+            response,
+            'form[name="account_verification_form"]',
+            {
+                "security_question_answer": self.creds.mfa,
+            },
+        )
+        return super().request("POST", response.url, data=data, allow_redirects=True)
 
     def _complete_verification_2fa(self, response: Response) -> Response:
         """Handle 2FA verification using TOTP."""
         if pyotp is None:
-            raise SmartSchoolAuthenticationError(
-                "2FA verification requires 'pyotp' package. Install with: pip install pyotp"
-            )
+            raise SmartSchoolAuthenticationError("2FA verification requires 'pyotp' package. Install with: pip install pyotp")
 
         logger.info(f"2FA verification for {self.creds.username}")
 
         # Check 2FA config
-        config_resp = super().request('GET', self.create_url("/2fa/api/v1/config"), allow_redirects=True)
+        config_resp = super().request("GET", self.create_url("/2fa/api/v1/config"), allow_redirects=True)
         config_resp.raise_for_status()
 
         if config_resp.status_code != 200:
@@ -210,8 +216,7 @@ class Smartschool(Session):
         totp = pyotp.TOTP(self.creds.mfa)
         data = f'{{"google2fa":"{totp.now()}"}}'
 
-        return super().request('POST', self.create_url("/2fa/api/v1/google-authenticator"),
-                               data=data, allow_redirects=True)
+        return super().request("POST", self.create_url("/2fa/api/v1/google-authenticator"), data=data, allow_redirects=True)
 
     def _parse_login_information(self, response: Response) -> None:
         """Parse authenticated user information from response."""
@@ -220,10 +225,8 @@ class Smartschool(Session):
             if script.get("src") or "extend" not in script.text:
                 continue
 
-            if match := re.search(r"JSON\s*\.\s*parse\s*\(\s*'(.*)'\s*\)\s*\)\s*;?\s*$",
-                                  script.text, flags=re.IGNORECASE):
-                result = re.sub(r"\\u([0-9a-fA-F]{4})",
-                                lambda m: chr(int(m.group(1), 16)), match.group(1))
+            if match := re.search(r"JSON\s*\.\s*parse\s*\(\s*'(.*)'\s*\)\s*\)\s*;?\s*$", script.text, flags=re.IGNORECASE):
+                result = re.sub(r"\\u([0-9a-fA-F]{4})", lambda m: chr(int(m.group(1), 16)), match.group(1))
                 data = json.loads(result.replace("\\\\", "\\"))
                 with contextlib.suppress(KeyError, TypeError, IndexError):
                     self.authenticated_user = data["vars"]["authenticatedUser"]
@@ -238,5 +241,5 @@ class Smartschool(Session):
 
 
 @dataclass
-class SessionMixin():
+class SessionMixin:
     session: Smartschool

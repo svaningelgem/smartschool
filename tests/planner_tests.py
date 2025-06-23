@@ -1,10 +1,11 @@
+import time_machine
+
 from smartschool import Smartschool
 from smartschool.planner import PlannedElements
-import time_machine
 
 
 @time_machine.travel("2025-05-06")
-def test_periods_happy_flow(session:Smartschool):
+def test_periods_happy_flow(session: Smartschool):
     sut = list(PlannedElements(session))
 
     assert len(sut) == 25

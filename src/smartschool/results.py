@@ -1,7 +1,6 @@
-from collections.abc import Iterator
+from collections.abc import Iterable, Iterator
 from dataclasses import dataclass
 from itertools import count
-from typing import Iterable
 
 from .exceptions import DownloadError
 from .objects import ResultWithDetails, ResultWithoutDetails
@@ -11,6 +10,7 @@ __all__ = ["ResultDetail", "Results"]
 from .session import SessionMixin
 
 RESULTS_PER_PAGE = 50
+
 
 @dataclass
 class Results(SessionMixin, Iterable[ResultWithoutDetails]):
