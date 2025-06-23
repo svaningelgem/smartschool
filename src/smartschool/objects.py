@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from datetime import date, datetime, tzinfo
+from datetime import date, datetime
 from functools import cached_property
 from typing import Annotated, Literal
 

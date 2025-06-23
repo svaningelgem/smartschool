@@ -34,6 +34,7 @@ def test_env_credentials_empty(monkeypatch, make_empty):
     with pytest.raises(RuntimeError, match="Please verify and correct these attribute"):
         EnvCredentials().validate()
 
+
 @pytest.mark.parametrize("as_type", [Path, str])
 def test_path_credentials(tmp_path: Path, session: Smartschool, as_type: type):
     tmp_credentials = _create_credentials_file(tmp_path)
@@ -46,8 +47,8 @@ def test_path_credentials(tmp_path: Path, session: Smartschool, as_type: type):
     assert sut.mfa == "1234-56-78"
 
 
-def test_path_credentials_without_path(monkeypatch, tmp_path:Path,session):
-    monkeypatch.setattr("pathlib.Path.cwd", lambda:tmp_path)
+def test_path_credentials_without_path(monkeypatch, tmp_path: Path, session):
+    monkeypatch.setattr("pathlib.Path.cwd", lambda: tmp_path)
     tmp_path.joinpath(PathCredentials._CREDENTIALS_NAME).write_text(yaml.dump(EnvCredentials().as_dict()), encoding="utf8")
 
     sut = PathCredentials()
@@ -62,6 +63,7 @@ def test_path_credentials_without_path(monkeypatch, tmp_path:Path,session):
 def test_path_credentials_file_not_found(tmp_path: Path, session: Smartschool):
     with pytest.raises(FileNotFoundError):
         PathCredentials(tmp_path.joinpath("not_found.yml"))
+
 
 @pytest.mark.parametrize(
     "make_empty",
