@@ -11,16 +11,13 @@ import xml.etree.ElementTree as ET
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from enum import Enum, auto
-from typing import TYPE_CHECKING, Any, Callable, Literal
+from typing import Any, Callable, Literal
 
 from bs4 import BeautifulSoup, FeatureNotFound, GuessedAtParserWarning
 from logprise import logger
 from pydantic import RootModel
 from pydantic.dataclasses import is_pydantic_dataclass
 from requests import Response
-
-if TYPE_CHECKING:
-    import bs4
 
 __all__ = [
     "IsSaved",
@@ -138,13 +135,12 @@ def bs4_html(html: str | bytes | Response) -> BeautifulSoup:
         return BeautifulSoup(html)
 
 
-def get_all_values_from_form(html: bs4.BeautifulSoup, form_selector: str):
+def get_all_values_from_form(html: BeautifulSoup, form_selector: str):
+    """Extract form input values from HTML."""
     form = html.select(form_selector)
     assert len(form) == 1, f"We should have only 1 form. We got {len(form)}!"
     form = form[0]
 
-    # action = form.attrs.get("action").lower()
-    # method = form.attrs.get("method", "get").lower()
     all_inputs = form.find_all(["input", "button", "textarea", "select"])
 
     inputs = []
@@ -155,27 +151,42 @@ def get_all_values_from_form(html: bs4.BeautifulSoup, form_selector: str):
         if "name" not in attrs:
             continue
 
-        assert tag_name != "select", "Check if this code works. Possible issue with getting the value if the value tag isn't set"
-        inputs.append(
-            {
-                "name": attrs.get("name"),
-                "value": attrs.get("value", ""),
-            }
-        )
-        #     select_options = []
-        #     value = ""
-        #     for select_option in input_tag.find_all("option"):
-        #         option_value = select_option.attrs.get("value")
-        #         if option_value:
-        #             select_options.append(option_value)
-        #             if "selected" in select_option.attrs:
-        #                 value = option_value
-        #     if not value and select_options:
-        #         # if the default is not set, and there are options, take the first option as default
-        #         value = select_options[0]
-        #     # add the select to the inputs list
-        #     inputs.append({"name": attrs.get("name"), "values": select_options, "value": value})
+        form_element = {
+            "name": attrs.get("name"),
+            "value": attrs.get("value", ""),
+        }
 
+        if tag_name == "select":
+            select_options = []
+            form_element["values"] = select_options
+
+            is_multiple = "multiple" in [attr.lower() for attr in attrs]
+            selected_values = []
+
+            for select_option in input_tag.find_all("option"):
+                # Use value attribute if present, otherwise use text content
+                option_value = select_option.attrs.get("value")
+                if option_value is None:
+                    option_value = select_option.get_text().strip()
+
+                if option_value:  # Only add non-empty values
+                    select_options.append(option_value)
+                    # Case-insensitive check for selected attribute
+                    if any(attr.lower() == "selected" for attr in select_option.attrs):
+                        selected_values.append(option_value)
+
+            # Handle value assignment based on multiple attribute
+            if is_multiple:
+                form_element["value"] = selected_values
+            else:
+                if selected_values:
+                    form_element["value"] = selected_values[-1]  # Last selected wins for single select
+                elif select_options:
+                    form_element["value"] = select_options[0]
+                else:
+                    form_element["value"] = None
+
+        inputs.append(form_element)
     return inputs
 
 

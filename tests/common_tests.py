@@ -5,8 +5,9 @@ from pathlib import Path
 import pytest_mock
 from bs4 import BeautifulSoup, FeatureNotFound, GuessedAtParserWarning
 from logprise import logger
+from requests import Response
 
-from smartschool.common import IsSaved, as_float, bs4_html, fill_form, make_filesystem_safe, save, send_email, xml_to_dict
+from smartschool.common import IsSaved, as_float, bs4_html, fill_form, get_all_values_from_form, make_filesystem_safe, save, send_email, xml_to_dict
 from smartschool.objects import Student
 
 
@@ -110,6 +111,14 @@ def test_bs4_html():
     assert isinstance(sut, BeautifulSoup)
 
 
+def test_bs4_html_with_response(mocker):
+    response = mocker.Mock(spec=Response)
+    response.text = "<html />"
+    sut = bs4_html(response)
+
+    assert isinstance(sut, BeautifulSoup)
+
+
 def test_bs4_html_no_good_options(mocker):
     mocker.patch("smartschool.common._used_bs4_option", new=None)
 
@@ -147,3 +156,237 @@ def test_fill_form(mocker: pytest_mock.MockerFixture):
 
     # Assert the result matches expectations
     assert result == {"username": "test_user", "password": "default_pass", "email": "test@example.com"}
+
+
+def test_missing_name():
+    """Test missing name attribute."""
+    html = BeautifulSoup("""
+    <form>
+        <input value="test" />
+        <input value="test2" name="test2"/>
+    """)
+    result = get_all_values_from_form(html, "form")
+    assert result == [{"name": "test2", "value": "test2"}]
+
+
+def test_select_with_explicit_values():
+    """Test select with explicit value attributes."""
+    html = BeautifulSoup(
+        """
+    <form>
+        <select name="country">
+            <option value="us">United States</option>
+            <option value="ca" selected>Canada</option>
+            <option value="uk">United Kingdom</option>
+        </select>
+    </form>
+    """,
+        "html.parser",
+    )
+
+    result = get_all_values_from_form(html, "form")
+    select_element = result[0]
+
+    assert select_element["name"] == "country"
+    assert select_element["value"] == "ca"
+    assert select_element["values"] == ["us", "ca", "uk"]
+
+
+def test_select_without_value_attributes():
+    """Test select where options use text content as values."""
+    html = BeautifulSoup(
+        """
+    <form>
+        <select name="fruit">
+            <option>Apple</option>
+            <option selected>Orange</option>
+            <option>Banana</option>
+        </select>
+    </form>
+    """,
+        "html.parser",
+    )
+
+    result = get_all_values_from_form(html, "form")
+    select_element = result[0]
+
+    assert select_element["name"] == "fruit"
+    assert select_element["value"] == "Orange"
+    assert select_element["values"] == ["Apple", "Orange", "Banana"]
+
+
+def test_select_mixed_value_types():
+    """Test select with mix of value attributes and text content."""
+    html = BeautifulSoup(
+        """
+    <form>
+        <select name="size">
+            <option value="s">Small</option>
+            <option>Medium</option>
+            <option value="l" selected>Large</option>
+        </select>
+    </form>
+    """,
+        "html.parser",
+    )
+
+    result = get_all_values_from_form(html, "form")
+    select_element = result[0]
+
+    assert select_element["name"] == "size"
+    assert select_element["value"] == "l"
+    assert select_element["values"] == ["s", "Medium", "l"]
+
+
+def test_select_no_selection_defaults_to_first():
+    """Test select without selected option defaults to first."""
+    html = BeautifulSoup(
+        """
+    <form>
+        <select name="color">
+            <option value="red">Red</option>
+            <option value="blue">Blue</option>
+        </select>
+    </form>
+    """,
+        "html.parser",
+    )
+
+    result = get_all_values_from_form(html, "form")
+    select_element = result[0]
+
+    assert select_element["value"] == "red"
+
+
+def test_select_empty():
+    """Test empty select element."""
+    html = BeautifulSoup(
+        """
+    <form>
+        <select name="empty"></select>
+    </form>
+    """,
+        "html.parser",
+    )
+
+    result = get_all_values_from_form(html, "form")
+    select_element = result[0]
+
+    assert select_element["value"] is None
+    assert select_element["values"] == []
+
+
+def test_select_with_empty_options():
+    """Test select with empty option values."""
+    html = BeautifulSoup(
+        """
+    <form>
+        <select name="test">
+            <option value="">Choose...</option>
+            <option value="val1">Option 1</option>
+        </select>
+    </form>
+    """,
+        "html.parser",
+    )
+
+    result = get_all_values_from_form(html, "form")
+    select_element = result[0]
+
+    # Empty values should be filtered out
+    assert select_element["values"] == ["val1"]
+    assert select_element["value"] == "val1"
+
+
+def test_select_multiple_selections():
+    """Test select with multiple attribute and multiple selected options."""
+    html = BeautifulSoup(
+        """
+    <form>
+        <select name="colors" multiple>
+            <option value="red" selected>Red</option>
+            <option value="blue">Blue</option>
+            <option value="green" selected>Green</option>
+            <option value="yellow">Yellow</option>
+        </select>
+    </form>
+    """,
+        "html.parser",
+    )
+
+    result = get_all_values_from_form(html, "form")
+    select_element = result[0]
+
+    assert select_element["name"] == "colors"
+    assert select_element["value"] == ["red", "green"]
+    assert select_element["values"] == ["red", "blue", "green", "yellow"]
+
+
+def test_select_multiple_no_selections():
+    """Test multiple select with no selected options."""
+    html = BeautifulSoup(
+        """
+    <form>
+        <select name="items" multiple>
+            <option value="a">A</option>
+            <option value="b">B</option>
+        </select>
+    </form>
+    """,
+        "html.parser",
+    )
+
+    result = get_all_values_from_form(html, "form")
+    select_element = result[0]
+
+    assert select_element["value"] == []
+
+
+def test_select_case_insensitive_attributes():
+    """Test case-insensitive handling of selected and multiple attributes."""
+    html = BeautifulSoup(
+        """
+    <form>
+        <select name="test1" MULTIPLE>
+            <option value="a" SELECTED>A</option>
+            <option value="b" Selected>B</option>
+        </select>
+        <select name="test2">
+            <option value="x">X</option>
+            <option value="y" SeLeCteD>Y</option>
+        </select>
+    </form>
+    """,
+        "html.parser",
+    )
+
+    result = get_all_values_from_form(html, "form")
+
+    # Multiple select with case-insensitive attributes
+    multi_select = next(el for el in result if el["name"] == "test1")
+    assert multi_select["value"] == ["a", "b"]
+
+    # Single select with case-insensitive selected
+    single_select = next(el for el in result if el["name"] == "test2")
+    assert single_select["value"] == "y"
+
+
+def test_select_single_multiple_selected_last_wins():
+    """Test single select with multiple selected options - last one wins."""
+    html = BeautifulSoup(
+        """
+    <form>
+        <select name="priority">
+            <option value="low" selected>Low</option>
+            <option value="med">Medium</option>
+            <option value="high" selected>High</option>
+        </select>
+    </form>
+    """,
+        "html.parser",
+    )
+
+    result = get_all_values_from_form(html, "form")
+    select_element = result[0]
+
+    assert select_element["value"] == "high"  # Last selected wins
