@@ -10,37 +10,10 @@ from typing import Annotated, Literal
 from pydantic import AliasChoices, BeforeValidator, constr
 from pydantic.dataclasses import Field, dataclass
 
-from .common import as_float
+from .common import as_float, convert_to_date, convert_to_datetime
 
 String = constr(strip_whitespace=True)
 UUID = constr(pattern=re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", flags=re.IGNORECASE))
-
-
-def convert_to_datetime(x: str | String | datetime | None) -> datetime:
-    if x is None:
-        return datetime.now().astimezone()
-
-    if isinstance(x, datetime):
-        if x.tzinfo is None:
-            raise ValueError("No timezone information found in this date")
-        return x
-
-    try:
-        return datetime.strptime(x, "%Y-%m-%dT%H:%M:%S%z")
-    except ValueError:  # 2023-11-16 08:24
-        return datetime.strptime(x, "%Y-%m-%d %H:%M")
-
-
-def convert_to_date(x: str | String | date | datetime | None) -> date:
-    if x is None:
-        return date.today()
-    if isinstance(x, datetime):
-        return x.date()
-    if isinstance(x, date):
-        return x
-
-    return datetime.strptime(x, "%Y-%m-%d").date()
-
 
 Url = String
 Date = Annotated[date, BeforeValidator(convert_to_date)]

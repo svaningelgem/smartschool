@@ -16,7 +16,9 @@ def _email_text(hour_start: datetime | time, hour_end: datetime | time, course_n
 def _next_weekday() -> date | None:
     now = datetime.now()
 
-    if (now.hour in [12, 20] and now.isoweekday() == 3) or (now.hour in [17, 20] and now.isoweekday() != 3):  # Wednesday
+    if now.hour in [12, 20] and now.isoweekday() == 3:  # Wednesday  # noqa: SIM114
+        ...  # Ok
+    elif now.hour in [17, 20] and now.isoweekday() != 3:  # !Wednesday
         ...  # Ok
     else:
         return None

@@ -8,10 +8,11 @@ import re
 import smtplib
 import warnings
 import xml.etree.ElementTree as ET
+from datetime import date, datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from enum import Enum, auto
-from typing import Any, Callable, Literal
+from typing import TYPE_CHECKING, Any, Callable, Literal
 
 from bs4 import BeautifulSoup, FeatureNotFound, GuessedAtParserWarning
 from logprise import logger
@@ -29,6 +30,12 @@ __all__ = [
     "send_email",
     "xml_to_dict",
 ]
+
+from smartschool.exceptions import SmartSchoolParsingError
+
+if TYPE_CHECKING:
+    from smartschool.objects import String
+
 _used_bs4_option = None
 
 
@@ -245,3 +252,45 @@ def xml_to_dict(element, *, depth: int = 0):
             result[tag] = child_data
 
     return result
+
+
+def convert_to_datetime(x: str | String | date | datetime | None) -> datetime:
+    if x is None:
+        return datetime.now().astimezone()
+
+    if isinstance(x, datetime):
+        if x.tzinfo is None:
+            raise ValueError("No timezone information found in this date")
+        return x
+
+    if isinstance(x, date):
+        return datetime.combine(x, datetime.min.time()).astimezone()
+
+    possible_formats = [
+        "%Y-%m-%dT%H:%M:%S%z",
+        "%Y-%m-%d %H:%M",
+        "%Y-%m-%d",
+    ]
+
+    for fmt in possible_formats:
+        with contextlib.suppress(ValueError):
+            x = datetime.strptime(x, fmt)
+            if x.tzinfo is None:
+                return x.astimezone()
+            return x
+
+    raise SmartSchoolParsingError(f"Cannot convert '{x}' to `datetime`")
+
+
+def convert_to_date(x: str | String | date | datetime | None) -> date:
+    if x is None:
+        return date.today()
+    if isinstance(x, datetime):
+        return x.date()
+    if isinstance(x, date):
+        return x
+
+    with contextlib.suppress(ValueError):
+        return datetime.strptime(x, "%Y-%m-%d").date()
+
+    raise SmartSchoolParsingError(f"Cannot convert '{x}' to `date`")
