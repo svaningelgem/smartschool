@@ -31,7 +31,7 @@ __all__ = [
     "xml_to_dict",
 ]
 
-from smartschool.exceptions import SmartschoolParseError
+from smartschool.exceptions import SmartSchoolParsingError
 
 if TYPE_CHECKING:
     from smartschool.objects import String
@@ -279,7 +279,7 @@ def convert_to_datetime(x: str | String | date | datetime | None) -> datetime:
                 return x.astimezone()
             return x
 
-    raise SmartschoolParseError(f"Cannot convert '{x}' to `datetime`")
+    raise SmartSchoolParsingError(f"Cannot convert '{x}' to `datetime`")
 
 
 def convert_to_date(x: str | String | date | datetime | None) -> date:
@@ -293,4 +293,4 @@ def convert_to_date(x: str | String | date | datetime | None) -> date:
     with contextlib.suppress(ValueError):
         return datetime.strptime(x, "%Y-%m-%d").date()
 
-    raise SmartschoolParseError(f"Cannot convert '{x}' to `date`")
+    raise SmartSchoolParsingError(f"Cannot convert '{x}' to `date`")

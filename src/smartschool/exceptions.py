@@ -1,12 +1,14 @@
-class SmartSchoolException(Exception): ...
-
-
-class SmartSchoolDownloadError(SmartSchoolException): ...
+class SmartSchoolException(Exception):
+    """Base exception class for smartschool API errors."""
 
 
 class SmartSchoolAuthenticationError(SmartSchoolException):
     """Indicates an error during the authentication process."""
 
 
-class SmartschoolParseError(SmartSchoolException):
-    """Some parsing went wrong."""
+class SmartSchoolParsingError(SmartSchoolException):
+    """Indicates an error occurred while parsing data from Smartschool."""
+
+
+class SmartSchoolDownloadError(SmartSchoolException):
+    """Indicates an error occurred during a file download operation."""

@@ -24,7 +24,7 @@ from smartschool.common import (
     send_email,
     xml_to_dict,
 )
-from smartschool.exceptions import SmartschoolParseError
+from smartschool.exceptions import SmartSchoolParsingError
 from smartschool.objects import Student
 
 
@@ -424,7 +424,7 @@ def test_convert_to_datetime() -> None:
     with pytest.raises(ValueError, match="No timezone information found in this date"):
         convert_to_datetime(expected.replace(tzinfo=None))
 
-    with pytest.raises(SmartschoolParseError, match="Cannot convert 'boom' to `datetime`"):
+    with pytest.raises(SmartSchoolParsingError, match="Cannot convert 'boom' to `datetime`"):
         convert_to_datetime("boom")
 
 
@@ -437,5 +437,5 @@ def test_convert_to_date() -> None:
     assert convert_to_date(expected) == expected
     assert convert_to_date(datetime.combine(expected, time.min)) == expected
 
-    with pytest.raises(SmartschoolParseError, match="Cannot convert 'boom' to `date`"):
+    with pytest.raises(SmartSchoolParsingError, match="Cannot convert 'boom' to `date`"):
         convert_to_date("boom")
