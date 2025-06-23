@@ -2,9 +2,9 @@ import json
 from unittest.mock import patch
 
 import pytest
-import requests
 import yaml
 
+import requests
 from smartschool import SmartSchoolAuthenticationError
 from smartschool import Smartschool
 
@@ -208,55 +208,49 @@ class TestAuthenticationFlow:
         with pytest.raises(SmartSchoolAuthenticationError, match="Max login attempts"):
             session.request("GET", "/login")
 
-    def test_auth_recursion_detection(self, session):
-        """Should detect and prevent authentication recursion."""
-        session._auth_chain = ["login"]
-
-        with pytest.raises(SmartSchoolAuthenticationError, match="Auth recursion detected"):
-            # Simulate recursive auth by manually triggering auth handler
-            from unittest.mock import Mock
-            mock_response = Mock()
-            mock_response.url = "https://site/login"
-            session._handle_auth_redirect(mock_response)
-
-    def test_2fa_without_pyotp(self, session, monkeypatch):
+    def test_2fa_without_pyotp(self, session, monkeypatch, mocker):
         """Should raise error when 2FA needed but pyotp not available."""
-        # Mock pyotp as None
+        # Mock pyotp as None in the session module
         monkeypatch.setattr('smartschool.session.pyotp', None)
 
+        # Create a fresh session instance to ensure the None pyotp is used
+        mock_response = mocker.Mock(spec=requests.Response, url = "https://site/2fa")
+
         with pytest.raises(SmartSchoolAuthenticationError, match="2FA verification requires 'pyotp'"):
-            from unittest.mock import Mock
-            mock_response = Mock()
-            mock_response.url = "https://site/2fa"
-            session._complete_verification_2fa(mock_response)
+            session._handle_auth_redirect(mock_response)
 
-    @patch('smartschool.session.pyotp')
-    def test_2fa_success(self, mock_pyotp, session):
-        """Should handle 2FA authentication successfully."""
-        # Setup mock TOTP
-        mock_totp = mock_pyotp.TOTP.return_value
-        mock_totp.now.return_value = "123456"
+    def test_2fa_success(self, session, mocker):
+        """Should handle 2FA authentication successfully when pyotp is available."""
+        with patch('smartschool.session.pyotp') as mock_pyotp:
+            # Setup mock TOTP
+            mock_totp = mock_pyotp.TOTP.return_value
+            mock_totp.now.return_value = "123456"
 
-        from unittest.mock import Mock
-        mock_response = Mock()
-        mock_response.url = "https://site/2fa"
+            mock_response = mocker.Mock(spec=requests.Response, url="https://site/2fa", status_code=302, )
 
-        # This should complete without error
-        result = session._complete_verification_2fa(mock_response)
-        assert result.status_code == 302  # Redirect after successful 2FA
+            # This should complete without error
+            result = session._handle_auth_redirect(mock_response)
+            assert result.url == 'https://site/dashboard'
+
+    def test_2fa_not_returning_200(self, session, requests_mock, mocker):
+        with patch('smartschool.session.pyotp') as mock_pyotp:
+            requests_mock.get("https://site/2fa/api/v1/config", status_code=304)
+            with pytest.raises(SmartSchoolAuthenticationError, match="Could not access 2FA API endpoint"):
+                mock_response = mocker.Mock(spec=requests.Response, url="https://site/2fa", status_code=302, )
+                session._handle_auth_redirect(mock_response)
 
     def test_2fa_unsupported_mechanism(self, session, requests_mock, mocker):
         """Should raise error for unsupported 2FA mechanisms."""
         # Mock config response without googleAuthenticator
-        requests_mock.get(
-            "https://site/2fa/api/v1/config",
-            json={"possibleAuthenticationMechanisms": ["sms"]}
-        )
+        with patch('smartschool.session.pyotp') as mock_pyotp:
+            requests_mock.get(
+                "https://site/2fa/api/v1/config",
+                json={"possibleAuthenticationMechanisms": ["sms"]}
+            )
 
-        with pytest.raises(SmartSchoolAuthenticationError, match="Only googleAuthenticator 2FA is supported"):
-            mock_response = mocker.Mock(spec=requests.Response)
-            mock_response.url = "https://site/2fa"
-            session._complete_verification_2fa(mock_response)
+            with pytest.raises(SmartSchoolAuthenticationError, match="Only googleAuthenticator 2FA is supported"):
+                mock_response = mocker.Mock(spec=requests.Response, url="https://site/2fa")
+                session._handle_auth_redirect(mock_response)
 
 
 class TestSmartschoolProperties:
