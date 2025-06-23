@@ -30,6 +30,7 @@ __all__ = [
     "xml_to_dict",
 ]
 
+
 _used_bs4_option = None
 
 
@@ -40,10 +41,9 @@ class IsSaved(Enum):
 
 
 def save(
+        session: "Smartschool",
     type_: Literal["agenda", "punten", "todo"], course_name: str, id_: str, data: dict | str | Any, is_eq: Callable = operator.eq, extension: str = "json"
 ) -> IsSaved | dict | str:
-    from .session import session  # Prevent circular import
-
     save_as = session.cache_path / f"_{type_}/{course_name}/{id_}.{extension}"
 
     save_as.parent.mkdir(exist_ok=True, parents=True)

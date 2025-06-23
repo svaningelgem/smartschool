@@ -1,14 +1,16 @@
 from __future__ import annotations
 
+import base64
 from abc import ABC
 from dataclasses import dataclass
 from enum import Enum
 from typing import TYPE_CHECKING
 from urllib.parse import quote_plus
 
+from . import objects
 from ._xml_interface import SmartschoolXML, SmartschoolXML_NoCache
-from .objects import Attachment, FullMessage, MessageChanged, MessageDeletionStatus, ShortMessage
-from .session import SessionMixin
+from .objects import FullMessage, MessageChanged, MessageDeletionStatus, ShortMessage
+from .session import SessionMixin, Smartschool
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -78,12 +80,13 @@ class MessageHeaders(_MessagesPoster, SmartschoolXML_NoCache):
 
     def __init__(
         self,
+        session: Smartschool,
         box_type: BoxType = BoxType.INBOX,
         sort_by: SortField = SortField.DATE,
         sort_order: SortOrder = SortOrder.DESC,
         already_seen_message_ids: list[int] | None = None,
     ):
-        super().__init__()
+        super().__init__(session=session)
 
         self.box_type = box_type
         self.sort_by = sort_by
@@ -120,8 +123,8 @@ class MessageHeaders(_MessagesPoster, SmartschoolXML_NoCache):
 
 
 class _FetchOneMessage(_MessagesPoster, SmartschoolXML, ABC):
-    def __init__(self, msg_id: int, box_type: BoxType = BoxType.INBOX):
-        super().__init__()
+    def __init__(self, session:Smartschool,msg_id: int, box_type: BoxType = BoxType.INBOX):
+        super().__init__(session=session)
 
         self.msg_id = msg_id
         self.box_type = box_type
@@ -156,7 +159,6 @@ class Message(_FetchOneMessage):
     >>> message: FullMessage = list(Message(123))[0]
     >>> message.subject
     Griezelfestijn
-
     """
 
     @property
@@ -181,6 +183,13 @@ class Message(_FetchOneMessage):
 
             if not isinstance(element[modify_this], list):
                 element[modify_this] = [element[modify_this]]
+
+
+@dataclass
+class Attachment(SessionMixin, objects.Attachment):
+    def download(self) -> bytes:
+        resp = self.session.get(f"/?module=Messages&file=download&fileID={self.fileID}&target=0")
+        return base64.b64decode(resp.content)
 
 
 class Attachments(_FetchOneMessage):
@@ -235,8 +244,8 @@ class MarkMessageUnread(_FetchOneMessage):
 
 
 class AdjustMessageLabel(_FetchOneMessage):
-    def __init__(self, msg_id: int, box_type: BoxType = BoxType.INBOX, label: MessageLabel = MessageLabel.NO_FLAG):
-        super().__init__(msg_id, box_type)
+    def __init__(self, session:Smartschool,msg_id: int, box_type: BoxType = BoxType.INBOX, label: MessageLabel = MessageLabel.NO_FLAG):
+        super().__init__(session, msg_id, box_type)
         self.label = label
 
     @property
@@ -269,8 +278,8 @@ class MessageMoveToArchive(SessionMixin):
     It's not following the XML protocol... Providing the same interface as the other XMLs though.
     """
 
-    def __init__(self, msg_id: int | list[int]):
-        super().__init__()
+    def __init__(self, session:Smartschool,msg_id: int | list[int]):
+        super().__init__(session=session)
 
         if not isinstance(msg_id, list):
             msg_id = [msg_id]
@@ -297,8 +306,8 @@ class MessageMoveToArchive(SessionMixin):
 
 
 class MessageMoveToTrash(_MessagesPoster, SmartschoolXML_NoCache):
-    def __init__(self, msg_id: int):
-        super().__init__()
+    def __init__(self, session:Smartschool,msg_id: int):
+        super().__init__(session=session)
 
         self.msg_id = msg_id
 

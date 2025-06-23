@@ -402,10 +402,6 @@ class Attachment:
     wopiAllowed: bool
     order: int
 
-    def download(self, session: Smartschool) -> bytes:
-        resp = session.get(f"/?module=Messages&file=download&fileID={self.fileID}&target=0")
-        return base64.b64decode(resp.content)
-
 
 @dataclass
 class MessageChanged:

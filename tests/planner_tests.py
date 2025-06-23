@@ -1,8 +1,9 @@
+from smartschool import Smartschool
 from smartschool.planner import PlannedElements
 
 
-def test_periods_happy_flow():
-    sut = list(PlannedElements())
+def test_periods_happy_flow(session:Smartschool):
+    sut = list(PlannedElements(session))
 
     assert len(sut) == 2
 
