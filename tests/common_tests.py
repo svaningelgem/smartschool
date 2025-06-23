@@ -422,7 +422,7 @@ def test_convert_to_datetime() -> None:
     assert convert_to_datetime(None) == expected.astimezone()
     assert convert_to_datetime("2023-09-01") == expected_no_time.astimezone()
     assert convert_to_datetime(expected.date()) == expected_no_time.astimezone()
-    assert convert_to_datetime("2023-09-01 10:02") == expected.replace(second=0).astimezone()
+    assert convert_to_datetime("2023-09-01 10:02") == expected.replace(second=0, tzinfo=None).astimezone()
 
     with pytest.raises(ValueError, match="No timezone information found in this date"):
         convert_to_datetime(expected.replace(tzinfo=None))
