@@ -69,6 +69,7 @@ requests_mock_case_sensitive = true
 line-length = 160
 fix = true
 unsafe-fixes = true
+include = ["*.py", "*.pyi", "scripts/*"]
 
 [tool.ruff.lint]
 select = [
