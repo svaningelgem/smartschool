@@ -415,7 +415,7 @@ def test_select_single_multiple_selected_last_wins():
 @time_machine.travel("2023-09-01 10:02:03+02:00", tick=False)
 def test_convert_to_datetime() -> None:
     expected = datetime(2023, 9, 1, 10, 2, 3, tzinfo=timezone(timedelta(hours=2)))
-    expected_no_time = datetime(2023, 9, 1, 0, 0, 0, tzinfo=timezone(timedelta(hours=2)))
+    expected_no_time = datetime(2023, 9, 1, 0, 0, 0)
 
     assert convert_to_datetime("2023-09-01T10:02:03+02:00") == expected.astimezone()
     assert convert_to_datetime(expected) == expected.astimezone()
