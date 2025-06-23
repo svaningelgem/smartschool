@@ -10,18 +10,16 @@ from xml.sax.saxutils import quoteattr
 
 from .common import xml_to_dict
 
-if TYPE_CHECKING:  # pragma: no cover
-    from collections.abc import Iterator
-    from datetime import datetime
+from collections.abc import Iterator
+from datetime import datetime
 
-    from .session import Smartschool
+from .session import SessionMixin
 
 _T = TypeVar("_T")
 
 
 @dataclass
-class SmartschoolXML(ABC):
-    smartschool: Smartschool
+class SmartschoolXML(ABC, SessionMixin):
     cache: dict = field(default_factory=dict)
 
     def _construct_command(self) -> str:
@@ -69,7 +67,7 @@ class SmartschoolXML(ABC):
         with contextlib.suppress(KeyError):
             return self._get_from_cache()
 
-        response = self.smartschool.post(
+        response = self.session.post(
             self._url,
             data={
                 "command": self._construct_command(),
@@ -86,7 +84,12 @@ class SmartschoolXML(ABC):
         for el in root.findall(self._xpath):
             as_dict = xml_to_dict(el)
             self._post_process_element(as_dict)
+
+            if SessionMixin in as_obj.__mro__:
+                as_dict["session"] = self.session
+
             obj = as_obj(**as_dict)
+
             all_entries.append(obj)
 
         self._store_into_cache(all_entries)

@@ -2,16 +2,27 @@ from __future__ import annotations
 
 import time
 from abc import ABC
+from dataclasses import dataclass
 from datetime import datetime
+from typing import ClassVar
 
+from . import objects
 from ._xml_interface import SmartschoolXML_WeeklyCache
-from .objects import AgendaHour, AgendaLesson, AgendaMomentInfo
+from .objects import AgendaHour, AgendaMomentInfo
+from .session import SessionMixin
 
 
 class AgendaPoster(SmartschoolXML_WeeklyCache, ABC):
     """Caches the information on a weekly basis, and posts to the mentioned URL."""
 
-    _url: str = "/?module=Agenda&file=dispatcher"
+    _url: ClassVar[str] = "/?module=Agenda&file=dispatcher"
+
+
+@dataclass
+class AgendaLesson(SessionMixin, objects.AgendaLesson):
+    @property
+    def hour_details(self) -> AgendaHour:
+        return SmartschoolHours(self.session).search_by_hourId(self.hourID)
 
 
 class SmartschoolLessons(AgendaPoster):

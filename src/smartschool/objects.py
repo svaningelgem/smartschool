@@ -310,12 +310,6 @@ class AgendaLesson:
     freedayIcon: String
     someSubjectsEmpty: String | None
 
-    @property
-    def hour_details(self) -> AgendaHour:
-        from .agenda import SmartschoolHours
-
-        return SmartschoolHours().search_by_hourId(self.hourID)
-
 
 @dataclass
 class AgendaMomentInfoAssignment:

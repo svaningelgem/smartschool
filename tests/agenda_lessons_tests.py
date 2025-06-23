@@ -1,4 +1,4 @@
-from smartschool import SmartschoolLessons, Smartschool
+from smartschool import SmartschoolLessons, Smartschool, SmartschoolHours
 
 
 def test_agenda_lessons_normal_flow(session: Smartschool):
