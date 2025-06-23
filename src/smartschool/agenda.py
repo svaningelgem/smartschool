@@ -83,7 +83,10 @@ class SmartschoolLessons(AgendaPoster):
 
     @property
     def _params(self) -> dict:
-        now = (self.timestamp_to_use or datetime.now()).timestamp()
+        now = self.timestamp_to_use or datetime.now()
+        if not isinstance(now, datetime):
+            now = datetime.combine(now, datetime.min.time())
+        now = now.timestamp()
         in_5_days = now + 5 * 24 * 3600
 
         return {
