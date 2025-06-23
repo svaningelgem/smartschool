@@ -2,7 +2,7 @@ from collections.abc import Iterable, Iterator
 from dataclasses import dataclass
 from itertools import count
 
-from .exceptions import DownloadError
+from .exceptions import SmartSchoolDownloadError
 from .objects import ResultWithDetails, ResultWithoutDetails
 
 __all__ = ["ResultDetail", "Results"]
@@ -31,7 +31,7 @@ class Results(SessionMixin, Iterable[ResultWithoutDetails]):
         for page_nr in count(start=1):  # pragma: no branch
             downloaded_webpage = self.session.get(f"/results/api/v1/evaluations/?pageNumber={page_nr}&itemsOnPage={RESULTS_PER_PAGE}")
             if not downloaded_webpage or not downloaded_webpage.content:
-                raise DownloadError("No JSON was returned for the results?!")
+                raise SmartSchoolDownloadError("No JSON was returned for the results?!")
 
             json = downloaded_webpage.json()
             for result in json:
@@ -48,7 +48,7 @@ class ResultDetail(SessionMixin):
     def get(self) -> ResultWithDetails:
         downloaded_webpage = self.session.get(f"/results/api/v1/evaluations/{self.result_id}")
         if not downloaded_webpage or not downloaded_webpage.content:
-            raise DownloadError("No JSON was returned for the details?!")
+            raise SmartSchoolDownloadError("No JSON was returned for the details?!")
 
         json = downloaded_webpage.json()
         return ResultWithDetails(**json)

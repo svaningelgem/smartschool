@@ -1,10 +1,15 @@
 #!/usr/bin/env python
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from logprise import logger
-from smartschool import PathCredentials, Results, Smartschool, DownloadError
+
+from smartschool import PathCredentials, Results, Smartschool, SmartSchoolDownloadError
 from smartschool.common import IsSaved, save, send_email
-from smartschool.objects import ResultWithoutDetails
-from smartschool.session import session
+
+if TYPE_CHECKING:
+    from smartschool.objects import ResultWithoutDetails
 
 
 def is_punten_json_the_same(previous: ResultWithoutDetails, current: ResultWithoutDetails) -> bool:
@@ -67,26 +72,20 @@ def is_punten_json_the_same(previous: ResultWithoutDetails, current: ResultWitho
 
 
 def build_text(
-    is_update: bool,
+    is_update: bool,  # noqa: FBT001
     result: ResultWithoutDetails,
 ) -> tuple[str, str]:
     course_name = result.courses[0].name
     teacher_names = [teacher.name.startingWithFirstName for teacher in result.courses[0].teachers]
     test_name = result.name
 
-    achieved = f"{result.graphic.achieved_points:.2f}".rstrip('0').rstrip('.')
-    total = f"{result.graphic.total_points:.2f}".rstrip('0').rstrip('.')
-    pct = f"{100 * result.graphic.percentage:.2f}".rstrip('0').rstrip('.')
+    achieved = f"{result.graphic.achieved_points:.2f}".rstrip("0").rstrip(".")
+    total = f"{result.graphic.total_points:.2f}".rstrip("0").rstrip(".")
+    pct = f"{100 * result.graphic.percentage:.2f}".rstrip("0").rstrip(".")
 
     my_points = f"{achieved}/{total} ({pct}%)"
 
-    text = (
-        f"Course: {course_name}\n"
-        f"Test: {test_name}\n"
-        "\n"
-        f"Points: {my_points}\n"
-        "\n"
-    )
+    text = f"Course: {course_name}\nTest: {test_name}\n\nPoints: {my_points}\n\n"
     for teacher_name in teacher_names:
         text += f"Teacher: {teacher_name}\n"
     text += "\n"
@@ -121,7 +120,7 @@ def build_text(
     return text, email_subject
 
 
-def process_result(result: ResultWithoutDetails) -> None:
+def process_result(session: Smartschool, result: ResultWithoutDetails) -> None:
     assert len(result.courses) == 1, f"Multiple courses? {result.courses}"
 
     logger.info("[{}] Processing '{}'", result.courses[0].name, result.name)
@@ -129,27 +128,27 @@ def process_result(result: ResultWithoutDetails) -> None:
     course_name = result.courses[0].name  # FE: 'Frans'
     id_ = result.identifier
 
-    status = save("punten", course_name, id_, result, is_punten_json_the_same)
+    status = save(session, "punten", course_name, id_, result, is_punten_json_the_same)
 
     if status == IsSaved.SAME:
         logger.debug(" => Already processed")
         return
 
     text, subject = build_text(result=result, is_update=status != IsSaved.NEW)
-    send_email(subject=subject, text=text, email_from=session.creds.other_info['email_from'], email_to=session.creds.other_info['email_to'])
+    send_email(subject=subject, text=text, email_from=session.creds.other_info["email_from"], email_to=session.creds.other_info["email_to"])
 
 
 def main():
     try:
-        Smartschool.start(PathCredentials())
-        assert 'email_from' in session.creds.other_info
-        assert 'email_to' in session.creds.other_info
+        session = Smartschool(PathCredentials())
+        assert "email_from" in session.creds.other_info
+        assert "email_to" in session.creds.other_info
 
-        for result in Results():
-            process_result(result)
-    except DownloadError:
+        for result in Results(session):
+            process_result(session, result)
+    except SmartSchoolDownloadError:
         ...
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

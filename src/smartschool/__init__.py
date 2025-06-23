@@ -1,7 +1,7 @@
 from .agenda import SmartschoolHours, SmartschoolLessons, SmartschoolMomentInfos
 from .courses import Courses, TopNavCourses
 from .credentials import EnvCredentials, PathCredentials
-from .exceptions import DownloadError, SmartSchoolAuthenticationError, SmartSchoolException
+from .exceptions import SmartSchoolAuthenticationError, SmartSchoolDownloadError, SmartSchoolException
 from .future_tasks import FutureTasks
 from .messages import (
     AdjustMessageLabel,
@@ -26,7 +26,6 @@ __all__ = [
     "Attachments",
     "BoxType",
     "Courses",
-    "DownloadError",
     "EnvCredentials",
     "FutureTasks",
     "MarkMessageUnread",
@@ -40,6 +39,7 @@ __all__ = [
     "ResultDetail",
     "Results",
     "SmartSchoolAuthenticationError",
+    "SmartSchoolDownloadError",
     "SmartSchoolException",
     "Smartschool",
     "SmartschoolHours",
