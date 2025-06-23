@@ -571,6 +571,7 @@ class PlannedElementAssignmentType:
     isVisible: bool
     weight: int
 
+
 @dataclass
 class PlannedElement:
     id: UUID

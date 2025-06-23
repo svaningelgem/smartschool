@@ -3,7 +3,7 @@ import re
 import sys
 from collections.abc import Generator
 from pathlib import Path
-from typing import Any, Generator
+from typing import Any
 from urllib.parse import parse_qs, quote_plus
 
 import pytest

@@ -9,7 +9,7 @@ from functools import cached_property
 from http.cookiejar import LWPCookieJar
 from pathlib import Path
 from typing import TYPE_CHECKING, Self
-from urllib.parse import urljoin, urlencode
+from urllib.parse import urlencode, urljoin
 
 import yaml
 from logprise import logger
