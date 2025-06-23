@@ -1,5 +1,5 @@
 from collections.abc import Iterator
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta
 from typing import Iterable
 from zoneinfo import ZoneInfo
@@ -17,8 +17,12 @@ class ApplicableAssignmentTypes(SessionMixin, Iterable[ApplicableAssignmentType]
 
 @dataclass
 class PlannedElements(SessionMixin, Iterable[PlannedElement]):
-    from_date: date = datetime.now(tz=ZoneInfo("Europe/Brussels")).replace(hour=0, minute=0, second=0, microsecond=0)
-    till_date: date = from_date + timedelta(days=34, seconds=-1)
+    from_date: date = field(default_factory=lambda : datetime.now(tz=ZoneInfo("Europe/Brussels")).replace(hour=0, minute=0, second=0, microsecond=0))
+    till_date: date | None = None
+
+    def __post_init__(self):
+        if self.till_date is None:
+            self.till_date = self.from_date + timedelta(days=34, seconds=-1)
 
     def __iter__(self) -> Iterator[PlannedElement]:
         data = self.session.json(

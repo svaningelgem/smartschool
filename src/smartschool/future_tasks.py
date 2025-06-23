@@ -4,7 +4,7 @@ from smartschool.objects import FutureTaskOneDay
 from smartschool.session import SessionMixin
 
 
-class FutureTasks(SessionMixin, Iterable[FutureTaskOneDay]):
+class FutureTasks(SessionMixin):
     """
     Class that interfaces the retrieval of any task that needs to be made in the near future.
 

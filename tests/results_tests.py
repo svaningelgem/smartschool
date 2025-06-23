@@ -36,15 +36,15 @@ def test_result_detail_with_faulty_session_get(requests_mock,session:Smartschool
         ResultDetail(session,result_id="abc_normal_123").get()
 
 
-def test_result_with_empty_return_value(requests_mock):
+def test_result_with_empty_return_value(requests_mock,session:Smartschool):
     requests_mock.register_uri(ANY, ANY, text="")
 
     with pytest.raises(DownloadError):
-        next(iter(Results()))
+        next(iter(Results(session)))
 
 
-def test_result_with_faulty_session_get(requests_mock):
+def test_result_with_faulty_session_get(requests_mock,session:Smartschool):
     requests_mock.register_uri(ANY, ANY, status_code=404)
 
     with pytest.raises(DownloadError):
-        next(iter(Results()))
+        next(iter(Results(session)))

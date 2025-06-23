@@ -9,7 +9,7 @@ __all__ = ["Periods"]
 
 
 @dataclass
-class Periods(SessionMixin, Iterable[Period]):
+class Periods(SessionMixin):
     """
     Retrieves a list of the periods.
 

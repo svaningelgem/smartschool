@@ -42,7 +42,7 @@ class Results(SessionMixin, Iterable[ResultWithoutDetails]):
 
 
 @dataclass
-class ResultDetail(SessionMixin, Iterable[ResultWithDetails]):
+class ResultDetail(SessionMixin):
     result_id: str
 
     def get(self) -> ResultWithDetails:

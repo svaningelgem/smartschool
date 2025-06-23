@@ -22,12 +22,15 @@ def session(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Generator[Smarts
         cache_path = tmp_path / ".cache"
         cache_path.mkdir(parents=True, exist_ok=True)
 
+        cache_path.joinpath("authenticated_user.yml").write_text(f"id: '49_10880_2'", encoding="utf8")
+
         monkeypatch.setenv("SMARTSCHOOL_USERNAME", "bumba")
         monkeypatch.setenv("SMARTSCHOOL_PASSWORD", "delu")
         monkeypatch.setenv("SMARTSCHOOL_MAIN_URL", "site")
         monkeypatch.setenv("SMARTSCHOOL_MFA", "1234-56-78")
 
         monkeypatch.setattr(Smartschool, "cache_path", cache_path)
+
         yield Smartschool(EnvCredentials())
     finally:
         os.chdir(original_dir)
