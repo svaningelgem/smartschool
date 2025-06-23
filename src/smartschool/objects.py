@@ -7,6 +7,7 @@ from datetime import date, datetime
 from functools import cached_property
 from typing import Annotated, Literal
 
+from logprise import logger
 from pydantic import AliasChoices, BeforeValidator, constr
 from pydantic.dataclasses import Field, dataclass
 
@@ -128,6 +129,14 @@ class Course:
     skoreWorkYear: SkoreWorkYear
     class_: Class_ = Field(validation_alias=AliasChoices("class", "class_"))
 
+    def __str__(self):
+        ret = f"{self.name} (Teacher"
+        if len(self.teachers) != 1:
+            ret += "s"
+        ret += f": {', '.join(t.name.startingWithLastName for t in self.teachers)}"
+        ret += f", ID: {self.id}"  # TODO: disable when releasing
+        return ret + ")"
+
 
 @dataclass
 class Feedback:
@@ -197,6 +206,9 @@ class CourseCondensed:
 
     descr: String = Field(repr=False, default="")
     icon: String = Field(repr=False, default="")
+
+    def __str__(self):
+        return f"{self.name} (Teacher: {self.teacher})"
 
 
 @dataclass

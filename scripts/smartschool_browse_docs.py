@@ -1,18 +1,13 @@
 from __future__ import annotations
 
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Iterable
 
 from logprise import logger
+from smartschool import Course, DocumentOrFolderItem
 
-if TYPE_CHECKING:
-    from smartschool.objects import Course, DocumentOrFolderItem
-
-src_path = Path(__file__).parent / "src"
-if str(src_path) not in sys.path:
-    sys.path.insert(0, str(src_path))
 
 from smartschool import (
     Courses,
@@ -23,33 +18,70 @@ from smartschool import (
     SmartSchoolAuthenticationError,
     SmartSchoolException,
 )
-from smartschool.file_fetch import browse_course_documents, download_document
+from smartschool.courses import CourseDocuments, TopNavCourses
+from smartschool.objects import CourseCondensed
 
-DOWNLOAD_DIR = Path("./course_downloads")
+# from smartschool.file_fetch import browse_course_documents, download_document
+
+DEFAULT_DOWNLOAD_DIR = Path.cwd().joinpath("course_downloads").resolve().absolute()
+
+
+
+def get_user_choice(prompt: str, max_value: int, allow_up: bool = True) -> str | int | None:
+    """Get validated user input (number, 'u', 'q')."""
+
+    while True:
+        choice = ""
+
+        try:
+            choice = input(prompt).strip().lower()
+            if choice == "q":
+                return choice
+            if choice == "u":
+                if not allow_up:
+                    logger.warning("Cannot go up from root folder")
+                    continue
+                return choice
+            if choice.isdigit():
+                num_choice = int(choice)
+                if 1 <= num_choice <= max_value:
+                    return num_choice
+                logger.warning(f"Invalid number. Please enter a number between 1 and {max_value}")
+            else:
+                up_text = ", 'u'" if allow_up else ""
+                logger.warning(f"Invalid input. Please enter a number{up_text}, or 'q'")
+        except (ValueError, EOFError):
+            if choice == "":
+                logger.info("Exiting")
+                return "q"
+            logger.warning("Invalid input")
 
 
 @dataclass
-class BrowserState:
-    """Current navigation state in the document browser."""
-
-    path_items: list[FolderItem]
-    folder_id: int | None = None
-
-    @property
-    def current_path_str(self) -> str:
-        return " / ".join(item.name for item in self.path_items) or "(Root)"
-
-    @property
-    def is_at_root(self) -> bool:
-        return not self.path_items
-
-
 class DocumentBrowser:
     """Interactive browser for Smartschool course documents."""
+    session: Smartschool
+    course: CourseCondensed
+    path_items: list[FolderItem] = field(init=False, repr=False, default_factory=list)
 
-    def __init__(self, session: Smartschool):
-        self.session = session
-        self.state = BrowserState([])
+    def __post_init__(self):
+        self.documents = CourseDocuments(self.session, course=self.course)
+
+    @property
+    def _current_folder_id(self):
+        if self._is_at_root:
+            return 0
+        return self.path_items[-1].id
+
+    @property
+    def _path_as_str(self) -> str:
+        if self._is_at_root:
+            return "(Root)"
+        return " / ".join(item.name for item in self.path_items)
+
+    @property
+    def _is_at_root(self) -> bool:
+        return not self.path_items
 
     def display_items(self, items: list[DocumentOrFolderItem]) -> None:
         """Display folders and files with numbers."""
@@ -61,42 +93,10 @@ class DocumentBrowser:
             item_type = "Folder" if isinstance(item, FolderItem) else "File"
             logger.info(f"[{i}] {item_type}: {item.name}")
 
-    def get_user_choice(self, prompt: str, max_value: int, allow_up: bool = True) -> str | int | None:
-        """Get validated user input (number, 'u', 'q')."""
-        while True:
-            try:
-                choice = input(prompt).strip().lower()
-                if choice == "q":
-                    return choice
-                if choice == "u":
-                    if not allow_up:
-                        logger.warning("Cannot go up from root folder")
-                        continue
-                    return choice
-                if choice.isdigit():
-                    num_choice = int(choice)
-                    if 1 <= num_choice <= max_value:
-                        return num_choice
-                    logger.warning(f"Invalid number. Please enter a number between 1 and {max_value}")
-                else:
-                    up_text = ", 'u'" if allow_up else ""
-                    logger.warning(f"Invalid input. Please enter a number{up_text}, or 'q'")
-            except (ValueError, EOFError):
-                if choice == "":
-                    logger.info("Exiting")
-                    return "q"
-                logger.warning("Invalid input")
-
-    def _get_current_items(self, course: Course) -> list[DocumentOrFolderItem]:
+    def _get_current_items(self) -> list[DocumentOrFolderItem]:
         """Fetch items for current folder."""
-        parent_id = self.state.folder_id or 0
         try:
-            items = browse_course_documents(
-                course_id=course.id,
-                folder_id=parent_id,
-                ss_id=course.class_.platformId,
-                smartschool=self.session,
-            )
+            items = self.documents.list_folder_contents(self._current_folder_id)
             return sorted(items, key=lambda x: (0 if isinstance(x, FolderItem) else 1, x.name))
         except SmartSchoolAuthenticationError as e:
             logger.error(f"Authentication error: {e}")
@@ -150,15 +150,15 @@ class DocumentBrowser:
         except Exception:
             logger.exception(f"Unexpected error during download of '{file.name}'")
 
-    def browse(self, course: Course) -> None:
+    def browse(self) -> None:
         """Main browsing loop."""
-        logger.info(f"Starting to browse course: {course.name}")
+        logger.info(f"Starting to browse course: {self.course.name}")
 
         while True:
-            logger.info(f"Current Location: {self.state.current_path_str}")
+            logger.info(f"Current Location: {self._path_as_str}")
 
             try:
-                items = self._get_current_items(course)
+                items = self._get_current_items()
             except SmartSchoolAuthenticationError:
                 break
 
@@ -166,9 +166,9 @@ class DocumentBrowser:
 
             if not items:
                 if self.state.is_at_root:
-                    choice = self.get_user_choice("Enter 'q' to quit: ", 0, allow_up=False)
+                    choice = get_user_choice("Enter 'q' to quit: ", 0, allow_up=False)
                 else:
-                    choice = self.get_user_choice("Enter 'u' to go up, 'q' to quit: ", 0)
+                    choice = get_user_choice("Enter 'u' to go up, 'q' to quit: ", 0)
             else:
                 prompt_parts = ["Enter number to open/download"]
                 if not self.state.is_at_root:
@@ -176,7 +176,7 @@ class DocumentBrowser:
                 prompt_parts.append("'q' to quit: ")
                 prompt = ", ".join(prompt_parts)
 
-                choice = self.get_user_choice(prompt, len(items), allow_up=not self.state.is_at_root)
+                choice = get_user_choice(prompt, len(items), allow_up=not self.state.is_at_root)
 
             if choice == "q":
                 break
@@ -190,37 +190,32 @@ class DocumentBrowser:
                     self._download_file(selected_item, course)
 
 
+@dataclass
 class CourseSelector:
     """Handles course selection interface."""
+    session: Smartschool
 
-    def __init__(self, session: Smartschool):
-        self.session = session
-
-    def _display_courses(self, courses: list[Course]) -> None:
+    def _display_courses(self, courses: list[CourseCondensed]) -> None:
         """Display available courses."""
         logger.info("Available Courses:")
-        for i, course in enumerate(courses, 1):
-            teacher_names = ", ".join(t.name.startingWithLastName for t in course.teachers)
-            logger.info(f"[{i}] {course.name} (Teachers: {teacher_names}, ID: {course.id})")
 
-    def select_course(self) -> Course | None:
+        for i, course in enumerate(courses, start=1):
+            logger.info(f"[{i}] {course}")
+
+    def select_course(self) -> CourseCondensed | None:
         """Select a course from available options."""
         logger.info("Fetching courses...")
         try:
-            courses = list(Courses(smartschool=self.session))
-            if not courses:
-                logger.warning("No courses found")
-                return None
-
+            courses = sorted(TopNavCourses(session=self.session), key=lambda item: item.name.lower())
             self._display_courses(courses)
 
-            choice = DocumentBrowser(self.session).get_user_choice("Select a course number: ", len(courses), allow_up=False)
+            choice = get_user_choice("Select a course number: ", len(courses), allow_up=False)
 
             if not isinstance(choice, int):
                 return None
 
             selected_course = courses[choice - 1]
-            logger.info(f"Selected Course: {selected_course.name} (ID: {selected_course.id})")
+            logger.info(f"Selected Course: {selected_course}")
             return selected_course
 
         except SmartSchoolException as e:
@@ -231,9 +226,8 @@ class CourseSelector:
 @dataclass
 class AppConfig:
     """Application configuration."""
-
-    download_dir: Path = Path("./course_downloads")
-    credentials_file: str = "credentials.yml"
+    download_dir: Path = DEFAULT_DOWNLOAD_DIR
+    credentials_file: str = PathCredentials.CREDENTIALS_FILENAME
 
 
 class SmartschoolBrowserApp:
@@ -241,15 +235,14 @@ class SmartschoolBrowserApp:
 
     def __init__(self, config: AppConfig | None = None):
         self.config = config or AppConfig()
-        global DOWNLOAD_DIR
-        DOWNLOAD_DIR = self.config.download_dir
+        self.download_dir = self.config.download_dir or DEFAULT_DOWNLOAD_DIR
 
     def _initialize_session(self) -> Smartschool:
         """Initialize Smartschool session with credentials."""
-        logger.info("Initializing session")
+        logger.debug("Initializing session")
         creds = PathCredentials()
         session = Smartschool(creds=creds)
-        logger.info("Authentication successful")
+        logger.debug("Authentication successful")
         return session
 
     def run(self) -> None:
@@ -266,9 +259,7 @@ class SmartschoolBrowserApp:
                 logger.info("No course selected, exiting")
                 return
 
-            browser = DocumentBrowser(session)
-            browser.browse(selected_course)
-
+            DocumentBrowser(session, selected_course).browse()
         except FileNotFoundError as e:
             logger.error(f"Initialization failed: {e}")
             logger.error("Ensure credentials.yml exists and is configured correctly")
