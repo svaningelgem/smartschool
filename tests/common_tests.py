@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup, FeatureNotFound, GuessedAtParserWarning
 from logprise import logger
 from requests import Response
 
+from smartschool import Smartschool
 from smartschool.common import IsSaved, as_float, bs4_html, fill_form, get_all_values_from_form, make_filesystem_safe, save, send_email, xml_to_dict
 from smartschool.objects import Student
 
@@ -39,17 +40,17 @@ def test_xml_to_dict():
     }
 
 
-def test_save(tmp_path: Path) -> None:
-    assert save(type_="todo", course_name="test", id_="123", data="Test") == IsSaved.NEW
-    assert save(type_="todo", course_name="test", id_="123", data="Test") == IsSaved.SAME
-    assert save(type_="todo", course_name="test", id_="123", data="Test2") == "Test"  # Returns the old data
+def test_save(session: Smartschool, tmp_path: Path) -> None:
+    assert save(session, type_="todo", course_name="test", id_="123", data="Test") == IsSaved.NEW
+    assert save(session, type_="todo", course_name="test", id_="123", data="Test") == IsSaved.SAME
+    assert save(session, type_="todo", course_name="test", id_="123", data="Test2") == "Test"  # Returns the old data
 
-    assert save(type_="todo", course_name="test", id_="456", data={"Test": 456}) == IsSaved.NEW
-    assert save(type_="todo", course_name="test", id_="456", data={"Test": 456}) == IsSaved.SAME
-    assert save(type_="todo", course_name="test", id_="456", data={"Test": 789}) == {"Test": 456}
+    assert save(session, type_="todo", course_name="test", id_="456", data={"Test": 456}) == IsSaved.NEW
+    assert save(session, type_="todo", course_name="test", id_="456", data={"Test": 456}) == IsSaved.SAME
+    assert save(session, type_="todo", course_name="test", id_="456", data={"Test": 789}) == {"Test": 456}
 
 
-def test_save_as_pydantic_dataclass(tmp_path: Path) -> None:
+def test_save_as_pydantic_dataclass(session: Smartschool, tmp_path: Path) -> None:
     sut = Student(
         id="a",
         pictureHash="b",
@@ -60,11 +61,11 @@ def test_save_as_pydantic_dataclass(tmp_path: Path) -> None:
     )
     original = deepcopy(sut)
 
-    assert save(type_="todo", course_name="test", id_="123", data=sut) == IsSaved.NEW
-    assert save(type_="todo", course_name="test", id_="123", data=sut) == IsSaved.SAME
+    assert save(session, type_="todo", course_name="test", id_="123", data=sut) == IsSaved.NEW
+    assert save(session, type_="todo", course_name="test", id_="123", data=sut) == IsSaved.SAME
 
     sut.id = "i"
-    assert save(type_="todo", course_name="test", id_="123", data=sut) == original
+    assert save(session, type_="todo", course_name="test", id_="123", data=sut) == original
 
 
 def test_send_email(mocker):

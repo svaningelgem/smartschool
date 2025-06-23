@@ -1,7 +1,8 @@
 from .agenda import SmartschoolHours, SmartschoolLessons, SmartschoolMomentInfos
 from .courses import Courses, TopNavCourses
 from .credentials import EnvCredentials, PathCredentials
-from .exceptions import DownloadError, SmartSchoolException
+from .exceptions import DownloadError, SmartSchoolAuthenticationError, SmartSchoolException
+from .future_tasks import FutureTasks
 from .messages import (
     AdjustMessageLabel,
     Attachments,
@@ -15,7 +16,6 @@ from .messages import (
     SortField,
     SortOrder,
 )
-from .objects import FutureTasks
 from .periods import Periods
 from .results import ResultDetail, Results
 from .session import Smartschool
@@ -39,7 +39,7 @@ __all__ = [
     "Periods",
     "ResultDetail",
     "Results",
-    # Exceptions
+    "SmartSchoolAuthenticationError",
     "SmartSchoolException",
     "Smartschool",
     "SmartschoolHours",

@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import base64
 import re
 from datetime import date, datetime
 from functools import cached_property
@@ -12,13 +11,15 @@ from pydantic import AliasChoices, BeforeValidator, constr
 from pydantic.dataclasses import Field, dataclass
 
 from .common import as_float
-from .session import session
 
 String = constr(strip_whitespace=True)
 UUID = constr(pattern=re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", flags=re.IGNORECASE))
 
 
-def convert_to_datetime(x: str | String | datetime) -> datetime:
+def convert_to_datetime(x: str | String | datetime | None) -> datetime:
+    if x is None:
+        return datetime.now().astimezone()
+
     if isinstance(x, datetime):
         if x.tzinfo is None:
             raise ValueError("No timezone information found in this date")
@@ -30,7 +31,9 @@ def convert_to_datetime(x: str | String | datetime) -> datetime:
         return datetime.strptime(x, "%Y-%m-%d %H:%M")
 
 
-def convert_to_date(x: str | String | date | datetime) -> date:
+def convert_to_date(x: str | String | date | datetime | None) -> date:
+    if x is None:
+        return date.today()
     if isinstance(x, datetime):
         return x.date()
     if isinstance(x, date):
@@ -39,7 +42,7 @@ def convert_to_date(x: str | String | date | datetime) -> date:
     return datetime.strptime(x, "%Y-%m-%d").date()
 
 
-Url = Annotated[str | String, BeforeValidator(lambda x: session.create_url(x))]
+Url = String
 Date = Annotated[date, BeforeValidator(convert_to_date)]
 DateTime = Annotated[datetime, BeforeValidator(convert_to_datetime)]
 
@@ -267,51 +270,6 @@ class FutureTaskOneDay:
 
 
 @dataclass
-class FutureTasks:
-    """
-    Class that interfaces the retrieval of any task that needs to be made in the near future.
-
-    Example:
-    -------
-    >>> for day in FutureTasks().days:
-    >>>     for course in day.courses:
-    >>>         print("Course:", course.course_title)
-    >>>         for task in course.items.tasks:
-    >>>             print("Task:", task.description)
-    Course: 2 - AAR1, Lotte Peeters
-    Task: Toets 3. De koolstofcyclus in het systeem aarde pagina 42 - 47
-
-    """
-
-    days: list[FutureTaskOneDay] = Field(default_factory=list)
-    last_assignment_id: int = 0
-    last_date: Date | None = None
-
-    def __post_init__(self):
-        """I need to do this here because when I do it in Agenda, it'll not lazily load it. But in this way, I load it on construction."""
-        json = session.json(
-            "/Agenda/Futuretasks/getFuturetasks",
-            method="post",
-            data={
-                "lastAssignmentID": 0,
-                "lastDate": "",
-                "filterType": "false",
-                "filterID": "false",
-            },
-            headers={
-                "X-Requested-With": "XMLHttpRequest",
-            },
-        )
-
-        self.days = []
-        for d in json["days"]:
-            self.days.append(FutureTaskOneDay(**d))
-
-        self.last_assignment_id = json["last_assignment_id"]
-        self.last_date = convert_to_date(json["last_date"]) if json["last_date"] else None
-
-
-@dataclass
 class AgendaHour:
     hourID: String
     start: String
@@ -349,12 +307,6 @@ class AgendaLesson:
     components_hidden: object
     freedayIcon: String
     someSubjectsEmpty: String | None
-
-    @property
-    def hour_details(self) -> AgendaHour:
-        from .agenda import SmartschoolHours
-
-        return SmartschoolHours().search_by_hourId(self.hourID)
 
 
 @dataclass
@@ -447,10 +399,6 @@ class Attachment:
     icon: String
     wopiAllowed: bool
     order: int
-
-    def download(self) -> bytes:
-        resp = session.get(f"/?module=Messages&file=download&fileID={self.fileID}&target=0")
-        return base64.b64decode(resp.content)
 
 
 @dataclass

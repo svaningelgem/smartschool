@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from functools import cached_property
 from typing import TYPE_CHECKING
 
 from .objects import Course, CourseCondensed
-from .session import session
+from .session import SessionMixin
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -12,7 +13,8 @@ if TYPE_CHECKING:
 __all__ = ["Courses", "TopNavCourses"]
 
 
-class TopNavCourses:
+@dataclass
+class TopNavCourses(SessionMixin):
     """
     Retrieves a list of the courses which are available from the top navigation bar.
 
@@ -20,7 +22,7 @@ class TopNavCourses:
 
     Example:
     -------
-    >>> for course in TopNavCourses():
+    >>> for course in TopNavCourses(session):
     >>>     print(course.name)
     Aardrijkskunde_3_LOP_2023-2024
     bibliotheek
@@ -29,13 +31,14 @@ class TopNavCourses:
 
     @cached_property
     def _list(self) -> list[CourseCondensed]:
-        return [CourseCondensed(**course) for course in session.json("/Topnav/getCourseConfig", method="post")["own"]]
+        return [CourseCondensed(**course) for course in self.session.json("/Topnav/getCourseConfig", method="post")["own"]]
 
     def __iter__(self) -> Iterator[CourseCondensed]:
         yield from self._list
 
 
-class Courses:
+@dataclass
+class Courses(SessionMixin):
     """
     Retrieves a list of the courses.
 
@@ -45,7 +48,7 @@ class Courses:
 
     Example:
     -------
-    >>> for course in Courses():
+    >>> for course in Courses(session):
     >>>     print(course.name)
     Aardrijkskunde
     Biologie
@@ -54,7 +57,7 @@ class Courses:
 
     @cached_property
     def _list(self) -> list[Course]:
-        return [Course(**course) for course in session.json("/results/api/v1/courses/")]
+        return [Course(**course) for course in self.session.json("/results/api/v1/courses/")]
 
     def __iter__(self) -> Iterator[Course]:
         yield from self._list

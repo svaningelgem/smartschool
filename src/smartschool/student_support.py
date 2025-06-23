@@ -1,12 +1,14 @@
-from collections.abc import Iterator
+from collections.abc import Iterable, Iterator
+from dataclasses import dataclass
 
 from .objects import StudentSupportLink
-from .session import session
+from .session import SessionMixin
 
 __all__ = ["StudentSupportLinks"]
 
 
-class StudentSupportLinks:
+@dataclass
+class StudentSupportLinks(SessionMixin, Iterable[StudentSupportLink]):
     """
     Interfaces with the link section that is loaded when opening the main interface of smartschool.
 
@@ -14,7 +16,7 @@ class StudentSupportLinks:
 
     Example:
     -------
-    >>> for link in StudentSupportLinks():
+    >>> for link in StudentSupportLinks(session):
     >>>     print(link.name)
     1712
     Autisme chat
@@ -22,6 +24,6 @@ class StudentSupportLinks:
     """
 
     def __iter__(self) -> Iterator[StudentSupportLink]:
-        json = session.json("/student-support/api/v1/")
+        json = self.session.json("/student-support/api/v1/")
         for result in json:
             yield StudentSupportLink(**result)
