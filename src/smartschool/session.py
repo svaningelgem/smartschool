@@ -1,4 +1,5 @@
 from __future__ import annotations
+from urllib.parse import urlparse
 
 import contextlib
 import json
@@ -32,7 +33,6 @@ class Smartschool(Session):
     creds: Credentials | None = None
     _login_attempts: int = field(init=False, default=0)
     _max_login_attempts: int = field(init=False, default=3)
-    _auth_chain: list[str] = field(init=False, default_factory=list)
     _authenticated_user: dict | None = field(init=False, default=None)
 
     def __post_init__(self):
@@ -70,48 +70,31 @@ class Smartschool(Session):
             return self.cache_path / "authenticated_user.yml"
         return None
 
-    def _needs_auth(self, response: Response) -> bool:
-        """Check if response indicates authentication is needed."""
-        return any(entry in response.url for entry in ("/login", "/account-verification", "/2fa"))
-
     def _handle_auth_redirect(self, response: Response) -> Response | None:
         """Handle authentication redirects with chain support."""
-        if not self._needs_auth(response):
+        if not self._is_auth_url(response.url):
             return None
-
-        # Check for infinite recursion in auth chain
-        auth_type = response.url.split("/")[-1]
-        if len(self._auth_chain) > 0 and auth_type in self._auth_chain:
-            raise SmartSchoolAuthenticationError(
-                f"Auth recursion detected: {' -> '.join(self._auth_chain)} -> {auth_type}"
-            )
 
         if self._login_attempts >= self._max_login_attempts:
             raise SmartSchoolAuthenticationError(f"Max login attempts ({self._max_login_attempts}) reached")
 
         logger.debug(f"Auth redirect detected: {response.url}")
         self._login_attempts += 1
-        self._auth_chain.append(auth_type)
 
-        try:
-            if response.url.endswith("/login"):
-                return self._do_login(response)
-            elif response.url.endswith("/account-verification"):
-                self._parse_login_information(response)
-                return self._do_login_verification(response)
-            elif response.url.endswith("/2fa"):
-                return self._complete_verification_2fa(response)
-        finally:
-            self._auth_chain.pop()
-
-        return None
+        if response.url.endswith("/login"):
+            response = self._do_login(response)
+        if response.url.endswith("/account-verification"):
+            self._parse_login_information(response)
+            response = self._do_login_verification(response)
+        if response.url.endswith("/2fa"):
+            response = self._complete_verification_2fa(response)
+        return response
 
     def _reset_login_attempts(self):
         """Reset login attempt counter on successful request."""
         if self._login_attempts > 0:
             logger.debug("Resetting login attempts after successful request")
             self._login_attempts = 0
-            self._auth_chain.clear()
 
     @property
     def cache_path(self) -> Path:
@@ -137,6 +120,13 @@ class Smartschool(Session):
     def create_url(self, url: str) -> str:
         return urljoin(self._url, url)
 
+    def _is_auth_url(self, url: str | Response) -> bool:
+        """Check if the URL contains authentication-related path segments."""
+        auth_segments = {"login", "account-verification", "2fa"}
+        path_segments = set(urlparse(url).path.split("/"))
+
+        return bool(auth_segments & path_segments)
+
     def request(self, method, url, **kwargs) -> Response:
         """Override Session.request to handle auth and cookies transparently."""
         if self.creds is None:
@@ -149,13 +139,12 @@ class Smartschool(Session):
         response = super().request(method, full_url, **kwargs)
 
         # Handle auth redirects
-        auth_response = self._handle_auth_redirect(response)
-        if auth_response:
+        response = self._handle_auth_redirect(response)
+        if not self._is_auth_url(full_url):  # The original URL was NOT a login-url
             logger.debug(f"Retrying original {method.upper()} after auth")
             response = super().request(method, full_url, **kwargs)
-
-        # Reset attempts on successful non-auth response
-        if not self._needs_auth(response):
+            self._reset_login_attempts()
+        elif not self._is_auth_url(response.url):  # Original was login, and this is not anymore
             self._reset_login_attempts()
 
         # Save cookies

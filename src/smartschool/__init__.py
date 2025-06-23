@@ -1,7 +1,7 @@
 from .agenda import SmartschoolHours, SmartschoolLessons, SmartschoolMomentInfos
 from .courses import Courses, TopNavCourses
 from .credentials import EnvCredentials, PathCredentials
-from .exceptions import DownloadError, SmartSchoolException
+from .exceptions import DownloadError, SmartSchoolException,SmartSchoolAuthenticationError
 from .messages import (
     AdjustMessageLabel,
     Attachments,
@@ -39,7 +39,6 @@ __all__ = [
     "Periods",
     "ResultDetail",
     "Results",
-    # Exceptions
     "SmartSchoolException",
     "Smartschool",
     "SmartschoolHours",
@@ -49,4 +48,5 @@ __all__ = [
     "SortOrder",
     "StudentSupportLinks",
     "TopNavCourses",
+    "SmartSchoolAuthenticationError",
 ]
