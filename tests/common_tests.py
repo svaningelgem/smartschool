@@ -22,7 +22,7 @@ from smartschool.common import (
     make_filesystem_safe,
     save,
     send_email,
-    xml_to_dict,
+    xml_to_dict, parse_size,
 )
 from smartschool.exceptions import SmartSchoolParsingError
 from smartschool.objects import Student
@@ -442,3 +442,23 @@ def test_convert_to_date() -> None:
 
     with pytest.raises(SmartSchoolParsingError, match="Cannot convert 'boom' to `date`"):
         convert_to_date("boom")
+
+
+def test_parse_size():
+    """Test size parsing functionality."""
+    assert parse_size("") is None
+    assert parse_size("-") is None
+    assert parse_size("  ") is None
+    assert parse_size("invalid") is None
+    assert parse_size("..5 Kb") is None
+    assert parse_size("100") is None
+    assert parse_size("100 KB") == 100.0
+    assert parse_size("100KB") == 100.0
+    assert parse_size("100 KiB") == 100.0
+    assert parse_size("1 MB") == 1_024.0
+    assert parse_size("1 MiB") == 1_000.0
+    assert parse_size("1 GB") == 1_048_576.0
+    assert parse_size("1 GiB") == 1_000_000.0
+    assert parse_size("1.5 MB") == 1_536.0
+    assert parse_size("1,5 MB") == 1_536.0
+    assert parse_size("2.5 GB") == 2_621_440.0

@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 
 from bs4 import Tag, BeautifulSoup
 
-from .common import bs4_html
+from .common import bs4_html, parse_size, convert_to_datetime
 from .exceptions import SmartSchoolException
 from .objects import Course, CourseCondensed
 from .session import SessionMixin
@@ -179,8 +179,8 @@ class CourseDocuments(SessionMixin):
             return None
 
         description = cells[2].get_text(strip=True) or None
-        size_kb = self._parse_size(cells[3].get_text(strip=True))
-        last_modified = self._parse_date(cells[4].get_text(strip=True))
+        size_kb = parse_size(cells[3].get_text(strip=True))
+        last_modified = convert_to_datetime(cells[4].get_text(strip=True))
 
         # Determine if folder or file
         is_folder = link.find("i", class_="fa-folder") is not None or "/Documents/Index/Index/" in href
@@ -212,28 +212,6 @@ class CourseDocuments(SessionMixin):
                 )
 
         return None
-
-    def _parse_size(self, size_str: str) -> float | None:
-        """Parse size string to KB value."""
-        if not size_str or size_str.strip() in ("-", ""):
-            return None
-
-        match = re.search(r"([\d,.]+)\s*(KB|MB|GB)", size_str, re.IGNORECASE)
-        if not match:
-            return None
-
-        try:
-            value = float(match.group(1).replace(",", "."))
-            unit = match.group(2).upper()
-
-            if unit == "MB":
-                value *= 1024
-            elif unit == "GB":
-                value *= 1024 * 1024
-
-            return value
-        except ValueError:
-            return None
 
     def _parse_date(self, date_str: str) -> datetime | None:
         """Parse date string to datetime object."""

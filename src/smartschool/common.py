@@ -294,3 +294,30 @@ def convert_to_date(x: str | String | date | datetime | None) -> date:
         return datetime.strptime(x, "%Y-%m-%d").date()
 
     raise SmartSchoolParsingError(f"Cannot convert '{x}' to `date`")
+
+
+def parse_size(size_str: str) -> float | None:
+    """Parse size string to KB value with support for binary units."""
+    if not size_str or size_str.strip() in ("-", ""):
+        return None
+
+    match = re.search(r"([\d,.]+)\s*(Ki?B|Mi?B|Gi?B)", size_str, re.IGNORECASE)
+    if not match:
+        return None
+
+    try:
+        value = float(match.group(1).replace(",", "."))
+        unit = match.group(2).upper()
+
+        multipliers = {
+            "KB": 1,
+            "KIB": 1,
+            "MB": 1_024,
+            "MIB": 1_000,
+            "GB": 1_024 * 1_024,
+            "GIB": 1_000_000,
+        }
+
+        return value * multipliers.get(unit, 1)
+    except ValueError:
+        return None
