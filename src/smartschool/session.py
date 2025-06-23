@@ -87,7 +87,7 @@ class Smartschool(Session):
             self._parse_login_information(response)
             response = self._do_login_verification(response)
         if response.url.endswith("/2fa"):
-            response = self._complete_verification_2fa(response)
+            response = self._complete_verification_2fa()
         return response
 
     def _reset_login_attempts(self):
@@ -194,7 +194,7 @@ class Smartschool(Session):
         )
         return super().request("POST", response.url, data=data, allow_redirects=True)
 
-    def _complete_verification_2fa(self, response: Response) -> Response:
+    def _complete_verification_2fa(self) -> Response:
         """Handle 2FA verification using TOTP."""
         if pyotp is None:
             raise SmartSchoolAuthenticationError("2FA verification requires 'pyotp' package. Install with: pip install pyotp")

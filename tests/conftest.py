@@ -63,7 +63,7 @@ def mock_credentials():
         mfa = "123456"
 
         def validate(self):
-            pass
+            """Empty validation method for testing."""
 
     return MockCreds()
 
