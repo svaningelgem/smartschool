@@ -176,12 +176,15 @@ def test_fill_form(mocker: pytest_mock.MockerFixture):
 
 
 def test_missing_name():
-    """Test missing name attribute."""
-    html = BeautifulSoup("""
+    """Test for missing name attribute."""
+    html = BeautifulSoup(
+        """
     <form>
         <input value="test" />
         <input value="test2" name="test2"/>
-    """)
+    """,
+        features="html.parser",
+    )
     result = get_all_values_from_form(html, "form")
     assert result == [{"name": "test2", "value": "test2"}]
 
@@ -414,12 +417,12 @@ def test_convert_to_datetime() -> None:
     expected = datetime(2023, 9, 1, 10, 2, 3, tzinfo=timezone(timedelta(hours=2)))
     expected_no_time = datetime(2023, 9, 1, 0, 0, 0, tzinfo=timezone(timedelta(hours=2)))
 
-    assert convert_to_datetime("2023-09-01T10:02:03+02:00") == expected
-    assert convert_to_datetime(expected) == expected
-    assert convert_to_datetime(None) == expected
-    assert convert_to_datetime("2023-09-01") == expected_no_time
-    assert convert_to_datetime(expected.date()) == expected_no_time
-    assert convert_to_datetime("2023-09-01 10:02") == expected.replace(second=0)
+    assert convert_to_datetime("2023-09-01T10:02:03+02:00") == expected.astimezone()
+    assert convert_to_datetime(expected) == expected.astimezone()
+    assert convert_to_datetime(None) == expected.astimezone()
+    assert convert_to_datetime("2023-09-01") == expected_no_time.astimezone()
+    assert convert_to_datetime(expected.date()) == expected_no_time.astimezone()
+    assert convert_to_datetime("2023-09-01 10:02") == expected.replace(second=0).astimezone()
 
     with pytest.raises(ValueError, match="No timezone information found in this date"):
         convert_to_datetime(expected.replace(tzinfo=None))
