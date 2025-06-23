@@ -591,7 +591,7 @@ class PlannedElement:
     joinIds: PlannedElementJoinIds
 
     name: String = ""
-    assignmentType: PlannedElementAssignmentType = None
+    assignmentType: PlannedElementAssignmentType | None = None
     resolvedStatus: String = ""
     onlineSession: String | None = None
 
