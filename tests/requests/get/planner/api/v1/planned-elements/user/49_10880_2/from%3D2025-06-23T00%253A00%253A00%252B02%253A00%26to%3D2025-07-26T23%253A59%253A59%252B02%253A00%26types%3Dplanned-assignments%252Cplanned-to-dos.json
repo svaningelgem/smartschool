@@ -1,0 +1,284 @@
+[
+  {
+    "id": "c1003f40-4895-4dee-90d9-b3daecd697a6",
+    "platformId": 49,
+    "name": "Lokaalwissel : we hebben les in E3.10",
+    "assignmentType": {
+      "id": "12657aa0-3b29-4977-925b-e2a0f133f2ba",
+      "name": "-",
+      "abbreviation": "-",
+      "isVisible": true,
+      "weight": 1
+    },
+    "period": {
+      "dateTimeFrom": "2025-06-10T10:20:00+02:00",
+      "dateTimeTo": "2025-06-10T11:10:00+02:00",
+      "wholeDay": false,
+      "deadline": true
+    },
+    "organisers": {
+      "users": [
+        {
+          "id": "49_2046_0",
+          "pictureHash": "initials_MH",
+          "pictureUrl": "https:\/\/userpicture20.smartschool.be\/User\/Userimage\/hashimage\/hash\/initials_MH\/plain\/1\/res\/128",
+          "description": {
+            "startingWithFirstName": "",
+            "startingWithLastName": ""
+          },
+          "name": {
+            "startingWithFirstName": "Marie Herbosch",
+            "startingWithLastName": "Herbosch Marie"
+          },
+          "sort": "herbosch-marie",
+          "deleted": false
+        }
+      ],
+      "groups": []
+    },
+    "participants": {
+      "users": [],
+      "groups": [
+        {
+          "identifier": "49_4522",
+          "id": "49_4522",
+          "platformId": 49,
+          "name": "4CHU",
+          "type": "K",
+          "icon": "briefcase",
+          "sort": "4CHU"
+        },
+        {
+          "identifier": "49_6634",
+          "id": "49_6634",
+          "platformId": 49,
+          "name": "4CNW",
+          "type": "K",
+          "icon": "briefcase",
+          "sort": "4CNW"
+        }
+      ],
+      "userRoles": [],
+      "groupFilters": {
+        "filters": [],
+        "additionalUsers": []
+      }
+    },
+    "isParticipant": true,
+    "capabilities": {
+      "canUserTrash": false,
+      "canUserRestoreFromTrash": false,
+      "canUserDelete": false,
+      "canUserEdit": false,
+      "canUserReplace": false,
+      "canUserEditPresence": false,
+      "canUserAddReservations": false,
+      "canUserReschedule": false,
+      "canUserPin": false,
+      "canUserResolve": false,
+      "canUserChangeUserColor": true,
+      "canUserChangeUserViewMetadata": true,
+      "canUserCreateVideoCall": false,
+      "canUserSeeVideoCall": true,
+      "canUserManageVideoCall": false,
+      "canUserSeeProperties": {
+        "id": true,
+        "platformId": true,
+        "name": true,
+        "assignmentType": true,
+        "period": true,
+        "organisers": true,
+        "participants": true,
+        "isParticipant": true,
+        "capabilities": true,
+        "plannedElementType": true,
+        "resolvedStatus": true,
+        "onlineSession": true,
+        "courses": true,
+        "locations": true
+      }
+    },
+    "plannedElementType": "planned-assignments",
+    "resolvedStatus": "resolved",
+    "onlineSession": null,
+    "courses": [
+      {
+        "id": "a66a103f-c96b-4627-8f85-ee67c926a1ab",
+        "platformId": 49,
+        "name": "Frans",
+        "scheduleCodes": [
+          "FR3",
+          "FR4",
+          "FR5",
+          "FrFL"
+        ],
+        "icon": "flag_france",
+        "courseCluster": {
+          "id": 30,
+          "name": "Frans"
+        },
+        "isVisible": true
+      }
+    ],
+    "locations": [
+      {
+        "id": "cb15a596-f526-4df1-bb6f-9b7639984172",
+        "platformId": 49,
+        "platformName": "Paridaensinstituut",
+        "number": "",
+        "title": "G.2.06",
+        "icon": "classroom_green",
+        "type": "mini-db-item",
+        "selectable": true
+      }
+    ],
+    "sort": "20250610102000_5_4CHU_Lokaalwissel : we hebben les in E3.10",
+    "unconfirmed": false,
+    "pinned": false,
+    "color": "aqua-200",
+    "joinIds": {
+      "from": "1d50d31c-abee-5f6a-a3bd-176923d39a8a",
+      "to": "1d50d31c-abee-5f6a-a3bd-176923d39a8a"
+    }
+  },
+  {
+    "id": "d28a2a79-4f61-4780-ad01-33119b0dcbd9",
+    "platformId": 49,
+    "name": "Studiemateriaal voor een vak naar keuze",
+    "assignmentType": {
+      "id": "16062db8-c721-47de-9e69-9a8bcc2d4fb1",
+      "name": "Meebrengen",
+      "abbreviation": "ME",
+      "isVisible": true,
+      "weight": 1
+    },
+    "period": {
+      "dateTimeFrom": "2025-06-10T11:10:00+02:00",
+      "dateTimeTo": "2025-06-10T12:00:00+02:00",
+      "wholeDay": false,
+      "deadline": true
+    },
+    "organisers": {
+      "users": [
+        {
+          "id": "49_9801_0",
+          "pictureHash": "initials_TB",
+          "pictureUrl": "https:\/\/userpicture20.smartschool.be\/User\/Userimage\/hashimage\/hash\/initials_TB\/plain\/1\/res\/128",
+          "description": {
+            "startingWithFirstName": "",
+            "startingWithLastName": ""
+          },
+          "name": {
+            "startingWithFirstName": "Tiffany Bousard",
+            "startingWithLastName": "Bousard Tiffany"
+          },
+          "sort": "bousard-tiffany",
+          "deleted": false
+        }
+      ],
+      "groups": []
+    },
+    "participants": {
+      "users": [],
+      "groups": [
+        {
+          "identifier": "49_4522",
+          "id": "49_4522",
+          "platformId": 49,
+          "name": "4CHU",
+          "type": "K",
+          "icon": "briefcase",
+          "sort": "4CHU"
+        },
+        {
+          "identifier": "49_6634",
+          "id": "49_6634",
+          "platformId": 49,
+          "name": "4CNW",
+          "type": "K",
+          "icon": "briefcase",
+          "sort": "4CNW"
+        }
+      ],
+      "userRoles": [],
+      "groupFilters": {
+        "filters": [],
+        "additionalUsers": []
+      }
+    },
+    "isParticipant": true,
+    "capabilities": {
+      "canUserTrash": false,
+      "canUserRestoreFromTrash": false,
+      "canUserDelete": false,
+      "canUserEdit": false,
+      "canUserReplace": false,
+      "canUserEditPresence": false,
+      "canUserAddReservations": false,
+      "canUserReschedule": false,
+      "canUserPin": false,
+      "canUserResolve": false,
+      "canUserChangeUserColor": true,
+      "canUserChangeUserViewMetadata": true,
+      "canUserCreateVideoCall": false,
+      "canUserSeeVideoCall": true,
+      "canUserManageVideoCall": false,
+      "canUserSeeProperties": {
+        "id": true,
+        "platformId": true,
+        "name": true,
+        "assignmentType": true,
+        "period": true,
+        "organisers": true,
+        "participants": true,
+        "isParticipant": true,
+        "capabilities": true,
+        "plannedElementType": true,
+        "resolvedStatus": true,
+        "onlineSession": true,
+        "courses": true,
+        "locations": true
+      }
+    },
+    "plannedElementType": "planned-assignments",
+    "resolvedStatus": "resolved",
+    "onlineSession": null,
+    "courses": [
+      {
+        "id": "44315978-1572-413e-bea8-6411d75e89f8",
+        "platformId": 49,
+        "name": "Geschiedenis",
+        "scheduleCodes": [
+          "GE1",
+          "GE2"
+        ],
+        "icon": "fortress",
+        "courseCluster": {
+          "id": 33,
+          "name": "Geschiedenis"
+        },
+        "isVisible": true
+      }
+    ],
+    "locations": [
+      {
+        "id": "2ebcfbde-d5db-4f2e-9d09-8607885142bd",
+        "platformId": 49,
+        "platformName": "Paridaensinstituut",
+        "number": "",
+        "title": "C.2.08",
+        "icon": "classroom_red",
+        "type": "mini-db-item",
+        "selectable": true
+      }
+    ],
+    "sort": "20250610111000_5_4CHU_Studiemateriaal voor een vak naar keuze",
+    "unconfirmed": false,
+    "pinned": false,
+    "color": "aqua-200",
+    "joinIds": {
+      "from": "c8cbdd5d-e751-55be-b75a-af2ff0de55c4",
+      "to": "c8cbdd5d-e751-55be-b75a-af2ff0de55c4"
+    }
+  }
+]
