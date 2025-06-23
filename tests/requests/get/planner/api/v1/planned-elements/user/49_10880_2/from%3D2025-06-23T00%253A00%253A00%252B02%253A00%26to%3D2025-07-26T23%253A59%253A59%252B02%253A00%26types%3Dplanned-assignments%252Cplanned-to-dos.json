@@ -1,36 +1,36 @@
 [
   {
-    "id": "c1003f40-4895-4dee-90d9-b3daecd697a6",
-    "platformId": 49,
-    "name": "Lokaalwissel : we hebben les in E3.10",
+    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "platformId": 42,
+    "name": "Lokaalwissel: les verplaatst naar B2.15",
     "assignmentType": {
-      "id": "12657aa0-3b29-4977-925b-e2a0f133f2ba",
+      "id": "12345678-90ab-cdef-1234-567890abcdef",
       "name": "-",
       "abbreviation": "-",
       "isVisible": true,
       "weight": 1
     },
     "period": {
-      "dateTimeFrom": "2025-06-10T10:20:00+02:00",
-      "dateTimeTo": "2025-06-10T11:10:00+02:00",
+      "dateTimeFrom": "2025-06-15T09:00:00+02:00",
+      "dateTimeTo": "2025-06-15T09:50:00+02:00",
       "wholeDay": false,
       "deadline": true
     },
     "organisers": {
       "users": [
         {
-          "id": "49_2046_0",
-          "pictureHash": "initials_MH",
-          "pictureUrl": "https:\/\/userpicture20.smartschool.be\/User\/Userimage\/hashimage\/hash\/initials_MH\/plain\/1\/res\/128",
+          "id": "42_1001_0",
+          "pictureHash": "initials_JD",
+          "pictureUrl": "https://example-school.nl/User/Userimage/hashimage/hash/initials_JD/plain/1/res/128",
           "description": {
             "startingWithFirstName": "",
             "startingWithLastName": ""
           },
           "name": {
-            "startingWithFirstName": "Marie Herbosch",
-            "startingWithLastName": "Herbosch Marie"
+            "startingWithFirstName": "Jan de Vries",
+            "startingWithLastName": "de Vries Jan"
           },
-          "sort": "herbosch-marie",
+          "sort": "devries-jan",
           "deleted": false
         }
       ],
@@ -40,22 +40,22 @@
       "users": [],
       "groups": [
         {
-          "identifier": "49_4522",
-          "id": "49_4522",
-          "platformId": 49,
-          "name": "4CHU",
+          "identifier": "42_3001",
+          "id": "42_3001",
+          "platformId": 42,
+          "name": "3A-HAVO",
           "type": "K",
           "icon": "briefcase",
-          "sort": "4CHU"
+          "sort": "3A-HAVO"
         },
         {
-          "identifier": "49_6634",
-          "id": "49_6634",
-          "platformId": 49,
-          "name": "4CNW",
+          "identifier": "42_3002",
+          "id": "42_3002",
+          "platformId": 42,
+          "name": "3B-HAVO",
           "type": "K",
           "icon": "briefcase",
-          "sort": "4CNW"
+          "sort": "3B-HAVO"
         }
       ],
       "userRoles": [],
@@ -103,76 +103,76 @@
     "onlineSession": null,
     "courses": [
       {
-        "id": "a66a103f-c96b-4627-8f85-ee67c926a1ab",
-        "platformId": 49,
-        "name": "Frans",
+        "id": "fedcba98-7654-3210-fedc-ba9876543210",
+        "platformId": 42,
+        "name": "Duits",
         "scheduleCodes": [
-          "FR3",
-          "FR4",
-          "FR5",
-          "FrFL"
+          "DU1",
+          "DU2",
+          "DU3",
+          "DuVT"
         ],
-        "icon": "flag_france",
+        "icon": "flag_germany",
         "courseCluster": {
-          "id": 30,
-          "name": "Frans"
+          "id": 15,
+          "name": "Duits"
         },
         "isVisible": true
       }
     ],
     "locations": [
       {
-        "id": "cb15a596-f526-4df1-bb6f-9b7639984172",
-        "platformId": 49,
-        "platformName": "Paridaensinstituut",
+        "id": "11223344-5566-7788-9900-aabbccddeeff",
+        "platformId": 42,
+        "platformName": "Het Nieuwe College",
         "number": "",
-        "title": "G.2.06",
-        "icon": "classroom_green",
+        "title": "A.1.12",
+        "icon": "classroom_blue",
         "type": "mini-db-item",
         "selectable": true
       }
     ],
-    "sort": "20250610102000_5_4CHU_Lokaalwissel : we hebben les in E3.10",
+    "sort": "20250615090000_5_3A-HAVO_Lokaalwissel: les verplaatst naar B2.15",
     "unconfirmed": false,
     "pinned": false,
-    "color": "aqua-200",
+    "color": "blue-200",
     "joinIds": {
-      "from": "1d50d31c-abee-5f6a-a3bd-176923d39a8a",
-      "to": "1d50d31c-abee-5f6a-a3bd-176923d39a8a"
+      "from": "aabbccdd-eeff-0011-2233-445566778899",
+      "to": "aabbccdd-eeff-0011-2233-445566778899"
     }
   },
   {
-    "id": "d28a2a79-4f61-4780-ad01-33119b0dcbd9",
-    "platformId": 49,
-    "name": "Studiemateriaal voor een vak naar keuze",
+    "id": "bbccddee-ff00-1122-3344-556677889900",
+    "platformId": 42,
+    "name": "Studiemateriaal meebrengen voor keuzevak",
     "assignmentType": {
-      "id": "16062db8-c721-47de-9e69-9a8bcc2d4fb1",
+      "id": "00112233-4455-6677-8899-aabbccddeeff",
       "name": "Meebrengen",
       "abbreviation": "ME",
       "isVisible": true,
       "weight": 1
     },
     "period": {
-      "dateTimeFrom": "2025-06-10T11:10:00+02:00",
-      "dateTimeTo": "2025-06-10T12:00:00+02:00",
+      "dateTimeFrom": "2025-06-15T09:50:00+02:00",
+      "dateTimeTo": "2025-06-15T10:40:00+02:00",
       "wholeDay": false,
       "deadline": true
     },
     "organisers": {
       "users": [
         {
-          "id": "49_9801_0",
-          "pictureHash": "initials_TB",
-          "pictureUrl": "https:\/\/userpicture20.smartschool.be\/User\/Userimage\/hashimage\/hash\/initials_TB\/plain\/1\/res\/128",
+          "id": "42_2002_0",
+          "pictureHash": "initials_EH",
+          "pictureUrl": "https://example-school.nl/User/Userimage/hashimage/hash/initials_EH/plain/1/res/128",
           "description": {
             "startingWithFirstName": "",
             "startingWithLastName": ""
           },
           "name": {
-            "startingWithFirstName": "Tiffany Bousard",
-            "startingWithLastName": "Bousard Tiffany"
+            "startingWithFirstName": "Emma Hendriksen",
+            "startingWithLastName": "Hendriksen Emma"
           },
-          "sort": "bousard-tiffany",
+          "sort": "hendriksen-emma",
           "deleted": false
         }
       ],
@@ -182,22 +182,22 @@
       "users": [],
       "groups": [
         {
-          "identifier": "49_4522",
-          "id": "49_4522",
-          "platformId": 49,
-          "name": "4CHU",
+          "identifier": "42_3001",
+          "id": "42_3001",
+          "platformId": 42,
+          "name": "3A-HAVO",
           "type": "K",
           "icon": "briefcase",
-          "sort": "4CHU"
+          "sort": "3A-HAVO"
         },
         {
-          "identifier": "49_6634",
-          "id": "49_6634",
-          "platformId": 49,
-          "name": "4CNW",
+          "identifier": "42_3002",
+          "id": "42_3002",
+          "platformId": 42,
+          "name": "3B-HAVO",
           "type": "K",
           "icon": "briefcase",
-          "sort": "4CNW"
+          "sort": "3B-HAVO"
         }
       ],
       "userRoles": [],
@@ -245,40 +245,40 @@
     "onlineSession": null,
     "courses": [
       {
-        "id": "44315978-1572-413e-bea8-6411d75e89f8",
-        "platformId": 49,
-        "name": "Geschiedenis",
+        "id": "99887766-5544-3322-1100-ffeeddccbbaa",
+        "platformId": 42,
+        "name": "Maatschappijleer",
         "scheduleCodes": [
-          "GE1",
-          "GE2"
+          "ML1",
+          "ML2"
         ],
-        "icon": "fortress",
+        "icon": "people",
         "courseCluster": {
-          "id": 33,
-          "name": "Geschiedenis"
+          "id": 22,
+          "name": "Maatschappijleer"
         },
         "isVisible": true
       }
     ],
     "locations": [
       {
-        "id": "2ebcfbde-d5db-4f2e-9d09-8607885142bd",
-        "platformId": 49,
-        "platformName": "Paridaensinstituut",
+        "id": "55667788-99aa-bbcc-ddee-ff0011223344",
+        "platformId": 42,
+        "platformName": "Het Nieuwe College",
         "number": "",
-        "title": "C.2.08",
-        "icon": "classroom_red",
+        "title": "D.1.05",
+        "icon": "classroom_orange",
         "type": "mini-db-item",
         "selectable": true
       }
     ],
-    "sort": "20250610111000_5_4CHU_Studiemateriaal voor een vak naar keuze",
+    "sort": "20250615095000_5_3A-HAVO_Studiemateriaal meebrengen voor keuzevak",
     "unconfirmed": false,
     "pinned": false,
-    "color": "aqua-200",
+    "color": "green-200",
     "joinIds": {
-      "from": "c8cbdd5d-e751-55be-b75a-af2ff0de55c4",
-      "to": "c8cbdd5d-e751-55be-b75a-af2ff0de55c4"
+      "from": "ddeeffgg-hh00-1122-3344-556677889900",
+      "to": "ddeeffgg-hh00-1122-3344-556677889900"
     }
   }
 ]
