@@ -3,11 +3,11 @@ from __future__ import annotations
 import time
 from abc import ABC
 from dataclasses import dataclass
-from datetime import datetime
 from typing import TYPE_CHECKING, ClassVar
 
 from . import objects
 from ._xml_interface import SmartschoolXML_WeeklyCache
+from .common import convert_to_datetime
 from .objects import AgendaHour, AgendaMomentInfo
 from .session import SessionMixin
 
@@ -83,10 +83,7 @@ class SmartschoolLessons(AgendaPoster):
 
     @property
     def _params(self) -> dict:
-        now = self.timestamp_to_use or datetime.now()
-        if not isinstance(now, datetime):
-            now = datetime.combine(now, datetime.min.time())
-        now = now.timestamp()
+        now = convert_to_datetime(self.timestamp_to_use).timestamp()
         in_5_days = now + 5 * 24 * 3600
 
         return {
