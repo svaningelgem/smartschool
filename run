@@ -18,7 +18,7 @@ export PYTHON="/opt/miniforge3/envs/smartschool/bin/python"
   echo "RESULTS-REPORT" |& tee -a "$logfile"
   $PYTHON scripts/smartschool_report_on_results |& tee -a "$logfile"
 
-  echo "FUTURE-TASKS-REPORT" |& tee -a "$logfile"
-  $PYTHON scripts/smartschool_report_on_future_tasks |& tee -a "$logfile"
+#  echo "FUTURE-TASKS-REPORT" |& tee -a "$logfile"
+#  $PYTHON scripts/smartschool_report_on_future_tasks |& tee -a "$logfile"
 
 ) 200>/var/lock/smartschool.lock

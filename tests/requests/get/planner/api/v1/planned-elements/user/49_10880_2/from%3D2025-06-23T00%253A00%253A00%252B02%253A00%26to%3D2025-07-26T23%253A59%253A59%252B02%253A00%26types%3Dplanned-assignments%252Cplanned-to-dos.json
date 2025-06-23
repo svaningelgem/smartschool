@@ -1,0 +1,284 @@
+[
+  {
+    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "platformId": 42,
+    "name": "Lokaalwissel: les verplaatst naar B2.15",
+    "assignmentType": {
+      "id": "12345678-90ab-cdef-1234-567890abcdef",
+      "name": "-",
+      "abbreviation": "-",
+      "isVisible": true,
+      "weight": 1
+    },
+    "period": {
+      "dateTimeFrom": "2025-06-15T09:00:00+02:00",
+      "dateTimeTo": "2025-06-15T09:50:00+02:00",
+      "wholeDay": false,
+      "deadline": true
+    },
+    "organisers": {
+      "users": [
+        {
+          "id": "42_1001_0",
+          "pictureHash": "initials_JD",
+          "pictureUrl": "https://example-school.nl/User/Userimage/hashimage/hash/initials_JD/plain/1/res/128",
+          "description": {
+            "startingWithFirstName": "",
+            "startingWithLastName": ""
+          },
+          "name": {
+            "startingWithFirstName": "Jan de Vries",
+            "startingWithLastName": "de Vries Jan"
+          },
+          "sort": "devries-jan",
+          "deleted": false
+        }
+      ],
+      "groups": []
+    },
+    "participants": {
+      "users": [],
+      "groups": [
+        {
+          "identifier": "42_3001",
+          "id": "42_3001",
+          "platformId": 42,
+          "name": "3A-HAVO",
+          "type": "K",
+          "icon": "briefcase",
+          "sort": "3A-HAVO"
+        },
+        {
+          "identifier": "42_3002",
+          "id": "42_3002",
+          "platformId": 42,
+          "name": "3B-HAVO",
+          "type": "K",
+          "icon": "briefcase",
+          "sort": "3B-HAVO"
+        }
+      ],
+      "userRoles": [],
+      "groupFilters": {
+        "filters": [],
+        "additionalUsers": []
+      }
+    },
+    "isParticipant": true,
+    "capabilities": {
+      "canUserTrash": false,
+      "canUserRestoreFromTrash": false,
+      "canUserDelete": false,
+      "canUserEdit": false,
+      "canUserReplace": false,
+      "canUserEditPresence": false,
+      "canUserAddReservations": false,
+      "canUserReschedule": false,
+      "canUserPin": false,
+      "canUserResolve": false,
+      "canUserChangeUserColor": true,
+      "canUserChangeUserViewMetadata": true,
+      "canUserCreateVideoCall": false,
+      "canUserSeeVideoCall": true,
+      "canUserManageVideoCall": false,
+      "canUserSeeProperties": {
+        "id": true,
+        "platformId": true,
+        "name": true,
+        "assignmentType": true,
+        "period": true,
+        "organisers": true,
+        "participants": true,
+        "isParticipant": true,
+        "capabilities": true,
+        "plannedElementType": true,
+        "resolvedStatus": true,
+        "onlineSession": true,
+        "courses": true,
+        "locations": true
+      }
+    },
+    "plannedElementType": "planned-assignments",
+    "resolvedStatus": "resolved",
+    "onlineSession": null,
+    "courses": [
+      {
+        "id": "fedcba98-7654-3210-fedc-ba9876543210",
+        "platformId": 42,
+        "name": "Duits",
+        "scheduleCodes": [
+          "DU1",
+          "DU2",
+          "DU3",
+          "DuVT"
+        ],
+        "icon": "flag_germany",
+        "courseCluster": {
+          "id": 15,
+          "name": "Duits"
+        },
+        "isVisible": true
+      }
+    ],
+    "locations": [
+      {
+        "id": "11223344-5566-7788-9900-aabbccddeeff",
+        "platformId": 42,
+        "platformName": "Het Nieuwe College",
+        "number": "",
+        "title": "A.1.12",
+        "icon": "classroom_blue",
+        "type": "mini-db-item",
+        "selectable": true
+      }
+    ],
+    "sort": "20250615090000_5_3A-HAVO_Lokaalwissel: les verplaatst naar B2.15",
+    "unconfirmed": false,
+    "pinned": false,
+    "color": "blue-200",
+    "joinIds": {
+      "from": "aabbccdd-eeff-0011-2233-445566778899",
+      "to": "aabbccdd-eeff-0011-2233-445566778899"
+    }
+  },
+  {
+    "id": "bbccddee-ff00-1122-3344-556677889900",
+    "platformId": 42,
+    "name": "Studiemateriaal meebrengen voor keuzevak",
+    "assignmentType": {
+      "id": "00112233-4455-6677-8899-aabbccddeeff",
+      "name": "Meebrengen",
+      "abbreviation": "ME",
+      "isVisible": true,
+      "weight": 1
+    },
+    "period": {
+      "dateTimeFrom": "2025-06-15T09:50:00+02:00",
+      "dateTimeTo": "2025-06-15T10:40:00+02:00",
+      "wholeDay": false,
+      "deadline": true
+    },
+    "organisers": {
+      "users": [
+        {
+          "id": "42_2002_0",
+          "pictureHash": "initials_EH",
+          "pictureUrl": "https://example-school.nl/User/Userimage/hashimage/hash/initials_EH/plain/1/res/128",
+          "description": {
+            "startingWithFirstName": "",
+            "startingWithLastName": ""
+          },
+          "name": {
+            "startingWithFirstName": "Emma Hendriksen",
+            "startingWithLastName": "Hendriksen Emma"
+          },
+          "sort": "hendriksen-emma",
+          "deleted": false
+        }
+      ],
+      "groups": []
+    },
+    "participants": {
+      "users": [],
+      "groups": [
+        {
+          "identifier": "42_3001",
+          "id": "42_3001",
+          "platformId": 42,
+          "name": "3A-HAVO",
+          "type": "K",
+          "icon": "briefcase",
+          "sort": "3A-HAVO"
+        },
+        {
+          "identifier": "42_3002",
+          "id": "42_3002",
+          "platformId": 42,
+          "name": "3B-HAVO",
+          "type": "K",
+          "icon": "briefcase",
+          "sort": "3B-HAVO"
+        }
+      ],
+      "userRoles": [],
+      "groupFilters": {
+        "filters": [],
+        "additionalUsers": []
+      }
+    },
+    "isParticipant": true,
+    "capabilities": {
+      "canUserTrash": false,
+      "canUserRestoreFromTrash": false,
+      "canUserDelete": false,
+      "canUserEdit": false,
+      "canUserReplace": false,
+      "canUserEditPresence": false,
+      "canUserAddReservations": false,
+      "canUserReschedule": false,
+      "canUserPin": false,
+      "canUserResolve": false,
+      "canUserChangeUserColor": true,
+      "canUserChangeUserViewMetadata": true,
+      "canUserCreateVideoCall": false,
+      "canUserSeeVideoCall": true,
+      "canUserManageVideoCall": false,
+      "canUserSeeProperties": {
+        "id": true,
+        "platformId": true,
+        "name": true,
+        "assignmentType": true,
+        "period": true,
+        "organisers": true,
+        "participants": true,
+        "isParticipant": true,
+        "capabilities": true,
+        "plannedElementType": true,
+        "resolvedStatus": true,
+        "onlineSession": true,
+        "courses": true,
+        "locations": true
+      }
+    },
+    "plannedElementType": "planned-assignments",
+    "resolvedStatus": "resolved",
+    "onlineSession": null,
+    "courses": [
+      {
+        "id": "99887766-5544-3322-1100-ffeeddccbbaa",
+        "platformId": 42,
+        "name": "Maatschappijleer",
+        "scheduleCodes": [
+          "ML1",
+          "ML2"
+        ],
+        "icon": "people",
+        "courseCluster": {
+          "id": 22,
+          "name": "Maatschappijleer"
+        },
+        "isVisible": true
+      }
+    ],
+    "locations": [
+      {
+        "id": "55667788-99aa-bbcc-ddee-ff0011223344",
+        "platformId": 42,
+        "platformName": "Het Nieuwe College",
+        "number": "",
+        "title": "D.1.05",
+        "icon": "classroom_orange",
+        "type": "mini-db-item",
+        "selectable": true
+      }
+    ],
+    "sort": "20250615095000_5_3A-HAVO_Studiemateriaal meebrengen voor keuzevak",
+    "unconfirmed": false,
+    "pinned": false,
+    "color": "green-200",
+    "joinIds": {
+      "from": "ddeeffgg-hh00-1122-3344-556677889900",
+      "to": "ddeeffgg-hh00-1122-3344-556677889900"
+    }
+  }
+]

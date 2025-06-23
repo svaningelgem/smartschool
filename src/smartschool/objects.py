@@ -1,6 +1,9 @@
+# pylint: disable=invalid-name
+
 from __future__ import annotations
 
 import base64
+import re
 from datetime import date, datetime
 from functools import cached_property
 from typing import Annotated, Literal
@@ -12,6 +15,7 @@ from .common import as_float
 from .session import session
 
 String = constr(strip_whitespace=True)
+UUID = constr(pattern=re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", flags=re.IGNORECASE))
 
 
 def convert_to_datetime(x: str | String | datetime) -> datetime:
@@ -79,6 +83,18 @@ class _User:
     pictureUrl: Url
     description: PersonDescription
     name: PersonDescription
+    sort: String
+    deleted: bool = False
+
+
+@dataclass
+class _Group:
+    identifier: String
+    id: String
+    platformId: int
+    name: String
+    type: String
+    icon: String
     sort: String
 
 
@@ -156,7 +172,7 @@ class FeedbackFull:
 
 
 @dataclass
-class Result:
+class _Result:
     identifier: String
     type: Literal["normal"]
     name: String
@@ -184,8 +200,14 @@ class ResultDetails:
 
 
 @dataclass
-class ResultWithDetails(Result):
+class ResultWithoutDetails(_Result):
+    deleted: bool = False
+
+
+@dataclass
+class ResultWithDetails(_Result):
     details: ResultDetails
+    deleted: bool = False
 
 
 @dataclass
@@ -193,6 +215,9 @@ class CourseCondensed:
     name: String
     teacher: String
     url: Url
+
+    id: int = Field(repr=False, default=None)
+    platformId: int = Field(repr=False, default=None)
 
     descr: String = Field(repr=False, default="")
     icon: String = Field(repr=False, default="")
@@ -260,7 +285,7 @@ class FutureTasks:
 
     days: list[FutureTaskOneDay] = Field(default_factory=list)
     last_assignment_id: int = 0
-    last_date: Date = Field(default_factory=date.today)
+    last_date: Date | None = None
 
     def __post_init__(self):
         """I need to do this here because when I do it in Agenda, it'll not lazily load it. But in this way, I load it on construction."""
@@ -283,7 +308,7 @@ class FutureTasks:
             self.days.append(FutureTaskOneDay(**d))
 
         self.last_assignment_id = json["last_assignment_id"]
-        self.last_date = convert_to_date(json["last_date"])
+        self.last_date = convert_to_date(json["last_date"]) if json["last_date"] else None
 
 
 @dataclass
@@ -439,3 +464,145 @@ class MessageDeletionStatus:
     msgID: int
     boxType: String
     is_deleted: bool = Field(validation_alias=AliasChoices("status", "is_deleted"))
+
+
+@dataclass
+class PlannedElementPeriod:
+    dateTimeFrom: datetime
+    dateTimeTo: datetime
+    wholeDay: bool
+    deadline: bool
+
+
+@dataclass
+class PlannedElementOrganisers:
+    users: list[_User]
+
+
+@dataclass
+class GroupFilters:
+    filters: list
+    additionalUsers: list[_User]
+
+
+@dataclass
+class PlannedElementParticipants:
+    groups: list[_Group]
+    users: list[_User]
+    groupFilters: GroupFilters
+
+
+@dataclass
+class UserSeeProperties:
+    id: bool
+    platformId: bool
+    period: bool
+    organisers: bool
+    participants: bool
+    plannedElementType: bool
+    isParticipant: bool
+    capabilities: bool
+    courses: bool
+    locations: bool
+    name: bool = False
+
+
+@dataclass
+class UserCapabilities:
+    canUserTrash: bool
+    canUserRestoreFromTrash: bool
+    canUserDelete: bool
+    canUserEdit: bool
+    canUserReplace: bool
+    canUserEditPresence: bool
+    canUserReschedule: bool
+    canUserChangeUserColor: bool
+    canUserChangeUserViewMetadata: bool
+    canUserSeeProperties: UserSeeProperties
+
+    canUserChangeOrganisers: bool = False
+    canUserChangeParticipants: bool = False
+    canUserChangeParticipantGroupFilters: bool = False
+    canUserChangeCourses: bool = False
+    canUserChangeLocations: bool = False
+    canUserCreateVideoCall: bool = False
+    canUserSeeVideoCall: bool = False
+    canUserManageVideoCall: bool = False
+
+
+@dataclass
+class PlannedElementCourseCluster:
+    id: int
+    name: String
+
+
+@dataclass
+class PlannedElementCourse:
+    id: UUID
+    platformId: int
+    name: String
+    scheduleCodes: list[String]
+    icon: String
+    courseCluster: PlannedElementCourseCluster
+    isVisible: bool
+
+
+@dataclass
+class PlannedElementLocation:
+    id: UUID
+    platformId: int
+    platformName: String
+    number: String
+    title: String
+    icon: String
+    type: String
+    selectable: bool
+
+
+@dataclass
+class PlannedElementJoinIds:
+    from_: String = Field(validation_alias=AliasChoices("from", "from_"))
+    to: String = Field(alias="to")
+
+
+@dataclass
+class PlannedElementAssignmentType:
+    id: UUID
+    name: String
+    abbreviation: String
+    isVisible: bool
+    weight: int
+
+
+@dataclass
+class PlannedElement:
+    id: UUID
+    platformId: int
+    period: PlannedElementPeriod
+    organisers: PlannedElementOrganisers
+    participants: PlannedElementParticipants
+    plannedElementType: String
+    isParticipant: bool
+    capabilities: UserCapabilities
+    courses: list[PlannedElementCourse]
+    locations: list[PlannedElementLocation]
+    sort: String
+    unconfirmed: bool
+    pinned: bool
+    color: String
+    joinIds: PlannedElementJoinIds
+
+    name: String = ""
+    assignmentType: PlannedElementAssignmentType | None = None
+    resolvedStatus: String = ""
+    onlineSession: String | None = None
+
+
+@dataclass
+class ApplicableAssignmentType:
+    id: UUID
+    platformId: int
+    name: String
+    abbreviation: String
+    isVisible: bool
+    weight: float

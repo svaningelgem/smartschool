@@ -2,7 +2,7 @@
 name = "smartschool"
 version = "0.5.0"
 description = "Unofficial API interface to the smartschool system."
-authors = ["Steven 'KaReL' Van Ingelgem <steven@vaningelgem.be>"]
+authors = ["Steven Van Ingelgem <steven@vaningelgem.be>"]
 readme = "README.md"
 homepage = "https://github.com/svaningelgem/smartschool"
 license = "GPL-3.0"

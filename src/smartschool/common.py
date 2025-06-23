@@ -11,10 +11,10 @@ import xml.etree.ElementTree as ET
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from enum import Enum, auto
-from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Literal
 
 from bs4 import BeautifulSoup, FeatureNotFound, GuessedAtParserWarning
+from logprise import logger
 from pydantic import RootModel
 from pydantic.dataclasses import is_pydantic_dataclass
 from requests import Response
@@ -45,7 +45,10 @@ class IsSaved(Enum):
 def save(
     type_: Literal["agenda", "punten", "todo"], course_name: str, id_: str, data: dict | str | Any, is_eq: Callable = operator.eq, extension: str = "json"
 ) -> IsSaved | dict | str:
-    save_as = Path.cwd() / f".cache/_{type_}/{course_name}/{id_}.{extension}"
+    from .session import session  # Prevent circular import
+
+    save_as = session.cache_path / f"_{type_}/{course_name}/{id_}.{extension}"
+
     save_as.parent.mkdir(exist_ok=True, parents=True)
     data_was_dict = isinstance(data, dict)
     data_was_object = is_pydantic_dataclass(data.__class__)
@@ -89,14 +92,14 @@ def send_email(
     message["To"] = ", ".join(email_to)
     message.attach(MIMEText(text, "plain", "utf8"))
 
-    print(f"Sending email >> {subject}")
+    logger.info(f"Sending email >> {subject}")
 
     if platform.system() == "Windows":
-        print("=================== On Linux we would have sent this: ===================")
-        print(f"Subject: {subject}")
-        print("")
-        print(text)
-        print("=========================================================================")
+        logger.info("=================== On Linux we would have sent this: ===================")
+        logger.info(f"Subject: {subject}")
+        logger.info("")
+        logger.info(text)
+        logger.info("=========================================================================")
         return
 
     with smtplib.SMTP("localhost") as server:
