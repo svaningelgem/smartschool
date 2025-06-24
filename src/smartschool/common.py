@@ -321,3 +321,7 @@ def parse_size(size_str: str) -> float | None:
         return value * multipliers.get(unit, 1)
     except ValueError:
         return None
+
+def parse_mime_type(file_type_string: str) -> str:
+    """Parse MIME type string to a standard format."""
+    return file_type_string.lower().strip().removesuffix("file").strip()

@@ -8,8 +8,8 @@ from typing import TYPE_CHECKING
 
 from bs4 import Tag, BeautifulSoup
 
-from .common import bs4_html, parse_size, convert_to_datetime
-from .exceptions import SmartSchoolException
+from .common import bs4_html, parse_size, convert_to_datetime, parse_mime_type
+from .exceptions import SmartSchoolException, SmartSchoolParsingError
 from .objects import Course, CourseCondensed
 from .session import SessionMixin
 
@@ -74,12 +74,11 @@ class FileItem:
 
     id: int
     name: str
-    description: str | None
     mime_type: str
     size_kb: float
     last_modified: datetime
-    download_url: str  # URL to download the file directly
-    view_url: str | None  # URL to view the file online (e.g., WOPI)
+    download_url: str | None = None
+    view_url: str | None = None
 
 
 @dataclass
@@ -88,7 +87,6 @@ class FolderItem:
 
     id: int
     name: str
-    description: str | None
     browse_url: str  # URL to browse the contents of this folder
 
 
@@ -132,7 +130,7 @@ class CourseDocuments(SessionMixin):
         return [
             item
             for row in rows
-            if (item := self._parse_row(row, folder_id))
+            if (item := self._parse_row(row))
         ]
 
     def _parse_document_row(self, row: Tag) -> FileItem:
@@ -143,111 +141,47 @@ class CourseDocuments(SessionMixin):
         filename = link_texts.pop()
         mime_block = row.select_one("div.smsc_cm_body_row_block_mime").get_text(strip=True, separator="\n")
         filetype, size_kb, last_modified = mime_block.split(" - ")
+        filetype = parse_mime_type(filetype)
+        size_kb = parse_size(size_kb)
+        last_modified = convert_to_datetime(last_modified)
 
-        # <div id="docID_493426" class="smsc_cm_body_row  first">
-        # 	<div class="smsc_cm_body_row_block" style="background-image:url('/smsc/img/mime_pdf/mime_pdf_32x32.png');">
-        # 		<div class="name">
-        # 			<!-- BEGIN realurl --><a target="_blank" href="/Documents/Wopi/Index/docID/493426/courseID/2733/mode/view/ssID/49" title="2025 leerstofoverzicht Engels 4 juni.pdf" index="0" class="smsc_cm_link smsc-download__link ">2025 leerstofoverzicht Engels 4 juni.pdf&nbsp;</a><a href="/Documents/Download/Index/htm/0/courseID/2733/docID/493426/ssID/49" title="Download" class="js-download-link download-link smsc-linkbutton smsc-linkbutton--icon smsc-linkbutton--svg--arrow_download_green" download=""></a><!-- END realurl -->
-        #
-        #
-        # 		</div>
-        #
-        # 		<div class="spacer"></div>
-        # 	</div>
-        # 	<div class="smsc_cm_body_row_block_desc"></div>
-        #
-        # 	<div class="smsc_cm_body_row_block_mime">PDF file - 76.38 KiB - 2025-05-22 13:08</div>
-        # </div>
-        if len(cells) < 5:
-            return None
+        links = row.select("a")
+        dl_link, view_link = None, None
+        for link in links:
+            classes = link.get("class") or []
+            if "download-link" in classes:
+                dl_link = link["href"]
+            elif "smsc-download__link" in classes:
+                view_link = link["href"]
 
-    def _parse_row(self, row: Tag, parent_id: int) -> DocumentOrFolderItem | None:
+        return FileItem(
+            id=id_,
+            name=filename,
+            mime_type=filetype,
+            size_kb=size_kb,
+            last_modified=last_modified,
+            download_url=dl_link,
+            view_url=view_link,
+        )
+
+    def _parse_folder_row(self, row: Tag) -> FolderItem:
+        """Parse a single table row into a folder item."""
+        for link in row.select("a"):
+            classes = link.get("class") or []
+            if "smsc_cm_link" in classes:
+                browse_url = link["href"]
+                name = link.get_text(strip=True, separator="\n")
+                id_ = re.search("/parentID/(\d+)/", browse_url).group(1)
+                return FolderItem(
+                    id=int(id_),
+                    name=name,
+                    browse_url=browse_url,
+                )
+
+        raise SmartSchoolParsingError("No browse URL found")
+
+    def _parse_row(self, row: Tag) -> DocumentOrFolderItem | None:
         """Parse a single table row into a file or folder item."""
         if row.get("id") and row.get("id").lower().startswith("docid_"):
             return self._parse_document_row(row)
-        cells = row.find_all("td", recursive=False)
-        if len(cells) < 5:
-            return None
-
-        link = cells[1].find("a", href=True)
-        if not link:
-            return None
-
-        href = link["href"]
-        name = link.get_text(strip=True)
-        if not name:
-            return None
-
-        description = cells[2].get_text(strip=True) or None
-        size_kb = parse_size(cells[3].get_text(strip=True))
-        last_modified = convert_to_datetime(cells[4].get_text(strip=True))
-
-        # Determine if folder or file
-        is_folder = link.find("i", class_="fa-folder") is not None or "/Documents/Index/Index/" in href
-
-        if is_folder:
-            folder_match = re.search(r"/ssID/(\d+)", href)
-            if folder_match:
-                return FolderItem(
-                    name=name,
-                    ss_id=int(folder_match.group(1)),
-                    parent_id=parent_id,
-                    description=description,
-                )
-        else:
-            file_match = re.search(r"/docID/(\d+)", href)
-            if file_match:
-                download_path = href if "/Documents/Download/download/" in href else None
-                mime_type = self._extract_mime_type(link)
-
-                return FileItem(
-                    name=name,
-                    doc_id=int(file_match.group(1)),
-                    parent_id=parent_id,
-                    description=description,
-                    download_url_path=download_path,
-                    mime_type=mime_type,
-                    size_kb=size_kb,
-                    last_modified=last_modified,
-                )
-
-        return None
-
-    def _parse_date(self, date_str: str) -> datetime | None:
-        """Parse date string to datetime object."""
-        if not date_str or date_str.strip() == "-":
-            return None
-
-        for fmt in ("%d.%m.%Y %H:%M", "%d-%m-%Y %H:%M"):
-            try:
-                return datetime.strptime(date_str, fmt)
-            except ValueError:
-                continue
-
-        return None
-
-    def _extract_mime_type(self, link: Tag) -> str | None:
-        """Extract MIME type from icon class."""
-        icon = link.find("i", class_=re.compile(r"fa-file-"))
-        if not icon:
-            return None
-
-        icon_class = next((cls for cls in icon.get("class", []) if cls.startswith("fa-file-")), None)
-        if not icon_class:
-            return None
-
-        mime_map = {
-            "pdf": "application/pdf",
-            "word": "application/msword",
-            "excel": "application/vnd.ms-excel",
-            "powerpoint": "application/vnd.ms-powerpoint",
-            "image": "image/*",
-            "archive": "application/zip",
-            "text": "text/plain",
-        }
-
-        for key, mime_type in mime_map.items():
-            if key in icon_class:
-                return mime_type
-
-        return None
+        return self._parse_folder_row(row)
