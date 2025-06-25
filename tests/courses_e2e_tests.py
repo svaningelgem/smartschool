@@ -3,7 +3,7 @@ from datetime import datetime
 import pytest
 
 from smartschool import Smartschool, TopNavCourses
-from smartschool.courses import CourseCondensed, FolderItem
+from smartschool.courses import CourseCondensed, FolderItem, InternetShortcut
 
 
 @pytest.fixture
@@ -55,8 +55,9 @@ def test_full_workflow(courses: list[CourseCondensed], tmp_path):
     assert pptx_file.filename == "Persoonlijke kunstinteresse.pptx"
 
 
-def test_shortcut_via_window_open_click(courses: list[CourseCondensed], tmp_path):
+def test_shortcut_via_inline_link(courses: list[CourseCondensed], tmp_path):
     shortcut = courses[4].items[1].items[8]  # chemie / oefeningen en verbetersleutels / shortcut
+
     assert shortcut.name == "extra oefeningen elektrolyten en ionisatie+dissociatie"
     assert shortcut.filename == "extra oefeningen elektrolyten en ionisatie_dissociatie.url"
     assert shortcut.mime_type == "html"
@@ -78,3 +79,17 @@ def test_shortcut_via_iframe_src(courses: list[CourseCondensed], tmp_path):
     assert shortcut.size_kb == pytest.approx(1485.0)
     assert shortcut.last_modified == datetime(2020, 6, 19, 11, 20).astimezone()
     assert shortcut.link == "https://www.youtube.com/embed/Zm-g5PpzsEE"
+
+
+def test_shortcut_via_onclick(courses: list[CourseCondensed], tmp_path):
+    shortcut = courses[-1].items[0].items[-1]  # Wiskunde / Binnemans / shortcut
+
+    assert isinstance(shortcut, InternetShortcut)
+    assert shortcut.name == "Puntensysteem portfolio"
+    assert shortcut.parent.name == "4AEC, 4CNW - J. Binnemans"
+    assert shortcut.filename == "Puntensysteem portfolio.url"
+    assert shortcut.id == 464462
+    assert shortcut.mime_type == "html"
+    assert shortcut.size_kb == pytest.approx(415.0)
+    assert shortcut.last_modified == datetime(2024, 10, 9, 20, 43).astimezone()
+    assert shortcut.link == "/Documents/Download/Index/htm/1/courseID/1975/docID/464462/ssID/49"
