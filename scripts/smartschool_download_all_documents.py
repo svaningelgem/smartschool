@@ -54,7 +54,7 @@ class BulkDownloader:
         logger.info(f"Processing course: {course.name}")
 
         course_path = self.download_dir / create_filesystem_safe_filename(course.name)
-        root_folder = FolderItem(self.session, course, "(Root)")
+        root_folder = FolderItem(self.session, None, course, "(Root)")
 
         if not root_folder.items:
             logger.info(f"No documents found in course: {course.name}")
@@ -71,14 +71,10 @@ class BulkDownloader:
             for course in TopNavCourses(session=self.session):
                 amount_of_courses += 1
 
-                try:
-                    self._download_course(course)
-                except Exception as e:
-                    logger.error(f"Failed to process course {course.name}: {e}")
+                self._download_course(course)
 
         except SmartSchoolException as e:
-            logger.error(f"Failed to fetch courses: {e}")
-            raise
+            logger.exception(f"Failed to process courses: {e}")
 
         logger.info(f"Download complete: {self._downloaded_count} files downloaded from {amount_of_courses} courses")
 

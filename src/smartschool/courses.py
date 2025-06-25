@@ -86,6 +86,7 @@ class Courses(SessionMixin):
 class FileItem(SessionMixin):
     """Represents a file within a course document folder."""
 
+    parent: FolderItem = field(repr=False)
     id: int
     name: str
     mime_type: str
@@ -227,6 +228,7 @@ class InternetShortcut(FileItem):
 class FolderItem(SessionMixin):
     """Represents a subfolder within a course document folder."""
 
+    parent: FolderItem | None = field(repr=False)
     course: CourseCondensed = field(repr=False)
     name: str = field()
     browse_url: str | None = field(default=None, repr=False)
@@ -286,6 +288,7 @@ class FolderItem(SessionMixin):
 
             return InternetShortcut(
                 session=self.session,
+                parent=self,
                 id=0,
                 name=link_texts[0],
                 mime_type=mime_style,
@@ -294,25 +297,22 @@ class FolderItem(SessionMixin):
                 link=final_link,
             )
 
-        links = row.select("a")
-        dl_link, view_link = None, None
-        for link in links:
-            classes = link.get("class") or []
-            if any(
-                dlclass in classes
-                for dlclass in [
-                    "download-link",
-                    "smsc-download__icon",
-                    "smsc-download__icon--large-margin",
-                    "smsc-download__icon--download",
-                ]
-            ):
-                dl_link = link["href"]
-            elif "smsc-download__link" in classes:
-                view_link = link["href"]
+        dl_link, view_link, onclick_link = self._figure_out_item_links(row)
+        if onclick_link is not None:
+            return InternetShortcut(
+                session=self.session,
+                parent=self,
+                id=id_,
+                name=link_texts[0],
+                mime_type=mime_style,
+                size_kb=size_kb,
+                last_modified=last_modified,
+                link=onclick_link,
+            )
 
         return FileItem(
             session=self.session,
+            parent=self,
             id=id_,
             name=filename,
             mime_type=mime_style,
@@ -321,6 +321,40 @@ class FolderItem(SessionMixin):
             download_url=dl_link or view_link,  # Revert to view-link if no dl_link is found
             view_url=view_link,
         )
+    def _extract_url_from_onclick(self, onclick: str) -> str | None:
+        """Extract URL from window.open onclick JavaScript."""
+        match = re.search(r'window\.open\(["\']([^"\']+)["\']', onclick)
+        return match.group(1) if match else None
+
+    def _figure_out_item_links(self, row):
+        """Extract download and view links from row elements."""
+        links = row.select("a")
+        dl_link, view_link, onclick_link = None, None, None
+
+        for link in links:
+            classes = link.get("class") or []
+            href = link.get("href")
+            onclick = link.get("onclick")
+
+            if any(
+                    dlclass in classes
+                    for dlclass in [
+                        "download-link",
+                        "smsc-download__icon",
+                        "smsc-download__icon--large-margin",
+                        "smsc-download__icon--download",
+                    ]
+            ):
+                dl_link = href
+            elif "smsc-download__link" in classes:
+                view_link = href
+            elif "smsc_cm_link" in classes and onclick:
+                onclick_link = self._extract_url_from_onclick(onclick)
+
+        if dl_link is None and view_link is None and onclick_link is None:  # Try harder!
+            a = 1
+
+        return dl_link, view_link, onclick_link
 
     def _parse_folder_row(self, row: Tag) -> FolderItem:
         """Parse a single table row into a folder item."""
@@ -331,6 +365,7 @@ class FolderItem(SessionMixin):
                 name = link.get_text(strip=True, separator="\n")
                 return FolderItem(
                     session=self.session,
+                    parent=self,
                     course=self.course,
                     name=name,
                     browse_url=browse_url,
