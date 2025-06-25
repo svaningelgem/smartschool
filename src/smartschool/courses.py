@@ -8,7 +8,8 @@ from typing import TYPE_CHECKING, overload, TypeAlias, Literal
 
 from logprise import logger
 
-from .common import bs4_html, convert_to_datetime, create_filesystem_safe_filename, parse_mime_type, parse_size, save_test_response, create_filesystem_safe_path
+from .common import bs4_html, convert_to_datetime, create_filesystem_safe_filename, parse_mime_type, parse_size, \
+    save_test_response, create_filesystem_safe_path, natural_sort
 from .exceptions import SmartSchoolException, SmartSchoolParsingError
 from .objects import Course, CourseCondensed
 from .session import SessionMixin, Smartschool
@@ -338,7 +339,7 @@ class FolderItem(SessionMixin):
         rows = soup.select("div.smsc_cm_body_row", recursive=False)
 
         items = [item for row in rows if (item := self._parse_row(row))]
-        return sorted(items, key=lambda x: (0 if isinstance(x, FolderItem) else 1, x.name))
+        return sorted(items, key=lambda x: (0 if isinstance(x, FolderItem) else 1,) + natural_sort(x.name))
 
 
 DocumentOrFolderItem: TypeAlias = FileItem | FolderItem

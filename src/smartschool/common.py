@@ -435,3 +435,12 @@ def save_test_response(response: Response) -> None:
 
     file_path.parent.mkdir(parents=True, exist_ok=True)
     file_path.write_bytes(response.content)
+
+
+def natural_sort(text: str, *, case_insensitive: bool = True) -> tuple[str | int, ...]:  # noqa: TRY001
+    """Convert string to a natural sort key for human-friendly sorting."""
+    if case_insensitive:
+        text = text.lower()
+
+    return tuple(int(chunk) if chunk.isdigit() else chunk
+            for chunk in re.split(r'(\d+)', text))

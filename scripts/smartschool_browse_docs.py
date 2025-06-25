@@ -17,6 +17,7 @@ from smartschool import (
     SmartSchoolException,
     TopNavCourses,
 )
+from smartschool.common import natural_sort
 
 if TYPE_CHECKING:
     from smartschool import (
@@ -160,7 +161,7 @@ class CourseSelector:
         """Select a course from available options."""
         logger.info("Fetching courses...")
         try:
-            courses = sorted(TopNavCourses(session=self.session), key=lambda item: item.name.lower())
+            courses = sorted(TopNavCourses(session=self.session), key=lambda item: natural_sort(item.name))
             self._display_courses(courses)
 
             choice = get_user_choice("Select a course number: ", len(courses), allow_up=False)
