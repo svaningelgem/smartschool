@@ -266,7 +266,7 @@ class FolderItem(SessionMixin):
         """Parse a single table row into a file item."""
         id_ = int(row.get("id")[6:])
         mime_block = row.select_one("div.smsc_cm_body_row_block_mime").get_text(strip=True, separator="\n")
-        filetype, size_kb, last_modified = mime_block.split(" - ")
+        _, size_kb, last_modified = mime_block.split(" - ")
         mime_style = self._get_mime_from_row_image(row)
 
         link_texts = [link_text for r in row.select("a") if (link_text := r.get_text(strip=True, separator="\n"))]

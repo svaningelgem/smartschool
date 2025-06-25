@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta, timezone
 
+import pytest
+
 from smartschool import TopNavCourses
 from smartschool.courses import FileItem, FolderItem, InternetShortcut
 from smartschool.objects import CourseCondensed
@@ -29,7 +31,7 @@ def test_full_file_workflow(session, tmp_path):
     assert pdf_file.filename == "Evaluatieblad persoonlijke interesse in kunst.pdf"
     assert pdf_file.mime_type == "pdf"
     assert pdf_file.id == 461338
-    assert pdf_file.size_kb == 75.54
+    assert pdf_file.size_kb == pytest.approx(75.54)
     assert pdf_file.download_url == "/Documents/Download/Index/htm/0/courseID/4496/docID/461338/ssID/49"
     assert pdf_file.view_url == "/Documents/Wopi/Index/docID/461338/courseID/4496/mode/view/ssID/49"
     assert pdf_file.last_modified == datetime(2024, 10, 8, 12, 45, tzinfo=timezone(timedelta(hours=2)))

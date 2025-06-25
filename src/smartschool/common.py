@@ -366,7 +366,7 @@ def create_filesystem_safe_filename(filename: str) -> str:
     # Replace unsafe chars and normalize whitespace
     safe_name = name.replace('"', "'")
     safe_name = re.sub(r"\s*:\s*", " - ", safe_name).strip()
-    safe_name = re.sub(r"[^-\w\s._']", "_", safe_name).strip()
+    safe_name = re.sub(r"[^-\w\s.']", "_", safe_name).strip()
     safe_name = re.sub(r"[\s_]{2,}", "_", safe_name)
     safe_name = re.sub(r"\.{2,}", ".", safe_name)
 

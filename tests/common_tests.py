@@ -452,23 +452,23 @@ def test_convert_to_date() -> None:
 def test_parse_size():
     """Test size parsing functionality."""
     assert parse_size("") is None
-    assert parse_size(123) == 123
-    assert parse_size(123.45) == 123.45
+    assert parse_size(123) == pytest.approx(123)
+    assert parse_size(123.45) == pytest.approx(123.45)
     assert parse_size("-") is None
     assert parse_size("  ") is None
     assert parse_size("invalid") is None
     assert parse_size("..5 Kb") is None
     assert parse_size("100") is None
-    assert parse_size("100 KB") == 100.0
-    assert parse_size("100KB") == 100.0
-    assert parse_size("100 KiB") == 100.0
-    assert parse_size("1 MB") == 1_024.0
-    assert parse_size("1 MiB") == 1_000.0
-    assert parse_size("1 GB") == 1_048_576.0
-    assert parse_size("1 GiB") == 1_000_000.0
-    assert parse_size("1.5 MB") == 1_536.0
-    assert parse_size("1,5 MB") == 1_536.0
-    assert parse_size("2.5 GB") == 2_621_440.0
+    assert parse_size("100 KB") == pytest.approx(100.0)
+    assert parse_size("100KB") == pytest.approx(100.0)
+    assert parse_size("100 KiB") == pytest.approx(100.0)
+    assert parse_size("1 MB") == pytest.approx(1_024.0)
+    assert parse_size("1 MiB") == pytest.approx(1_000.0)
+    assert parse_size("1 GB") == pytest.approx(1_048_576.0)
+    assert parse_size("1 GiB") == pytest.approx(1_000_000.0)
+    assert parse_size("1.5 MB") == pytest.approx(1_536.0)
+    assert parse_size("1,5 MB") == pytest.approx(1_536.0)
+    assert parse_size("2.5 GB") == pytest.approx(2_621_440.0)
 
 
 def test_create_safe_filename():

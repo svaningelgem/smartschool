@@ -33,7 +33,7 @@ class TestFileItemHappyFlow:
         assert sample_file_item.id == 1
         assert sample_file_item.name == "test_document"
         assert sample_file_item.mime_type == "pdf"
-        assert sample_file_item.size_kb == 150.5
+        assert sample_file_item.size_kb == pytest.approx(150.5)
         assert isinstance(sample_file_item.last_modified, datetime)
         assert sample_file_item.filename == "test_document.pdf"
 

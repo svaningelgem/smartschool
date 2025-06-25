@@ -113,17 +113,6 @@ def _setup_requests_mocker(request, requests_mock) -> None:
             return specific_filename
         return default_filename
 
-    def text_callback(req, _) -> str:
-        filename = get_filename(req)
-
-        logger.debug(f"[REQUESTMOCK-TEXT] {filename.exists()=} -> {filename}")
-        if filename.exists():
-            with contextlib.suppress(Exception):
-                return filename.read_text(encoding="utf8")
-
-        # Fallback for missing files
-        return '{"error": "mock response not found"}'
-
     def binary_callback(req, _) -> bytes:
         filename = get_filename(req)
 

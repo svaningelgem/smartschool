@@ -133,7 +133,7 @@ class Course:
         if len(self.teachers) != 1:
             ret += "s"
         ret += f": {', '.join(t.name.startingWithLastName for t in self.teachers)}"
-        ret += f", ID: {self.id}"  # TODO: disable when releasing
+        # ret += f", ID: {self.id}"
         return ret + ")"
 
 
