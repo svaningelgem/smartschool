@@ -28,12 +28,3 @@ def test_applicable_assignment_types(session: Smartschool):
     assert obj.name == "-"
     assert obj.platformId == 49
     assert obj.weight == pytest.approx(1.0)
-
-
-#
-#
-# def test_no_applicable_assignment_types(session: Smartschool, requests_mock):
-#     requests_mock.get('/lesson-content/api/v1/assignments/applicable-assigment-types', text="[]")
-#     sut = list(ApplicableAssignmentTypes(session))
-#
-#     assert len(sut) == 0
