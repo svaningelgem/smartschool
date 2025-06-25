@@ -173,3 +173,8 @@ def tmp_path(tmp_path) -> Generator[Any, Any, None]:
         yield tmp_path
     finally:
         os.chdir(original_dir)
+
+
+@pytest.fixture(autouse=True)
+def _dont_autosave(mocker):
+    mocker.patch("smartschool.courses.save_test_response")

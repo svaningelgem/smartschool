@@ -174,7 +174,8 @@ class FileItem(SessionMixin):
     def download(self) -> bytes: ...
 
     def _real_download(self, target: Path | None) -> bytes | Path:
-        logger.debug(f"Downloading file: {target.name}")
+        if target:
+            logger.debug(f"Downloading file: {target.name}")
         response: Response = self.session.get(self.download_url)
         response.raise_for_status()
 
