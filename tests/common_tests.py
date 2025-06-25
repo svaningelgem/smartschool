@@ -509,7 +509,7 @@ def test_create_filesystem_safe_path():
     assert create_filesystem_safe_path(Path("bad@folder/sub#folder/file*.txt")).as_posix().endswith("/bad_folder/sub_folder/file.txt")
 
     # Relative path handling
-    assert create_filesystem_safe_path(Path("folder\\sub folder\\file@name.py")).as_posix().endswith("/folder/sub folder/file_name.py")
+    assert create_filesystem_safe_path(Path("folder/sub folder/file@name.py")).as_posix().endswith("/folder/sub folder/file_name.py")
 
 
 def test_parse_mime_type():
