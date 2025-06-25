@@ -103,7 +103,7 @@ def send_email(
 
     logger.info(f"Sending email >> {subject}")
 
-    if platform.system() == "Windows":
+    if platform.system() == "Windows":  # pragma: no cover
         logger.info("=================== On Linux we would have sent this: ===================")
         logger.info(f"Subject: {subject}")
         logger.info("")
@@ -346,7 +346,7 @@ def create_filesystem_safe_path(path: Path | str) -> Path:
     parts = list(Path(path).parts)
 
     # Don't modify drive letters (first part on Windows like 'C:')
-    if parts and platform.system() == "Windows" and ":" in parts[0]:
+    if parts and platform.system() == "Windows" and ":" in parts[0]:  # pragma: no cover
         safe_parts = [parts[0]] + [create_filesystem_safe_filename(part) for part in parts[1:]]
     else:
         safe_parts = [create_filesystem_safe_filename(part) for part in parts]
