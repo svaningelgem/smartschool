@@ -167,7 +167,7 @@ class FileItem(SessionMixin):
         response: Response = self.session.get(self.download_url)
         response.raise_for_status()
 
-        if match := re.search(r'filename="([^"]+)"', response.headers["Content-Disposition"]):
+        if match := re.search(r'filename="([^"]+)"', response.headers.get("Content-Disposition") or ""):
             found_filename = Path(match.group(1))
             if found_filename.suffix != self._suffix:
                 logger.warning(f"Expected suffix {self._suffix}, got {found_filename.suffix}")
