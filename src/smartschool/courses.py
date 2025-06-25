@@ -1,17 +1,17 @@
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from functools import cached_property
 from pathlib import Path
 from typing import TYPE_CHECKING, overload, TypeAlias, Literal
 
-from loguru import logger
+from logprise import logger
 
-from .common import bs4_html, convert_to_datetime, create_filesystem_safe_filename, parse_mime_type, parse_size, \
-    save_test_response, create_filesystem_safe_path
+from .common import bs4_html, convert_to_datetime, create_filesystem_safe_filename, parse_mime_type, parse_size, save_test_response, create_filesystem_safe_path
 from .exceptions import SmartSchoolException, SmartSchoolParsingError
 from .objects import Course, CourseCondensed
-from .session import SessionMixin
+from .session import SessionMixin, Smartschool
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -80,47 +80,87 @@ class FileItem(SessionMixin):
     id: int
     name: str
     mime_type: str
-    size_kb: float
-    last_modified: datetime
+    size_kb: float | str
+    last_modified: datetime | str
     download_url: str | None = None
     view_url: str | None = None
 
-    @overload
-    def download(self, to_file: Path | str) -> Path: ...
-
-    @overload
-    def download(self, to_file: Literal[True]) -> Path: ...
-
-    @overload
-    def download(self) -> bytes: ...
+    def __post_init__(self):
+        self.mime_type = parse_mime_type(self.mime_type)
+        self.size_kb = parse_size(self.size_kb)
+        self.last_modified = convert_to_datetime(self.last_modified)
 
     @cached_property
     def _suffix(self) -> str:
         match self.mime_type:
-            case "word document": return ".docx"
+            case "docx" | "word":
+                return ".docx"
+            case "doc":
+                return ".doc"
+            case "xlsx" | "excel" | "xls":
+                return ".xlsx"
+            case "odt":
+                return ".odt"
+            case "pdf":
+                return ".pdf"
+            case "powerpointpresentatie" | "pptx":
+                return ".pptx"
+            case "ppt":
+                return ".ppt"
+            case "video" | "m4v" | "mp4":
+                return ".mp4"
+            case "wmv":
+                return ".wmv"
+            case "audio" | "mp3":
+                return ".mp3"
+            case "zip":
+                return ".zip"
+            case "rar":
+                return ".rar"
+            case "7z":
+                return ".7z"
+            case "text" | "txt":
+                return ".txt"
+            case "jpg" | "jpeg":
+                return ".jpg"
+            case "png":
+                return ".png"
+            case "html":
+                return ".html"
+            case "ascii":
+                return ".txt"
+
         logger.warning(f"Unknown mime type: {self.mime_type}")
+        exit(1)
         return ".bin"
 
     @cached_property
     def filename(self) -> str:
         self._suffix  # Just trigger to see if the mimetype is fine
-        if "." in self.name:
-            return self.name
-        return f"{self.name}{self._suffix}"
+        filename = self.name
+        if "." not in self.name:
+            filename += self._suffix
 
-    def download_to_dir(self, target_directory: Path) -> Path:
-        return self.download(target_directory / self.filename)
+        return create_filesystem_safe_filename(filename)
 
-    def download(self, to_file: Path | str | None = None) -> bytes | Path:
-        target = None
-        if to_file:
-            target = create_filesystem_safe_path(to_file)
-            target.parent.mkdir(parents=True, exist_ok=True)
+    def download_to_dir(self, target_directory: Path, *, overwrite: bool = False) -> Path:  # noqa: FBT001
+        return self.download(target_directory / self.filename, overwrite=overwrite)
 
+    @overload
+    def download(self, to_file: Path | str, overwrite: bool) -> Path: ...
+
+    @overload
+    def download(self) -> bytes: ...
+
+    def _real_download(self, target: Path | None) -> bytes | Path:
         logger.debug(f"Downloading file: {target.name}")
-
         response: Response = self.session.get(self.download_url)
         response.raise_for_status()
+
+        if match := re.search(r'filename="([^"]+)"', response.headers["Content-Disposition"]):
+            found_filename = Path(match.group(1))
+            if found_filename.suffix != self._suffix:
+                logger.warning(f"Expected suffix {self._suffix}, got {found_filename.suffix}")
 
         save_test_response(response)
 
@@ -130,6 +170,47 @@ class FileItem(SessionMixin):
 
         return response.content
 
+    def download(self, to_file: Path | str | None = None, *, overwrite: bool = False) -> bytes | Path:  # noqa: FBT001
+        target = None
+        if to_file:
+            target = create_filesystem_safe_path(to_file)
+            target.parent.mkdir(parents=True, exist_ok=True)
+            if not overwrite and target.exists():
+                return target
+
+        return self._real_download(target)
+
+
+@dataclass
+class InternetShortcut(FileItem):
+    """Represents an internet shortcut file within a course document folder."""
+
+    link: str = ""
+
+    def __post_init__(self):
+        if not self.link:
+            raise SmartSchoolException("No link found in internet shortcut")
+
+    def _real_download(self, target: Path | None) -> bytes | Path:
+        content = "\r\n".join(
+            [
+                "[InternetShortcut]",
+                f"URL={self.link}",
+            ]
+        )
+        if target:
+            target.write_text(content, encoding="utf8")
+            return target
+
+        return content.encode("utf8")
+
+    @cached_property
+    def filename(self) -> str:
+        name = self.name
+        if "." in name:
+            name = name.rsplit(".", 1)[0]
+
+        return create_filesystem_safe_filename(name + ".url")
 
 
 @dataclass
@@ -160,23 +241,59 @@ class FolderItem(SessionMixin):
         except Exception as e:
             raise SmartSchoolException(f"Failed to fetch folder HTML: {e}") from e
 
+    def _get_mime_from_row_image(self, row: Tag) -> str | None:
+        for entry in row.select_one("div.smsc_cm_body_row_block").get("style").split(";"):
+            if not entry.strip():
+                continue
+            first, second = entry.split(":", 1)
+            if first.strip() == "background-image":
+                return re.search("/mime_[^_]+_([^/_]+)", second).group(1)
+
+        return None
+
     def _parse_document_row(self, row: Tag) -> FileItem:
         """Parse a single table row into a file item."""
         id_ = int(row.get("id")[6:])
-        link_texts = {link_text for r in row.select("a") if (link_text := r.get_text(strip=True, separator="\n"))}
-        assert len(link_texts) == 1, f"Expected exactly one link text, got {link_texts}"
-        filename = link_texts.pop()
         mime_block = row.select_one("div.smsc_cm_body_row_block_mime").get_text(strip=True, separator="\n")
         filetype, size_kb, last_modified = mime_block.split(" - ")
-        filetype = parse_mime_type(filetype)
-        size_kb = parse_size(size_kb)
-        last_modified = convert_to_datetime(last_modified)
+        mime_style = self._get_mime_from_row_image(row)
+
+        link_texts = [link_text for r in row.select("a") if (link_text := r.get_text(strip=True, separator="\n"))]
+        if len(link_texts) == 0:
+            raise AssertionError("Expected exactly one link text, got None")
+
+        filename = link_texts[0]
+
+        inline_links = row.select("div.smsc_cm_body_row_block_inline a,div.smsc_cm_body_row_block_inline iframe")
+        if inline_links:
+            if len(inline_links) != 1:
+                raise AssertionError("I'm expecting exactly one inline link")
+
+            inline_link = inline_links[0]
+            if inline_link.name == "iframe":
+                final_link = inline_link["src"]
+            elif inline_link.name == "a":
+                final_link = inline_link["href"]
+            else:
+                raise AssertionError(f"Unknown inline link type: {inline_link.name}")
+
+            return InternetShortcut(
+                session=self.session,
+                id=0,
+                name=link_texts[0],
+                mime_type=mime_style,
+                size_kb=size_kb,
+                last_modified=last_modified,
+                link=final_link,
+            )
 
         links = row.select("a")
         dl_link, view_link = None, None
         for link in links:
             classes = link.get("class") or []
-            if "download-link" in classes:
+            if any(
+                dlclass in classes for dlclass in ["download-link", "smsc-download__icon", "smsc-download__icon--large-margin", "smsc-download__icon--download",]
+            ):
                 dl_link = link["href"]
             elif "smsc-download__link" in classes:
                 view_link = link["href"]
@@ -185,10 +302,10 @@ class FolderItem(SessionMixin):
             session=self.session,
             id=id_,
             name=filename,
-            mime_type=filetype,
+            mime_type=mime_style,
             size_kb=size_kb,
             last_modified=last_modified,
-            download_url=dl_link,
+            download_url=dl_link or view_link,  # Revert to view-link if no dl_link is found
             view_url=view_link,
         )
 
@@ -224,4 +341,4 @@ class FolderItem(SessionMixin):
         return sorted(items, key=lambda x: (0 if isinstance(x, FolderItem) else 1, x.name))
 
 
-DocumentOrFolderItem: TypeAlias  = FileItem | FolderItem
+DocumentOrFolderItem: TypeAlias = FileItem | FolderItem

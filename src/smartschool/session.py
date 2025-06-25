@@ -5,7 +5,7 @@ import json
 import re
 from dataclasses import dataclass, field
 from functools import cached_property
-from http.cookiejar import LWPCookieJar
+from http.cookiejar import LWPCookieJar, LoadError
 from pathlib import Path
 from typing import TYPE_CHECKING
 from urllib.parse import urlencode, urljoin, urlparse
@@ -113,8 +113,11 @@ class Smartschool(Session):
     def _initialize_session(self):
         self.headers["User-Agent"] = "unofficial Smartschool API interface"
         cookie_jar = LWPCookieJar(self.cookie_file)
-        with contextlib.suppress(FileNotFoundError):
+        try:
             cookie_jar.load(ignore_discard=True)
+        except (FileNotFoundError,LoadError):
+            ...
+
         self.cookies = cookie_jar
 
     def create_url(self, url: str) -> str:

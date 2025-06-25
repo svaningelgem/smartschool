@@ -298,8 +298,11 @@ def convert_to_date(x: str | String | date | datetime | None) -> date:
     raise SmartSchoolParsingError(f"Cannot convert '{x}' to `date`")
 
 
-def parse_size(size_str: str) -> float | None:
+def parse_size(size_str: str | float) -> float | None:
     """Parse size string to KB value with support for binary units."""
+    if isinstance(size_str, (int, float)):
+        return size_str
+
     if not size_str or size_str.strip() in ("-", ""):
         return None
 
@@ -327,7 +330,15 @@ def parse_size(size_str: str) -> float | None:
 
 def parse_mime_type(file_type_string: str) -> str:
     """Parse MIME type string to a standard format."""
-    return file_type_string.lower().strip().removesuffix("file").strip()
+    current = file_type_string.lower().strip().replace("-", " ")
+
+    prev = None
+    while current != prev:
+        prev = current
+        for extra in {"file", "bestand", "document", "fichier"}:
+            current = current.removesuffix(extra).strip()
+
+    return current
 
 
 def create_filesystem_safe_path(path: Path | str) -> Path:
@@ -335,12 +346,13 @@ def create_filesystem_safe_path(path: Path | str) -> Path:
     parts = list(Path(path).parts)
 
     # Don't modify drive letters (first part on Windows like 'C:')
-    if parts and platform == "win32" and ':' in parts[0]:
+    if parts and platform.system() == "Windows" and ":" in parts[0]:
         safe_parts = [parts[0]] + [create_filesystem_safe_filename(part) for part in parts[1:]]
     else:
         safe_parts = [create_filesystem_safe_filename(part) for part in parts]
 
     return Path(*safe_parts).resolve().absolute()
+
 
 def create_filesystem_safe_filename(filename: str) -> str:
     """Create a filesystem-safe filename with proper length and extension handling."""
@@ -352,12 +364,14 @@ def create_filesystem_safe_filename(filename: str) -> str:
     name, ext = path.stem, path.suffix
 
     # Replace unsafe chars and normalize whitespace
-    safe_name = re.sub(r"[^\w\s._-]", "_", name).strip()
+    safe_name = name.replace('"', "'")
+    safe_name = re.sub(r"\s*:\s*", " - ", safe_name).strip()
+    safe_name = re.sub(r"[^-\w\s._']", "_", safe_name).strip()
     safe_name = re.sub(r"[\s_]{2,}", "_", safe_name)
     safe_name = re.sub(r"\.{2,}", ".", safe_name)
 
     # Remove leading/trailing dots and underscores
-    safe_name = safe_name.strip("._")
+    safe_name = safe_name.strip("._- \r\n\t")
 
     if not safe_name:
         safe_name = "unnamed"
@@ -373,11 +387,11 @@ def create_filesystem_safe_filename(filename: str) -> str:
 def save_test_response(response: Response) -> None:
     """Save response content to test data directory."""
     request = response.request
-    test_dir = Path(__file__).parent.parent.parent / "test/requests" / request.method.lower()
+    test_dir = Path(__file__).parent.parent.parent / "tests/requests" / request.method.lower()
 
     parsed_url = urlparse(request.url)
 
-    if hasattr(request, 'body') and request.body:
+    if hasattr(request, "body") and request.body:
         try:
             xml = parse_qs(request.body)["command"][0]
             subsystem = re.search(r"<subsystem>(.*?)</subsystem>", xml).group(1)
@@ -391,23 +405,33 @@ def save_test_response(response: Response) -> None:
         path_parts = [p.lower() for p in parsed_url.path.split("/") if p]
         file_path = test_dir / Path(*path_parts) / "response"
 
-    content_type = response.headers.get('content-type', '').split(';')[0].strip()
+    # Check Content-Disposition header for filename
+    content_disposition = response.headers.get("content-disposition", "")
+    filename_match = re.search(r'filename[*]?=["\']?([^"\';\s]+)', content_disposition)
 
-    extension_map = {
-        'application/json': '.json',
-        'text/html': '.html',
-        'text/xml': '.xml',
-        'application/xml': '.xml',
-        'text/plain': '.txt',
-        'application/pdf': '.pdf',
-        'image/jpeg': '.jpg',
-        'image/png': '.png',
-        'application/zip': '.zip',
-        'application/octet-stream': '.bin',
-    }
+    if filename_match:
+        original_filename = filename_match.group(1)
+        extension = Path(original_filename).suffix
+        file_path = file_path.with_suffix(extension)
+    else:
+        content_type = response.headers.get("content-type", "").split(";")[0].strip()
 
-    extension = extension_map.get(content_type, '.bin')
-    file_path = file_path.with_suffix(extension)
+        extension_map = {
+            "application/json": ".json",
+            "text/html": ".html",
+            "text/xml": ".xml",
+            "application/xml": ".xml",
+            "text/plain": ".txt",
+            "application/pdf": ".pdf",
+            "image/jpeg": ".jpg",
+            "image/png": ".png",
+            "application/zip": ".zip",
+            "application/octet-stream": ".bin",
+            "application/force-download": ".bin",
+        }
+
+        extension = extension_map.get(content_type, ".bin")
+        file_path = file_path.with_suffix(extension)
 
     file_path.parent.mkdir(parents=True, exist_ok=True)
     file_path.write_bytes(response.content)

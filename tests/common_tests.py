@@ -1,7 +1,7 @@
 import warnings
 from copy import deepcopy
 from datetime import date, datetime, time, timedelta, timezone
-from pathlib import Path
+from pathlib import Path, WindowsPath
 
 import pytest
 import pytest_mock
@@ -25,6 +25,8 @@ from smartschool.common import (
     save,
     send_email,
     xml_to_dict,
+    create_filesystem_safe_path,
+    parse_mime_type,
 )
 from smartschool.exceptions import SmartSchoolParsingError
 from smartschool.objects import Student
@@ -449,6 +451,8 @@ def test_convert_to_date() -> None:
 def test_parse_size():
     """Test size parsing functionality."""
     assert parse_size("") is None
+    assert parse_size(123) == 123
+    assert parse_size(123.45) == 123.45
     assert parse_size("-") is None
     assert parse_size("  ") is None
     assert parse_size("invalid") is None
@@ -478,3 +482,53 @@ def test_create_safe_filename():
     assert create_filesystem_safe_filename("normal_file-2.txt") == "normal_file-2.txt"
     assert create_filesystem_safe_filename("a" * 300 + ".txt") == "a" * 251 + ".txt"
     assert create_filesystem_safe_filename("file.tar.gz") == "file.tar.gz"
+
+
+def test_create_filesystem_safe_path():
+    """Test filesystem-safe path creation."""
+
+    # Windows drive letters should be preserved
+    assert str(create_filesystem_safe_path(WindowsPath(r"E:\test.file"))) == r"E:\test.file"
+
+    # Regular paths should sanitize filenames
+    assert create_filesystem_safe_path(WindowsPath("folder/bad@file#name.txt")).as_posix().endswith("/folder/bad_file_name.txt")
+
+    # Multiple unsafe parts
+    assert create_filesystem_safe_path(WindowsPath("bad@folder/sub#folder/file*.txt")).as_posix().endswith("/bad_folder/sub_folder/file.txt")
+
+    # Windows paths with spaces
+    assert str(create_filesystem_safe_path(WindowsPath(r"C:\Program Files\test file.exe"))) == r"C:\Program Files\test file.exe"
+
+    # Windows UNC paths with unsafe chars
+    assert str(create_filesystem_safe_path(WindowsPath(r"C:\Users\bad*name\doc$.txt"))) == r"C:\Users\bad_name\doc.txt"
+    assert create_filesystem_safe_path(Path(r"/Users/bad*name/doc$.txt")).as_posix().endswith("/Users/bad_name/doc.txt")
+
+    # Relative path handling
+    assert create_filesystem_safe_path(WindowsPath("folder\\sub folder\\file@name.py")).as_posix().endswith("/folder/sub folder/file_name.py")
+
+
+def test_parse_mime_type():
+    assert parse_mime_type("PDF") == "pdf"
+    assert parse_mime_type("application/pdf") == "application/pdf"
+    assert parse_mime_type("text-plain") == "text plain"
+    assert parse_mime_type("  PDF  ") == "pdf"
+    assert parse_mime_type("\ttext/plain\n") == "text/plain"
+    assert parse_mime_type("PDF file") == "pdf"
+    assert parse_mime_type("Word document") == "word"
+    assert parse_mime_type("Excel bestand") == "excel"
+    assert parse_mime_type("PowerPoint fichier") == "powerpoint"
+    assert parse_mime_type("PDF FILE") == "pdf"
+    assert parse_mime_type("Word DOCUMENT") == "word"
+    assert parse_mime_type("PDF file  ") == "pdf"
+    assert parse_mime_type("Word  document") == "word"
+    assert parse_mime_type("PDF document file") == "pdf"
+    assert parse_mime_type("file manager") == "file manager"
+    assert parse_mime_type("document viewer") == "document viewer"
+    assert parse_mime_type("") == ""
+    assert parse_mime_type("   ") == ""
+    assert parse_mime_type("file") == ""
+    assert parse_mime_type("document") == ""
+    assert parse_mime_type("bestand") == ""
+    assert parse_mime_type("fichier") == ""
+    assert parse_mime_type("application/vnd.ms-excel") == "application/vnd.ms excel"
+    assert parse_mime_type("image/jpeg") == "image/jpeg"

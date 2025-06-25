@@ -12,3 +12,5 @@ cookies.txt
 .coverage
 coverage.json
 *.log
+course_downloads/
+*.sqlite
