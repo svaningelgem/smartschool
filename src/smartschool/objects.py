@@ -11,6 +11,7 @@ from pydantic import AliasChoices, BeforeValidator, constr
 from pydantic.dataclasses import Field, dataclass
 
 from .common import as_float, convert_to_date, convert_to_datetime
+from .session import SessionMixin
 
 String = constr(strip_whitespace=True)
 UUID = constr(pattern=re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", flags=re.IGNORECASE))
@@ -205,9 +206,6 @@ class CourseCondensed:
 
     descr: String = Field(repr=False, default="")
     icon: String = Field(repr=False, default="")
-
-    def __str__(self):
-        return f"{self.name} (Teacher: {self.teacher})"
 
 
 @dataclass

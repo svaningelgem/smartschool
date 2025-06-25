@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, TypeAlias, overload
 
 from logprise import logger
 
+from . import objects
 from .common import (
     bs4_html,
     convert_to_datetime,
@@ -19,7 +20,7 @@ from .common import (
     save_test_response,
 )
 from .exceptions import SmartSchoolException, SmartSchoolParsingError
-from .objects import Course, CourseCondensed
+from .objects import Course
 from .session import SessionMixin
 
 if TYPE_CHECKING:
@@ -29,7 +30,23 @@ if TYPE_CHECKING:
     from bs4 import BeautifulSoup, Tag
     from requests import Response
 
-__all__ = ["Courses", "TopNavCourses"]
+__all__ = ["Courses", "TopNavCourses", "InternetShortcut", "FileItem", "FolderItem", "CourseCondensed", "DocumentOrFolderItem"]
+
+
+
+@dataclass
+class CourseCondensed(objects.CourseCondensed, SessionMixin):
+    def __str__(self):
+        return f"{self.name} (Teacher: {self.teacher})"
+
+    @property
+    def items(self) -> list[DocumentOrFolderItem]:
+        return FolderItem(
+            session=self.session,
+            parent=None,
+            course=self,
+            name="(Root)"
+        ).items
 
 
 @dataclass
@@ -50,7 +67,7 @@ class TopNavCourses(SessionMixin):
 
     @cached_property
     def _list(self) -> list[CourseCondensed]:
-        return [CourseCondensed(**course) for course in self.session.json("/Topnav/getCourseConfig", method="post")["own"]]
+        return [CourseCondensed(session=self.session, **course) for course in self.session.json("/Topnav/getCourseConfig", method="post")["own"]]
 
     def __iter__(self) -> Iterator[CourseCondensed]:
         yield from self._list
@@ -198,6 +215,8 @@ class InternetShortcut(FileItem):
     link: str = ""
 
     def __post_init__(self):
+        super().__post_init__()
+
         if not self.link:
             raise SmartSchoolException("No link found in internet shortcut")
 
@@ -207,12 +226,12 @@ class InternetShortcut(FileItem):
                 "[InternetShortcut]",
                 f"URL={self.link}",
             ]
-        )
+        ).encode("utf8")
         if target:
-            target.write_text(content, encoding="utf8")
+            target.write_bytes(content)
             return target
 
-        return content.encode("utf8")
+        return content
 
     @cached_property
     def filename(self) -> str:
@@ -317,7 +336,7 @@ class FolderItem(SessionMixin):
             mime_type=mime_style,
             size_kb=size_kb,
             last_modified=last_modified,
-            download_url=dl_link or view_link,  # Revert to view-link if no dl_link is found
+            download_url=dl_link,
             view_url=view_link,
         )
 
@@ -389,4 +408,4 @@ class FolderItem(SessionMixin):
         return sorted(items, key=lambda x: (0 if isinstance(x, FolderItem) else 1,) + natural_sort(x.name))
 
 
-DocumentOrFolderItem: TypeAlias = FileItem | FolderItem
+DocumentOrFolderItem: TypeAlias = FileItem | FolderItem | InternetShortcut

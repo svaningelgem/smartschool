@@ -24,6 +24,159 @@
       "icon": "schoolbord",
       "url": "\/planner\/course\/courseID\/4496\/ssID\/49",
       "teacher": "De Keyser Indra"
+    },
+    {
+      "id": 845,
+      "platformId": 49,
+      "name": "bibliotheek",
+      "descr": "Schoolbibliotheek_24-25",
+      "icon": "books",
+      "url": "\/?module=News\u0026file=coursenews\u0026courseID=845\u0026ssID=49",
+      "teacher": "Verbanck Annelies"
+    },
+    {
+      "id": 4548,
+      "platformId": 49,
+      "name": "Biologie_4 (Wet)_E. Barbier_24-25",
+      "descr": "biologie - 4e jaar - 2 u",
+      "icon": "flower_red",
+      "url": "\/planner\/course\/courseID\/4548\/ssID\/49",
+      "teacher": "Barbier Elke"
+    },
+    {
+      "id": 2673,
+      "platformId": 49,
+      "name": "chemie_4_2uur_L.Versieren_2024-2025",
+      "descr": "chemie 4e jaar wetenschappen 24-25",
+      "icon": "potion_yellow",
+      "url": "\/planner\/course\/courseID\/2673\/ssID\/49",
+      "teacher": "Versieren Liske"
+    },
+    {
+      "id": 629,
+      "platformId": 49,
+      "name": "Deutsch_4ABCDEF_Moss_24-25",
+      "descr": "2 uur per week",
+      "icon": "component_grass",
+      "url": "\/planner\/course\/courseID\/629\/ssID\/49",
+      "teacher": "Moss Nathalie"
+    },
+    {
+      "id": 2733,
+      "platformId": 49,
+      "name": "Engels 4C_J. Antonis_2024-2025",
+      "descr": "Engels 4B_4C_4D_J. Antonis_2022-2023",
+      "icon": "flag_great_britain",
+      "url": "\/planner\/course\/courseID\/2733\/ssID\/49",
+      "teacher": "Anthonis Jan"
+    },
+    {
+      "id": 475,
+      "platformId": 49,
+      "name": "Frans_4_M. Herbosch_24-25",
+      "descr": "4 A - C - E - F",
+      "icon": "wine_red_glass",
+      "url": "\/planner\/course\/courseID\/475\/ssID\/49",
+      "teacher": "Herbosch Marie"
+    },
+    {
+      "id": 301,
+      "platformId": 49,
+      "name": "Fysica_4(2uren)_E.Wuytack_2024-2025",
+      "descr": "wetenschappen",
+      "icon": "alphabet_f_color-green-500",
+      "url": "\/?module=News\u0026file=coursenews\u0026courseID=301\u0026ssID=49",
+      "teacher": "Wuytack Elke"
+    },
+    {
+      "id": 661,
+      "platformId": 49,
+      "name": "Geschiedenis 4 schooljaar 2023-2024 (L. Poelmans en T. Bousard)",
+      "descr": "Klassen 4A, 4B, 4C, 4D 4E, 4F en 4G",
+      "icon": "schoolbord",
+      "url": "\/planner\/course\/courseID\/661\/ssID\/49",
+      "teacher": "Bousard Tiffany"
+    },
+    {
+      "id": 4236,
+      "platformId": 49,
+      "name": "Gezelschapsspellen",
+      "descr": "",
+      "icon": "playingcard",
+      "url": "\/planner\/course\/courseID\/4236\/ssID\/49",
+      "teacher": "Nivelle Frank"
+    },
+    {
+      "id": 3389,
+      "platformId": 49,
+      "name": "Godsdienst_4ABC_I.Wittevrongel_24-25",
+      "descr": "Godsdienst 4ABC",
+      "icon": "dove",
+      "url": "\/planner\/course\/courseID\/3389\/ssID\/49",
+      "teacher": "Wittevrongel Iris"
+    },
+    {
+      "id": 2991,
+      "platformId": 49,
+      "name": "ICT voor leerlingen",
+      "descr": "ICT voor leerlingen 1e 2e en 3e graad",
+      "icon": "schoolbord",
+      "url": "\/?module=News\u0026file=coursenews\u0026courseID=2991\u0026ssID=49",
+      "teacher": "Vandeweerdt Katrien"
+    },
+    {
+      "id": 3667,
+      "platformId": 49,
+      "name": "Leerlingen: studiekeuzetraject 4de jaar 24 25",
+      "descr": "Op weg naar de derde graad",
+      "icon": "step",
+      "url": "\/?module=News\u0026file=coursenews\u0026courseID=3667\u0026ssID=49",
+      "teacher": "Vandeweerdt Katrien"
+    },
+    {
+      "id": 1037,
+      "platformId": 49,
+      "name": "Leerlingenraad_24-25",
+      "descr": "Leerlingenraad_2de en 3de graad_ L. Melotte - F. Nivelle - N. Vrebosch_24-25",
+      "icon": "schoolbord",
+      "url": "\/planner\/course\/courseID\/1037\/ssID\/49",
+      "teacher": "Melotte Lynn"
+    },
+    {
+      "id": 3757,
+      "platformId": 49,
+      "name": "Nederlands_4C4D_H. Geets_2425",
+      "descr": "",
+      "icon": "flag_netherlands",
+      "url": "\/planner\/course\/courseID\/3757\/ssID\/49",
+      "teacher": "Geets Hanne"
+    },
+    {
+      "id": 4042,
+      "platformId": 49,
+      "name": "STEM 4e jaar-_L.Versieren\/R.Huttener_2024_2025",
+      "descr": "STEM 4e jaar",
+      "icon": "molecule",
+      "url": "\/planner\/course\/courseID\/4042\/ssID\/49",
+      "teacher": "Versieren Liske"
+    },
+    {
+      "id": 995,
+      "platformId": 49,
+      "name": "Vakoverschrijdend project Geschiedenis-Nederlands_4de jaar (4A 4B 4C 4D 4E 4F 4G)",
+      "descr": "Vakoverschrijdend Project Nederlands-geschiedenis 4de jaar",
+      "icon": "schoolbord",
+      "url": "\/planner\/course\/courseID\/995\/ssID\/49",
+      "teacher": "Heylen Wim"
+    },
+    {
+      "id": 1975,
+      "platformId": 49,
+      "name": "Wiskunde_4e jaar 5u_ J.Binnemans_R.Huttener_Y.vanDun_24_25",
+      "descr": "Wiskunde 5uur 4de jaar",
+      "icon": "compasses",
+      "url": "\/?module=News\u0026file=coursenews\u0026courseID=1975\u0026ssID=49",
+      "teacher": "van Dun Ylke"
     }
   ],
   "courseManagementLink": null
