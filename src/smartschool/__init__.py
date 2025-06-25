@@ -1,7 +1,5 @@
-import pydantic
-
 from .agenda import SmartschoolHours, SmartschoolLessons, SmartschoolMomentInfos
-from .courses import Courses, DocumentOrFolderItem, FileItem, FolderItem, TopNavCourses
+from .courses import CourseCondensed, Courses, DocumentOrFolderItem, FileItem, FolderItem, TopNavCourses
 from .credentials import EnvCredentials, PathCredentials
 from .exceptions import SmartSchoolAuthenticationError, SmartSchoolDownloadError, SmartSchoolException
 from .future_tasks import FutureTasks
@@ -18,7 +16,6 @@ from .messages import (
     SortField,
     SortOrder,
 )
-from .courses import CourseCondensed
 from .objects import Course
 from .periods import Periods
 from .results import ResultDetail, Results
@@ -59,4 +56,3 @@ __all__ = [
     "StudentSupportLinks",
     "TopNavCourses",
 ]
-

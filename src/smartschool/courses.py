@@ -30,8 +30,7 @@ if TYPE_CHECKING:
     from bs4 import BeautifulSoup, Tag
     from requests import Response
 
-__all__ = ["Courses", "TopNavCourses", "InternetShortcut", "FileItem", "FolderItem", "CourseCondensed", "DocumentOrFolderItem"]
-
+__all__ = ["CourseCondensed", "Courses", "DocumentOrFolderItem", "FileItem", "FolderItem", "InternetShortcut", "TopNavCourses"]
 
 
 @dataclass
@@ -41,12 +40,7 @@ class CourseCondensed(objects.CourseCondensed, SessionMixin):
 
     @property
     def items(self) -> list[DocumentOrFolderItem]:
-        return FolderItem(
-            session=self.session,
-            parent=None,
-            course=self,
-            name="(Root)"
-        ).items
+        return FolderItem(session=self.session, parent=None, course=self, name="(Root)").items
 
 
 @dataclass
