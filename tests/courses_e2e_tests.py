@@ -1,4 +1,4 @@
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 
 from smartschool import TopNavCourses
 from smartschool.courses import FileItem, FolderItem, InternetShortcut
@@ -11,11 +11,13 @@ def test_full_file_workflow(session, tmp_path):
     course = courses[1]  # AV
     folder = FolderItem(session=session, parent=None, course=course, name="Assignments")
 
-    assert [item.name for item in folder.items] == ['thema 1: persoonlijke interesses in kunst',
-                                                    'thema 2: sprookjes',
-                                                    'thema 3: aan de slag met akkoorden',
-                                                    'Thema 4: handkaleidiscoop',
-                                                    'Thema 5: videoclip/reclamespot',]
+    assert [item.name for item in folder.items] == [
+        "thema 1: persoonlijke interesses in kunst",
+        "thema 2: sprookjes",
+        "thema 3: aan de slag met akkoorden",
+        "Thema 4: handkaleidiscoop",
+        "Thema 5: videoclip/reclamespot",
+    ]
 
     thema_1 = folder.items[0]  # thema 1: persoonlijke interesses in kunst
     assert len(thema_1.items) == 4
