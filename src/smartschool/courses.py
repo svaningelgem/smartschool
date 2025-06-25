@@ -365,9 +365,6 @@ class FolderItem(SessionMixin):
             elif "smsc_cm_link" in classes and onclick:
                 onclick_link = self._extract_url_from_onclick(onclick)
 
-        if dl_link is None and view_link is None and onclick_link is None:  # Try harder!
-            pass
-
         return dl_link, view_link, onclick_link
 
     def _parse_folder_row(self, row: Tag) -> FolderItem:
