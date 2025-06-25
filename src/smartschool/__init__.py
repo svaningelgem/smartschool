@@ -1,5 +1,5 @@
 from .agenda import SmartschoolHours, SmartschoolLessons, SmartschoolMomentInfos
-from .courses import Courses, TopNavCourses, FileItem, FolderItem, DocumentOrFolderItem
+from .courses import Courses, DocumentOrFolderItem, FileItem, FolderItem, TopNavCourses
 from .credentials import EnvCredentials, PathCredentials
 from .exceptions import SmartSchoolAuthenticationError, SmartSchoolDownloadError, SmartSchoolException
 from .future_tasks import FutureTasks
@@ -16,7 +16,7 @@ from .messages import (
     SortField,
     SortOrder,
 )
-from .objects import Course
+from .objects import Course, CourseCondensed
 from .periods import Periods
 from .results import ResultDetail, Results
 from .session import Smartschool
@@ -24,11 +24,15 @@ from .student_support import StudentSupportLinks
 
 __all__ = [
     "AdjustMessageLabel",
-    "FileItem","FolderItem","DocumentOrFolderItem","Course",
     "Attachments",
     "BoxType",
+    "Course",
+    "CourseCondensed",
     "Courses",
+    "DocumentOrFolderItem",
     "EnvCredentials",
+    "FileItem",
+    "FolderItem",
     "FutureTasks",
     "MarkMessageUnread",
     "Message",

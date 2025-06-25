@@ -7,7 +7,6 @@ from datetime import date, datetime
 from functools import cached_property
 from typing import Annotated, Literal
 
-from logprise import logger
 from pydantic import AliasChoices, BeforeValidator, constr
 from pydantic.dataclasses import Field, dataclass
 

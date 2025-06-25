@@ -1,22 +1,26 @@
 from __future__ import annotations
 
-import re
 from dataclasses import dataclass
-from datetime import datetime
 from functools import cached_property
-from typing import TYPE_CHECKING
+from pathlib import Path
+from typing import TYPE_CHECKING, overload
 
-from bs4 import Tag, BeautifulSoup
+from loguru import logger
 
-from .common import bs4_html, parse_size, convert_to_datetime, parse_mime_type
+from .common import bs4_html, convert_to_datetime, create_filesystem_safe_filename, parse_mime_type, parse_size
 from .exceptions import SmartSchoolException, SmartSchoolParsingError
 from .objects import Course, CourseCondensed
 from .session import SessionMixin
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
+    from datetime import datetime
 
-__all__ = ["CourseDocuments", "Courses", "TopNavCourses"]
+    from bs4 import BeautifulSoup, Tag
+    from requests import Response
+
+__all__ = ["Courses", "TopNavCourses"]
+
 
 @dataclass
 class TopNavCourses(SessionMixin):
@@ -69,7 +73,7 @@ class Courses(SessionMixin):
 
 
 @dataclass
-class FileItem:
+class FileItem(SessionMixin):
     """Represents a file within a course document folder."""
 
     id: int
@@ -80,38 +84,48 @@ class FileItem:
     download_url: str | None = None
     view_url: str | None = None
 
+    @overload
+    def download(self, to_file: Path | str) -> Path: ...
+
+    @overload
+    def download(self) -> bytes: ...
+
+    def download(self, to_file: Path | str | None = None) -> bytes | Path:
+        target = None
+        if to_file:
+            target = Path(to_file).resolve().absolute()
+            target = target.with_name(create_filesystem_safe_filename(target.name))
+            target.parent.mkdir(parents=True, exist_ok=True)
+
+        logger.debug(f"Downloading file: {target.name}")
+
+        response: Response = self.session.get(self.download_url)
+        response.raise_for_status()
+
+        if not to_file:
+            return response.content
+
+        target.write_bytes(response.content)
+        return target
+
 
 @dataclass
-class FolderItem:
+class FolderItem(SessionMixin):
     """Represents a subfolder within a course document folder."""
 
-    id: int
-    name: str
-    browse_url: str  # URL to browse the contents of this folder
-
-
-# Define the Union type for items found in document folders
-DocumentOrFolderItem = FileItem | FolderItem
-
-
-@dataclass
-class CourseDocuments(SessionMixin):
-    """Parse course document folder structure from HTML tables."""
-
     course: CourseCondensed
+    name: str
+    browse_url: str | None = None
 
-    @cached_property
-    def course_id(self) -> int:
-        return self.course.id
+    def __post_init__(self):
+        if self.browse_url is None:
+            self.browse_url = f"/Documents/Index/Index/courseID/{self.course.id}/ssID/{self.course.platformId}"
 
-    def _get_folder_html(self, folder_id: int | None = None) -> BeautifulSoup:
+    def _get_folder_html(self) -> BeautifulSoup:
         """Fetch HTML content for a specific folder."""
-        path = f"/Documents/Index/Index/courseID/{self.course.id}"
-        path += f"/ssID/{self.course.platformId}"
-
         try:
             response = self.session.get(
-                path,
+                self.browse_url,
                 headers={
                     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
                     "Referer": self.session.create_url("/"),
@@ -121,17 +135,6 @@ class CourseDocuments(SessionMixin):
             return bs4_html(response)
         except Exception as e:
             raise SmartSchoolException(f"Failed to fetch folder HTML: {e}") from e
-
-    def list_folder_contents(self, folder_id: int | None = None) -> list[DocumentOrFolderItem]:
-        """Parse HTML table to extract files and folders."""
-        soup = self._get_folder_html(folder_id)
-        rows = soup.select("div.smsc_cm_body_row", recursive=False)
-
-        return [
-            item
-            for row in rows
-            if (item := self._parse_row(row))
-        ]
 
     def _parse_document_row(self, row: Tag) -> FileItem:
         """Parse a single table row into a file item."""
@@ -155,6 +158,7 @@ class CourseDocuments(SessionMixin):
                 view_link = link["href"]
 
         return FileItem(
+            session=self.session,
             id=id_,
             name=filename,
             mime_type=filetype,
@@ -171,9 +175,9 @@ class CourseDocuments(SessionMixin):
             if "smsc_cm_link" in classes:
                 browse_url = link["href"]
                 name = link.get_text(strip=True, separator="\n")
-                id_ = re.search("/parentID/(\d+)/", browse_url).group(1)
                 return FolderItem(
-                    id=int(id_),
+                    session=self.session,
+                    course=self.course,
                     name=name,
                     browse_url=browse_url,
                 )
@@ -185,3 +189,14 @@ class CourseDocuments(SessionMixin):
         if row.get("id") and row.get("id").lower().startswith("docid_"):
             return self._parse_document_row(row)
         return self._parse_folder_row(row)
+
+    def list_folder_contents(self) -> list[DocumentOrFolderItem]:
+        """Fetch items from this folder."""
+        soup = self._get_folder_html()
+        rows = soup.select("div.smsc_cm_body_row", recursive=False)
+
+        items = [item for row in rows if (item := self._parse_row(row))]
+        return sorted(items, key=lambda x: (0 if isinstance(x, FolderItem) else 1, x.name))
+
+
+DocumentOrFolderItem = FileItem | FolderItem

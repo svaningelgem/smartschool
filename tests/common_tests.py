@@ -17,12 +17,14 @@ from smartschool.common import (
     bs4_html,
     convert_to_date,
     convert_to_datetime,
+    create_filesystem_safe_filename,
     fill_form,
     get_all_values_from_form,
     make_filesystem_safe,
+    parse_size,
     save,
     send_email,
-    xml_to_dict, parse_size,
+    xml_to_dict,
 )
 from smartschool.exceptions import SmartSchoolParsingError
 from smartschool.objects import Student
@@ -462,3 +464,17 @@ def test_parse_size():
     assert parse_size("1.5 MB") == 1_536.0
     assert parse_size("1,5 MB") == 1_536.0
     assert parse_size("2.5 GB") == 2_621_440.0
+
+
+def test_create_safe_filename():
+    """Test filesystem-safe filename creation."""
+    assert create_filesystem_safe_filename("hello world.txt") == "hello world.txt"
+    assert create_filesystem_safe_filename("file@#$%^&*().doc") == "file.doc"
+    assert create_filesystem_safe_filename("@#$%^&*().doc") == "unnamed.doc"
+    assert create_filesystem_safe_filename("   spaced   file   .pdf") == "spaced_file.pdf"
+    assert create_filesystem_safe_filename("...dotted...file...") == "dotted.file"
+    assert create_filesystem_safe_filename("") == "unnamed"
+    assert create_filesystem_safe_filename("   ") == "unnamed"
+    assert create_filesystem_safe_filename("normal_file-2.txt") == "normal_file-2.txt"
+    assert create_filesystem_safe_filename("a" * 300 + ".txt") == "a" * 251 + ".txt"
+    assert create_filesystem_safe_filename("file.tar.gz") == "file.tar.gz"

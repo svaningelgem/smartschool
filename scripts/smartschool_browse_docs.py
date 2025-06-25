@@ -1,35 +1,35 @@
 from __future__ import annotations
 
-import sys
 from dataclasses import dataclass, field
+from functools import cached_property
 from pathlib import Path
-from typing import TYPE_CHECKING, Iterable
+from typing import TYPE_CHECKING
 
 from logprise import logger
-from smartschool import Course, DocumentOrFolderItem
-
 
 from smartschool import (
-    Courses,
     FileItem,
     FolderItem,
     PathCredentials,
     Smartschool,
     SmartSchoolAuthenticationError,
     SmartSchoolException,
+    TopNavCourses,
 )
-from smartschool.courses import CourseDocuments, TopNavCourses
-from smartschool.objects import CourseCondensed
+
+if TYPE_CHECKING:
+    from smartschool import (
+        CourseCondensed,
+        DocumentOrFolderItem,
+    )
 
 # from smartschool.file_fetch import browse_course_documents, download_document
 
 DEFAULT_DOWNLOAD_DIR = Path.cwd().joinpath("course_downloads").resolve().absolute()
 
 
-
-def get_user_choice(prompt: str, max_value: int, allow_up: bool = True) -> str | int | None:
+def get_user_choice(prompt: str, max_value: int, allow_up: bool = True) -> str | int | None:  # noqa: FBT001
     """Get validated user input (number, 'u', 'q')."""
-
     while True:
         choice = ""
 
@@ -60,28 +60,32 @@ def get_user_choice(prompt: str, max_value: int, allow_up: bool = True) -> str |
 @dataclass
 class DocumentBrowser:
     """Interactive browser for Smartschool course documents."""
+
     session: Smartschool
     course: CourseCondensed
-    path_items: list[FolderItem] = field(init=False, repr=False, default_factory=list)
+    config: AppConfig
+    _path_items: list[FolderItem] = field(init=False, repr=False, default_factory=list)
 
     def __post_init__(self):
-        self.documents = CourseDocuments(self.session, course=self.course)
+        self._path_items = [FolderItem(self.session, self.course, "(Root)")]
 
-    @property
-    def _current_folder_id(self):
-        if self._is_at_root:
-            return 0
-        return self.path_items[-1].id
+    @cached_property
+    def _download_dir(self) -> Path:
+        if self.config.download_dir:
+            return Path(self.config.download_dir)
+        return DEFAULT_DOWNLOAD_DIR
 
     @property
     def _path_as_str(self) -> str:
-        if self._is_at_root:
-            return "(Root)"
-        return " / ".join(item.name for item in self.path_items)
+        return " / ".join(item.name for item in self._path_items)
 
     @property
     def _is_at_root(self) -> bool:
-        return not self.path_items
+        return len(self._path_items) == 1
+
+    @property
+    def _current_folder(self) -> FolderItem:
+        return self._path_items[-1]
 
     def display_items(self, items: list[DocumentOrFolderItem]) -> None:
         """Display folders and files with numbers."""
@@ -93,62 +97,13 @@ class DocumentBrowser:
             item_type = "Folder" if isinstance(item, FolderItem) else "File"
             logger.info(f"[{i}] {item_type}: {item.name}")
 
-    def _get_current_items(self) -> list[DocumentOrFolderItem]:
-        """Fetch items for current folder."""
-        try:
-            items = self.documents.list_folder_contents(self._current_folder_id)
-            return sorted(items, key=lambda x: (0 if isinstance(x, FolderItem) else 1, x.name))
-        except SmartSchoolAuthenticationError as e:
-            logger.error(f"Authentication error: {e}")
-            raise
-        except SmartSchoolException as e:
-            logger.error(f"Error fetching folder contents: {e}")
-            return []
-
     def _navigate_up(self) -> None:
-        """Navigate up one level in folder hierarchy."""
-        if self.state.is_at_root:
+        """Navigate up one level in the folder hierarchy."""
+        if self._is_at_root:
             logger.warning("Already at root folder")
             return
 
-        self.state.path_items.pop()
-        self.state.folder_id = self.state.path_items[-1].id if self.state.path_items else None
-
-    def _navigate_into_folder(self, folder: FolderItem) -> None:
-        """Navigate into selected folder."""
-        self.state.folder_id = folder.id
-        self.state.path_items.append(folder)
-        logger.debug(f"Navigated into folder: {folder.name}")
-
-    def _create_safe_filename(self, filename: str) -> str:
-        """Create filesystem-safe filename."""
-        return "".join(c if c.isalnum() or c in (" ", ".", "_", "-") else "_" for c in filename)
-
-    def _download_file(self, file: FileItem, course: Course) -> None:
-        """Download selected file."""
-        logger.info(f"Downloading file: {file.name}")
-        DOWNLOAD_DIR.mkdir(parents=True, exist_ok=True)
-
-        safe_filename = self._create_safe_filename(file.name)
-        target_file = DOWNLOAD_DIR / safe_filename
-
-        try:
-            containing_folder_id = self.state.folder_id or 0
-            download_document(
-                course_id=course.id,
-                doc_id=file.id,
-                ss_id=containing_folder_id,
-                target_path=target_file,
-                overwrite=False,
-                smartschool=self.session,
-            )
-            logger.info(f"Successfully downloaded '{file.name}' to {target_file}")
-        except FileExistsError:
-            logger.error(f"File already exists at '{target_file}'. Delete existing file or use overwrite=True")
-        except SmartSchoolException as e:
-            logger.error(f"Download failed: {e}")
-        except Exception:
-            logger.exception(f"Unexpected error during download of '{file.name}'")
+        self._path_items.pop()
 
     def browse(self) -> None:
         """Main browsing loop."""
@@ -157,42 +112,40 @@ class DocumentBrowser:
         while True:
             logger.info(f"Current Location: {self._path_as_str}")
 
-            try:
-                items = self._get_current_items()
-            except SmartSchoolAuthenticationError:
-                break
-
+            items = self._current_folder.list_folder_contents()
             self.display_items(items)
 
             if not items:
-                if self.state.is_at_root:
-                    choice = get_user_choice("Enter 'q' to quit: ", 0, allow_up=False)
-                else:
-                    choice = get_user_choice("Enter 'u' to go up, 'q' to quit: ", 0)
+                if self._is_at_root:
+                    logger.info("No documents found in course")
+                    break
+
+                choice = get_user_choice("Enter 'u' to go up, 'q' to quit: ", 0)
             else:
                 prompt_parts = ["Enter number to open/download"]
-                if not self.state.is_at_root:
+                if not self._is_at_root:
                     prompt_parts.append("'u' to go up")
                 prompt_parts.append("'q' to quit: ")
                 prompt = ", ".join(prompt_parts)
 
-                choice = get_user_choice(prompt, len(items), allow_up=not self.state.is_at_root)
+                choice = get_user_choice(prompt, len(items), allow_up=not self._is_at_root)
 
             if choice == "q":
                 break
-            elif choice == "u" and not self.state.is_at_root:
+            elif choice == "u" and not self._is_at_root:
                 self._navigate_up()
             elif isinstance(choice, int):
                 selected_item = items[choice - 1]
                 if isinstance(selected_item, FolderItem):
-                    self._navigate_into_folder(selected_item)
+                    self._path_items.append(selected_item)
                 elif isinstance(selected_item, FileItem):
-                    self._download_file(selected_item, course)
+                    selected_item.download(self._download_dir / selected_item.name)
 
 
 @dataclass
 class CourseSelector:
     """Handles course selection interface."""
+
     session: Smartschool
 
     def _display_courses(self, courses: list[CourseCondensed]) -> None:
@@ -216,7 +169,7 @@ class CourseSelector:
 
             selected_course = courses[choice - 1]
             logger.info(f"Selected Course: {selected_course}")
-            return selected_course
+            return selected_course  # noqa: TRY300
 
         except SmartSchoolException as e:
             logger.error(f"Error fetching courses: {e}")
@@ -226,16 +179,16 @@ class CourseSelector:
 @dataclass
 class AppConfig:
     """Application configuration."""
+
     download_dir: Path = DEFAULT_DOWNLOAD_DIR
     credentials_file: str = PathCredentials.CREDENTIALS_FILENAME
 
 
+@dataclass
 class SmartschoolBrowserApp:
     """Main application controller."""
 
-    def __init__(self, config: AppConfig | None = None):
-        self.config = config or AppConfig()
-        self.download_dir = self.config.download_dir or DEFAULT_DOWNLOAD_DIR
+    config: AppConfig = field(default_factory=AppConfig)
 
     def _initialize_session(self) -> Smartschool:
         """Initialize Smartschool session with credentials."""
@@ -259,11 +212,11 @@ class SmartschoolBrowserApp:
                 logger.info("No course selected, exiting")
                 return
 
-            DocumentBrowser(session, selected_course).browse()
+            DocumentBrowser(session, selected_course, self.config).browse()
         except FileNotFoundError as e:
             logger.error(f"Initialization failed: {e}")
             logger.error("Ensure credentials.yml exists and is configured correctly")
-        except (SmartSchoolAuthenticationError, FileNotFoundError) as e:
+        except SmartSchoolAuthenticationError as e:
             logger.error(f"Initialization failed: {e}")
         except SmartSchoolException:
             logger.exception("A Smartschool API error occurred")

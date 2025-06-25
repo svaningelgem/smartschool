@@ -12,6 +12,7 @@ from datetime import date, datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from enum import Enum, auto
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Literal
 
 from bs4 import BeautifulSoup, FeatureNotFound, GuessedAtParserWarning
@@ -322,6 +323,35 @@ def parse_size(size_str: str) -> float | None:
     except ValueError:
         return None
 
+
 def parse_mime_type(file_type_string: str) -> str:
     """Parse MIME type string to a standard format."""
     return file_type_string.lower().strip().removesuffix("file").strip()
+
+
+def create_filesystem_safe_filename(filename: str) -> str:
+    """Create a filesystem-safe filename with proper length and extension handling."""
+    if not filename.strip():
+        return "unnamed"
+
+    # Split extension before processing
+    path = Path(filename)
+    name, ext = path.stem, path.suffix
+
+    # Replace unsafe chars and normalize whitespace
+    safe_name = re.sub(r"[^\w\s._-]", "_", name).strip()
+    safe_name = re.sub(r"[\s_]{2,}", "_", safe_name)
+    safe_name = re.sub(r"\.{2,}", ".", safe_name)
+
+    # Remove leading/trailing dots and underscores
+    safe_name = safe_name.strip("._")
+
+    if not safe_name:
+        safe_name = "unnamed"
+
+    # Truncate if too long (accounting for extension)
+    max_len = 255 - len(ext)
+    if len(safe_name) > max_len:
+        safe_name = safe_name[:max_len].rstrip("._")
+
+    return safe_name + ext
