@@ -301,6 +301,7 @@ def test_no_auth_file():
     assert sut._authenticated_user_file is None
     sut.authenticated_user = None
 
+
 def test_parse_login_information_continue_branch(mocker):
     """Test continue branch when script has src or no 'extend' in text."""
     parser = Smartschool()
@@ -310,10 +311,10 @@ def test_parse_login_information_continue_branch(mocker):
     mock_html = mocker.Mock()
     mock_html.select.return_value = [
         mocker.Mock(get=lambda x: "some-src.js", text="some script"),  # has src
-        mocker.Mock(get=lambda x: None, text="no extend keyword here")  # no 'extend'
+        mocker.Mock(get=lambda x: None, text="no extend keyword here"),  # no 'extend'
     ]
 
-    mocker.patch('smartschool.session.bs4_html', return_value=mock_html)
+    mocker.patch("smartschool.session.bs4_html", return_value=mock_html)
 
     parser._parse_login_information(mock_response)
 
