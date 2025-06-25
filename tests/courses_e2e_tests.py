@@ -38,7 +38,7 @@ def test_full_workflow(courses: list[CourseCondensed], tmp_path):
     assert pdf_file.size_kb == pytest.approx(75.54)
     assert pdf_file.download_url == "/Documents/Download/Index/htm/0/courseID/4496/docID/461338/ssID/49"
     assert pdf_file.view_url == "/Documents/Wopi/Index/docID/461338/courseID/4496/mode/view/ssID/49"
-    assert pdf_file.last_modified == datetime(2024, 10, 8, 12, 45, tzinfo=timezone(timedelta(hours=2)))
+    assert pdf_file.last_modified == datetime(2024, 10, 8, 12, 45).astimezone()
     assert pdf_file.parent.name == "thema 1: persoonlijke interesses in kunst"
 
     downloaded_file = pdf_file.download_to_dir(tmp_path)
