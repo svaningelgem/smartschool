@@ -71,6 +71,6 @@ def test_shortcut_via_iframe_src(courses: list[CourseCondensed], tmp_path):
     assert shortcut.name == "Hoe je gebruik je OneDrive?"
     assert shortcut.filename == "Hoe je gebruik je OneDrive.url"
     assert shortcut.mime_type == "html"
-    assert shortcut.size_kb == 1485.0
+    assert shortcut.size_kb == pytest.approx(1485.0)
     assert shortcut.last_modified == datetime(2020, 6, 19, 11, 20, tzinfo=timezone(timedelta(hours=2)))
     assert shortcut.link == "https://www.youtube.com/embed/Zm-g5PpzsEE"

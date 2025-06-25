@@ -1,0 +1,407 @@
+
+
+<!DOCTYPE html>
+<!--
+  ___ __  __   _   ___ _____ ___  ___ _  _  ___   ___  _
+ / __|  \/  | /_\ | _ \_   _/ __|/ __| || |/ _ \ / _ \| |
+ \__ \ |\/| |/ _ \|   / | | \__ \ (__| __ | (_) | (_) | |__
+ |___/_|  |_/_/ \_\_|_\ |_| |___/\___|_||_|\___/ \___/|____|
+
+Did you know you can get paid to read other people's code?
+
+We're looking for PHP developers.
+Join us: https://www.smartschool.be/jobs
+-->
+<html>
+    <head>
+                    <title>Paridaensinstituut - Smartschool</title>
+            <meta charset="utf-8">
+            <meta http-equiv="x-ua-compatible" content="ie=edge">
+                            <link rel="icon" href="https://static4.smart-school.net/smsc/svg/favicon/favicon.svg">
+                <link rel="mask-icon" href="https://static6.smart-school.net/smsc/svg/favicon/mask-icon.svg" color="#ff520e">
+                <link rel="apple-touch-icon" href="https://static6.smart-school.net/smsc/img/favicon/apple-touch-icon.png">
+                <link rel="manifest" href="/manifest.json">
+                                                                    
+                
+        <!-- jQuery & jQueryUI -->
+                    <script type="text/javascript" src="https://static2.smart-school.net/smsc/resources/jquery/3.7.1/jquery.min.rev-3895d23393.js"></script>
+    
+                    <script type="text/javascript" src="https://static4.smart-school.net/smsc/resources/jqueryui/1.14.1/jquery-ui.min.rev-e9d253e79f.js"></script>
+    
+                    <link href="https://static2.smart-school.net/smsc/resources/jqueryui/1.14.1/jquery-ui.min.rev-65f5ce19d4.css" rel="stylesheet" />
+    
+
+                                                <link href="https://static4.smart-school.net/production/Topnav/main.rev-4d81c54fc9.css" rel="stylesheet" />
+    
+                    
+                            <link href="https://static2.smart-school.net/modules/Documents/dist/main-built.rev-c175aa6b86.css" rel="stylesheet" />
+    
+            
+                        <!-- TinyMCE HEAD -->
+                                    <!-- javascriptContent HEAD -->
+            <script type="text/javascript">
+        if(!window.SMSC) window.SMSC = {};
+        if(!window.SMSC.languagehash) window.SMSC.languageHash = {};
+
+                    window.SMSC.languageHash['general_legacy'] = {
+                'nl': { 
+                    'version': 'cead31f4d1'
+                },
+                'fr': { 
+                    'version': '1c7a233e45' 
+                },
+            };
+                    window.SMSC.languageHash['general_buttons'] = {
+                'nl': { 
+                    'version': '5bfdaf386f'
+                },
+                'fr': { 
+                    'version': 'ce4bab503b' 
+                },
+            };
+                    window.SMSC.languageHash['component_period'] = {
+                'nl': { 
+                    'version': '54c9f3f30b'
+                },
+                'fr': { 
+                    'version': '35a57f64a4' 
+                },
+            };
+                    window.SMSC.languageHash['component_dialog'] = {
+                'nl': { 
+                    'version': '65d4707761'
+                },
+                'fr': { 
+                    'version': '254468bebb' 
+                },
+            };
+                    window.SMSC.languageHash['component_router'] = {
+                'nl': { 
+                    'version': '0b9b60c70d'
+                },
+                'fr': { 
+                    'version': 'ea50e58299' 
+                },
+            };
+                    window.SMSC.languageHash['component_sidebar'] = {
+                'nl': { 
+                    'version': '18e2083348'
+                },
+                'fr': { 
+                    'version': '4e16aac315' 
+                },
+            };
+            </script>
+
+        <!-- javascriptURL HEAD -->
+                        
+                <!-- javascriptContent HEAD -->
+                        
+                    </head>
+    <body class=" ">
+                                    <a href="javascript://" class="skip-link js-skip-link">Spring naar hoofdcontent</a>
+<div id="topnavMenuOverlay" class="topnav-menu-overlay" hidden></div>
+<header id="smscTopContainer" class="smsc-topnav">
+  <nav class="topnav">
+    <div data-profile class="topnav__btn-wrapper">
+        <button class="js-btn-profile topnav__btn topnav__btn--profile">
+            <img src="https://userpicture20.smartschool.be/User/Userimage/hashimage/hash/49_5dc5902b-050d-461f-9c4d-b24a5e67627e/plain/1/res/48" alt="Profiel afbeelding"/>
+            <div class="hlp-vert-box">
+                <span>Steven Van Ingelgem</span>
+                <span class="topnav__btn__light">Vader van Van Ingelgem Alex</span>
+            </div>
+            <div class="topnav__menu-arrow" aria-hidden="true"></div>
+        </button>
+        <div id="profileMenu" class="topnav__menu-wrapper" tabindex="-1" hidden>
+            <div class="topnav__menu">
+                <a href="/?module=Profile" class="topnav__menuitem topnav__menuitem--img" role="menuitem">
+                    <img src="https://userpicture20.smartschool.be/User/Userimage/hashimage/hash/49_5dc5902b-050d-461f-9c4d-b24a5e67627e/plain/1/res/48" alt="Profiel afbeelding"/>
+                    <span>Profiel</span>
+                </a>
+                <a href="/Profile/Notify" class="topnav__menuitem topnav__menuitem--icon topnav__menuitem--icon--notifs" role="menuitem">Instellingen berichtgeving</a>
+                <a href="https://www.smartschool.be/privacy/" target="_blank" class="topnav__menuitem topnav__menuitem--icon topnav__menuitem--icon--privacy" role="menuitem">Privacy</a>
+                <ul class="profile-blocks js-profile-blocks"></ul>
+            </div>
+        </div>
+    </div>
+
+            <hr class="topnav__divider"/>
+
+                    <a href="/Studentcard" class="topnav__btn hlp-rwd-hidden">Mijn kinderen</a>
+            
+    
+            <hr class="topnav__divider"/>
+        <h1 class="topnav__title" title="ICT voor leerlingen">ICT voor leerlingen</h1>
+    
+    <a href="/" class="js-btn-home topnav__btn topnav__btn--push-right">Start</a>
+
+    <div data-shortcuts class="topnav__btn-wrapper">
+        <button class="js-btn-shortcuts topnav__btn">
+          Ga naar
+          <div class="topnav__menu-arrow" aria-hidden="true"></div>
+        </button>
+        <div id="shortcutsMenu" class="topnav__menu-wrapper" tabindex="-1" hidden>
+          <div class="topnav__menu topnav__menu--shortcuts js-shortcuts-container js-autosize">
+                  
+    <a href="/?module=Messages&amp;file=index&amp;function=main"
+       class="topnav__menuitem topnav__menuitem--icon module-messages--24"
+       role="menuitem"       title="Berichten">
+        Berichten
+    </a>
+                        
+    <a href="/?module=Survey&amp;file=index&amp;function=main&amp;courseID=0"
+       class="topnav__menuitem topnav__menuitem--icon module-survey--24"
+       role="menuitem"       title="Enquête">
+        Enquête
+    </a>
+                        
+    <a href="/forms"
+       class="topnav__menuitem topnav__menuitem--icon module-forms--24"
+       role="menuitem"       title="Formulieren">
+        Formulieren
+    </a>
+                        
+    <a href="/intradesk"
+       class="topnav__menuitem topnav__menuitem--icon module-intradesk--24"
+       role="menuitem"       title="Intradesk">
+        Intradesk
+    </a>
+                        
+    <a href="/timetable"
+       class="topnav__menuitem topnav__menuitem--icon module-timetable--24"
+       role="menuitem"       title="Lesrooster">
+        Lesrooster
+    </a>
+                        
+    <a href="/Studentcard"
+       class="topnav__menuitem topnav__menuitem--icon module-studentcard--24"
+       role="menuitem"       title="Mijn kinderen">
+        Mijn kinderen
+    </a>
+                        
+    <a href="/?module=News&amp;file=index"
+       class="topnav__menuitem topnav__menuitem--icon module-news--24"
+       role="menuitem"       title="Nieuwsberichten">
+        Nieuwsberichten
+    </a>
+                        
+    <a href="/online-session"
+       class="topnav__menuitem topnav__menuitem--icon module-onlinesession--24"
+       role="menuitem"       title="Online sessies">
+        Online sessies
+    </a>
+                        
+    <a href="/parent-contact/"
+       class="topnav__menuitem topnav__menuitem--icon module-introlution--24"
+       role="menuitem"       title="Oudercontact">
+        Oudercontact
+    </a>
+                        
+    <a href="/planner"
+       class="topnav__menuitem topnav__menuitem--icon module-planner--24"
+       role="menuitem"       title="Planner">
+        Planner
+    </a>
+                        
+    <a href="/?module=Portfolio&amp;file=index&amp;function=main"
+       class="topnav__menuitem topnav__menuitem--icon module-portfolio--24"
+       role="menuitem"       title="Portfolio">
+        Portfolio
+    </a>
+                        
+    <a href="/results"
+       class="topnav__menuitem topnav__menuitem--icon module-results--24"
+       role="menuitem"       title="Resultaten">
+        Resultaten
+    </a>
+                        
+    <a href="/?module=Wiki"
+       class="topnav__menuitem topnav__menuitem--icon module-wiki--24"
+       role="menuitem"       title="Wiki">
+        Wiki
+    </a>
+                                <hr class="menu-divider"/>
+            
+    <a href="/?module=Manual&amp;file=manual&amp;function=main"
+       class="topnav__menuitem topnav__menuitem--icon module-manual--24"
+       role="menuitem"       title="Handleiding">
+        Handleiding
+    </a>
+
+          </div>
+        </div>
+    </div>
+
+    <div data-courses class="topnav__btn-wrapper">
+        <button class="js-btn-courses topnav__btn">
+            Vakken
+        </button>
+    </div>
+
+    <div data-links class="topnav__btn-wrapper">
+        <button class="js-btn-links topnav__btn">
+            Links
+        </button>
+    </div>
+
+    
+        <a href="/?module=Messages&file=index&function=main" class="js-btn-messages topnav__btn">Berichten
+        <span class="js-badge-msg topnav__badge" role="status" aria-label="0 ongelezen berichten" aria-live="polite" aria-relevant="additions" hidden>0</span>
+    </a>
+    
+    <div data-notifs class="topnav__btn-wrapper">
+        <button class="js-btn-notifs topnav__btn">Meldingen
+            <span class="js-badge-notifs topnav__badge" role="status" aria-label="0 ongelezen meldingen" aria-live="polite" aria-relevant="additions" hidden>0</span>
+        </button>
+    </div>
+      
+    <div data-search class="topnav__btn-wrapper">
+        <button class="js-btn-search topnav__btn topnav__btn--icon topnav__btn--icon--search" newIntradeskEnabled="" title="Zoeken"></button>
+    </div>
+    <a href="/?module=Manual&file=manual&function=main" class="js-btn-manual topnav__btn topnav__btn--icon topnav__btn--icon--manual" title="Handleiding"></a>
+        <a href="/logout" class="js-btn-logout topnav__btn topnav__btn--icon topnav__btn--icon--exit" title="Afmelden"></a>
+  
+  </nav>
+    </header>
+
+                    		<div id="smscMain" class="smscMain showLeftNav" tabindex="-1">
+			    <table width="99%" cellspacing="0" cellpadding="0" border="0" align="center" class="margin-top--milli">
+	<tr>
+		<td background="https://static6.smart-school.net/themes/default/images/frame_r1_c1.gif" width="15"><img src="https://static6.smart-school.net/themes/default/images/spacer.gif" height="27" width="15" alt="" /></td>
+		<td background="https://static6.smart-school.net/themes/default/images/frame_r1_c5.gif">
+			<!-- BEGIN frametitleSmall -->
+			<div  class="smscFrameTitleContainer no_height {extra_container_class}">
+				<span class="smscFrameTitle {extra_title_class}">Documenten</span>
+			</div>
+			<!-- END frametitleSmall -->
+		</td>
+		<td background="https://static6.smart-school.net/themes/default/images/frame_r1_c13.gif" width="15"><img src="https://static6.smart-school.net/themes/default/images/spacer.gif" height="27" alt="" width="15" /></td>
+	</tr>
+	<tr>
+		<td background="https://static6.smart-school.net/themes/default/images/frame_r3_c1.gif"><img src="https://static6.smart-school.net/themes/default/images/spacer.gif" height="3" alt="" width="15" /></td>
+		<td bgcolor="#FFFFFF">
+			
+<div class="smsc_cm_breadcrumb ">
+<div class="breadcrumb_url"><a href="/Documents/Index/Index/courseID/2991/parentID/0/ssID/49">Documenten</a></div>
+</div>
+<div class="smsc_cm_body">
+	<div class="smsc_cm_body_row  first">
+	<div class="smsc_cm_body_row_block" style="background-image:url('/smsc/img/mime_folder/mime_folder_32x32.png');">
+		<div class="name"><a href="/Documents/Index/Index/courseID/2991/parentID/408216/ssID/49" title="Centrale toets 1" class="smsc_cm_link">Centrale toets 1</a></div>
+		
+		<div class="spacer"></div>
+	</div>
+	<div class="smsc_cm_body_row_block_desc"></div>
+</div><div class="smsc_cm_body_row ">
+	<div class="smsc_cm_body_row_block" style="background-image:url('/smsc/img/mime_folder/mime_folder_32x32.png');">
+		<div class="name"><a href="/Documents/Index/Index/courseID/2991/parentID/301443/ssID/49" title="OneDrive - bewaren van je schooldocumenten" class="smsc_cm_link">OneDrive - bewaren van je schooldocumenten</a></div>
+		
+		<div class="spacer"></div>
+	</div>
+	<div class="smsc_cm_body_row_block_desc"></div>
+</div><div class="smsc_cm_body_row ">
+	<div class="smsc_cm_body_row_block" style="background-image:url('/smsc/img/mime_folder/mime_folder_32x32.png');">
+		<div class="name"><a href="/Documents/Index/Index/courseID/2991/parentID/308903/ssID/49" title="Smartschool" class="smsc_cm_link">Smartschool</a></div>
+		
+		<div class="spacer"></div>
+	</div>
+	<div class="smsc_cm_body_row_block_desc"></div>
+</div><div class="smsc_cm_body_row ">
+	<div class="smsc_cm_body_row_block" style="background-image:url('/smsc/img/mime_folder/mime_folder_32x32.png');">
+		<div class="name"><a href="/Documents/Index/Index/courseID/2991/parentID/313823/ssID/49" title="Sjablonen" class="smsc_cm_link">Sjablonen</a></div>
+		
+		<div class="spacer"></div>
+	</div>
+	<div class="smsc_cm_body_row_block_desc"></div>
+</div><div class="smsc_cm_body_row ">
+	<div class="smsc_cm_body_row_block" style="background-image:url('/smsc/img/mime_folder/mime_folder_32x32.png');">
+		<div class="name"><a href="/Documents/Index/Index/courseID/2991/parentID/396216/ssID/49" title="Tutorials" class="smsc_cm_link">Tutorials</a></div>
+		
+		<div class="spacer"></div>
+	</div>
+	<div class="smsc_cm_body_row_block_desc"></div>
+</div><div class="smsc_cm_body_row ">
+	<div class="smsc_cm_body_row_block" style="background-image:url('/smsc/img/mime_folder/mime_folder_32x32.png');">
+		<div class="name"><a href="/Documents/Index/Index/courseID/2991/parentID/433208/ssID/49" title="PowerPoint over PowerPoint" class="smsc_cm_link">PowerPoint over PowerPoint</a></div>
+		
+		<div class="spacer"></div>
+	</div>
+	<div class="smsc_cm_body_row_block_desc"></div>
+</div><div class="smsc_cm_body_row  last">
+	<div class="smsc_cm_body_row_block" style="background-image:url('/smsc/img/mime_folder/mime_folder_32x32.png');">
+		<div class="name"><a href="/Documents/Index/Index/courseID/2991/parentID/403352/ssID/49" title="Leren plannen" class="smsc_cm_link">Leren plannen</a></div>
+		
+		<div class="spacer"></div>
+	</div>
+	<div class="smsc_cm_body_row_block_desc"></div>
+</div>
+</div>
+
+		</td>
+		<td background="https://static6.smart-school.net/themes/default/images/frame_r5_c13.gif"><img src="https://static6.smart-school.net/themes/default/images/spacer.gif" height="3" alt="" width="15" /></td>
+	</tr>
+	<tr>
+		<td background="https://static6.smart-school.net/themes/default/images/frame_r7_c1.gif"><img src="https://static6.smart-school.net/themes/default/images/spacer.gif" height="19" alt="" width="15" /></td>
+		<td background="https://static6.smart-school.net/themes/default/images/frame_r7_c3.gif"><img src="https://static6.smart-school.net/themes/default/images/spacer.gif" height="19" alt="" width="3" /></td>
+		<td background="https://static6.smart-school.net/themes/default/images/frame_r7_c13.gif"><img src="https://static6.smart-school.net/themes/default/images/spacer.gif" height="19" alt="" width="15" /></td>
+	</tr>
+</table>
+<br />
+
+		</div>
+                                    
+<div id="smscleftnav" class="smscSkin">
+    <div class="smscleftnavcontainer">
+        <ul class="smsc-column-nav">
+                        <li class="smsc-column-nav__item">
+                <a href="/?module=News&amp;file=coursenews&amp;function=main&amp;courseID=2991&amp;ssID=49" title="Vaknieuws" class="smsc-column-nav__button smsc-column-nav__button--news">Vaknieuws</a>
+            </li>
+                        <li class="smsc-column-nav__item">
+                <a href="/Documents/Index/Index/courseID/2991/ssID/49" title="Documenten" class="smsc-column-nav__button smsc-column-nav__button--documents">Documenten</a>
+            </li>
+                        <li class="smsc-column-nav__item">
+                <a href="/Weblinks/Index/Index/courseID/2991/ssID/49" title="Weblinks" class="smsc-column-nav__button smsc-column-nav__button--weblinks">Weblinks</a>
+            </li>
+                        <li class="smsc-column-nav__item">
+                <a href="/?module=Uploadzone&amp;file=index&amp;function=main&amp;courseID=2991&amp;ssID=49" title="Uploadzone" class="smsc-column-nav__button smsc-column-nav__button--uploadzone">Uploadzone</a>
+            </li>
+                        <li class="smsc-column-nav__item">
+                <a href="/Classmates/Index/Index/courseID/2991/ssID/49" title="Studiegenoten" class="smsc-column-nav__button smsc-column-nav__button--classmates">Studiegenoten</a>
+            </li>
+                    </ul>
+    </div>
+</div>
+
+                            
+        <!-- javascript variables -->
+        <script type="text/javascript">var SMSC = SMSC || {};</script>
+                                        <script type="text/javascript">$.extend(true, SMSC, JSON.parse('\u007B\u0022vars\u0022\u003A\u007B\u0022showNotifyAlerts\u0022\u003Atrue,\u0022isMP\u0022\u003Afalse,\u0022tracklogging\u0022\u003Atrue,\u0022storageToken\u0022\u003A\u002222ac205bf32f404e96e093656b0b5fe4\u0022,\u0022socketUrl\u0022\u003A\u0022https\u003A\\\/\\\/nodejs\u002Dgs.smartschool.be\u0022,\u0022socketPort\u0022\u003A\u0022443\u0022,\u0022queueUuid\u0022\u003A\u0022a3157c5d\u002Da1d9\u002D4eb1\u002Db21a\u002D775436424b2c\u0022,\u0022userID\u0022\u003A10880,\u0022lng_rpc_error_title\u0022\u003A\u0022Melding\u0022,\u0022lng_rpc_error_unknown_msg\u0022\u003A\u0022Er\u0020is\u0020een\u0020onbekende\u0020fout\u0020opgetreden.\u0022,\u0022lng_rpc_error_not_found\u0022\u003A\u0022Het\u0020onderdeel\u0020dat\u0020je\u0020zoekt\u0020is\u0020niet\u0020gevonden.\u0020Mogelijk\u0020is\u0020het\u0020verwijderd\u0020of\u0020onzichtbaar\u0020gemaakt.\u0022,\u0022lng_rpc_error_close\u0022\u003A\u0022Sluiten\u0022,\u0022lng_rpc_error_ok\u0022\u003A\u0022OK\u0022,\u0022lng_rpc_following_errors_appeared\u0022\u003A\u0022Volgende\u0020fouten\u0020zijn\u0020opgetreden\u0022,\u0022campaigns\u0022\u003A\u005B\u005D\u007D\u007D'));</script>
+
+                                        <script type="text/javascript">$.extend(true, SMSC, JSON.parse('\u007B\u0022quickSearch\u0022\u003A\u007B\u0022quicksearch.search_placeholder\u0022\u003A\u0022Zoeken...\u0022,\u0022quicksearch.search_option_own\u002Dplatform\u002Donly\u0022\u003A\u0022Enkel\u0020in\u0020eigen\u0020platform\u0020zoeken\u0022,\u0022quicksearch.search_option_include\u002Ddeleted\u0022\u003A\u0022Ook\u0020\u003Cspan\u0020style\u003D\\\u0022color\u003A\u0023E30000\u003B\u0020font\u002Dweight\u003A\u0020bold\u003B\\\u0022\u003Everwijderde\u003C\\\/span\u003E\u0020gebruikers\u0020tonen\u0022,\u0022quicksearch.default_deleted_string\u0022\u003A\u0022verwijderd\u0022,\u0022quicksearch.search_not_found\u0022\u003A\u0022We\u0020hebben\u0020__SEARCHSTRING__\u0020niet\u0020gevonden.\u0020Probeer\u0020een\u0020andere\u0020zoekterm.\u0022,\u0022quicksearch.search_subtitle_suggestions\u0022\u003A\u0022Suggesties\u0022,\u0022quicksearch.currentUser\u0022\u003A\u0022Aangemelde\u0020gebruiker\u0022,\u0022quicksearch.me\u0022\u003A\u0022Mezelf\u0022,\u0022quicksearch.all_students\u0022\u003A\u0022Alle\u0020leerlingen\u0022,\u0022planner.user_role.1\u0022\u003A\u0022Alle\u0020leerlingen\u0022,\u0022quicksearch.unassigned\u0022\u003A\u0022Niemand\u0022,\u0022quicksearch.search_subtitle_favourites\u0022\u003A\u0022Favorieten\u0022,\u0022quicksearch.mark_as_favourite\u0022\u003A\u0022Toevoegen\u0020aan\u0020favorieten\u0022,\u0022quicksearch.discard_as_favourite\u0022\u003A\u0022Verwijderen\u0020uit\u0020favorieten\u0022,\u0022quicksearch.co_account_type_\u002D1\u0022\u003A\u0022hoofdaccounts\u0022,\u0022quicksearch.co_account_type_\u002D2\u0022\u003A\u0022alle\u0020co\u002Daccounts\u0022,\u0022property.co\u002Daccount\u002Dtype.main\u0022\u003A\u0022Hoofdaccounts\u0022,\u0022bubble_coaccountfilter_title\u0022\u003A\u0022Specifieke\u0020accounttypes\u0020voor\u0020deze\u0020groep\\\/klas\u0020selecteren\u0022,\u0022bubble_coaccountfilter_tokeninput_emptystate\u0022\u003A\u0022Zoek\u0020naar\u0020accounttypes\u0022,\u0022bubble_coaccountfilter_quickfilter_title\u0022\u003A\u0022Snelle\u0020filters\u0022,\u0022quicksearch_clear_selection\u0022\u003A\u0022Selectie\u0020verwijderen\u0022,\u0022\u0025quick\u002Dsearch.co\u002Daccount\u002Dfilter.main\u002Daccounts\u0025\u0022\u003A\u0022Hoofdaccounts\u0022,\u0022\u0025quick\u002Dsearch.co\u002Daccount\u002Dfilter.all\u002Dco\u002Daccounts\u0025\u0022\u003A\u0022alle\u0020Co\u002Daccounts\u0022,\u0022\u0025quick\u002Dsearch.co\u002Daccount\u002Dfilter.non\u002Dprofessional\u002Dco\u002Daccounts\u0025\u0022\u003A\u0022Familie\u0022\u007D,\u0022vars\u0022\u003A\u007B\u0022locale\u0022\u003A\u0022nl\u0022,\u0022userPictureDomain\u0022\u003A\u0022https\u003A\\\/\\\/userpicture20.smartschool.be\u0022,\u0022currentUser\u0022\u003A\u007B\u0022userIdentifier\u0022\u003A\u002249_10880_2\u0022,\u0022userPictureHash\u0022\u003A\u002249_5dc5902b\u002D050d\u002D461f\u002D9c4d\u002Db24a5e67627e\u0022,\u0022userPictureUrl\u0022\u003A\u0022https\u003A\\\/\\\/userpicture20.smartschool.be\\\/User\\\/Userimage\\\/hashimage\\\/hash\\\/49_5dc5902b\u002D050d\u002D461f\u002D9c4d\u002Db24a5e67627e\\\/plain\\\/1\\\/res\\\/128\u0022,\u0022name\u0022\u003A\u0022Steven\u0020Van\u0020Ingelgem\u0022,\u0022nameReverse\u0022\u003A\u0022Van\u0020Ingelgem\u0020Steven\u0022,\u0022description\u0022\u003A\u0022Vader\u0020van\u0020Alex\u0020Van\u0020Ingelgem\u0022,\u0022descriptionReverse\u0022\u003A\u0022Vader\u0020van\u0020Van\u0020Ingelgem\u0020Alex\u0022\u007D,\u0022authenticatedUser\u0022\u003A\u007B\u0022id\u0022\u003A\u002249_10880_2\u0022,\u0022pictureHash\u0022\u003A\u002249_5dc5902b\u002D050d\u002D461f\u002D9c4d\u002Db24a5e67627e\u0022,\u0022pictureUrl\u0022\u003A\u0022https\u003A\\\/\\\/userpicture20.smartschool.be\\\/User\\\/Userimage\\\/hashimage\\\/hash\\\/49_5dc5902b\u002D050d\u002D461f\u002D9c4d\u002Db24a5e67627e\\\/plain\\\/1\\\/res\\\/128\u0022,\u0022description\u0022\u003A\u007B\u0022startingWithFirstName\u0022\u003A\u0022Vader\u0020van\u0020Alex\u0020Van\u0020Ingelgem\u0022,\u0022startingWithLastName\u0022\u003A\u0022Vader\u0020van\u0020Van\u0020Ingelgem\u0020Alex\u0022\u007D,\u0022name\u0022\u003A\u007B\u0022startingWithFirstName\u0022\u003A\u0022Steven\u0020Van\u0020Ingelgem\u0022,\u0022startingWithLastName\u0022\u003A\u0022Van\u0020Ingelgem\u0020Steven\u0022\u007D,\u0022sort\u0022\u003A\u0022vaningelgem\u002Dalex\u0022,\u0022deleted\u0022\u003Afalse\u007D,\u0022tinyMCEVersion\u0022\u003A\u00226.8.5\u0022,\u0022ssID\u0022\u003A49\u007D\u007D'));</script>
+
+            <script type="text/javascript">$.extend(true, SMSC, JSON.parse('\u007B\u0022wopiConfig\u0022\u003A\u007B\u0022wopiActions\u0022\u003A\u007B\u0022pdf\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Pdf\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/mime_pdf\\\/mime_pdf_16x16.png\u0022\u007D\u007D,\u0022csv\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Excel\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Excel\u002Dcolor\\\/Excel\u002Dcolor_16x16.png\u0022\u007D,\u0022convert\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Excel\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Excel\u002Dcolor\\\/Excel\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022ods\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Excel\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Excel\u002Dcolor\\\/Excel\u002Dcolor_16x16.png\u0022\u007D,\u0022edit\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Excel\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Excel\u002Dcolor\\\/Excel\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022xls\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Excel\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Excel\u002Dcolor\\\/Excel\u002Dcolor_16x16.png\u0022\u007D,\u0022convert\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Excel\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Excel\u002Dcolor\\\/Excel\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022xlsb\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Excel\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Excel\u002Dcolor\\\/Excel\u002Dcolor_16x16.png\u0022\u007D,\u0022edit\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Excel\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Excel\u002Dcolor\\\/Excel\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022xlsm\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Excel\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Excel\u002Dcolor\\\/Excel\u002Dcolor_16x16.png\u0022\u007D,\u0022edit\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Excel\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Excel\u002Dcolor\\\/Excel\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022xlsx\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Excel\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Excel\u002Dcolor\\\/Excel\u002Dcolor_16x16.png\u0022\u007D,\u0022edit\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Excel\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Excel\u002Dcolor\\\/Excel\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022odp\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022PowerPoint\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/PowerPoint\u002Dcolor\\\/PowerPoint\u002Dcolor_16x16.png\u0022\u007D,\u0022edit\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022PowerPoint\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/PowerPoint\u002Dcolor\\\/PowerPoint\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022pot\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022PowerPoint\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/PowerPoint\u002Dcolor\\\/PowerPoint\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022potm\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022PowerPoint\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/PowerPoint\u002Dcolor\\\/PowerPoint\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022potx\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022PowerPoint\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/PowerPoint\u002Dcolor\\\/PowerPoint\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022pps\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022PowerPoint\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/PowerPoint\u002Dcolor\\\/PowerPoint\u002Dcolor_16x16.png\u0022\u007D,\u0022convert\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022PowerPoint\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/PowerPoint\u002Dcolor\\\/PowerPoint\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022ppsm\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022PowerPoint\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/PowerPoint\u002Dcolor\\\/PowerPoint\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022ppsx\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022PowerPoint\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/PowerPoint\u002Dcolor\\\/PowerPoint\u002Dcolor_16x16.png\u0022\u007D,\u0022edit\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022PowerPoint\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/PowerPoint\u002Dcolor\\\/PowerPoint\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022ppt\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022PowerPoint\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/PowerPoint\u002Dcolor\\\/PowerPoint\u002Dcolor_16x16.png\u0022\u007D,\u0022convert\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022PowerPoint\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/PowerPoint\u002Dcolor\\\/PowerPoint\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022pptm\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022PowerPoint\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/PowerPoint\u002Dcolor\\\/PowerPoint\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022pptx\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022PowerPoint\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/PowerPoint\u002Dcolor\\\/PowerPoint\u002Dcolor_16x16.png\u0022\u007D,\u0022edit\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022PowerPoint\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/PowerPoint\u002Dcolor\\\/PowerPoint\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022vdw\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Visio\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Visio\u002Dcolor\\\/Visio\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022vsd\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Visio\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Visio\u002Dcolor\\\/Visio\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022vsdm\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Visio\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Visio\u002Dcolor\\\/Visio\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022vsdx\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Visio\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Visio\u002Dcolor\\\/Visio\u002Dcolor_16x16.png\u0022\u007D,\u0022edit\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Visio\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Visio\u002Dcolor\\\/Visio\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022wopitest\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022WopiTest\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/WopiTest\u002Dcolor\\\/WopiTest\u002Dcolor_16x16.png\u0022\u007D,\u0022edit\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022WopiTest\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/WopiTest\u002Dcolor\\\/WopiTest\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022wopitestx\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022WopiTest\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/WopiTest\u002Dcolor\\\/WopiTest\u002Dcolor_16x16.png\u0022\u007D,\u0022edit\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022WopiTest\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/WopiTest\u002Dcolor\\\/WopiTest\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022doc\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Word\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Word\u002Dcolor\\\/Word\u002Dcolor_16x16.png\u0022\u007D,\u0022convert\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Word\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Word\u002Dcolor\\\/Word\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022docm\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Word\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Word\u002Dcolor\\\/Word\u002Dcolor_16x16.png\u0022\u007D,\u0022edit\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Word\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Word\u002Dcolor\\\/Word\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022docx\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Word\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Word\u002Dcolor\\\/Word\u002Dcolor_16x16.png\u0022\u007D,\u0022edit\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Word\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Word\u002Dcolor\\\/Word\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022dot\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Word\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Word\u002Dcolor\\\/Word\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022dotm\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Word\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Word\u002Dcolor\\\/Word\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022dotx\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Word\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Word\u002Dcolor\\\/Word\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022odt\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Word\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Word\u002Dcolor\\\/Word\u002Dcolor_16x16.png\u0022\u007D,\u0022edit\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Word\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Word\u002Dcolor\\\/Word\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022rtf\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Word\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Word\u002Dcolor\\\/Word\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022b\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022WordPrague\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/WordPrague\u002Dcolor\\\/WordPrague\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022fluid\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022WordPrague\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/WordPrague\u002Dcolor\\\/WordPrague\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022note\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022WordPrague\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/WordPrague\u002Dcolor\\\/WordPrague\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022whiteboard\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022WordPrague\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/WordPrague\u002Dcolor\\\/WordPrague\u002Dcolor_16x16.png\u0022\u007D\u007D\u007D,\u0022allowCreate\u0022\u003Atrue\u007D\u007D'));</script>
+
+
+          
+        <!-- javascriptContent Body  -->
+                                        <script type="text/javascript">var _LNG_ERROR_TITLE				= 'Melding';var _LNG_ERROR_MSG					= 'Er is een onbekende fout opgetreden waardoor de gevraagde actie niet kon worden uitgevoerd. Vernieuw de pagina (F5) of meld u opnieuw aan indien uw sessie verlopen is.';var _LNG_PHOTOSTRIPNAVLEFT 			= 'Navigeer links';var _LNG_PHOTOSTRIPNAVRIGHT 		= 'Navigeer rechts';var _LNG_PHOTOSTRIPGOTOALBUM 		= 'Ga naar album';var _LNG_PHOTOSTRIPCLICKTOCLOSE 	= 'Klik om te sluiten';var _LNG_PHOTOSTRIPCLICKTOENLARGE 	= 'Klik om te vergroten';var _LNG_FOLDERFILESTRIPCLICKFOLDER = 'Klik om deze map binnen te gaan';var _LNG_FOLDERFILESTRIPCLICKFILE 	= 'Klik om dit bestand te downloaden';var _LNG_FOLDERFILESTRIPCLICKGOUP 	= 'Klik om een niveau naar boven te gaan';var _LNG_FOLDERFILESTRIPCLICKGOUP_TEXT 	= 'Terug naar bovenliggende map';var _LNG_FOLDERFILESTRIPCLICKFILE_OPEN 	= 'Klik om dit bestand te openen';var _LNG_FOLDERFILESTRIPNOCONTENT 	= 'Deze map is leeg';var _LNG_LIGHTBOX_IMAGE				= 'Afbeelding';var _LNG_LIGHTBOX_OF				= 'van';</script>
+            <script type="text/javascript">$.extend(true, SMSC, { vars : {"downloadStarted":"Bezig met downloaden","downloadMovieButton":"Video opslaan","downloadAudioButton":"Geluidsfragment opslaan"}});</script>
+    
+                                <script type="text/javascript">$.extend(true, SMSC, JSON.parse('\u007B\u0022topnav\u0022\u003A\u007B\u0022lang\u0022\u003A\u007B\u0022badge\u0022\u003A\u007B\u0022badge_unread_notifs\u0022\u003A\u0022Ongelezen\u0020meldingen\u0022\u007D,\u0022courses\u0022\u003A\u007B\u0022courses_menu_title\u0022\u003A\u0022Vakken\u0022,\u0022courses_menu_search_placeholder\u0022\u003A\u0022Zoek\u0020naar\u0020een\u0020vak\u0022,\u0022courses_menu_no_courses\u0022\u003A\u0022Geen\u0020vakken\u0020gevonden\u0022\u007D,\u0022filter\u0022\u003A\u007B\u0022filter_sections_communication\u0022\u003A\u0022Communicatie\u0022,\u0022filter_sections_files\u0022\u003A\u0022Bestanden\u0022,\u0022filter_sections_mycourses\u0022\u003A\u0022Vakken\u0022,\u0022filter_sections_others\u0022\u003A\u0022Anderen\u0022,\u0022filter_options_sort_filter\u0022\u003A\u0022Sorteren\u0020en\u0020filteren\u0022,\u0022filter_filter_sort\u0022\u003A\u0022Sortering\u0022,\u0022filter_filter_bydate\u0022\u003A\u0022Filter\u0020op\u0020periode\u0022\u007D,\u0022go\u0022\u003A\u007B\u0022link.go.name\u0022\u003A\u0022GO\u0021\u0022,\u0022link.go_pro.name\u0022\u003A\u0022GO\u0021\u0020pro\u0022,\u0022link.go_training.name\u0022\u003A\u0022GO\u0021\u0020ondersteuningsaanbod\u0022,\u0022link.go_parents.name\u0022\u003A\u0022GO\u0021\u0020ouders\u0022,\u0022link.go_clb.name\u0022\u003A\u0022GO\u0021\u0020CLB\u0022,\u0022link.go_pro_curricula.name\u0022\u003A\u0022GO\u0021\u0020pro\u0020leerplannen\u0022,\u0022courses_menu_title\u0022\u003A\u0022Mijn\u0020virtuele\u0020ruimtes\u0022,\u0022link_menu_title\u0022\u003A\u0022Snel\u0020naar\u0022,\u0022curriculum_menu_title\u0022\u003A\u0022GO\u0021\u0020leerplannen\u0022,\u0022link_virtualSpace\u0022\u003A\u0022Op\u0020virtuele\u0020ruimtes\u0020van\u0020het\u0020GO\u0021\u0020abonneren\u0022\u007D,\u0022links\u0022\u003A\u007B\u0022go_to_management\u0022\u003A\u0022Links\u0020beheren\u0022,\u0022no_links_management\u0022\u003A\u0022Geen\u0020links\u0020voor\u0020jou\u0020beschikbaar\u0022,\u0022no_links\u0022\u003A\u0022Geen\u0020links\u0020voor\u0020jou\u0020beschikbaar\u0022\u007D,\u0022notifications\u0022\u003A\u007B\u0022notifs_placeholder\u0022\u003A\u0022Er\u0020zijn\u0020geen\u0020meldingen.\u0020Je\u0020bent\u0020volledig\u0020up\u002Dto\u002Ddate\u0021\u0022,\u0022notifs_toggle\u0022\u003A\u0022Nieuwe\u0020meldingen\u0020tonen\u0020als\u0020pop\u002Dup\u0022,\u0022notifs_toggle_on\u0022\u003A\u0022Aan\u0022,\u0022notifs_toggle_off\u0022\u003A\u0022Uit\u0022,\u0022notifs_settings\u0022\u003A\u0022Instellingen\u0022,\u0022notifs_clear\u0022\u003A\u0022Alles\u0020wissen\u0022,\u0022notifs_error\u0022\u003A\u0022Het\u0020ophalen\u0020van\u0020de\u0020meldingen\u0020is\u0020mislukt.\u0020Vernieuw\u0020de\u0020pagina\u0020en\u0020probeer\u0020opnieuw.\u0022\u007D,\u0022notification\u0022\u003A\u007B\u0022notif_mark_as_read\u0022\u003A\u0022Uit\u0020de\u0020lijst\u0020verwijderen\u0022\u007D,\u0022profile\u0022\u003A\u007B\u0022profile_img_alt\u0022\u003A\u0022Profiel\u0020afbeelding\u0022\u007D,\u0022search\u0022\u003A\u007B\u0022search_input_placeholder\u0022\u003A\u0022Zoeken\u0022,\u0022search_results_placeholder\u0022\u003A\u0022Waar\u0020ben\u0020je\u0020naar\u0020op\u0020zoek\u003F\u0022,\u0022search_more_results\u0022\u003A\u0022Toon\u0020meer\u0020resultaten\u0022,\u0022search_no_results\u0022\u003A\u0022Er\u0020werden\u0020geen\u0020resultaten\u0020gevonden.\u0022,\u0022search_searching\u0022\u003A\u0022Bezig\u0020met\u0020zoeken\u0020...\u0022,\u0022search_info\u0022\u003A\u0022Geef\u0020een\u0020zoekterm\u0020in\u0020en\u0020druk\u0020op\u0020enter\u0020om\u0020te\u0020zoeken.\u0022,\u0022search_from\u0022\u003A\u0022van\u0022,\u0022search_to\u0022\u003A\u0022naar\u0022,\u0022search_module_persons\u0022\u003A\u0022Personen\u0022,\u0022search_time_all\u0022\u003A\u0022Toon\u0020alles\u0022,\u0022search_time_today\u0022\u003A\u0022Vandaag\u0022,\u0022search_time_last_7_days\u0022\u003A\u0022Deze\u0020week\u0022,\u0022search_time_last_30_days\u0022\u003A\u0022Deze\u0020maand\u0022,\u0022search_time_current_schoolyear\u0022\u003A\u0022Dit\u0020schooljaar\u0022,\u0022search_checkbox_own_platform\u0022\u003A\u0022Enkel\u0020in\u0020eigen\u0020platform\u0020zoeken\u0022\u007D,\u0022toast\u0022\u003A\u007B\u0022toast_close\u0022\u003A\u0022Sluiten\u0022\u007D,\u0022toaster\u0022\u003A\u007B\u0022toaster_sessionextender_title\u0022\u003A\u0022Wilt\u0020u\u0020aangemeld\u0020blijven\u003F\u0022,\u0022toaster_sessionextender_description\u0022\u003A\u0022U\u0020wordt\u0020automatisch\u0020afgemeld\u0020binnen\u0020___id___\u0020seconden.\u0022,\u0022toaster_sessionextender_button\u0022\u003A\u0022OK\u0022\u007D\u007D\u007D\u007D'));</script>
+
+            <!-- Javascript_Topnav -->
+                                        <script type="text/javascript" src="https://static2.smart-school.net/production/Topnav/main.rev-71a5cd682e.js"></script>
+    
+                            <!-- Javascript_Body_Urls -->
+                                <script type="text/javascript" src="https://static6.smart-school.net/modules/Documents/dist/main-built.rev-94c2c978a8.js"></script>
+            <script type="text/javascript" src="https://static4.smart-school.net/modules/Dictionary/js/Screen.rev-b6bbe08f35.js"></script>
+            <script type="text/javascript" src="https://static2.smart-school.net/modules/Dictionary/js/dicExpl.rev-d3a478f7ef.js"></script>
+    
+                <!-- Javascript_requirejs_Urls -->
+                        
+        		<!-- Javascript_legacy_stealjs_Urls -->
+                        
+                
+        <!-- Javascript_symfony -->
+                                </body>
+</html>
