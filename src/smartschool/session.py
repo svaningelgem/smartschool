@@ -22,7 +22,7 @@ try:
 except ImportError:
     pyotp = None
 
-if TYPE_CHECKING:  # pragma: no cover
+if TYPE_CHECKING:
     from requests import Response
 
     from .credentials import Credentials
@@ -141,7 +141,6 @@ class Smartschool(Session):
         # Handle auth redirects
         response = self._handle_auth_redirect(response)
         if not self._is_auth_url(full_url):  # The original URL was NOT a login-url
-            logger.debug(f"Retrying original {method.upper()} after auth")
             response = super().request(method, full_url, **kwargs)
             self._reset_login_attempts()
         elif not self._is_auth_url(response.url):  # Original was login, and this is not anymore

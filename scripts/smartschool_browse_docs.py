@@ -23,8 +23,6 @@ if TYPE_CHECKING:
         DocumentOrFolderItem,
     )
 
-# from smartschool.file_fetch import browse_course_documents, download_document
-
 DEFAULT_DOWNLOAD_DIR = Path.cwd().joinpath("course_downloads").resolve().absolute()
 
 
@@ -76,7 +74,7 @@ class DocumentBrowser:
         return DEFAULT_DOWNLOAD_DIR
 
     @property
-    def _path_as_str(self) -> str:
+    def _current_location(self) -> str:
         return " / ".join(item.name for item in self._path_items)
 
     @property
@@ -87,7 +85,7 @@ class DocumentBrowser:
     def _current_folder(self) -> FolderItem:
         return self._path_items[-1]
 
-    def display_items(self, items: list[DocumentOrFolderItem]) -> None:
+    def _display_items(self, items: list[DocumentOrFolderItem]) -> None:
         """Display folders and files with numbers."""
         if not items:
             logger.info("Folder is empty")
@@ -110,12 +108,11 @@ class DocumentBrowser:
         logger.info(f"Starting to browse course: {self.course.name}")
 
         while True:
-            logger.info(f"Current Location: {self._path_as_str}")
+            logger.info(f"Current Location: {self._current_location}")
 
-            items = self._current_folder.list_folder_contents()
-            self.display_items(items)
+            self._display_items(self._current_folder.items)
 
-            if not items:
+            if not self._current_folder.items:
                 if self._is_at_root:
                     logger.info("No documents found in course")
                     break
@@ -128,18 +125,21 @@ class DocumentBrowser:
                 prompt_parts.append("'q' to quit: ")
                 prompt = ", ".join(prompt_parts)
 
-                choice = get_user_choice(prompt, len(items), allow_up=not self._is_at_root)
+                choice = get_user_choice(prompt, len(self._current_folder.items), allow_up=not self._is_at_root)
 
             if choice == "q":
                 break
             elif choice == "u" and not self._is_at_root:
                 self._navigate_up()
             elif isinstance(choice, int):
-                selected_item = items[choice - 1]
+                selected_item = self._current_folder.items[choice - 1]
                 if isinstance(selected_item, FolderItem):
                     self._path_items.append(selected_item)
                 elif isinstance(selected_item, FileItem):
-                    selected_item.download(self._download_dir / selected_item.name)
+                    target = self._download_dir / self.course.name
+                    for item in self._path_items[1:]:
+                        target /= item.name
+                    selected_item.download_to_dir(target)
 
 
 @dataclass
@@ -191,7 +191,7 @@ class SmartschoolBrowserApp:
     config: AppConfig = field(default_factory=AppConfig)
 
     def _initialize_session(self) -> Smartschool:
-        """Initialize Smartschool session with credentials."""
+        """Initialize a Smartschool session with credentials."""
         logger.debug("Initializing session")
         creds = PathCredentials()
         session = Smartschool(creds=creds)

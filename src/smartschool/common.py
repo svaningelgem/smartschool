@@ -14,6 +14,7 @@ from email.mime.text import MIMEText
 from enum import Enum, auto
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Literal
+from urllib.parse import urlparse, parse_qs, quote_plus
 
 from bs4 import BeautifulSoup, FeatureNotFound, GuessedAtParserWarning
 from logprise import logger
@@ -329,6 +330,18 @@ def parse_mime_type(file_type_string: str) -> str:
     return file_type_string.lower().strip().removesuffix("file").strip()
 
 
+def create_filesystem_safe_path(path: Path | str) -> Path:
+    """Create a filesystem-safe path with proper length and extension handling."""
+    parts = list(Path(path).parts)
+
+    # Don't modify drive letters (first part on Windows like 'C:')
+    if parts and platform == "win32" and ':' in parts[0]:
+        safe_parts = [parts[0]] + [create_filesystem_safe_filename(part) for part in parts[1:]]
+    else:
+        safe_parts = [create_filesystem_safe_filename(part) for part in parts]
+
+    return Path(*safe_parts).resolve().absolute()
+
 def create_filesystem_safe_filename(filename: str) -> str:
     """Create a filesystem-safe filename with proper length and extension handling."""
     if not filename.strip():
@@ -355,3 +368,46 @@ def create_filesystem_safe_filename(filename: str) -> str:
         safe_name = safe_name[:max_len].rstrip("._")
 
     return safe_name + ext
+
+
+def save_test_response(response: Response) -> None:
+    """Save response content to test data directory."""
+    request = response.request
+    test_dir = Path(__file__).parent.parent.parent / "test/requests" / request.method.lower()
+
+    parsed_url = urlparse(request.url)
+
+    if hasattr(request, 'body') and request.body:
+        try:
+            xml = parse_qs(request.body)["command"][0]
+            subsystem = re.search(r"<subsystem>(.*?)</subsystem>", xml).group(1)
+            action = re.search(r"<action>(.*?)</action>", xml).group(1)
+            file_path = test_dir / subsystem / f"{action}.xml"
+        except (AttributeError, KeyError):
+            path_parts = [p.lower() for p in parsed_url.path.split("/") if p]
+            query_part = quote_plus(parsed_url.query) if parsed_url.query else ""
+            file_path = test_dir / Path(*path_parts) / query_part / "response"
+    else:
+        path_parts = [p.lower() for p in parsed_url.path.split("/") if p]
+        file_path = test_dir / Path(*path_parts) / "response"
+
+    content_type = response.headers.get('content-type', '').split(';')[0].strip()
+
+    extension_map = {
+        'application/json': '.json',
+        'text/html': '.html',
+        'text/xml': '.xml',
+        'application/xml': '.xml',
+        'text/plain': '.txt',
+        'application/pdf': '.pdf',
+        'image/jpeg': '.jpg',
+        'image/png': '.png',
+        'application/zip': '.zip',
+        'application/octet-stream': '.bin',
+    }
+
+    extension = extension_map.get(content_type, '.bin')
+    file_path = file_path.with_suffix(extension)
+
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    file_path.write_bytes(response.content)

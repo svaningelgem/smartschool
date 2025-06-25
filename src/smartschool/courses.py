@@ -1,13 +1,14 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import cached_property
 from pathlib import Path
-from typing import TYPE_CHECKING, overload
+from typing import TYPE_CHECKING, overload, TypeAlias, Literal
 
 from loguru import logger
 
-from .common import bs4_html, convert_to_datetime, create_filesystem_safe_filename, parse_mime_type, parse_size
+from .common import bs4_html, convert_to_datetime, create_filesystem_safe_filename, parse_mime_type, parse_size, \
+    save_test_response, create_filesystem_safe_path
 from .exceptions import SmartSchoolException, SmartSchoolParsingError
 from .objects import Course, CourseCondensed
 from .session import SessionMixin
@@ -88,13 +89,32 @@ class FileItem(SessionMixin):
     def download(self, to_file: Path | str) -> Path: ...
 
     @overload
+    def download(self, to_file: Literal[True]) -> Path: ...
+
+    @overload
     def download(self) -> bytes: ...
+
+    @cached_property
+    def _suffix(self) -> str:
+        match self.mime_type:
+            case "word document": return ".docx"
+        logger.warning(f"Unknown mime type: {self.mime_type}")
+        return ".bin"
+
+    @cached_property
+    def filename(self) -> str:
+        self._suffix  # Just trigger to see if the mimetype is fine
+        if "." in self.name:
+            return self.name
+        return f"{self.name}{self._suffix}"
+
+    def download_to_dir(self, target_directory: Path) -> Path:
+        return self.download(target_directory / self.filename)
 
     def download(self, to_file: Path | str | None = None) -> bytes | Path:
         target = None
         if to_file:
-            target = Path(to_file).resolve().absolute()
-            target = target.with_name(create_filesystem_safe_filename(target.name))
+            target = create_filesystem_safe_path(to_file)
             target.parent.mkdir(parents=True, exist_ok=True)
 
         logger.debug(f"Downloading file: {target.name}")
@@ -102,20 +122,23 @@ class FileItem(SessionMixin):
         response: Response = self.session.get(self.download_url)
         response.raise_for_status()
 
-        if not to_file:
-            return response.content
+        save_test_response(response)
 
-        target.write_bytes(response.content)
-        return target
+        if target:
+            target.write_bytes(response.content)
+            return target
+
+        return response.content
+
 
 
 @dataclass
 class FolderItem(SessionMixin):
     """Represents a subfolder within a course document folder."""
 
-    course: CourseCondensed
-    name: str
-    browse_url: str | None = None
+    course: CourseCondensed = field(repr=False)
+    name: str = field()
+    browse_url: str | None = field(default=None, repr=False)
 
     def __post_init__(self):
         if self.browse_url is None:
@@ -132,6 +155,7 @@ class FolderItem(SessionMixin):
                 },
             )
             response.raise_for_status()
+            save_test_response(response)
             return bs4_html(response)
         except Exception as e:
             raise SmartSchoolException(f"Failed to fetch folder HTML: {e}") from e
@@ -190,7 +214,8 @@ class FolderItem(SessionMixin):
             return self._parse_document_row(row)
         return self._parse_folder_row(row)
 
-    def list_folder_contents(self) -> list[DocumentOrFolderItem]:
+    @cached_property
+    def items(self) -> list[DocumentOrFolderItem]:
         """Fetch items from this folder."""
         soup = self._get_folder_html()
         rows = soup.select("div.smsc_cm_body_row", recursive=False)
@@ -199,4 +224,4 @@ class FolderItem(SessionMixin):
         return sorted(items, key=lambda x: (0 if isinstance(x, FolderItem) else 1, x.name))
 
 
-DocumentOrFolderItem = FileItem | FolderItem
+DocumentOrFolderItem: TypeAlias  = FileItem | FolderItem
