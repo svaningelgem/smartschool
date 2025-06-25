@@ -13,7 +13,8 @@ def courses(session: Smartschool) -> list[CourseCondensed]:
 
 
 def test_str_for_course(courses: list[CourseCondensed]):
-    assert str(courses[0]) == 'Aardrijkskunde_4_LOPE_2024-2025 (Teacher: Peeters Lotte)'
+    assert str(courses[0]) == "Aardrijkskunde_4_LOPE_2024-2025 (Teacher: Peeters Lotte)"
+
 
 def test_full_workflow(courses: list[CourseCondensed], tmp_path):
     """Test a complete workflow from folder to file download."""
