@@ -1,3 +1,4 @@
+import sys
 import warnings
 from copy import deepcopy
 from datetime import date, datetime, time, timedelta, timezone
@@ -485,26 +486,30 @@ def test_create_safe_filename():
     assert create_filesystem_safe_filename("file.tar.gz") == "file.tar.gz"
 
 
-def test_create_filesystem_safe_path():
-    """Test filesystem-safe path creation."""
+@pytest.mark.skipif(sys.platform != "win32", reason="Windows paths are not supported")
+def test_create_filesystem_safe_path_windows():
     # Windows drive letters should be preserved
     assert str(create_filesystem_safe_path(WindowsPath(r"E:\test.file"))) == r"E:\test.file"
-
-    # Regular paths should sanitize filenames
-    assert create_filesystem_safe_path(WindowsPath("folder/bad@file#name.txt")).as_posix().endswith("/folder/bad_file_name.txt")
-
-    # Multiple unsafe parts
-    assert create_filesystem_safe_path(WindowsPath("bad@folder/sub#folder/file*.txt")).as_posix().endswith("/bad_folder/sub_folder/file.txt")
 
     # Windows paths with spaces
     assert str(create_filesystem_safe_path(WindowsPath(r"C:\Program Files\test file.exe"))) == r"C:\Program Files\test file.exe"
 
     # Windows UNC paths with unsafe chars
     assert str(create_filesystem_safe_path(WindowsPath(r"C:\Users\bad*name\doc$.txt"))) == r"C:\Users\bad_name\doc.txt"
+
+
+def test_create_filesystem_safe_path():
+    """Test filesystem-safe path creation."""
     assert create_filesystem_safe_path(Path(r"/Users/bad*name/doc$.txt")).as_posix().endswith("/Users/bad_name/doc.txt")
 
+    # Regular paths should sanitize filenames
+    assert create_filesystem_safe_path(Path("folder/bad@file#name.txt")).as_posix().endswith("/folder/bad_file_name.txt")
+
+    # Multiple unsafe parts
+    assert create_filesystem_safe_path(Path("bad@folder/sub#folder/file*.txt")).as_posix().endswith("/bad_folder/sub_folder/file.txt")
+
     # Relative path handling
-    assert create_filesystem_safe_path(WindowsPath("folder\\sub folder\\file@name.py")).as_posix().endswith("/folder/sub folder/file_name.py")
+    assert create_filesystem_safe_path(Path("folder\\sub folder\\file@name.py")).as_posix().endswith("/folder/sub folder/file_name.py")
 
 
 def test_parse_mime_type():
