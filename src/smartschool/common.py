@@ -384,7 +384,7 @@ def create_filesystem_safe_filename(filename: str) -> str:
     return safe_name + ext
 
 
-def save_test_response(response: Response) -> None:
+def save_test_response(response: Response) -> None:  # pragma: no cover
     """Save response content to test data directory."""
     request = response.request
     test_dir = Path(__file__).parent.parent.parent / "tests/requests" / request.method.lower()

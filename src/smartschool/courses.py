@@ -147,7 +147,6 @@ class FileItem(SessionMixin):
 
     @cached_property
     def filename(self) -> str:
-        self._suffix  # Just trigger to see if the mimetype is fine
         filename = self.name
         if "." not in self.name:
             filename += self._suffix
@@ -321,6 +320,7 @@ class FolderItem(SessionMixin):
             download_url=dl_link or view_link,  # Revert to view-link if no dl_link is found
             view_url=view_link,
         )
+
     def _extract_url_from_onclick(self, onclick: str) -> str | None:
         """Extract URL from window.open onclick JavaScript."""
         match = re.search(r'window\.open\(["\']([^"\']+)["\']', onclick)
@@ -337,13 +337,13 @@ class FolderItem(SessionMixin):
             onclick = link.get("onclick")
 
             if any(
-                    dlclass in classes
-                    for dlclass in [
-                        "download-link",
-                        "smsc-download__icon",
-                        "smsc-download__icon--large-margin",
-                        "smsc-download__icon--download",
-                    ]
+                dlclass in classes
+                for dlclass in [
+                    "download-link",
+                    "smsc-download__icon",
+                    "smsc-download__icon--large-margin",
+                    "smsc-download__icon--download",
+                ]
             ):
                 dl_link = href
             elif "smsc-download__link" in classes:
@@ -352,7 +352,7 @@ class FolderItem(SessionMixin):
                 onclick_link = self._extract_url_from_onclick(onclick)
 
         if dl_link is None and view_link is None and onclick_link is None:  # Try harder!
-            a = 1
+            pass
 
         return dl_link, view_link, onclick_link
 

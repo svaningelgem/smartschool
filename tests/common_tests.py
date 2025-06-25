@@ -22,6 +22,7 @@ from smartschool.common import (
     fill_form,
     get_all_values_from_form,
     make_filesystem_safe,
+    natural_sort,
     parse_mime_type,
     parse_size,
     save,
@@ -531,3 +532,90 @@ def test_parse_mime_type():
     assert parse_mime_type("fichier") == ""
     assert parse_mime_type("application/vnd.ms-excel") == "application/vnd.ms excel"
     assert parse_mime_type("image/jpeg") == "image/jpeg"
+
+
+def test_sorts_numbers_naturally():
+    """Natural sort should handle numeric sequences correctly."""
+    assert natural_sort("file1.txt") < natural_sort("file2.txt")
+    assert natural_sort("file2.txt") < natural_sort("file10.txt")
+    assert natural_sort("file10.txt") < natural_sort("file20.txt")
+
+
+def test_sorts_mixed_alphanumeric():
+    """Should handle mixed text and numbers."""
+    assert natural_sort("abc1def") < natural_sort("abc2def")
+    assert natural_sort("abc2def") < natural_sort("abc10def")
+    assert natural_sort("version1.2.3") < natural_sort("version1.10.1")
+
+
+def test_case_insensitive_by_default():
+    """Should ignore case by default."""
+    assert natural_sort("Apple") == natural_sort("apple")
+    assert natural_sort("File1.TXT") == natural_sort("file1.txt")
+
+
+def test_case_sensitive_when_disabled():
+    """Should respect a case when case_insensitive=False."""
+    result_lower = natural_sort("apple", case_insensitive=False)
+    result_upper = natural_sort("Apple", case_insensitive=False)
+    assert result_lower != result_upper
+    assert result_upper < result_lower  # uppercase sorts before lowercase
+
+
+def test_returns_tuple_with_correct_types():
+    """Should return tuple with strings and integers."""
+    result = natural_sort("file123test456")
+    assert isinstance(result, tuple)
+    assert result == ("file", 123, "test", 456, "")
+
+
+def test_handles_leading_numbers():
+    """Should handle strings starting with numbers."""
+    assert natural_sort("1file") < natural_sort("2file")
+    assert natural_sort("10file") > natural_sort("2file")
+
+
+def test_handles_trailing_numbers():
+    """Should handle strings ending with numbers."""
+    assert natural_sort("file1") < natural_sort("file2")
+    assert natural_sort("file2") < natural_sort("file10")
+
+
+def test_handles_only_numbers():
+    """Should handle strings that are only numbers."""
+    assert natural_sort("1") < natural_sort("2")
+    assert natural_sort("2") < natural_sort("10")
+
+
+def test_handles_only_text():
+    """Should handle strings with no numbers."""
+    assert natural_sort("apple") < natural_sort("banana")
+    assert natural_sort("abc") == ("abc",)
+
+
+def test_handles_empty_string():
+    """Should handle empty strings."""
+    result = natural_sort("")
+    assert result == ("",)
+
+
+def test_handles_multiple_consecutive_numbers():
+    """Should handle multiple number groups."""
+    result = natural_sort("v1.2.3")
+    assert result == ("v", 1, ".", 2, ".", 3, "")
+
+
+def test_real_world_filenames():
+    """Should sort real-world filename patterns correctly."""
+    filenames = ["file1.txt", "file10.txt", "file2.txt", "file20.txt"]
+    sorted_keys = [natural_sort(f) for f in filenames]
+    expected_order = [natural_sort("file1.txt"), natural_sort("file2.txt"), natural_sort("file10.txt"), natural_sort("file20.txt")]
+    assert sorted(sorted_keys) == expected_order
+
+
+def test_version_numbers():
+    """Should sort version numbers correctly."""
+    versions = ["v1.10.0", "v1.2.0", "v1.2.10", "v2.0.0"]
+    sorted_keys = [natural_sort(v) for v in versions]
+    expected_order = [natural_sort("v1.2.0"), natural_sort("v1.2.10"), natural_sort("v1.10.0"), natural_sort("v2.0.0")]
+    assert sorted(sorted_keys) == expected_order
