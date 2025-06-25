@@ -20,7 +20,7 @@ from smartschool import (
 from smartschool.common import create_filesystem_safe_filename
 
 if TYPE_CHECKING:
-    from smartschool import CourseCondensed, DocumentOrFolderItem
+    from smartschool import CourseCondensed
 
 DEFAULT_DOWNLOAD_DIR = Path.cwd().joinpath("course_downloads").resolve().absolute()
 
@@ -69,8 +69,6 @@ class BulkDownloader:
         amount_of_courses = 0
         try:
             for course in TopNavCourses(session=self.session):
-                # if "Fysica" not in course.name: continue
-
                 amount_of_courses += 1
 
                 try:

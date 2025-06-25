@@ -4,15 +4,23 @@ import re
 from dataclasses import dataclass, field
 from functools import cached_property
 from pathlib import Path
-from typing import TYPE_CHECKING, overload, TypeAlias, Literal
+from typing import TYPE_CHECKING, TypeAlias, overload
 
 from logprise import logger
 
-from .common import bs4_html, convert_to_datetime, create_filesystem_safe_filename, parse_mime_type, parse_size, \
-    save_test_response, create_filesystem_safe_path, natural_sort
+from .common import (
+    bs4_html,
+    convert_to_datetime,
+    create_filesystem_safe_filename,
+    create_filesystem_safe_path,
+    natural_sort,
+    parse_mime_type,
+    parse_size,
+    save_test_response,
+)
 from .exceptions import SmartSchoolException, SmartSchoolParsingError
 from .objects import Course, CourseCondensed
-from .session import SessionMixin, Smartschool
+from .session import SessionMixin
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -130,10 +138,11 @@ class FileItem(SessionMixin):
                 return ".html"
             case "ascii":
                 return ".txt"
+            case "potx":
+                return ".potx"
 
         logger.warning(f"Unknown mime type: {self.mime_type}")
-        exit(1)
-        return ".bin"
+        return f".{self.mime_type}"
 
     @cached_property
     def filename(self) -> str:
@@ -144,11 +153,11 @@ class FileItem(SessionMixin):
 
         return create_filesystem_safe_filename(filename)
 
-    def download_to_dir(self, target_directory: Path, *, overwrite: bool = False) -> Path:  # noqa: FBT001
+    def download_to_dir(self, target_directory: Path, *, overwrite: bool = False) -> Path:
         return self.download(target_directory / self.filename, overwrite=overwrite)
 
     @overload
-    def download(self, to_file: Path | str, overwrite: bool) -> Path: ...
+    def download(self, to_file: Path | str, overwrite: bool) -> Path: ...  # noqa: FBT001
 
     @overload
     def download(self) -> bytes: ...
@@ -171,7 +180,7 @@ class FileItem(SessionMixin):
 
         return response.content
 
-    def download(self, to_file: Path | str | None = None, *, overwrite: bool = False) -> bytes | Path:  # noqa: FBT001
+    def download(self, to_file: Path | str | None = None, *, overwrite: bool = False) -> bytes | Path:
         target = None
         if to_file:
             target = create_filesystem_safe_path(to_file)
@@ -267,9 +276,6 @@ class FolderItem(SessionMixin):
 
         inline_links = row.select("div.smsc_cm_body_row_block_inline a,div.smsc_cm_body_row_block_inline iframe")
         if inline_links:
-            if len(inline_links) != 1:
-                raise AssertionError("I'm expecting exactly one inline link")
-
             inline_link = inline_links[0]
             if inline_link.name == "iframe":
                 final_link = inline_link["src"]
@@ -293,7 +299,13 @@ class FolderItem(SessionMixin):
         for link in links:
             classes = link.get("class") or []
             if any(
-                dlclass in classes for dlclass in ["download-link", "smsc-download__icon", "smsc-download__icon--large-margin", "smsc-download__icon--download",]
+                dlclass in classes
+                for dlclass in [
+                    "download-link",
+                    "smsc-download__icon",
+                    "smsc-download__icon--large-margin",
+                    "smsc-download__icon--download",
+                ]
             ):
                 dl_link = link["href"]
             elif "smsc-download__link" in classes:

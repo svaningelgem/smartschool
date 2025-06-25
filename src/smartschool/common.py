@@ -14,7 +14,7 @@ from email.mime.text import MIMEText
 from enum import Enum, auto
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Literal
-from urllib.parse import urlparse, parse_qs, quote_plus
+from urllib.parse import parse_qs, quote_plus, urlparse
 
 from bs4 import BeautifulSoup, FeatureNotFound, GuessedAtParserWarning
 from logprise import logger
@@ -437,10 +437,9 @@ def save_test_response(response: Response) -> None:
     file_path.write_bytes(response.content)
 
 
-def natural_sort(text: str, *, case_insensitive: bool = True) -> tuple[str | int, ...]:  # noqa: TRY001
+def natural_sort(text: str, *, case_insensitive: bool = True) -> tuple[str | int, ...]:
     """Convert string to a natural sort key for human-friendly sorting."""
     if case_insensitive:
         text = text.lower()
 
-    return tuple(int(chunk) if chunk.isdigit() else chunk
-            for chunk in re.split(r'(\d+)', text))
+    return tuple(int(chunk) if chunk.isdigit() else chunk for chunk in re.split(r"(\d+)", text))

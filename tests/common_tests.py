@@ -18,15 +18,15 @@ from smartschool.common import (
     convert_to_date,
     convert_to_datetime,
     create_filesystem_safe_filename,
+    create_filesystem_safe_path,
     fill_form,
     get_all_values_from_form,
     make_filesystem_safe,
+    parse_mime_type,
     parse_size,
     save,
     send_email,
     xml_to_dict,
-    create_filesystem_safe_path,
-    parse_mime_type,
 )
 from smartschool.exceptions import SmartSchoolParsingError
 from smartschool.objects import Student
@@ -486,7 +486,6 @@ def test_create_safe_filename():
 
 def test_create_filesystem_safe_path():
     """Test filesystem-safe path creation."""
-
     # Windows drive letters should be preserved
     assert str(create_filesystem_safe_path(WindowsPath(r"E:\test.file"))) == r"E:\test.file"
 
