@@ -150,7 +150,10 @@ def bs4_html(html: str | bytes | Response) -> BeautifulSoup:
 def get_all_values_from_form(html: BeautifulSoup, form_selector: str):
     """Extract form input values from HTML."""
     form = html.select(form_selector)
-    assert len(form) == 1, f"We should have only 1 form. We got {len(form)}!"
+
+    if len(form) != 1:
+        raise AssertionError(f"We should have only 1 form. We got {len(form)}!")
+
     form = form[0]
 
     all_inputs = form.find_all(["input", "button", "textarea", "select"])
@@ -218,7 +221,9 @@ def fill_form(response: Response, form_selector, values: dict[str, str]) -> dict
         else:
             data[name] = input_["value"]
 
-    assert len(values) == 0, f"You didn't use: {sorted(values)}"
+    if len(values) != 0:
+        raise AssertionError(f"You didn't use: {sorted(values)}")
+
     return data
 
 
