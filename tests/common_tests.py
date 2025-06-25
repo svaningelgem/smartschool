@@ -1,7 +1,8 @@
+import sys
 import warnings
 from copy import deepcopy
 from datetime import date, datetime, time, timedelta, timezone
-from pathlib import Path
+from pathlib import Path, WindowsPath
 
 import pytest
 import pytest_mock
@@ -17,9 +18,14 @@ from smartschool.common import (
     bs4_html,
     convert_to_date,
     convert_to_datetime,
+    create_filesystem_safe_filename,
+    create_filesystem_safe_path,
     fill_form,
     get_all_values_from_form,
     make_filesystem_safe,
+    natural_sort,
+    parse_mime_type,
+    parse_size,
     save,
     send_email,
     xml_to_dict,
@@ -442,3 +448,179 @@ def test_convert_to_date() -> None:
 
     with pytest.raises(SmartSchoolParsingError, match="Cannot convert 'boom' to `date`"):
         convert_to_date("boom")
+
+
+def test_parse_size():
+    """Test size parsing functionality."""
+    assert parse_size("") is None
+    assert parse_size(123) == pytest.approx(123)
+    assert parse_size(123.45) == pytest.approx(123.45)
+    assert parse_size("-") is None
+    assert parse_size("  ") is None
+    assert parse_size("invalid") is None
+    assert parse_size("..5 Kb") is None
+    assert parse_size("100") is None
+    assert parse_size("100 KB") == pytest.approx(100.0)
+    assert parse_size("100KB") == pytest.approx(100.0)
+    assert parse_size("100 KiB") == pytest.approx(100.0)
+    assert parse_size("1 MB") == pytest.approx(1_024.0)
+    assert parse_size("1 MiB") == pytest.approx(1_000.0)
+    assert parse_size("1 GB") == pytest.approx(1_048_576.0)
+    assert parse_size("1 GiB") == pytest.approx(1_000_000.0)
+    assert parse_size("1.5 MB") == pytest.approx(1_536.0)
+    assert parse_size("1,5 MB") == pytest.approx(1_536.0)
+    assert parse_size("2.5 GB") == pytest.approx(2_621_440.0)
+
+
+def test_create_safe_filename():
+    """Test filesystem-safe filename creation."""
+    assert create_filesystem_safe_filename("hello world.txt") == "hello world.txt"
+    assert create_filesystem_safe_filename("file@#$%^&*().doc") == "file.doc"
+    assert create_filesystem_safe_filename("@#$%^&*().doc") == "unnamed.doc"
+    assert create_filesystem_safe_filename("   spaced   file   .pdf") == "spaced_file.pdf"
+    assert create_filesystem_safe_filename("...dotted...file...") == "dotted.file"
+    assert create_filesystem_safe_filename("") == "unnamed"
+    assert create_filesystem_safe_filename("   ") == "unnamed"
+    assert create_filesystem_safe_filename("normal_file-2.txt") == "normal_file-2.txt"
+    assert create_filesystem_safe_filename("a" * 300 + ".txt") == "a" * 251 + ".txt"
+    assert create_filesystem_safe_filename("file.tar.gz") == "file.tar.gz"
+
+
+@pytest.mark.skipif(sys.platform != "win32", reason="Windows paths are not supported")
+def test_create_filesystem_safe_path_windows():
+    # Windows drive letters should be preserved
+    assert str(create_filesystem_safe_path(WindowsPath(r"E:\test.file"))) == r"E:\test.file"
+
+    # Windows paths with spaces
+    assert str(create_filesystem_safe_path(WindowsPath(r"C:\Program Files\test file.exe"))) == r"C:\Program Files\test file.exe"
+
+    # Windows UNC paths with unsafe chars
+    assert str(create_filesystem_safe_path(WindowsPath(r"C:\Users\bad*name\doc$.txt"))) == r"C:\Users\bad_name\doc.txt"
+
+
+def test_create_filesystem_safe_path():
+    """Test filesystem-safe path creation."""
+    assert create_filesystem_safe_path(Path(r"/Users/bad*name/doc$.txt")).as_posix().endswith("/Users/bad_name/doc.txt")
+
+    # Regular paths should sanitize filenames
+    assert create_filesystem_safe_path(Path("folder/bad@file#name.txt")).as_posix().endswith("/folder/bad_file_name.txt")
+
+    # Multiple unsafe parts
+    assert create_filesystem_safe_path(Path("bad@folder/sub#folder/file*.txt")).as_posix().endswith("/bad_folder/sub_folder/file.txt")
+
+    # Relative path handling
+    assert create_filesystem_safe_path(Path("folder/sub folder/file@name.py")).as_posix().endswith("/folder/sub folder/file_name.py")
+
+
+def test_parse_mime_type():
+    assert parse_mime_type("PDF") == "pdf"
+    assert parse_mime_type("application/pdf") == "application/pdf"
+    assert parse_mime_type("text-plain") == "text plain"
+    assert parse_mime_type("  PDF  ") == "pdf"
+    assert parse_mime_type("\ttext/plain\n") == "text/plain"
+    assert parse_mime_type("PDF file") == "pdf"
+    assert parse_mime_type("Word document") == "word"
+    assert parse_mime_type("Excel bestand") == "excel"
+    assert parse_mime_type("PowerPoint fichier") == "powerpoint"
+    assert parse_mime_type("PDF FILE") == "pdf"
+    assert parse_mime_type("Word DOCUMENT") == "word"
+    assert parse_mime_type("PDF file  ") == "pdf"
+    assert parse_mime_type("Word  document") == "word"
+    assert parse_mime_type("PDF document file") == "pdf"
+    assert parse_mime_type("file manager") == "file manager"
+    assert parse_mime_type("document viewer") == "document viewer"
+    assert parse_mime_type("") == ""
+    assert parse_mime_type("   ") == ""
+    assert parse_mime_type("file") == ""
+    assert parse_mime_type("document") == ""
+    assert parse_mime_type("bestand") == ""
+    assert parse_mime_type("fichier") == ""
+    assert parse_mime_type("application/vnd.ms-excel") == "application/vnd.ms excel"
+    assert parse_mime_type("image/jpeg") == "image/jpeg"
+
+
+def test_sorts_numbers_naturally():
+    """Natural sort should handle numeric sequences correctly."""
+    assert natural_sort("file1.txt") < natural_sort("file2.txt")
+    assert natural_sort("file2.txt") < natural_sort("file10.txt")
+    assert natural_sort("file10.txt") < natural_sort("file20.txt")
+
+
+def test_sorts_mixed_alphanumeric():
+    """Should handle mixed text and numbers."""
+    assert natural_sort("abc1def") < natural_sort("abc2def")
+    assert natural_sort("abc2def") < natural_sort("abc10def")
+    assert natural_sort("version1.2.3") < natural_sort("version1.10.1")
+
+
+def test_case_insensitive_by_default():
+    """Should ignore case by default."""
+    assert natural_sort("Apple") == natural_sort("apple")
+    assert natural_sort("File1.TXT") == natural_sort("file1.txt")
+
+
+def test_case_sensitive_when_disabled():
+    """Should respect a case when case_insensitive=False."""
+    result_lower = natural_sort("apple", case_insensitive=False)
+    result_upper = natural_sort("Apple", case_insensitive=False)
+    assert result_lower != result_upper
+    assert result_upper < result_lower  # uppercase sorts before lowercase
+
+
+def test_returns_tuple_with_correct_types():
+    """Should return tuple with strings and integers."""
+    result = natural_sort("file123test456")
+    assert isinstance(result, tuple)
+    assert result == ("file", 123, "test", 456, "")
+
+
+def test_handles_leading_numbers():
+    """Should handle strings starting with numbers."""
+    assert natural_sort("1file") < natural_sort("2file")
+    assert natural_sort("10file") > natural_sort("2file")
+
+
+def test_handles_trailing_numbers():
+    """Should handle strings ending with numbers."""
+    assert natural_sort("file1") < natural_sort("file2")
+    assert natural_sort("file2") < natural_sort("file10")
+
+
+def test_handles_only_numbers():
+    """Should handle strings that are only numbers."""
+    assert natural_sort("1") < natural_sort("2")
+    assert natural_sort("2") < natural_sort("10")
+
+
+def test_handles_only_text():
+    """Should handle strings with no numbers."""
+    assert natural_sort("apple") < natural_sort("banana")
+    assert natural_sort("abc") == ("abc",)
+
+
+def test_handles_empty_string():
+    """Should handle empty strings."""
+    result = natural_sort("")
+    assert result == ("",)
+
+
+def test_handles_multiple_consecutive_numbers():
+    """Should handle multiple number groups."""
+    result = natural_sort("v1.2.3")
+    assert result == ("v", 1, ".", 2, ".", 3, "")
+
+
+def test_real_world_filenames():
+    """Should sort real-world filename patterns correctly."""
+    filenames = ["file1.txt", "file10.txt", "file2.txt", "file20.txt"]
+    sorted_keys = [natural_sort(f) for f in filenames]
+    expected_order = [natural_sort("file1.txt"), natural_sort("file2.txt"), natural_sort("file10.txt"), natural_sort("file20.txt")]
+    assert sorted(sorted_keys) == expected_order
+
+
+def test_version_numbers():
+    """Should sort version numbers correctly."""
+    versions = ["v1.10.0", "v1.2.0", "v1.2.10", "v2.0.0"]
+    sorted_keys = [natural_sort(v) for v in versions]
+    expected_order = [natural_sort("v1.2.0"), natural_sort("v1.2.10"), natural_sort("v1.10.0"), natural_sort("v2.0.0")]
+    assert sorted(sorted_keys) == expected_order

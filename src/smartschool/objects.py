@@ -128,6 +128,14 @@ class Course:
     skoreWorkYear: SkoreWorkYear
     class_: Class_ = Field(validation_alias=AliasChoices("class", "class_"))
 
+    def __str__(self):
+        ret = f"{self.name} (Teacher"
+        if len(self.teachers) != 1:
+            ret += "s"
+        ret += f": {', '.join(t.name.startingWithLastName for t in self.teachers)}"
+        # ret += f", ID: {self.id}"
+        return ret + ")"
+
 
 @dataclass
 class Feedback:

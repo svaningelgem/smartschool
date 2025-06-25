@@ -7,6 +7,7 @@ from typing import Any
 from urllib.parse import parse_qs, quote_plus
 
 import pytest
+from loguru import logger
 from requests_mock import ANY
 
 from smartschool import EnvCredentials, Smartschool
@@ -93,7 +94,7 @@ def _clear_caches_from_agenda() -> Generator[None, Any, None]:
 def _setup_requests_mocker(request, requests_mock) -> None:
     """Setup comprehensive request mocking for all tests."""
 
-    def text_callback(req, _) -> str:
+    def get_filename(req) -> Path:
         try:
             xml = parse_qs(req.body)["command"][0]
             subsystem = re.search("<subsystem>(.*?)</subsystem>", xml).group(1)
@@ -108,15 +109,20 @@ def _setup_requests_mocker(request, requests_mock) -> None:
             default_filename = specific_filename.with_stem(action)
 
         if specific_filename.exists():
-            return specific_filename.read_text(encoding="utf8")
+            return specific_filename
+        return default_filename
 
-        if default_filename.exists():
-            return default_filename.read_text(encoding="utf8")
+    def binary_callback(req, _) -> bytes:
+        filename = get_filename(req)
+
+        logger.debug(f"[REQUESTMOCK-BIN] {filename.exists()=} -> {filename}")
+        if filename.exists():
+            return filename.read_bytes()
 
         # Fallback for missing files
-        return '{"error": "mock response not found"}'
+        return b'{"error": "mock response not found"}'
 
-    requests_mock.register_uri(ANY, ANY, text=text_callback)
+    requests_mock.register_uri(ANY, ANY, content=binary_callback)
 
     # Authentication flow mocking
     login_link = "/login"
@@ -167,3 +173,8 @@ def tmp_path(tmp_path) -> Generator[Any, Any, None]:
         yield tmp_path
     finally:
         os.chdir(original_dir)
+
+
+@pytest.fixture(autouse=True)
+def _dont_autosave(mocker):
+    mocker.patch("smartschool.courses.save_test_response")

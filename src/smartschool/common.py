@@ -12,7 +12,9 @@ from datetime import date, datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from enum import Enum, auto
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Literal
+from urllib.parse import parse_qs, quote_plus, urlparse
 
 from bs4 import BeautifulSoup, FeatureNotFound, GuessedAtParserWarning
 from logprise import logger
@@ -101,7 +103,7 @@ def send_email(
 
     logger.info(f"Sending email >> {subject}")
 
-    if platform.system() == "Windows":
+    if platform.system() == "Windows":  # pragma: no cover
         logger.info("=================== On Linux we would have sent this: ===================")
         logger.info(f"Subject: {subject}")
         logger.info("")
@@ -294,3 +296,150 @@ def convert_to_date(x: str | String | date | datetime | None) -> date:
         return datetime.strptime(x, "%Y-%m-%d").date()
 
     raise SmartSchoolParsingError(f"Cannot convert '{x}' to `date`")
+
+
+def parse_size(size_str: str | float) -> float | None:
+    """Parse size string to KB value with support for binary units."""
+    if isinstance(size_str, (int, float)):
+        return size_str
+
+    if not size_str or size_str.strip() in ("-", ""):
+        return None
+
+    match = re.search(r"([\d,.]+)\s*(Ki?B|Mi?B|Gi?B)", size_str, re.IGNORECASE)
+    if not match:
+        return None
+
+    try:
+        value = float(match.group(1).replace(",", "."))
+        unit = match.group(2).upper()
+
+        multipliers = {
+            "KB": 1,
+            "KIB": 1,
+            "MB": 1_024,
+            "MIB": 1_000,
+            "GB": 1_024 * 1_024,
+            "GIB": 1_000_000,
+        }
+
+        return value * multipliers.get(unit, 1)
+    except ValueError:
+        return None
+
+
+def parse_mime_type(file_type_string: str) -> str:
+    """Parse MIME type string to a standard format."""
+    current = file_type_string.lower().strip().replace("-", " ")
+
+    prev = None
+    while current != prev:
+        prev = current
+        for extra in {"file", "bestand", "document", "fichier"}:
+            current = current.removesuffix(extra).strip()
+
+    return current
+
+
+def create_filesystem_safe_path(path: Path | str) -> Path:
+    """Create a filesystem-safe path with proper length and extension handling."""
+    parts = list(Path(path).parts)
+
+    # Don't modify drive letters (first part on Windows like 'C:')
+    if parts and platform.system() == "Windows" and ":" in parts[0]:  # pragma: no cover
+        safe_parts = [parts[0]] + [create_filesystem_safe_filename(part) for part in parts[1:]]
+    else:
+        safe_parts = [create_filesystem_safe_filename(part) for part in parts]
+
+    return Path(*safe_parts).resolve().absolute()
+
+
+def create_filesystem_safe_filename(filename: str) -> str:
+    """Create a filesystem-safe filename with proper length and extension handling."""
+    if not filename.strip():
+        return "unnamed"
+
+    # Split extension before processing
+    path = Path(filename)
+    name, ext = path.stem, path.suffix
+
+    # Replace unsafe chars and normalize whitespace
+    safe_name = name.replace('"', "'")
+    safe_name = re.sub(r"\s*:\s*", " - ", safe_name).strip()
+    safe_name = re.sub(r"[^-\w\s.']", "_", safe_name).strip()
+    safe_name = re.sub(r"[\s_]{2,}", "_", safe_name)
+    safe_name = re.sub(r"\.{2,}", ".", safe_name)
+
+    # Remove leading/trailing dots and underscores
+    safe_name = safe_name.strip("._- \r\n\t")
+
+    if not safe_name:
+        safe_name = "unnamed"
+
+    # Truncate if too long (accounting for extension)
+    max_len = 255 - len(ext)
+    if len(safe_name) > max_len:
+        safe_name = safe_name[:max_len].rstrip("._")
+
+    return safe_name + ext
+
+
+def save_test_response(response: Response) -> None:  # pragma: no cover
+    """Save response content to test data directory."""
+    request = response.request
+    test_dir = Path(__file__).parent.parent.parent / "tests/requests" / request.method.lower()
+
+    parsed_url = urlparse(request.url)
+
+    if hasattr(request, "body") and request.body:
+        try:
+            xml = parse_qs(request.body)["command"][0]
+            subsystem = re.search(r"<subsystem>(.*?)</subsystem>", xml).group(1)
+            action = re.search(r"<action>(.*?)</action>", xml).group(1)
+            file_path = test_dir / subsystem / f"{action}.xml"
+        except (AttributeError, KeyError):
+            path_parts = [p.lower() for p in parsed_url.path.split("/") if p]
+            query_part = quote_plus(parsed_url.query) if parsed_url.query else ""
+            file_path = test_dir / Path(*path_parts) / query_part / "response"
+    else:
+        path_parts = [p.lower() for p in parsed_url.path.split("/") if p]
+        file_path = test_dir / Path(*path_parts) / "response"
+
+    # Check Content-Disposition header for filename
+    content_disposition = response.headers.get("content-disposition", "")
+    filename_match = re.search(r'filename[*]?=["\']?([^"\';\s]+)', content_disposition)
+
+    if filename_match:
+        original_filename = filename_match.group(1)
+        extension = Path(original_filename).suffix
+        file_path = file_path.with_suffix(extension)
+    else:
+        content_type = response.headers.get("content-type", "").split(";")[0].strip()
+
+        extension_map = {
+            "application/json": ".json",
+            "text/html": ".html",
+            "text/xml": ".xml",
+            "application/xml": ".xml",
+            "text/plain": ".txt",
+            "application/pdf": ".pdf",
+            "image/jpeg": ".jpg",
+            "image/png": ".png",
+            "application/zip": ".zip",
+            "application/octet-stream": ".bin",
+            "application/force-download": ".bin",
+        }
+
+        extension = extension_map.get(content_type, ".bin")
+        file_path = file_path.with_suffix(extension)
+
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    file_path.write_bytes(response.content)
+
+
+def natural_sort(text: str, *, case_insensitive: bool = True) -> tuple[str | int, ...]:
+    """Convert string to a natural sort key for human-friendly sorting."""
+    if case_insensitive:
+        text = text.lower()
+
+    return tuple(int(chunk) if chunk.isdigit() else chunk for chunk in re.split(r"(\d+)", text))

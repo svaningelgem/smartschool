@@ -49,7 +49,7 @@ def test_path_credentials(tmp_path: Path, session: Smartschool, as_type: type):
 
 def test_path_credentials_without_path(monkeypatch, tmp_path: Path, session):
     monkeypatch.setattr("pathlib.Path.cwd", lambda: tmp_path)
-    tmp_path.joinpath(PathCredentials._CREDENTIALS_NAME).write_text(yaml.dump(EnvCredentials().as_dict()), encoding="utf8")
+    tmp_path.joinpath(PathCredentials.CREDENTIALS_FILENAME).write_text(yaml.dump(EnvCredentials().as_dict()), encoding="utf8")
 
     sut = PathCredentials()
     sut.validate()

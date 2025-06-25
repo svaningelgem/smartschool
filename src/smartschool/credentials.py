@@ -43,7 +43,7 @@ class Credentials:
 
 @dataclass(frozen=True)
 class PathCredentials(Credentials):
-    _CREDENTIALS_NAME: ClassVar[str] = "credentials.yml"
+    CREDENTIALS_FILENAME: ClassVar[str] = "credentials.yml"
     filename: str | Path = ""
 
     def __post_init__(self):
@@ -67,12 +67,12 @@ class PathCredentials(Credentials):
             potential_paths.extend(p / to_investigate.name for p in Path.cwd().parents)
             potential_paths.append(Path.home() / to_investigate.name)
             potential_paths.append(Path.home() / ".cache/smartschool" / to_investigate.name)
-            potential_paths.extend(p / self._CREDENTIALS_NAME for p in to_investigate.parents)
+            potential_paths.extend(p / self.CREDENTIALS_FILENAME for p in to_investigate.parents)
 
-        potential_paths.append(Path.cwd() / self._CREDENTIALS_NAME)
-        potential_paths.extend(p / self._CREDENTIALS_NAME for p in Path.cwd().parents)
-        potential_paths.append(Path.home() / self._CREDENTIALS_NAME)
-        potential_paths.append(Path.home() / f".cache/smartschool/{self._CREDENTIALS_NAME}")
+        potential_paths.append(Path.cwd() / self.CREDENTIALS_FILENAME)
+        potential_paths.extend(p / self.CREDENTIALS_FILENAME for p in Path.cwd().parents)
+        potential_paths.append(Path.home() / self.CREDENTIALS_FILENAME)
+        potential_paths.append(Path.home() / f".cache/smartschool/{self.CREDENTIALS_FILENAME}")
 
         already_seen = set()
         for p in potential_paths:

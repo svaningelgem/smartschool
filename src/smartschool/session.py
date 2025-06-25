@@ -5,7 +5,7 @@ import json
 import re
 from dataclasses import dataclass, field
 from functools import cached_property
-from http.cookiejar import LWPCookieJar
+from http.cookiejar import LoadError, LWPCookieJar
 from pathlib import Path
 from typing import TYPE_CHECKING
 from urllib.parse import urlencode, urljoin, urlparse
@@ -22,7 +22,7 @@ try:
 except ImportError:
     pyotp = None
 
-if TYPE_CHECKING:  # pragma: no cover
+if TYPE_CHECKING:
     from requests import Response
 
     from .credentials import Credentials
@@ -113,8 +113,9 @@ class Smartschool(Session):
     def _initialize_session(self):
         self.headers["User-Agent"] = "unofficial Smartschool API interface"
         cookie_jar = LWPCookieJar(self.cookie_file)
-        with contextlib.suppress(FileNotFoundError):
+        with contextlib.suppress(FileNotFoundError, LoadError):
             cookie_jar.load(ignore_discard=True)
+
         self.cookies = cookie_jar
 
     def create_url(self, url: str) -> str:
@@ -141,7 +142,6 @@ class Smartschool(Session):
         # Handle auth redirects
         response = self._handle_auth_redirect(response)
         if not self._is_auth_url(full_url):  # The original URL was NOT a login-url
-            logger.debug(f"Retrying original {method.upper()} after auth")
             response = super().request(method, full_url, **kwargs)
             self._reset_login_attempts()
         elif not self._is_auth_url(response.url):  # Original was login, and this is not anymore
