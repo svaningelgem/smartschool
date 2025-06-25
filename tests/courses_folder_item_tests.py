@@ -1,7 +1,7 @@
 import pytest
 from requests import RequestException
 
-from smartschool import CourseCondensed, FolderItem, SmartSchoolException, Smartschool
+from smartschool import CourseCondensed, FolderItem, Smartschool, SmartSchoolException, SmartSchoolParsingError
 
 
 @pytest.fixture
@@ -49,3 +49,14 @@ def test_get_mime_from_row_image_continue_branch(folder, mocker):
     result = folder._get_mime_from_row_image(mock_row)
 
     assert result == "pdf"
+
+
+def test_parse_folder_row_exception(folder, mocker):
+    """Test exception when no smsc_cm_link found."""
+    mock_row = mocker.Mock()
+    mock_link = mocker.Mock()
+    mock_link.get.return_value = ["other_class", "different_class"]  # no smsc_cm_link
+    mock_row.select.return_value = [mock_link]
+
+    with pytest.raises(SmartSchoolParsingError, match="No browse URL found"):
+        folder._parse_folder_row(mock_row)

@@ -1,7 +1,7 @@
 from .agenda import SmartschoolHours, SmartschoolLessons, SmartschoolMomentInfos
 from .courses import CourseCondensed, Courses, DocumentOrFolderItem, FileItem, FolderItem, TopNavCourses
 from .credentials import EnvCredentials, PathCredentials
-from .exceptions import SmartSchoolAuthenticationError, SmartSchoolDownloadError, SmartSchoolException
+from .exceptions import SmartSchoolAuthenticationError, SmartSchoolDownloadError, SmartSchoolException, SmartSchoolParsingError
 from .future_tasks import FutureTasks
 from .messages import (
     AdjustMessageLabel,
@@ -47,6 +47,7 @@ __all__ = [
     "SmartSchoolAuthenticationError",
     "SmartSchoolDownloadError",
     "SmartSchoolException",
+    "SmartSchoolParsingError",
     "Smartschool",
     "SmartschoolHours",
     "SmartschoolLessons",
