@@ -15,6 +15,9 @@ if TYPE_CHECKING:
     from .session import Smartschool
 
 
+__all__ = ["AgendaLesson", "AgendaPoster", "SmartschoolHours", "SmartschoolLessons", "SmartschoolMomentInfos"]
+
+
 class AgendaPoster(SmartschoolXML_WeeklyCache, ABC):
     """Caches the information on a weekly basis, and posts to the mentioned URL."""
 
@@ -84,16 +87,16 @@ class SmartschoolLessons(AgendaPoster):
     @property
     def _params(self) -> dict:
         now = convert_to_datetime(self.timestamp_to_use).timestamp()
-        in_5_days = now + 5 * 24 * 3600
+        in_20_days = now + 20 * 24 * 3600
 
         return {
             "startDateTimestamp": now,  # 1700045313
-            "endDateTimestamp": in_5_days,  # 1700477313
+            "endDateTimestamp": in_20_days,  # 1700477313
             "filterType": "false",
             "filterID": "false",
             "gridType": "1",
             "classID": "0",
-            "endDateTimestampOld": in_5_days,  # 1700477313
+            "endDateTimestampOld": in_20_days,  # 1700477313
             "forcedTeacher": "0",
             "forcedClass": "0",
             "forcedClassroom": "0",

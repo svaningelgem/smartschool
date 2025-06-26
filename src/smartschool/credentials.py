@@ -9,6 +9,8 @@ import yaml
 
 required_fields: Final[list[str]] = ["username", "password", "main_url", "mfa"]
 
+__all__ = ["AppCredentials", "Credentials", "EnvCredentials", "PathCredentials"]
+
 
 class Credentials:
     username: str = ""
@@ -72,7 +74,7 @@ class PathCredentials(Credentials):
         potential_paths.append(Path.cwd() / self.CREDENTIALS_FILENAME)
         potential_paths.extend(p / self.CREDENTIALS_FILENAME for p in Path.cwd().parents)
         potential_paths.append(Path.home() / self.CREDENTIALS_FILENAME)
-        potential_paths.append(Path.home() / f".cache/smartschool/{self.CREDENTIALS_FILENAME}")
+        potential_paths.append(Path.home() / ".cache/smartschool" / self.CREDENTIALS_FILENAME)
 
         already_seen = set()
         for p in potential_paths:

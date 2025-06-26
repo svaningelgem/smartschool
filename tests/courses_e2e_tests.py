@@ -2,8 +2,7 @@ from datetime import datetime
 
 import pytest
 
-from smartschool import Smartschool, TopNavCourses
-from smartschool.courses import CourseCondensed, FolderItem, InternetShortcut
+from smartschool import CourseCondensed, FolderItem, InternetShortcut, Smartschool, TopNavCourses
 
 
 @pytest.fixture

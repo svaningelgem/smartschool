@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "smartschool"
-version = "0.5.0"
+version = "0.6.0"
 description = "Unofficial API interface to the smartschool system."
 authors = ["Steven Van Ingelgem <steven@vaningelgem.be>"]
 readme = "README.md"
@@ -16,6 +16,9 @@ packages = [{include = "smartschool", from = "src"}]
 [tool.poetry.scripts]
 smartschool_report_on_results = {reference = "scripts/smartschool_report_on_results", type = "file"}
 smartschool_report_on_future_tasks = {reference = "scripts/smartschool_report_on_future_tasks", type = "file"}
+smartschool_report_on_planned_tasks = {reference = "scripts/smartschool_report_on_planned_tasks", type = "file"}
+smartschool_browse_docs = {reference = "scripts/smartschool_browse_docs", type = "file"}
+smartschool_download_all_documents = {reference = "scripts/smartschool_download_all_documents", type = "file"}
 
 [tool.poetry.dependencies]
 python = "^3.11"

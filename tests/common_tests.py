@@ -11,7 +11,7 @@ from bs4 import BeautifulSoup, FeatureNotFound, GuessedAtParserWarning
 from logprise import logger
 from requests import Response
 
-from smartschool import Smartschool
+from smartschool import Smartschool, SmartSchoolParsingError
 from smartschool.common import (
     IsSaved,
     as_float,
@@ -30,7 +30,6 @@ from smartschool.common import (
     send_email,
     xml_to_dict,
 )
-from smartschool.exceptions import SmartSchoolParsingError
 from smartschool.objects import Student
 
 

@@ -1,0 +1,20 @@
+#!/usr/bin/env python
+from logprise import logger
+
+from smartschool import FutureTasks, PathCredentials, Smartschool
+
+session = Smartschool(PathCredentials())
+
+logger.info("Fetching future tasks...")
+
+for day in FutureTasks(session):
+    for course in day.courses:
+        logger.info("Course:", course.course_title)
+        for key, value in vars(course).items():
+            logger.info(f"{key}: {value}")
+        logger.info("---------------")
+        for task in course.items.tasks:
+            for key, value in vars(task).items():
+                logger.info(f"{key}: {value}")
+            logger.info("===============")
+        logger.info("")

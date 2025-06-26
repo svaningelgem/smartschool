@@ -1,3 +1,15 @@
+# 0.6.0
+* Major rework of the session system: you'll need to provide it now for each instantiation instead of initialiating it once. (global vs local) The advantage here is that you can have multiple concurrent sessions at once.
+* Added ability to fetch documents from the courses. (see `smartschool_browse_docs` & `smartschool_dwnload_all_documents` scripts)
+* Added `PlannedElements` (Smartschool's new 'agenda' implementation)
+* Auto-search for the credentials file in most applicable places (cwd + up, home folder, cache folder)
+
+# 0.5.0
+* Added 'birthday' multi-factor-authentication (#7)
+
+# 0.4.0
+* Download errors show a nicer exception. (#4)
+
 # 0.2.1
 * Float dependencies.
 

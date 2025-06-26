@@ -13,6 +13,8 @@ if TYPE_CHECKING:
     from collections.abc import Iterator
     from datetime import date
 
+__all__ = ["ApplicableAssignmentTypes", "PlannedElements"]
+
 
 @dataclass
 class ApplicableAssignmentTypes(SessionMixin, Iterable[ApplicableAssignmentType]):

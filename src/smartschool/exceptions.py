@@ -1,3 +1,6 @@
+__all__ = ["SmartSchoolAuthenticationError", "SmartSchoolDownloadError", "SmartSchoolException", "SmartSchoolParsingError"]
+
+
 class SmartSchoolException(Exception):
     """Base exception class for smartschool API errors."""
 
