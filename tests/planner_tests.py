@@ -1,8 +1,7 @@
 import pytest
 import time_machine
 
-from smartschool import Smartschool
-from smartschool.planner import ApplicableAssignmentTypes, PlannedElements
+from smartschool import ApplicableAssignmentTypes, PlannedElements, Smartschool
 
 
 @time_machine.travel("2025-05-06")

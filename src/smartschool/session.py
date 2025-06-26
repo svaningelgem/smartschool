@@ -28,6 +28,9 @@ if TYPE_CHECKING:
     from .credentials import Credentials
 
 
+__all__ = ["Smartschool"]
+
+
 @dataclass
 class Smartschool(Session):
     creds: Credentials | None = None

@@ -15,6 +15,9 @@ if TYPE_CHECKING:
     from .session import Smartschool
 
 
+__all__ = ["AgendaLesson", "AgendaPoster", "SmartschoolHours", "SmartschoolLessons", "SmartschoolMomentInfos"]
+
+
 class AgendaPoster(SmartschoolXML_WeeklyCache, ABC):
     """Caches the information on a weekly basis, and posts to the mentioned URL."""
 

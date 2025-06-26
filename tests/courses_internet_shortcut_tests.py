@@ -2,8 +2,7 @@ from datetime import datetime, timezone
 
 import pytest
 
-from smartschool import Smartschool, SmartSchoolException
-from smartschool.courses import InternetShortcut
+from smartschool import InternetShortcut, Smartschool, SmartSchoolException
 
 
 @pytest.fixture

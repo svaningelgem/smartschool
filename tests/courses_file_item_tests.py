@@ -3,8 +3,7 @@ from datetime import datetime, timezone
 import pytest
 from requests import Response
 
-from smartschool import Smartschool
-from smartschool.courses import FileItem
+from smartschool import FileItem, Smartschool
 
 
 @pytest.fixture

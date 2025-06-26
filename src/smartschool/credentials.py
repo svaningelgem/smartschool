@@ -9,6 +9,8 @@ import yaml
 
 required_fields: Final[list[str]] = ["username", "password", "main_url", "mfa"]
 
+__all__ = ["AppCredentials", "Credentials", "EnvCredentials", "PathCredentials"]
+
 
 class Credentials:
     username: str = ""
