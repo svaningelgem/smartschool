@@ -21,7 +21,7 @@ jobs:
         with:
           python-version: "3.11"  # Always use the lowest possible version to ensure correctness of the code.
       #----------------------------------------------
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip
@@ -57,7 +57,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: cache poetry install
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.local
           key: poetry-${{ matrix.os }}-${{ matrix.python-version }}
@@ -70,7 +70,7 @@ jobs:
 
       - name: Load cached venv
         id: cached-poetry-dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: .venv
           key: venv-${{ matrix.os }}-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
