@@ -1,0 +1,16 @@
+#!/usr/bin/env python
+from datetime import date, timedelta
+
+from logprise import logger
+
+from smartschool import PathCredentials, Smartschool, SmartschoolLessons
+
+session = Smartschool(PathCredentials())
+
+print("Fetching agenda...")
+timestamp_to_use = date.today() + timedelta(days=1)
+
+for result in SmartschoolLessons(session, timestamp_to_use=timestamp_to_use):
+    logger.info("---------------------------------------")
+    for key, value in vars(result).items():
+        logger.info(f"{key}: {value}")

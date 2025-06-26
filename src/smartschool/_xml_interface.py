@@ -127,7 +127,7 @@ class SmartschoolXML(ABC, SessionMixin):
 
 @dataclass
 class SmartschoolXML_WeeklyCache(SmartschoolXML, ABC):
-    timestamp_to_use: datetime | None = None
+    timestamp_to_use: datetime | date | None = None
 
     @property
     def _cache_key(self):
