@@ -1,3 +1,4 @@
+import hashlib
 import os
 import re
 import sys
@@ -72,7 +73,8 @@ def mock_credentials():
 @pytest.fixture
 def authenticated_user_data():
     """Sample authenticated user data for testing."""
-    return {"id": 12345, "username": "test_user", "firstName": "Test", "lastName": "User", "email": "test@example.com", "roles": ["student"]}
+    return {"id": 12345, "username": "test_user", "firstName": "Test", "lastName": "User", "email": "test@example.com",
+            "roles": ["student"]}
 
 
 @pytest.fixture(autouse=True)
@@ -95,17 +97,21 @@ def _setup_requests_mocker(request, requests_mock) -> None:
     """Setup comprehensive request mocking for all tests."""
 
     def get_filename(req) -> Path:
+        default_path = Path(__file__).parent / "requests" / req.method.lower()
+
         try:
             xml = parse_qs(req.body)["command"][0]
             subsystem = re.search("<subsystem>(.*?)</subsystem>", xml).group(1)
             action = re.search("<action>(.*?)</action>", xml).group(1)
         except (AttributeError, KeyError):
-            specific_filename = Path(__file__).parent.joinpath(
-                "requests", req.method.lower(), *map(str.lower, req.path.split("/")), quote_plus(req.query), f"{request.node.name}.json"
-            )
+            if req.query:
+                partial_hash = hashlib.sha256(quote_plus(req.query).encode("utf8")).hexdigest()[:12]
+            else:
+                partial_hash = ""
+            specific_filename = default_path / req.path.strip('/').lower() / partial_hash / f"{request.node.name}.json"
             default_filename = specific_filename.parent.with_suffix(".json")
         else:
-            specific_filename = Path(__file__).parent.joinpath("requests", req.method.lower(), subsystem, f"{request.node.name}.xml")
+            specific_filename = default_path / subsystem / f"{request.node.name}.xml"
             default_filename = specific_filename.with_stem(action)
 
         if specific_filename.exists():
