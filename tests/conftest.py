@@ -73,8 +73,7 @@ def mock_credentials():
 @pytest.fixture
 def authenticated_user_data():
     """Sample authenticated user data for testing."""
-    return {"id": 12345, "username": "test_user", "firstName": "Test", "lastName": "User", "email": "test@example.com",
-            "roles": ["student"]}
+    return {"id": 12345, "username": "test_user", "firstName": "Test", "lastName": "User", "email": "test@example.com", "roles": ["student"]}
 
 
 @pytest.fixture(autouse=True)
@@ -108,7 +107,7 @@ def _setup_requests_mocker(request, requests_mock) -> None:
                 partial_hash = hashlib.sha256(quote_plus(req.query).encode("utf8")).hexdigest()[:12]
             else:
                 partial_hash = ""
-            specific_filename = default_path / req.path.strip('/').lower() / partial_hash / f"{request.node.name}.json"
+            specific_filename = default_path / req.path.strip("/").lower() / partial_hash / f"{request.node.name}.json"
             default_filename = specific_filename.parent.with_suffix(".json")
         else:
             specific_filename = default_path / subsystem / f"{request.node.name}.xml"
