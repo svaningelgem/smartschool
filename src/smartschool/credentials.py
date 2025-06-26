@@ -74,7 +74,7 @@ class PathCredentials(Credentials):
         potential_paths.append(Path.cwd() / self.CREDENTIALS_FILENAME)
         potential_paths.extend(p / self.CREDENTIALS_FILENAME for p in Path.cwd().parents)
         potential_paths.append(Path.home() / self.CREDENTIALS_FILENAME)
-        potential_paths.append(Path.home() / f".cache/smartschool/{self.CREDENTIALS_FILENAME}")
+        potential_paths.append(Path.home() / ".cache/smartschool" / self.CREDENTIALS_FILENAME)
 
         already_seen = set()
         for p in potential_paths:
