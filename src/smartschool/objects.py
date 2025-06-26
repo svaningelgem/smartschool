@@ -29,7 +29,7 @@ class CourseGraphic:
 @dataclass
 class ResultGraphic:
     type: Literal["percentage"]
-    color: Literal["green", "red"]
+    color: Literal["green", "red", "olive", "yellow", "steel"]
     value: int
     description: String
 
