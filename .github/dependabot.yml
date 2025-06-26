@@ -1,23 +1,20 @@
-# https://docs.github.com/en/code-security/supply-chain-security/keeping-your-dependencies-updated-automatically/configuration-options-for-dependency-updates
 version: 2
 updates:
-  - package-ecosystem: "github-actions"
-    directory: '/'
+  - package-ecosystem: "pip"  # Poetry uses pip under the hood
+    directory: "/"
     schedule:
-      interval: "weekly"
-    ignore:
-      - dependency-name: '*'
-        update-types: ['version-update:semver-patch']
+      interval: "weekly"  # Check for updates weekly
+    open-pull-requests-limit: 10  # Limit the number of open PRs
+    labels:
+      - "dependencies"
     commit-message:
-      prefix: ci
-    labels: ['skip changelog']
+      prefix: "chore"
 
-  - package-ecosystem: "poetry"
+  - package-ecosystem: "github-actions"  # Also update GitHub Actions
     directory: "/"
     schedule:
       interval: "weekly"
-
-  - package-ecosystem: "pip"
-    directory: "/"
-    schedule:
-      interval: "weekly"
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "ci"
