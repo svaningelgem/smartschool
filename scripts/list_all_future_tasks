@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from logprise import logger
 
-from smartschool import PathCredentials, Results, Smartschool, FutureTasks
+from smartschool import FutureTasks, PathCredentials, Smartschool
 
 session = Smartschool(PathCredentials())
 
@@ -18,4 +18,3 @@ for day in FutureTasks(session):
                 logger.info(f"{key}: {value}")
             logger.info("===============")
         logger.info("")
-
