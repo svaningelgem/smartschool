@@ -30,9 +30,11 @@ jobs:
         run: python -m pip install ruff
 
       - name: Check python code
+        if: always()
         run: ruff check --no-fix .
 
       - name: Check formatting style
+        if: always()
         run: ruff format --diff .
       #----------------------------------------------
 
@@ -77,15 +79,15 @@ jobs:
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: poetry install --no-interaction --no-root
 
-      - name: Install smartschool
+      - name: Install ${{ github.event.repository.name }}
         run: poetry install --no-interaction
 
       - name: Run tests
         run: |
           source .venv/bin/activate
-          pytest --cov=smartschool --cov-append --cov-fail-under=80 --cov-branch --cov-report=json --cov-report=term
+          pytest --cov=${{ github.event.repository.name }} --cov-append --cov-fail-under=90 --cov-branch --cov-report=json --cov-report=term
 
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
