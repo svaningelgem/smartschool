@@ -10,14 +10,71 @@ from typing import get_type_hints, Any
 from logprise import logger
 
 
-def format_type_annotation(annotation: Any) -> str:
-    """Format type annotation for stub file"""
+def format_type_annotation(annotation: Any, imports_needed: set) -> str:
+    """Format type annotation for stub file and track needed imports"""
     type_str = str(annotation)
+
+    # Handle module-qualified types and track imports
+    if hasattr(annotation, '__module__') and hasattr(annotation, '__name__'):
+        module = annotation.__module__
+        name = annotation.__name__
+
+        # Handle types from same package (relative imports)
+        if module and '.' in module:
+            module_parts = module.split('.')
+            if len(module_parts) >= 2:
+                # e.g., smartschool.session.Smartschool -> from .session import Smartschool
+                if module_parts[-2] in ['session', 'objects']:  # common submodules
+                    imports_needed.add(f"from .{module_parts[-2]} import {name}")
+                    return name
+                # e.g., smartschool.objects.Result -> from . import objects
+                elif module_parts[-1] == 'objects':
+                    imports_needed.add("from . import objects")
+                    return f"objects.{name}"
+
+    # Handle generic types (like Iterable[Result])
+    if hasattr(annotation, '__origin__') and hasattr(annotation, '__args__'):
+        origin = annotation.__origin__
+        args = annotation.__args__
+
+        # Format the origin type
+        origin_name = getattr(origin, '__name__', str(origin))
+        if origin_name in ['Iterator', 'Iterable', 'List', 'Dict', 'Optional', 'Union']:
+            imports_needed.add(f"from typing import {origin_name}")
+
+        # Format the arguments
+        if args:
+            formatted_args = []
+            for arg in args:
+                formatted_args.append(format_type_annotation(arg, imports_needed))
+            return f"{origin_name}[{', '.join(formatted_args)}]"
+
+        return origin_name
+
+    # Extract class names from complex type strings for imports
+    # Look for patterns like "smartschool.objects.ResultGraphic"
+    import re
+    class_pattern = r'smartschool\.(\w+)\.(\w+)'
+    matches = re.findall(class_pattern, type_str)
+    for submodule, class_name in matches:
+        if submodule == 'objects':
+            imports_needed.add("from . import objects")
+            type_str = type_str.replace(f'smartschool.objects.{class_name}', f'objects.{class_name}')
+        else:
+            imports_needed.add(f"from .{submodule} import {class_name}")
+            type_str = type_str.replace(f'smartschool.{submodule}.{class_name}', class_name)
+
+    # Type replacements
     replacements = {
         'typing.': '',
         '<class \'': '',
         '\'>': '',
         'builtins.': '',
+        'DateTime': 'datetime',
+        'String': 'str',
+        # Clean up remaining smartschool references
+        'smartschool.session.Smartschool': 'Smartschool',
+        'smartschool.objects.': 'objects.',
     }
 
     for old, new in replacements.items():
@@ -83,26 +140,46 @@ def load_module_from_file(file_path: Path):
         return None
 
 
-def get_class_info(cls) -> dict:
+def get_class_info(cls, imports_needed: set) -> dict:
     """Extract all relevant info from a class"""
     info = {
         'name': cls.__name__,
         'bases': [],
         'attributes': {},
+        'methods': {},
         'has_init': hasattr(cls, '__init__') and cls.__init__ is not object.__init__
     }
 
-    # Get base classes
+    # Get base classes and fix their names
     for base in cls.__bases__:
         if base is not object:
-            info['bases'].append(base.__name__)
+            base_name = base.__name__
+
+            # Handle module-qualified base classes
+            if hasattr(base, '__module__') and base.__module__:
+                module = base.__module__
+                if 'objects' in module:
+                    imports_needed.add("from . import objects")
+                    base_name = f"objects.{base.__name__}"
+                elif 'session' in module and base.__name__ == 'SessionMixin':
+                    imports_needed.add("from .session import SessionMixin")
+                    base_name = "SessionMixin"
+                elif base.__name__ in ['Iterable', 'Iterator', 'List', 'Dict']:
+                    imports_needed.add(f"from typing import {base.__name__}")
+
+            # Handle generic base classes like Iterable[Result]
+            if hasattr(base, '__origin__') and hasattr(base, '__args__'):
+                formatted_base = format_type_annotation(base, imports_needed)
+                info['bases'].append(formatted_base)
+            else:
+                info['bases'].append(base_name)
 
     # Get all attributes with type hints
     try:
         type_hints = get_type_hints(cls)
         for name, annotation in type_hints.items():
             if not name.startswith('_'):
-                info['attributes'][name] = format_type_annotation(annotation)
+                info['attributes'][name] = format_type_annotation(annotation, imports_needed)
     except Exception as e:
         logger.debug(f"Could not get type hints for {cls.__name__}: {e}")
 
@@ -111,9 +188,25 @@ def get_class_info(cls) -> dict:
         for field_name, field_info in cls.model_fields.items():
             if field_name not in info['attributes']:
                 if hasattr(field_info, 'annotation'):
-                    info['attributes'][field_name] = format_type_annotation(field_info.annotation)
+                    info['attributes'][field_name] = format_type_annotation(field_info.annotation, imports_needed)
                 else:
                     info['attributes'][field_name] = 'Any'
+
+    # Get important methods (like __iter__)
+    for method_name in ['__iter__', '__next__', '__len__', '__getitem__']:
+        if hasattr(cls, method_name):
+            method = getattr(cls, method_name)
+            if callable(method) and method is not getattr(object, method_name, None):
+                try:
+                    sig = inspect.signature(method)
+                    return_annotation = sig.return_annotation
+                    if return_annotation != inspect.Signature.empty:
+                        formatted_return = format_type_annotation(return_annotation, imports_needed)
+                        info['methods'][method_name] = formatted_return
+                    else:
+                        info['methods'][method_name] = 'Any'
+                except Exception as e:
+                    logger.debug(f"Could not get signature for {method_name}: {e}")
 
     # Get __init__ signature if custom
     if info['has_init']:
@@ -126,7 +219,7 @@ def get_class_info(cls) -> dict:
 
                 param_str = name
                 if param.annotation != inspect.Parameter.empty:
-                    param_str += f": {format_type_annotation(param.annotation)}"
+                    param_str += f": {format_type_annotation(param.annotation, imports_needed)}"
                 if param.default != inspect.Parameter.empty:
                     if isinstance(param.default, str):
                         param_str += f' = "{param.default}"'
@@ -148,6 +241,7 @@ def generate_class_stub(class_info: dict) -> str:
     name = class_info['name']
     bases = class_info['bases']
     attributes = class_info['attributes']
+    methods = class_info.get('methods', {})
 
     # Build class definition
     if bases:
@@ -162,6 +256,17 @@ def generate_class_stub(class_info: dict) -> str:
         for attr_name, attr_type in attributes.items():
             stub += f"    {attr_name}: {attr_type}\n"
 
+    # Add important methods
+    for method_name, return_type in methods.items():
+        if method_name == '__iter__':
+            stub += f"    def __iter__(self) -> {return_type}: ...\n"
+        elif method_name == '__next__':
+            stub += f"    def __next__(self) -> {return_type}: ...\n"
+        elif method_name == '__len__':
+            stub += f"    def __len__(self) -> {return_type}: ...\n"
+        elif method_name == '__getitem__':
+            stub += f"    def __getitem__(self, key) -> {return_type}: ...\n"
+
     # Add __init__ if present
     if class_info['has_init'] and 'init_params' in class_info:
         params = ['self'] + class_info['init_params']
@@ -173,7 +278,7 @@ def generate_class_stub(class_info: dict) -> str:
             for param in class_info['init_params']:
                 stub += f"        {param},\n"
             stub += "    ) -> None: ...\n"
-    elif not attributes:  # No attributes, add basic init
+    elif not attributes and not methods:  # No attributes or methods, add basic init
         stub += "    def __init__(self, **kwargs) -> None: ...\n"
 
     return stub + "\n"
@@ -197,18 +302,36 @@ def generate_stub_file(python_file: Path) -> str:
 
     logger.info(f"Found classes: {[cls.__name__ for cls in classes]}")
 
-    # Generate stub content
-    stub_content = "# Auto-generated stub file\n"
-    stub_content += "from typing import Any\n\n"
+    # Track imports needed across all classes
+    imports_needed = set()
+    imports_needed.add("from typing import Any")
 
+    # Process all classes to gather import requirements
+    class_infos = []
     for cls in classes:
         try:
-            class_info = get_class_info(cls)
+            class_info = get_class_info(cls, imports_needed)
+            class_infos.append(class_info)
             logger.debug(f"Class {cls.__name__} attributes: {list(class_info['attributes'].keys())}")
-            stub_content += generate_class_stub(class_info)
         except Exception as e:
             logger.error(f"Failed to process {cls.__name__}: {e}")
-            stub_content += f"class {cls.__name__}:\n    def __init__(self, **kwargs) -> None: ...\n\n"
+            class_infos.append({'name': cls.__name__, 'bases': [], 'attributes': {}, 'has_init': False})
+
+    # Generate stub content
+    stub_content = "# Auto-generated stub file\n"
+
+    # Add all needed imports
+    for import_line in sorted(imports_needed):
+        stub_content += f"{import_line}\n"
+    stub_content += "\n"
+
+    # Generate class stubs
+    for class_info in class_infos:
+        try:
+            stub_content += generate_class_stub(class_info)
+        except Exception as e:
+            logger.error(f"Failed to generate stub for {class_info['name']}: {e}")
+            stub_content += f"class {class_info['name']}:\n    def __init__(self, **kwargs) -> None: ...\n\n"
 
     return stub_content
 
