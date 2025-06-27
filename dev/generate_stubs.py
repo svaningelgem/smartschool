@@ -109,123 +109,6 @@ def format_type_annotation(annotation: Any, imports_needed: set, current_module:
         return result[: -len(mid)] + post
 
     raise ValueError(f"Unexpected type annotation: {annotation}")
-    # # For actual type objects with module info
-    # if hasattr(annotation, '__module__') and hasattr(annotation, '__name__'):
-    #     module = annotation.__module__
-    #     name = annotation.__name__
-    #
-    #     # Handle typing module dynamically
-    #     if module == 'typing':
-    #         imports_needed.add(f"from typing import {name}")
-    #         # For special forms like Literal, preserve their representation
-    #         if hasattr(annotation, '__repr__'):
-    #             repr_str = repr(annotation)
-    #             if repr_str.startswith('typing.'):
-    #                 return repr_str.replace('typing.', '')
-    #             return repr_str
-    #         return name
-    #
-    #     # Handle collections.abc
-    #     elif module == 'collections.abc':
-    #         imports_needed.add(f"from typing import {name}")
-    #         return name
-    #
-    #     # Handle our package modules
-    #     elif module and '.' in module:
-    #         module_parts = module.split('.')
-    #         if len(module_parts) >= 2:
-    #             # Handle session module
-    #             if module_parts[-2] == 'session' or module_parts[-1] == 'session':
-    #                 imports_needed.add(f"from .session import {name}")
-    #                 return name
-    #             # Handle objects module
-    #             elif module_parts[-2] == 'objects' or module_parts[-1] == 'objects':
-    #                 # Check for name conflict with current class
-    #                 if name == current_class_name:
-    #                     imports_needed.add("from . import objects")
-    #                     return f"objects.{name}"
-    #                 else:
-    #                     imports_needed.add("from . import objects")
-    #                     return f"objects.{name}"
-    #
-    #     # Handle datetime
-    #     elif module == 'datetime' and name == 'datetime':
-    #         imports_needed.add("import datetime")
-    #         return 'datetime.datetime'
-    #
-    #     # Handle built-in types
-    #     elif module == 'builtins':
-    #         return name
-    #
-    # # Handle generic types recursively
-    # if hasattr(annotation, '__origin__') and hasattr(annotation, '__args__'):
-    #     origin = annotation.__origin__
-    #     args = annotation.__args__
-    #
-    #     # Format origin
-    #     origin_formatted = format_type_annotation(origin, imports_needed, current_class_name)
-    #
-    #     # Format arguments
-    #     if args:
-    #         formatted_args = []
-    #         for arg in args:
-    #             formatted_args.append(format_type_annotation(arg, imports_needed, current_class_name))
-    #         return f"{origin_formatted}[{', '.join(formatted_args)}]"
-    #
-    #     return origin_formatted
-    #
-    # # Handle string representations
-    # type_str = str(annotation)
-    #
-    # # Clean up <class '...'> representations
-    # if type_str.startswith("<class '") and type_str.endswith("'>"):
-    #     clean_name = type_str[8:-2]  # Remove <class ' and '>
-    #     if clean_name in ['str', 'int', 'bool', 'float', 'list', 'dict', 'tuple']:
-    #         return clean_name
-    #     return clean_name
-    #
-    # # Handle Union types
-    # if 'Union[' in type_str:
-    #     imports_needed.add("from typing import Union")
-    # elif type_str.startswith('typing.'):
-    #     type_name = type_str.replace('typing.', '')
-    #     if '[' in type_name:
-    #         type_name = type_name.split('[')[0]
-    #     imports_needed.add(f"from typing import {type_name}")
-    #
-    # # Clean up the string representation
-    # type_str = type_str.replace('typing.', '')
-    #
-    # # Handle smartschool package references
-    # package_pattern = r'smartschool\.(\w+)\.(\w+)'
-    # matches = re.findall(package_pattern, type_str)
-    # for submodule, class_name in matches:
-    #     if submodule == 'objects':
-    #         imports_needed.add("from . import objects")
-    #         type_str = type_str.replace(f'smartschool.objects.{class_name}', f'objects.{class_name}')
-    #     elif submodule == 'session':
-    #         imports_needed.add(f"from .session import {class_name}")
-    #         type_str = type_str.replace(f'smartschool.session.{class_name}', class_name)
-    #     else:
-    #         imports_needed.add(f"from .{submodule} import {class_name}")
-    #         type_str = type_str.replace(f'smartschool.{submodule}.{class_name}', class_name)
-    #
-    # # Handle legacy type names
-    # if type_str == 'DateTime':
-    #     imports_needed.add("import datetime")
-    #     return 'datetime.datetime'
-    # elif type_str == 'String':
-    #     return 'str'
-    #
-    # # Handle bare class names that should be from objects
-    # if type_str in ['Course', 'Teacher', 'Component', 'Period', 'Feedback', 'FeedbackFull', 'ResultDetails', 'ResultGraphic']:
-    #     imports_needed.add("from . import objects")
-    #     return f"objects.{type_str}"
-    # elif type_str == 'Result' and current_class_name != 'Result':
-    #     imports_needed.add("from . import objects")
-    #     return f"objects.{type_str}"
-    #
-    # return type_str
 
 
 def _get_import_from_ast(node: ast.AST) -> str:
@@ -381,7 +264,7 @@ def _extract_method_info(real_class: type, method_name: str) -> MethodInfo:
     return MethodInfo(name=method_name, params=method_params, return_annotation=sig.return_annotation)
 
 
-def extract_class_data(class_info: ClassInfo, imports_needed: set[str], current_module: types.ModuleType) -> ClassInfo:
+def extract_class_data(class_info: ClassInfo) -> ClassInfo:
     """Extract all class data into unified structure."""
     # Get ALL type annotations from the class - this is the single source of truth
     all_annotations = {}
@@ -539,7 +422,7 @@ def generate_stub_file(python_file: Path) -> str:
 
     # Extract data for all classes
     for cls in classes.values():
-        extract_class_data(cls, imports_needed, module)
+        extract_class_data(cls)
 
     # Generate stub content
     stub_content = "# Auto-generated stub file\n"
