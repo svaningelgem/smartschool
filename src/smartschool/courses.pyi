@@ -1,5 +1,4 @@
 # Auto-generated stub file
-# Generated on 2025-06-27 10:53:52
 from __future__ import annotations
 
 from collections.abc import Iterator

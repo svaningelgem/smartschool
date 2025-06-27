@@ -543,8 +543,7 @@ def generate_stub_file(python_file: Path) -> str:
         extract_class_data(cls, imports_needed, module)
 
     # Generate stub content
-    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    stub_content = f"# Auto-generated stub file\n# Generated on {now}\n"
+    stub_content = f"# Auto-generated stub file\n"
 
     # Generate stubs and collect imports
     class_stubs = []
