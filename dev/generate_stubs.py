@@ -239,7 +239,9 @@ def get_class_info(cls, imports_needed: set, ast_methods: list[str]) -> dict:
         type_hints = get_type_hints(cls)
         for name, annotation in type_hints.items():
             if not name.startswith('_'):
-                info['attributes'][name] = format_type_annotation(annotation, imports_needed)
+                formatted_type = format_type_annotation(annotation, imports_needed)
+                info['attributes'][name] = formatted_type
+                logger.debug(f"Attribute {name}: {annotation} -> {formatted_type}")
     except Exception as e:
         logger.debug(f"Could not get type hints for {cls.__name__}: {e}")
 
@@ -248,7 +250,9 @@ def get_class_info(cls, imports_needed: set, ast_methods: list[str]) -> dict:
         for field_name, field_info in cls.model_fields.items():
             if field_name not in info['attributes']:
                 if hasattr(field_info, 'annotation'):
-                    info['attributes'][field_name] = format_type_annotation(field_info.annotation, imports_needed)
+                    formatted_type = format_type_annotation(field_info.annotation, imports_needed)
+                    info['attributes'][field_name] = formatted_type
+                    logger.debug(f"Pydantic field {field_name}: {field_info.annotation} -> {formatted_type}")
                 else:
                     info['attributes'][field_name] = 'Any'
 
@@ -301,7 +305,9 @@ def get_class_info(cls, imports_needed: set, ast_methods: list[str]) -> dict:
 
                 param_str = name
                 if param.annotation != inspect.Parameter.empty:
-                    param_str += f": {format_type_annotation(param.annotation, imports_needed)}"
+                    formatted_type = format_type_annotation(param.annotation, imports_needed)
+                    param_str += f": {formatted_type}"
+                    logger.debug(f"Init param {name}: {param.annotation} -> {formatted_type}")
                 if param.default != inspect.Parameter.empty:
                     if isinstance(param.default, str):
                         param_str += f' = "{param.default}"'
