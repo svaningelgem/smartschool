@@ -194,7 +194,7 @@ class ResultDetails:
 class CourseCondensed:
     name: String
     teacher: String
-    url: Url=Field()
+    url: Url = Field()
 
     id: int = Field(repr=False, default=None)
     platformId: int = Field(repr=False, default=None)

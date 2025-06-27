@@ -13,7 +13,6 @@ import sys
 from collections import defaultdict
 from collections.abc import Sequence
 from dataclasses import dataclass, field
-from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, get_type_hints
 
@@ -66,8 +65,7 @@ def _format_import(annotation: type, current_module: types.ModuleType) -> str:
     if current_parts == target_parts:
         return ""  # Local stuff
 
-    common_len = next((i for i, (a, b) in enumerate(zip(current_parts, target_parts)) if a != b),
-                      min(len(current_parts), len(target_parts)))
+    common_len = next((i for i, (a, b) in enumerate(zip(current_parts, target_parts)) if a != b), min(len(current_parts), len(target_parts)))
 
     if not common_len or len(target_parts) < len(current_parts):
         return f"from {module} import {name}"
@@ -301,8 +299,7 @@ def parse_class_ast_info(file_path: Path) -> tuple[dict[str, ClassInfo], list[st
                     annotation_str = ast.unparse(item.annotation)
                     annotations[item.target.id] = annotation_str
 
-            class_info[node.name] = ClassInfo(name=node.name, method_names=methods, bases=bases,
-                                              annotations=annotations)
+            class_info[node.name] = ClassInfo(name=node.name, method_names=methods, bases=bases, annotations=annotations)
 
     return class_info, imports, tree
 
@@ -355,8 +352,7 @@ _pydantic_replacements = {
 _MISSING = object()
 
 
-def _extract_method_info(real_class: type, method_name: str, imports_needed: set[str],
-                         current_module: types.ModuleType) -> MethodInfo:
+def _extract_method_info(real_class: type, method_name: str, imports_needed: set[str], current_module: types.ModuleType) -> MethodInfo:
     sig = inspect.signature(getattr(real_class, method_name))
     method_params = []
     for name, param in sig.parameters.items():
@@ -472,7 +468,7 @@ def _generate_method_stub(method: MethodInfo | str | None) -> str:
 
     if isinstance(method, str):
         lines = method.splitlines()
-        return "\n".join(f"{' '*4}{line}" for line in lines) + "\n"
+        return "\n".join(f"{' ' * 4}{line}" for line in lines) + "\n"
 
     params = []
     for param in method.params:
@@ -498,12 +494,15 @@ def _generate_method_stub(method: MethodInfo | str | None) -> str:
 
 def _inject_typechecking_imports(tree: ast.Module, imports: list[str], module: types.ModuleType) -> None:
     for node in ast.walk(tree):
-        if (
-                isinstance(node, ast.If) and (
-                (isinstance(node.test, ast.Name) and node.test.id == 'TYPE_CHECKING')
-                or (isinstance(node.test, ast.Attribute) and node.test.attr == 'TYPE_CHECKING' and isinstance(
-            node.test.value, ast.Name) and node.test.value.id == 'typing')
-        )):
+        if isinstance(node, ast.If) and (
+            (isinstance(node.test, ast.Name) and node.test.id == "TYPE_CHECKING")
+            or (
+                isinstance(node.test, ast.Attribute)
+                and node.test.attr == "TYPE_CHECKING"
+                and isinstance(node.test.value, ast.Name)
+                and node.test.value.id == "typing"
+            )
+        ):
             for stmt in ast.walk(node):
                 imports.append(_get_import_from_ast(stmt))  # Ensure the imports are available in the stub
                 if isinstance(stmt, ast.ImportFrom):
@@ -543,7 +542,7 @@ def generate_stub_file(python_file: Path) -> str:
         extract_class_data(cls, imports_needed, module)
 
     # Generate stub content
-    stub_content = f"# Auto-generated stub file\n"
+    stub_content = "# Auto-generated stub file\n"
 
     # Generate stubs and collect imports
     class_stubs = []
@@ -561,8 +560,7 @@ def generate_stub_file(python_file: Path) -> str:
 def reformat_file(output_file):
     try:
         subprocess.run(["ruff", "format", str(output_file)], check=True, capture_output=True)
-        subprocess.run(["ruff", "check", "--select", "I,F,E", "--fix", str(output_file)], check=True,
-                       capture_output=True)
+        subprocess.run(["ruff", "check", "--select", "I,F,E", "--fix", str(output_file)], check=True, capture_output=True)
         logger.info(f"Generated and formatted {output_file}")
     except subprocess.CalledProcessError as e:
         logger.warning(f"Generated {output_file} but ruff formatting failed: {e}")
