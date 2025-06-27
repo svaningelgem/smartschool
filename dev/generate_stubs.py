@@ -179,7 +179,7 @@ def format_type_annotation(annotation: Any, imports_needed: set, current_class_n
 
 
 def parse_class_ast_info(file_path: Path) -> dict:
-    """Parse AST to get class structure info"""
+    """Parse AST to get class structure info as written in source"""
     try:
         with open(file_path) as f:
             tree = ast.parse(f.read())
@@ -191,12 +191,47 @@ def parse_class_ast_info(file_path: Path) -> dict:
 
     for node in ast.walk(tree):
         if isinstance(node, ast.ClassDef):
-            methods = []
+            info = {
+                'methods': [],
+                'bases': [],
+                'annotations': {}
+            }
+
+            # Get base classes as written in source
+            for base in node.bases:
+                if isinstance(base, ast.Name):
+                    info['bases'].append(base.id)
+                elif isinstance(base, ast.Subscript):
+                    # Handle generic bases like Iterable[Result]
+                    if isinstance(base.value, ast.Name):
+                        base_name = base.value.id
+                        if isinstance(base.slice, ast.Name):
+                            slice_name = base.slice.id
+                            info['bases'].append(f"{base_name}[{slice_name}]")
+                        else:
+                            info['bases'].append(base_name)
+                elif isinstance(base, ast.Attribute):
+                    # Handle qualified names like objects.Result
+                    parts = []
+                    current = base
+                    while isinstance(current, ast.Attribute):
+                        parts.insert(0, current.attr)
+                        current = current.value
+                    if isinstance(current, ast.Name):
+                        parts.insert(0, current.id)
+                    info['bases'].append('.'.join(parts))
+
+            # Get method names
             for item in node.body:
                 if isinstance(item, ast.FunctionDef):
                     if not item.name.startswith('_') or item.name.startswith('__'):
-                        methods.append(item.name)
-            class_info[node.name] = {'methods': methods}
+                        info['methods'].append(item.name)
+                elif isinstance(item, ast.AnnAssign) and isinstance(item.target, ast.Name):
+                    # Get type annotations as written
+                    annotation_str = ast.unparse(item.annotation)
+                    info['annotations'][item.target.id] = annotation_str
+
+            class_info[node.name] = info
 
     return class_info
 
@@ -246,10 +281,20 @@ def extract_class_data(cls, ast_info: dict) -> ClassInfo:
     """Extract all class data into unified structure"""
     class_info = ClassInfo(name=cls.__name__)
 
-    # Extract base classes
-    for base in cls.__bases__:
-        if base is not object:
-            class_info.bases.append(base)
+    # Use AST for base classes to get exactly what's written
+    ast_bases = ast_info.get('bases', [])
+    if ast_bases:
+        # Convert AST base strings back to actual types for consistent formatting
+        for base_str in ast_bases:
+            # Try to resolve the base class from the actual class
+            for actual_base in cls.__bases__:
+                if actual_base is not object:
+                    class_info.bases.append(actual_base)
+    else:
+        # Fallback to introspection
+        for base in cls.__bases__:
+            if base is not object:
+                class_info.bases.append(base)
 
     # Get ALL type annotations from the class - this is the single source of truth
     all_annotations = {}
@@ -284,7 +329,7 @@ def extract_class_data(cls, ast_info: dict) -> ClassInfo:
                 if name == 'self':
                     continue
 
-                # Use the annotation from the signature, not from class attributes
+                # Use the annotation from the signature
                 field_info = FieldInfo(
                     name=name,
                     type_annotation=param.annotation,
@@ -333,23 +378,6 @@ def extract_class_data(cls, ast_info: dict) -> ClassInfo:
     return class_info
 
 
-def infer_iterable_type(class_info: ClassInfo, imports_needed: set) -> str:
-    """Infer the type parameter for Iterable base class from __iter__ method"""
-    for method in class_info.methods:
-        if method.name == '__iter__' and method.return_annotation:
-            # Format the return annotation properly
-            return_formatted = format_type_annotation(method.return_annotation, imports_needed, class_info.name)
-            if return_formatted.startswith('Iterator[') and return_formatted.endswith(']'):
-                return return_formatted[9:-1]  # Extract from Iterator[...]
-            elif return_formatted == 'Iterator':
-                # If Iterator has no type parameter, try to infer from class name
-                if class_info.name.endswith('s'):  # Results -> Result
-                    singular = class_info.name[:-1]
-                    imports_needed.add("from . import objects")
-                    return f"objects.{singular}"
-    return None
-
-
 def generate_stub_from_class_info(class_info: ClassInfo, imports_needed: set) -> str:
     """Generate stub code from unified class info"""
 
@@ -357,13 +385,6 @@ def generate_stub_from_class_info(class_info: ClassInfo, imports_needed: set) ->
     formatted_bases = []
     for base in class_info.bases:
         base_formatted = format_type_annotation(base, imports_needed, class_info.name)
-
-        # Special handling for Iterable without type parameter
-        if base_formatted == 'Iterable':
-            iterable_type = infer_iterable_type(class_info, imports_needed)
-            if iterable_type:
-                base_formatted = f"Iterable[{iterable_type}]"
-
         formatted_bases.append(base_formatted)
 
     # Build class definition
