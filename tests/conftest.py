@@ -120,7 +120,11 @@ def _setup_requests_mocker(request, requests_mock) -> None:
     def binary_callback(req, _) -> bytes:
         filename = get_filename(req)
 
-        logger.debug(f"[REQUESTMOCK-BIN] {filename.exists()=} -> {filename}")
+        if req.text:
+            logger.debug(f"[REQUESTMOCK] {req} [{req.text}]")
+        else:
+            logger.debug(f"[REQUESTMOCK] {req}")
+        logger.debug(f"[REQUESTMOCK]   ==> {filename} (exists: {filename.exists()})")
         if filename.exists():
             return filename.read_bytes()
 

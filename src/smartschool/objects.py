@@ -156,7 +156,7 @@ class FeedbackFull:
 
 
 @dataclass
-class _Result:
+class Result:
     identifier: String
     type: Literal["normal"]
     name: String
@@ -164,7 +164,7 @@ class _Result:
     date: DateTime
 
     gradebookOwner: Teacher
-    component: Component
+    component: Component | None
     courses: list[Course]
     period: Period
     feedback: list[Feedback]
@@ -172,6 +172,9 @@ class _Result:
     availabilityDate: DateTime
     isPublished: bool
     doesCount: bool
+    deleted: bool = False
+
+    details: ResultDetails | None = None
 
 
 @dataclass
@@ -181,17 +184,6 @@ class ResultDetails:
     dateChanged: DateTime
     userChanged: Teacher
     class_: Class_ = Field(validation_alias=AliasChoices("class", "class_"))
-
-
-@dataclass
-class ResultWithoutDetails(_Result):
-    deleted: bool = False
-
-
-@dataclass
-class ResultWithDetails(_Result):
-    details: ResultDetails
-    deleted: bool = False
 
 
 @dataclass
