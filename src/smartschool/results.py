@@ -1,4 +1,6 @@
-from collections.abc import Iterable, Iterator
+from __future__ import annotations
+
+from collections.abc import Iterable
 from dataclasses import dataclass
 from itertools import count
 
@@ -6,7 +8,12 @@ from . import objects
 
 __all__ = ["Results"]
 
+from typing import TYPE_CHECKING
+
 from .session import SessionMixin
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
 
 RESULTS_PER_PAGE = 50
 

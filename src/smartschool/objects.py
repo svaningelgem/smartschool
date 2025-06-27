@@ -113,8 +113,12 @@ class Component:
     abbreviation: String
 
 
-Teacher = _User
-Student = _User
+@dataclass
+class Teacher(_User): ...
+
+
+@dataclass
+class Student(_User): ...
 
 
 @dataclass
@@ -190,7 +194,7 @@ class ResultDetails:
 class CourseCondensed:
     name: String
     teacher: String
-    url: Url
+    url: Url = Field()
 
     id: int = Field(repr=False, default=None)
     platformId: int = Field(repr=False, default=None)
