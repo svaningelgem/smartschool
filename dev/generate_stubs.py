@@ -10,6 +10,7 @@ import inspect
 import re
 import subprocess
 import sys
+from collections import defaultdict
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -46,7 +47,7 @@ class ClassInfo:
     bases: list[Any] = field(default_factory=list)
     attributes: list[FieldInfo] = field(default_factory=list)
     method_names: list[str] = field(default_factory=list)
-    methods: list[MethodInfo] = field(default_factory=list)
+    methods: list[MethodInfo | str] = field(default_factory=list)
     annotations: dict = field(default_factory=dict)
     init_method: MethodInfo = None
 
@@ -262,7 +263,7 @@ def parse_class_ast_info(file_path: Path) -> tuple[dict[str, ClassInfo], list[st
         if isinstance(node, (ast.Import, ast.ImportFrom)):
             imports.append(_get_import_from_ast(node))
         elif isinstance(node, ast.ClassDef):
-            methods = []
+            methods = defaultdict(list)
             bases = []
             annotations = {}
 
@@ -294,7 +295,7 @@ def parse_class_ast_info(file_path: Path) -> tuple[dict[str, ClassInfo], list[st
             for item in node.body:
                 if isinstance(item, ast.FunctionDef):
                     if not item.name.startswith("_") or re.match("^__.+__$", item.name):  # Don't add hidden functions
-                        methods.append(item.name)
+                        methods[item.name].append(item)
                 elif isinstance(item, ast.AnnAssign) and isinstance(item.target, ast.Name):
                     # Get type annotations as written
                     annotation_str = ast.unparse(item.annotation)
@@ -418,19 +419,29 @@ def extract_class_data(class_info: ClassInfo, imports_needed: set[str], current_
             field_info = FieldInfo(name=name, type_annotation=annotation)
             class_info.attributes.append(field_info)
 
+    # Extract __init__ method signature
+    if hasattr(real_class, "__init__") and real_class.__init__ is not object.__init__:
+        class_info.methods.append(_extract_method_info(real_class, "__init__", imports_needed, current_module))
+
     # Extract other methods from AST
     for method_name in class_info.method_names:
-        if method_name == "__init__":
+        if method_name in ("__init__", "__post_init__"):
             continue
 
         if hasattr(real_class, method_name):
             method = getattr(real_class, method_name)
-            if callable(method):
-                class_info.methods.append(_extract_method_info(real_class, method_name, imports_needed, current_module))
+            if not callable(method):
+                continue
 
-    # Extract __init__ method signature
-    if hasattr(real_class, "__init__") and real_class.__init__ is not object.__init__:
-        class_info.methods.append(_extract_method_info(real_class, "__init__", imports_needed, current_module))
+            ast_methods = class_info.method_names[method_name]
+            if len(ast_methods) == 1:
+                class_info.methods.append(_extract_method_info(real_class, method_name, imports_needed, current_module))
+                continue
+
+            # We need to pass via the ast.FunctionDef here
+            for overloaded_method in ast_methods:
+                overloaded_method.body.clear()
+                class_info.methods.append(ast.unparse(overloaded_method) + " ...")
 
     return class_info
 
@@ -455,9 +466,13 @@ def generate_stub_from_class_info(class_info: ClassInfo, imports_needed: set, cu
     return stub + "\n"
 
 
-def _generate_method_stub(method: MethodInfo | None) -> str:
+def _generate_method_stub(method: MethodInfo | str | None) -> str:
     if not method:
         return ""
+
+    if isinstance(method, str):
+        lines = method.splitlines()
+        return "\n".join(f"{' '*4}{line}" for line in lines) + "\n"
 
     params = []
     for param in method.params:
@@ -544,6 +559,18 @@ def generate_stub_file(python_file: Path) -> str:
     return stub_content
 
 
+def reformat_file(output_file):
+    try:
+        subprocess.run(["ruff", "format", str(output_file)], check=True, capture_output=True)
+        subprocess.run(["ruff", "check", "--select", "I,F,E", "--fix", str(output_file)], check=True,
+                       capture_output=True)
+        logger.info(f"Generated and formatted {output_file}")
+    except subprocess.CalledProcessError as e:
+        logger.warning(f"Generated {output_file} but ruff formatting failed: {e}")
+    except FileNotFoundError:
+        logger.warning(f"Generated {output_file} but ruff not found - install ruff for formatting")
+
+
 def main():
     parser = argparse.ArgumentParser(description="Generate .pyi stub files")
     parser.add_argument("python_file", type=Path, help="Python file to analyze")
@@ -560,18 +587,6 @@ def main():
     stub_content = generate_stub_file(args.python_file)
     output_file.write_text(stub_content)
     reformat_file(output_file)
-
-
-def reformat_file(output_file):
-    try:
-        subprocess.run(["ruff", "format", str(output_file)], check=True, capture_output=True)
-        subprocess.run(["ruff", "check", "--select", "I,F,E", "--fix", str(output_file)], check=True,
-                       capture_output=True)
-        logger.info(f"Generated and formatted {output_file}")
-    except subprocess.CalledProcessError as e:
-        logger.warning(f"Generated {output_file} but ruff formatting failed: {e}")
-    except FileNotFoundError:
-        logger.warning(f"Generated {output_file} but ruff not found - install ruff for formatting")
 
 
 if __name__ == "__main__":

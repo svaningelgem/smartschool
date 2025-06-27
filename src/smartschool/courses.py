@@ -168,7 +168,7 @@ class FileItem(SessionMixin):
         return self.download(target_directory / self.filename, overwrite=overwrite)
 
     @overload
-    def download(self, to_file: Path | str, overwrite: bool) -> Path: ...  # noqa: FBT001
+    def download(self, to_file: Path | str, *, overwrite: bool) -> Path: ...  # noqa: FBT001
 
     @overload
     def download(self) -> bytes: ...
