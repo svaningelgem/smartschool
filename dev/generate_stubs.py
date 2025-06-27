@@ -16,7 +16,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, get_type_hints
 
+import pydantic.fields
 from logprise import logger
+from pydantic_core import PydanticUndefined
 
 if TYPE_CHECKING:
     import types
@@ -60,7 +62,11 @@ def _format_import(annotation: type, current_module: types.ModuleType) -> str:
     current_parts = current_module.__name__.split(".")
     target_parts = module.split(".")
 
-    common_len = next((i for i, (a, b) in enumerate(zip(current_parts, target_parts)) if a != b), min(len(current_parts), len(target_parts)))
+    if current_parts == target_parts:
+        return ""  # Local stuff
+
+    common_len = next((i for i, (a, b) in enumerate(zip(current_parts, target_parts)) if a != b),
+                      min(len(current_parts), len(target_parts)))
 
     if not common_len or len(target_parts) < len(current_parts):
         return f"from {module} import {name}"
@@ -223,7 +229,10 @@ def format_type_annotation(annotation: Any, imports_needed: set, current_module:
     # return type_str
 
 
-def _get_import_from_ast(node: ast.Import | ast.ImportFrom) -> str:
+def _get_import_from_ast(node: ast.AST) -> str:
+    if not isinstance(node, (ast.Import, ast.ImportFrom)):
+        return ""
+
     result = ""
     if isinstance(node, ast.ImportFrom):
         result = f"from {'.' * node.level}{node.module if node.module else ''} import "
@@ -239,13 +248,13 @@ def _get_import_from_ast(node: ast.Import | ast.ImportFrom) -> str:
     return result[:-2]
 
 
-def parse_class_ast_info(file_path: Path) -> tuple[dict[str, ClassInfo], list[str]]:
+def parse_class_ast_info(file_path: Path) -> tuple[dict[str, ClassInfo], list[str], ast.Module | None]:
     """Parse AST to get class structure info as written in source."""
     try:
         tree = ast.parse(file_path.read_bytes())
     except Exception as e:
         logger.error(f"Failed to parse AST: {e}")
-        return {}, []
+        return {}, [], None
 
     class_info: dict[str, ClassInfo] = {}
     imports: list[str] = []
@@ -291,9 +300,10 @@ def parse_class_ast_info(file_path: Path) -> tuple[dict[str, ClassInfo], list[st
                     annotation_str = ast.unparse(item.annotation)
                     annotations[item.target.id] = annotation_str
 
-            class_info[node.name] = ClassInfo(name=node.name, method_names=methods, bases=bases, annotations=annotations)
+            class_info[node.name] = ClassInfo(name=node.name, method_names=methods, bases=bases,
+                                              annotations=annotations)
 
-    return class_info, imports
+    return class_info, imports, tree
 
 
 def load_module_from_file(file_path: Path):
@@ -338,11 +348,14 @@ def load_module_from_file(file_path: Path):
 
 _pydantic_replacements = {
     "String": "str",
+    "Url": "str",
     "DateTime": "datetime",
 }
+_MISSING = object()
 
 
-def _extract_method_info(real_class: type, method_name: str) -> MethodInfo:
+def _extract_method_info(real_class: type, method_name: str, imports_needed: set[str],
+                         current_module: types.ModuleType) -> MethodInfo:
     sig = inspect.signature(getattr(real_class, method_name))
     method_params = []
     for name, param in sig.parameters.items():
@@ -350,18 +363,28 @@ def _extract_method_info(real_class: type, method_name: str) -> MethodInfo:
         if annotation in _pydantic_replacements:
             annotation = _pydantic_replacements[annotation]
 
+        default = param.default
+        if default == inspect.Parameter.empty:
+            default = _MISSING
+        elif isinstance(default, pydantic.fields.FieldInfo):
+            if default.default is PydanticUndefined:
+                default = _MISSING
+            else:
+                assert not default.default_factory
+                default = default.default
+
         field_info = FieldInfo(
             name=name,
             type_annotation=annotation,
-            default_value=param.default if param.default != inspect.Parameter.empty else None,
-            has_default=param.default != inspect.Parameter.empty,
+            default_value=default,
+            has_default=default is not _MISSING,
         )
         method_params.append(field_info)
 
     return MethodInfo(name=method_name, params=method_params, return_annotation=sig.return_annotation)
 
 
-def extract_class_data(class_info: ClassInfo) -> ClassInfo:
+def extract_class_data(class_info: ClassInfo, imports_needed: set[str], current_module: types.ModuleType) -> ClassInfo:
     """Extract all class data into unified structure."""
     # Get ALL type annotations from the class - this is the single source of truth
     all_annotations = {}
@@ -373,7 +396,7 @@ def extract_class_data(class_info: ClassInfo) -> ClassInfo:
         all_annotations.update(type_hints)
         logger.debug(f"Got type hints for {real_class.__name__}: {list(type_hints.keys())}")
     except Exception as e:
-        logger.debug(f"Could not get type hints: {e}")
+        logger.exception(f"Could not get type hints: {e}")
 
     # # Update types from pydantic:
     # if hasattr(real_class, '__dataclass_fields__'):
@@ -395,10 +418,6 @@ def extract_class_data(class_info: ClassInfo) -> ClassInfo:
             field_info = FieldInfo(name=name, type_annotation=annotation)
             class_info.attributes.append(field_info)
 
-    # Extract __init__ method signature
-    if hasattr(real_class, "__init__") and real_class.__init__ is not object.__init__:
-        class_info.init_method = _extract_method_info(real_class, "__init__")
-
     # Extract other methods from AST
     for method_name in class_info.method_names:
         if method_name == "__init__":
@@ -407,7 +426,11 @@ def extract_class_data(class_info: ClassInfo) -> ClassInfo:
         if hasattr(real_class, method_name):
             method = getattr(real_class, method_name)
             if callable(method):
-                class_info.methods.append(_extract_method_info(real_class, method_name))
+                class_info.methods.append(_extract_method_info(real_class, method_name, imports_needed, current_module))
+
+    # Extract __init__ method signature
+    if hasattr(real_class, "__init__") and real_class.__init__ is not object.__init__:
+        class_info.methods.append(_extract_method_info(real_class, "__init__", imports_needed, current_module))
 
     return class_info
 
@@ -427,14 +450,12 @@ def generate_stub_from_class_info(class_info: ClassInfo, imports_needed: set, cu
 
     # Add methods
     for method in class_info.methods:
-        stub += _generate_method_stub(current_module, imports_needed, method)
+        stub += _generate_method_stub(method)
 
-    # Add __init__ method
-    stub += _generate_method_stub(current_module, imports_needed, class_info.init_method)
     return stub + "\n"
 
 
-def _generate_method_stub(current_module: types.ModuleType, imports_needed: set[str], method: MethodInfo | None) -> str:
+def _generate_method_stub(method: MethodInfo | None) -> str:
     if not method:
         return ""
 
@@ -460,15 +481,39 @@ def _generate_method_stub(current_module: types.ModuleType, imports_needed: set[
     return f"    def {method.name}({', '.join(params)}){return_type}: ...\n"
 
 
+def _inject_typechecking_imports(tree: ast.Module, imports: list[str], module: types.ModuleType) -> None:
+    for node in ast.walk(tree):
+        if (
+                isinstance(node, ast.If) and (
+                (isinstance(node.test, ast.Name) and node.test.id == 'TYPE_CHECKING')
+                or (isinstance(node.test, ast.Attribute) and node.test.attr == 'TYPE_CHECKING' and isinstance(
+            node.test.value, ast.Name) and node.test.value.id == 'typing')
+        )):
+            for stmt in ast.walk(node):
+                imports.append(_get_import_from_ast(stmt))  # Ensure the imports are available in the stub
+                if isinstance(stmt, ast.ImportFrom):
+                    for alias in stmt.names:
+                        name = alias.asname or alias.name
+                        if not hasattr(module, name):
+                            setattr(module, name, getattr(importlib.import_module(stmt.module), alias.name))
+                if isinstance(stmt, ast.Import):
+                    for alias in stmt.names:
+                        name = alias.asname or alias.name
+                        if not hasattr(module, name):
+                            setattr(module, name, importlib.import_module(alias.name))
+
+
 def generate_stub_file(python_file: Path) -> str:
     """Generate complete stub file."""
-    classes, imports = parse_class_ast_info(python_file)
+    classes, imports, ast_tree = parse_class_ast_info(python_file)
     module = load_module_from_file(python_file)
     if not module:
         return "# Failed to load module\n"
 
     if not classes:
         return "# No classes found\n"
+
+    _inject_typechecking_imports(ast_tree, imports, module)
 
     # Find all classes
     for name in dir(module):
@@ -480,7 +525,7 @@ def generate_stub_file(python_file: Path) -> str:
 
     # Extract data for all classes
     for cls in classes.values():
-        extract_class_data(cls)
+        extract_class_data(cls, imports_needed, module)
 
     # Generate stub content
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -520,7 +565,8 @@ def main():
 def reformat_file(output_file):
     try:
         subprocess.run(["ruff", "format", str(output_file)], check=True, capture_output=True)
-        subprocess.run(["ruff", "check", "--select", "I,F,E", "--fix", str(output_file)], check=True, capture_output=True)
+        subprocess.run(["ruff", "check", "--select", "I,F,E", "--fix", str(output_file)], check=True,
+                       capture_output=True)
         logger.info(f"Generated and formatted {output_file}")
     except subprocess.CalledProcessError as e:
         logger.warning(f"Generated {output_file} but ruff formatting failed: {e}")
