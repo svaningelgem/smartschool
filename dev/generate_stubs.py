@@ -2,6 +2,7 @@
 """Generate .pyi stub files from Python modules"""
 
 import argparse
+import ast
 import importlib.util
 import inspect
 import sys
@@ -14,6 +15,14 @@ def format_type_annotation(annotation: Any, imports_needed: set) -> str:
     """Format type annotation for stub file and track needed imports"""
     type_str = str(annotation)
 
+    # Handle special typing constructs first
+    if 'Literal[' in type_str:
+        imports_needed.add("from typing import Literal")
+        # Don't modify Literal content - keep original quotes
+
+    if 'datetime.datetime' in type_str:
+        imports_needed.add("import datetime")
+
     # Handle module-qualified types and track imports
     if hasattr(annotation, '__module__') and hasattr(annotation, '__name__'):
         module = annotation.__module__
@@ -24,7 +33,7 @@ def format_type_annotation(annotation: Any, imports_needed: set) -> str:
             module_parts = module.split('.')
             if len(module_parts) >= 2:
                 # e.g., smartschool.session.Smartschool -> from .session import Smartschool
-                if module_parts[-2] in ['session', 'objects']:  # common submodules
+                if module_parts[-2] in ['session', 'objects']:
                     imports_needed.add(f"from .{module_parts[-2]} import {name}")
                     return name
                 # e.g., smartschool.objects.Result -> from . import objects
@@ -39,7 +48,7 @@ def format_type_annotation(annotation: Any, imports_needed: set) -> str:
 
         # Format the origin type
         origin_name = getattr(origin, '__name__', str(origin))
-        if origin_name in ['Iterator', 'Iterable', 'List', 'Dict', 'Optional', 'Union']:
+        if origin_name in ['Iterator', 'Iterable', 'List', 'Dict', 'Optional', 'Union', 'Tuple']:
             imports_needed.add(f"from typing import {origin_name}")
 
         # Format the arguments
@@ -52,8 +61,15 @@ def format_type_annotation(annotation: Any, imports_needed: set) -> str:
         return origin_name
 
     # Extract class names from complex type strings for imports
-    # Look for patterns like "smartschool.objects.ResultGraphic"
     import re
+
+    # Handle objects.* references
+    objects_pattern = r'objects\.(\w+)'
+    objects_matches = re.findall(objects_pattern, type_str)
+    if objects_matches:
+        imports_needed.add("from . import objects")
+
+    # Handle smartschool.* references
     class_pattern = r'smartschool\.(\w+)\.(\w+)'
     matches = re.findall(class_pattern, type_str)
     for submodule, class_name in matches:
@@ -64,17 +80,25 @@ def format_type_annotation(annotation: Any, imports_needed: set) -> str:
             imports_needed.add(f"from .{submodule} import {class_name}")
             type_str = type_str.replace(f'smartschool.{submodule}.{class_name}', class_name)
 
+    # Handle bare class names that should be objects.* (but not if already prefixed)
+    if not re.search(r'objects\.\w+', type_str) and not type_str.startswith('Literal['):
+        bare_class_pattern = r'\b(Result|Course|Teacher|Component|Period|Feedback|FeedbackFull|ResultDetails|ResultGraphic)\b'
+        def replace_with_objects(match):
+            class_name = match.group(1)
+            imports_needed.add("from . import objects")
+            return f"objects.{class_name}"
+
+        type_str = re.sub(bare_class_pattern, replace_with_objects, type_str)
+
     # Type replacements
     replacements = {
         'typing.': '',
         '<class \'': '',
         '\'>': '',
         'builtins.': '',
-        'DateTime': 'datetime',
+        'DateTime': 'datetime.datetime',
         'String': 'str',
-        # Clean up remaining smartschool references
         'smartschool.session.Smartschool': 'Smartschool',
-        'smartschool.objects.': 'objects.',
     }
 
     for old, new in replacements.items():
@@ -83,25 +107,46 @@ def format_type_annotation(annotation: Any, imports_needed: set) -> str:
     return type_str
 
 
+def parse_class_methods_from_ast(file_path: Path) -> dict[str, list[str]]:
+    """Parse class methods from AST to get actual method definitions"""
+    try:
+        with open(file_path) as f:
+            tree = ast.parse(f.read())
+    except Exception as e:
+        logger.error(f"Failed to parse AST: {e}")
+        return {}
+
+    class_methods = {}
+
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ClassDef):
+            methods = []
+            for item in node.body:
+                if isinstance(item, ast.FunctionDef):
+                    # Skip private methods unless they're special methods
+                    if not item.name.startswith('_') or item.name.startswith('__'):
+                        methods.append(item.name)
+            class_methods[node.name] = methods
+
+    return class_methods
+
+
 def load_module_from_file(file_path: Path):
     """Load module with proper package context"""
     file_path = file_path.absolute()
 
     # Set up package context
-    package_root = file_path.parent  # e.g., /path/to/smartschool
-    package_name = package_root.name  # e.g., "smartschool"
-    module_name = file_path.stem  # e.g., "results"
-    full_module_name = f"{package_name}.{module_name}"  # e.g., "smartschool.results"
+    package_root = file_path.parent
+    package_name = package_root.name
+    module_name = file_path.stem
+    full_module_name = f"{package_name}.{module_name}"
 
-    # Add parent of package root to sys.path (so we can import smartschool.*)
+    # Add parent of package root to sys.path
     parent_dir = package_root.parent
     if str(parent_dir) not in sys.path:
         sys.path.insert(0, str(parent_dir))
 
-    logger.debug(f"Package root: {package_root}")
-    logger.debug(f"Package name: {package_name}")
-    logger.debug(f"Full module name: {full_module_name}")
-    logger.debug(f"Added to sys.path: {parent_dir}")
+    logger.debug(f"Loading {full_module_name}")
 
     try:
         # First, ensure the package itself exists in sys.modules
@@ -122,7 +167,6 @@ def load_module_from_file(file_path: Path):
                 sys.modules[package_name] = package_module
 
         # Now load the actual module
-        logger.debug(f"Loading module {full_module_name}")
         spec = importlib.util.spec_from_file_location(full_module_name, file_path)
         if not spec or not spec.loader:
             logger.error(f"Could not create spec for {full_module_name}")
@@ -140,8 +184,8 @@ def load_module_from_file(file_path: Path):
         return None
 
 
-def get_class_info(cls, imports_needed: set) -> dict:
-    """Extract all relevant info from a class"""
+def get_class_info(cls, imports_needed: set, ast_methods: list[str]) -> dict:
+    """Extract all relevant info from a class using both inspection and AST"""
     info = {
         'name': cls.__name__,
         'bases': [],
@@ -153,6 +197,12 @@ def get_class_info(cls, imports_needed: set) -> dict:
     # Get base classes and fix their names
     for base in cls.__bases__:
         if base is not object:
+            # Handle generic base classes first
+            if hasattr(base, '__origin__') and hasattr(base, '__args__'):
+                formatted_base = format_type_annotation(base, imports_needed)
+                info['bases'].append(formatted_base)
+                continue
+
             base_name = base.__name__
 
             # Handle module-qualified base classes
@@ -164,15 +214,25 @@ def get_class_info(cls, imports_needed: set) -> dict:
                 elif 'session' in module and base.__name__ == 'SessionMixin':
                     imports_needed.add("from .session import SessionMixin")
                     base_name = "SessionMixin"
-                elif base.__name__ in ['Iterable', 'Iterator', 'List', 'Dict']:
+                elif base.__name__ in ['Iterable', 'Iterator', 'List', 'Dict', 'Tuple']:
                     imports_needed.add(f"from typing import {base.__name__}")
 
-            # Handle generic base classes like Iterable[Result]
-            if hasattr(base, '__origin__') and hasattr(base, '__args__'):
-                formatted_base = format_type_annotation(base, imports_needed)
-                info['bases'].append(formatted_base)
-            else:
-                info['bases'].append(base_name)
+                    # Try to infer generic type for common patterns
+                    if base.__name__ == 'Iterable':
+                        # Look for __iter__ method to infer type
+                        if hasattr(cls, '__iter__'):
+                            try:
+                                iter_sig = inspect.signature(cls.__iter__)
+                                if iter_sig.return_annotation != inspect.Signature.empty:
+                                    return_type = format_type_annotation(iter_sig.return_annotation, imports_needed)
+                                    # Extract type from Iterator[Type]
+                                    if return_type.startswith('Iterator[') and return_type.endswith(']'):
+                                        inner_type = return_type[9:-1]  # Extract from Iterator[...]
+                                        base_name = f"Iterable[{inner_type}]"
+                            except Exception as e:
+                                logger.debug(f"Could not infer Iterable type: {e}")
+
+            info['bases'].append(base_name)
 
     # Get all attributes with type hints
     try:
@@ -192,21 +252,43 @@ def get_class_info(cls, imports_needed: set) -> dict:
                 else:
                     info['attributes'][field_name] = 'Any'
 
-    # Get important methods (like __iter__)
-    for method_name in ['__iter__', '__next__', '__len__', '__getitem__']:
+    # Get methods that are actually defined in this class (from AST)
+    for method_name in ast_methods:
         if hasattr(cls, method_name):
             method = getattr(cls, method_name)
-            if callable(method) and method is not getattr(object, method_name, None):
+            if callable(method):
                 try:
                     sig = inspect.signature(method)
                     return_annotation = sig.return_annotation
+
+                    # Build parameter list
+                    params = []
+                    for param_name, param in sig.parameters.items():
+                        if param_name == 'self':
+                            continue
+                        param_str = param_name
+                        if param.annotation != inspect.Parameter.empty:
+                            param_str += f": {format_type_annotation(param.annotation, imports_needed)}"
+                        if param.default != inspect.Parameter.empty:
+                            if isinstance(param.default, str):
+                                param_str += f' = "{param.default}"'
+                            elif param.default is None:
+                                param_str += ' = None'
+                            else:
+                                param_str += f' = {param.default}'
+                        params.append(param_str)
+
+                    return_type = 'None'
                     if return_annotation != inspect.Signature.empty:
-                        formatted_return = format_type_annotation(return_annotation, imports_needed)
-                        info['methods'][method_name] = formatted_return
-                    else:
-                        info['methods'][method_name] = 'Any'
+                        return_type = format_type_annotation(return_annotation, imports_needed)
+
+                    info['methods'][method_name] = {
+                        'params': params,
+                        'return_type': return_type
+                    }
                 except Exception as e:
                     logger.debug(f"Could not get signature for {method_name}: {e}")
+                    info['methods'][method_name] = {'params': [], 'return_type': 'Any'}
 
     # Get __init__ signature if custom
     if info['has_init']:
@@ -256,28 +338,34 @@ def generate_class_stub(class_info: dict) -> str:
         for attr_name, attr_type in attributes.items():
             stub += f"    {attr_name}: {attr_type}\n"
 
-    # Add important methods
-    for method_name, return_type in methods.items():
-        if method_name == '__iter__':
-            stub += f"    def __iter__(self) -> {return_type}: ...\n"
-        elif method_name == '__next__':
-            stub += f"    def __next__(self) -> {return_type}: ...\n"
-        elif method_name == '__len__':
-            stub += f"    def __len__(self) -> {return_type}: ...\n"
-        elif method_name == '__getitem__':
-            stub += f"    def __getitem__(self, key) -> {return_type}: ...\n"
+    # Add methods (excluding __init__ which is handled separately)
+    for method_name, method_info in methods.items():
+        if method_name == '__init__':
+            continue
+
+        params_str = ', '.join(['self'] + method_info['params'])
+        return_type = method_info['return_type']
+
+        if len(params_str) > 80:  # Multi-line for long signatures
+            stub += f"    def {method_name}(\n"
+            stub += "        self,\n"
+            for param in method_info['params']:
+                stub += f"        {param},\n"
+            stub += f"    ) -> {return_type}: ...\n"
+        else:
+            stub += f"    def {method_name}({params_str}) -> {return_type}: ...\n"
 
     # Add __init__ if present
     if class_info['has_init'] and 'init_params' in class_info:
         params = ['self'] + class_info['init_params']
-        if len(params) <= 3:  # Simple case
-            stub += f"    def __init__({', '.join(params)}) -> None: ...\n"
-        else:  # Multi-line
+        if len(', '.join(params)) > 80:  # Multi-line
             stub += "    def __init__(\n"
             stub += "        self,\n"
             for param in class_info['init_params']:
                 stub += f"        {param},\n"
             stub += "    ) -> None: ...\n"
+        else:
+            stub += f"    def __init__({', '.join(params)}) -> None: ...\n"
     elif not attributes and not methods:  # No attributes or methods, add basic init
         stub += "    def __init__(self, **kwargs) -> None: ...\n"
 
@@ -286,6 +374,11 @@ def generate_class_stub(class_info: dict) -> str:
 
 def generate_stub_file(python_file: Path) -> str:
     """Generate complete stub file"""
+    # Parse AST to get method definitions
+    class_methods_ast = parse_class_methods_from_ast(python_file)
+    logger.debug(f"AST methods: {class_methods_ast}")
+
+    # Load the module
     module = load_module_from_file(python_file)
     if not module:
         return "# Failed to load module\n"
@@ -310,12 +403,13 @@ def generate_stub_file(python_file: Path) -> str:
     class_infos = []
     for cls in classes:
         try:
-            class_info = get_class_info(cls, imports_needed)
+            ast_methods = class_methods_ast.get(cls.__name__, [])
+            class_info = get_class_info(cls, imports_needed, ast_methods)
             class_infos.append(class_info)
-            logger.debug(f"Class {cls.__name__} attributes: {list(class_info['attributes'].keys())}")
+            logger.debug(f"Class {cls.__name__} - attributes: {list(class_info['attributes'].keys())}, methods: {list(class_info['methods'].keys())}")
         except Exception as e:
             logger.error(f"Failed to process {cls.__name__}: {e}")
-            class_infos.append({'name': cls.__name__, 'bases': [], 'attributes': {}, 'has_init': False})
+            class_infos.append({'name': cls.__name__, 'bases': [], 'attributes': {}, 'methods': {}, 'has_init': False})
 
     # Generate stub content
     stub_content = "# Auto-generated stub file\n"
