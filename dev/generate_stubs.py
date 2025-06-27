@@ -41,26 +41,34 @@ def format_type_annotation(annotation: Any, imports_needed: set) -> str:
     if annotation is None or annotation == inspect.Parameter.empty or annotation == inspect.Signature.empty:
         return 'Any'
 
-    type_str = str(annotation)
-
-    # Handle special typing constructs first
+    # Handle typing module imports dynamically
     if hasattr(annotation, '__module__') and annotation.__module__ == 'typing':
-        if hasattr(annotation, '_name'):
-            type_name = annotation._name
-            if type_name in ['Literal', 'Union', 'Optional', 'List', 'Dict', 'Tuple']:
-                imports_needed.add(f"from typing import {type_name}")
-        elif 'Literal[' in type_str:
-            imports_needed.add("from typing import Literal")
+        if hasattr(annotation, '_name') and annotation._name:
+            imports_needed.add(f"from typing import {annotation._name}")
+        elif hasattr(annotation, '__name__'):
+            imports_needed.add(f"from typing import {annotation.__name__}")
 
+    # Handle collections.abc imports
+    if hasattr(annotation, '__module__') and annotation.__module__ == 'collections.abc':
+        if hasattr(annotation, '__name__'):
+            imports_needed.add(f"from typing import {annotation.__name__}")
+
+    # Get the string representation - this preserves the original formatting
+    if hasattr(annotation, '__module__') and hasattr(annotation, '__qualname__'):
+        # For proper type objects, use their string representation which preserves quotes
+        type_str = repr(annotation).replace('typing.', '')
+    else:
+        type_str = str(annotation)
+
+    # Handle datetime
     if 'datetime.datetime' in type_str:
         imports_needed.add("import datetime")
 
-    # Handle module-qualified types and track imports
+    # Handle module-qualified types from our package
     if hasattr(annotation, '__module__') and hasattr(annotation, '__name__'):
         module = annotation.__module__
         name = annotation.__name__
 
-        # Handle types from same package (relative imports)
         if module and '.' in module:
             module_parts = module.split('.')
             if len(module_parts) >= 2:
@@ -71,15 +79,26 @@ def format_type_annotation(annotation: Any, imports_needed: set) -> str:
                     imports_needed.add("from . import objects")
                     return f"objects.{name}"
 
-    # Handle generic types (like Iterable[Result])
+    # Handle generic types recursively
     if hasattr(annotation, '__origin__') and hasattr(annotation, '__args__'):
         origin = annotation.__origin__
         args = annotation.__args__
 
-        origin_name = getattr(origin, '__name__', str(origin))
-        if origin_name in ['Iterator', 'Iterable', 'List', 'Dict', 'Optional', 'Union', 'Tuple']:
-            imports_needed.add(f"from typing import {origin_name}")
+        # Import the origin type
+        if hasattr(origin, '__module__'):
+            if origin.__module__ == 'typing':
+                if hasattr(origin, '_name') and origin._name:
+                    imports_needed.add(f"from typing import {origin._name}")
+                elif hasattr(origin, '__name__'):
+                    imports_needed.add(f"from typing import {origin.__name__}")
+            elif origin.__module__ == 'collections.abc':
+                if hasattr(origin, '__name__'):
+                    imports_needed.add(f"from typing import {origin.__name__}")
 
+        # Get origin name
+        origin_name = getattr(origin, '_name', None) or getattr(origin, '__name__', str(origin))
+
+        # Format arguments recursively
         if args:
             formatted_args = []
             for arg in args:
@@ -88,7 +107,7 @@ def format_type_annotation(annotation: Any, imports_needed: set) -> str:
 
         return origin_name
 
-    # Extract class names for imports
+    # Extract class names for imports using regex
     import re
 
     # Handle objects.* references
@@ -107,7 +126,7 @@ def format_type_annotation(annotation: Any, imports_needed: set) -> str:
             type_str = type_str.replace(f'smartschool.{submodule}.{class_name}', class_name)
 
     # Handle bare class names that should be objects.*
-    if not re.search(r'objects\.\w+', type_str) and not type_str.startswith('Literal'):
+    if not re.search(r'objects\.\w+', type_str) and not type_str.startswith(('Literal', 'Union', 'Optional')):
         bare_class_pattern = r'\b(Result|Course|Teacher|Component|Period|Feedback|FeedbackFull|ResultDetails|ResultGraphic)\b'
         def replace_with_objects(match):
             class_name = match.group(1)
@@ -116,7 +135,7 @@ def format_type_annotation(annotation: Any, imports_needed: set) -> str:
 
         type_str = re.sub(bare_class_pattern, replace_with_objects, type_str)
 
-    # Type replacements
+    # Clean up common replacements
     replacements = {
         'typing.': '',
         '<class \'': '',
@@ -339,14 +358,7 @@ def generate_stub_from_class_info(class_info: ClassInfo, imports_needed: set) ->
             params.append(param_str)
 
         return_type = format_type_annotation(method.return_annotation, imports_needed)
-
-        if len(', '.join(params)) > 80:
-            stub += f"    def {method.name}(\n"
-            for param in params:
-                stub += f"        {param},\n"
-            stub += f"    ) -> {return_type}: ...\n"
-        else:
-            stub += f"    def {method.name}({', '.join(params)}) -> {return_type}: ...\n"
+        stub += f"    def {method.name}({', '.join(params)}) -> {return_type}: ...\n"
 
     # Add __init__ method
     if class_info.init_method:
@@ -364,13 +376,7 @@ def generate_stub_from_class_info(class_info: ClassInfo, imports_needed: set) ->
                     param_str += f' = {param.default_value}'
             params.append(param_str)
 
-        if len(', '.join(params)) > 80:
-            stub += "    def __init__(\n"
-            for param in params:
-                stub += f"        {param},\n"
-            stub += "    ) -> None: ...\n"
-        else:
-            stub += f"    def __init__({', '.join(params)}) -> None: ...\n"
+        stub += f"    def __init__({', '.join(params)}) -> None: ...\n"
     elif not class_info.attributes and not class_info.methods:
         stub += "    def __init__(self, **kwargs) -> None: ...\n"
 
@@ -379,6 +385,8 @@ def generate_stub_from_class_info(class_info: ClassInfo, imports_needed: set) ->
 
 def generate_stub_file(python_file: Path) -> str:
     """Generate complete stub file"""
+    from datetime import datetime
+
     class_methods_ast = parse_class_methods_from_ast(python_file)
     module = load_module_from_file(python_file)
     if not module:
@@ -405,7 +413,8 @@ def generate_stub_file(python_file: Path) -> str:
         class_infos.append(class_info)
 
     # Generate stub content
-    stub_content = "# Auto-generated stub file\n"
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    stub_content = f"# Auto-generated stub file\n# Generated on {now}\n"
 
     # Generate stubs and collect imports
     class_stubs = []
