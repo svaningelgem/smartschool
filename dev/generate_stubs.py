@@ -104,6 +104,28 @@ def load_module_with_fallback(file_path: Path):
 
 
 def get_classes_from_file(file_path: Path) -> list[tuple[str, type]]:
+    """Extract actual import statements from the file"""
+    import_lines = []
+    try:
+        with open(file_path) as f:
+            tree = ast.parse(f.read())
+
+        for node in ast.walk(tree):
+            if isinstance(node, ast.ImportFrom):
+                if node.module:
+                    for alias in node.names:
+                        import_lines.append(f"from {node.module} import {alias.name}")
+                else:  # relative import
+                    level = "." * node.level
+                    for alias in node.names:
+                        import_lines.append(f"from {level} import {alias.name}")
+            elif isinstance(node, ast.Import):
+                for alias in node.names:
+                    import_lines.append(f"import {alias.name}")
+    except Exception as e:
+        logger.debug(f"Could not parse imports: {e}")
+
+    return import_lines
     """Extract all class definitions from a Python file"""
     try:
         with open(file_path) as f:
@@ -138,13 +160,24 @@ def get_classes_from_file(file_path: Path) -> list[tuple[str, type]]:
 
 def get_pydantic_base_class(cls):
     """Find the objects.<ClassName> base class if it exists"""
+    logger.debug(f"Checking bases for {cls.__name__}: {[base.__name__ for base in cls.__mro__]}")
+
     for base in cls.__mro__:
         if hasattr(base, '__module__') and base.__module__:
             module_parts = base.__module__.split('.')
-            if 'objects' in module_parts:
-                # Check if this is a pydantic model
-                if hasattr(base, 'model_fields'):
-                    return base
+            logger.debug(f"Base {base.__name__} module: {base.__module__}")
+
+            # Check if this is a pydantic model
+            if hasattr(base, 'model_fields') and base.model_fields:
+                logger.debug(f"Found pydantic base: {base.__name__} with fields: {list(base.model_fields.keys())}")
+                return base
+
+            # Also check for objects module pattern
+            if 'objects' in module_parts and hasattr(base, 'model_fields'):
+                logger.debug(f"Found objects.* pydantic base: {base.__name__}")
+                return base
+
+    logger.debug(f"No pydantic base found for {cls.__name__}")
     return None
 
 
@@ -201,8 +234,10 @@ def generate_class_stub(class_name: str, cls: type) -> str:
     pydantic_base = get_pydantic_base_class(cls)
 
     if not pydantic_base:
-        # No pydantic base class found, generate basic stub
+        logger.debug(f"No pydantic base for {class_name}, generating basic stub")
         return f"class {class_name}:\n    def __init__(self, **kwargs) -> None: ...\n\n"
+
+    logger.debug(f"Generating full stub for {class_name} with pydantic base {pydantic_base.__name__}")
 
     # Generate full stub with pydantic fields
     base_classes = []
@@ -210,28 +245,39 @@ def generate_class_stub(class_name: str, cls: type) -> str:
 
     for base in cls.__mro__[1:]:  # Skip the class itself
         if base.__name__ != 'object':
-            if hasattr(base, '__module__') and 'objects' in base.__module__:
-                base_classes.append(f"objects.{base.__name__}")
-            elif base.__name__ == 'SessionMixin':
-                base_classes.append('SessionMixin')
-                additional_init_params.append('session: Session')
-            else:
-                base_classes.append(base.__name__)
+            if hasattr(base, '__module__') and base.__module__:
+                if 'objects' in base.__module__:
+                    base_classes.append(f"objects.{base.__name__}")
+                elif base.__name__ == 'SessionMixin':
+                    base_classes.append('SessionMixin')
+                    additional_init_params.append('session: Session')
+                elif not base.__module__.startswith('builtins'):
+                    base_classes.append(base.__name__)
 
     inheritance = f"({', '.join(base_classes)})" if base_classes else ""
 
     stub_content = f"class {class_name}{inheritance}:\n"
 
     # Add session field if SessionMixin is inherited
-    if 'SessionMixin' in base_classes:
+    if any('SessionMixin' in base for base in base_classes):
         stub_content += "    session: Session\n"
 
     # Add fields from pydantic model
-    if hasattr(pydantic_base, 'model_fields'):
-        type_hints = get_type_hints(pydantic_base)
-        for field_name, field_type in type_hints.items():
-            type_str = format_type_annotation(field_type)
-            stub_content += f"    {field_name}: {type_str}\n"
+    if hasattr(pydantic_base, 'model_fields') and pydantic_base.model_fields:
+        try:
+            type_hints = get_type_hints(pydantic_base)
+            logger.debug(f"Type hints for {pydantic_base.__name__}: {list(type_hints.keys())}")
+
+            for field_name, field_type in type_hints.items():
+                type_str = format_type_annotation(field_type)
+                stub_content += f"    {field_name}: {type_str}\n"
+        except Exception as e:
+            logger.error(f"Failed to get type hints for {pydantic_base.__name__}: {e}")
+            # Fallback to model_fields
+            for field_name, field_info in pydantic_base.model_fields.items():
+                annotation = getattr(field_info, 'annotation', 'Any')
+                type_str = format_type_annotation(annotation)
+                stub_content += f"    {field_name}: {type_str}\n"
 
     # Generate __init__ method
     init_signature = generate_init_signature(pydantic_base, additional_init_params)
@@ -248,20 +294,18 @@ def generate_stub_file(python_file: Path) -> str:
         logger.warning("No classes found")
         return "# No classes found\n"
 
+    # Extract actual imports from the original file
+    actual_imports = extract_imports_from_file(python_file)
+    logger.debug(f"Found imports: {actual_imports}")
+
     stub_content = "# Auto-generated stub file\n"
     stub_content += "from typing import Any, Literal\n"
 
-    # Try to detect actual imports needed
-    try:
-        with open(python_file) as f:
-            content = f.read()
-            if 'SessionMixin' in content:
-                stub_content += "from . import SessionMixin\n"
-            if 'objects.' in content:
-                stub_content += "from . import objects\n"
-    except Exception as e:
-        logger.debug(f"Could not analyze imports: {e}")
-        stub_content += "# Add necessary imports here\n"
+    # Add the actual imports found in the file
+    for import_line in actual_imports:
+        # Skip certain imports that might cause issues in stub files
+        if not any(skip in import_line for skip in ['__future__', 'typing_extensions']):
+            stub_content += f"{import_line}\n"
 
     stub_content += "\n"
 
