@@ -14,25 +14,92 @@ from logprise import logger
 def load_module_from_file(file_path: Path):
     """Load a Python module from file path"""
     try:
-        # Add the file's directory to sys.path to handle relative imports
-        file_dir = file_path.parent.absolute()
-        if str(file_dir) not in sys.path:
-            sys.path.insert(0, str(file_dir))
+        file_path = file_path.absolute()
+        file_dir = file_path.parent
 
-        spec = importlib.util.spec_from_file_location("temp_module", file_path)
+        # Add parent directories to sys.path to help with imports
+        current_dir = file_dir
+        while current_dir != current_dir.parent:
+            if str(current_dir) not in sys.path:
+                sys.path.insert(0, str(current_dir))
+            current_dir = current_dir.parent
+
+        # Try to determine package structure
+        package_parts = []
+        check_dir = file_dir
+        while check_dir != check_dir.parent and (check_dir / "__init__.py").exists():
+            package_parts.insert(0, check_dir.name)
+            check_dir = check_dir.parent
+
+        if package_parts:
+            # Create package context
+            package_name = ".".join(package_parts)
+            module_name = f"{package_name}.{file_path.stem}"
+
+            # Ensure parent packages exist in sys.modules
+            for i in range(len(package_parts)):
+                parent_package = ".".join(package_parts[:i+1])
+                if parent_package not in sys.modules:
+                    parent_spec = importlib.util.spec_from_file_location(
+                        parent_package,
+                        check_dir / "/".join(package_parts[:i+1]) / "__init__.py"
+                    )
+                    if parent_spec and parent_spec.loader:
+                        parent_module = importlib.util.module_from_spec(parent_spec)
+                        sys.modules[parent_package] = parent_module
+                        parent_spec.loader.exec_module(parent_module)
+        else:
+            module_name = f"temp_module_{file_path.stem}"
+
+        spec = importlib.util.spec_from_file_location(module_name, file_path)
         if not spec or not spec.loader:
             logger.error(f"Could not create module spec for {file_path}")
             return None
 
         module = importlib.util.module_from_spec(spec)
-        sys.modules["temp_module"] = module
+        sys.modules[module_name] = module
         spec.loader.exec_module(module)
         return module
+
     except ImportError as e:
         logger.error(f"Import error loading {file_path}: {e}")
-        return None
+        # Try fallback approach - temporarily modify the file
+        return load_module_with_fallback(file_path)
     except Exception as e:
         logger.exception(f"Unexpected error loading module {file_path}")
+        return None
+
+
+def load_module_with_fallback(file_path: Path):
+    """Fallback: temporarily replace relative imports with absolute ones"""
+    try:
+        with open(file_path, 'r') as f:
+            content = f.read()
+
+        # Simple pattern replacement for common relative imports
+        modified_content = content
+        modified_content = modified_content.replace('from . import', 'try:\n    from . import')
+        modified_content = modified_content.replace('from .', 'try:\n    from .')
+
+        # Add except clauses
+        lines = modified_content.split('\n')
+        new_lines = []
+        for line in lines:
+            new_lines.append(line)
+            if line.strip().startswith('try:') and ('from .' in line):
+                new_lines.append('except ImportError:')
+                new_lines.append('    pass')
+
+        modified_content = '\n'.join(new_lines)
+
+        # Create temporary module
+        spec = importlib.util.spec_from_loader("temp_fallback", loader=None)
+        module = importlib.util.module_from_spec(spec)
+        exec(modified_content, module.__dict__)
+        return module
+
+    except Exception as e:
+        logger.debug(f"Fallback loading also failed: {e}")
         return None
 
 
