@@ -1,0 +1,100 @@
+[
+  {
+    "identifier": "3323_8386_0_normal_783599",
+    "type": "normal",
+    "name": "Huistaak 9",
+    "graphic": {
+      "type": "percentage",
+      "color": "olive",
+      "value": 94,
+      "description": "15\/16"
+    },
+    "date": "2025-02-21T00:00:00+01:00",
+    "gradebookOwner": {
+      "id": "3323_3809_0",
+      "pictureHash": "initials_KV",
+      "pictureUrl": "https:\/\/userpicture10.smartschool.be\/User\/Userimage\/hashimage\/hash\/initials_KV\/plain\/1\/res\/128",
+      "description": {
+        "startingWithFirstName": "",
+        "startingWithLastName": ""
+      },
+      "name": {
+        "startingWithFirstName": "Karen Verscheure",
+        "startingWithLastName": "Verscheure Karen"
+      },
+      "sort": "verscheure-karen",
+      "deleted": false
+    },
+    "component": null,
+    "courses": [
+      {
+        "id": 1197,
+        "name": "Wiskunde",
+        "graphic": {
+          "type": "icon",
+          "value": "drawing_utensils"
+        },
+        "teachers": [
+          {
+            "id": "3323_3809_0",
+            "pictureHash": "initials_KV",
+            "pictureUrl": "https:\/\/userpicture10.smartschool.be\/User\/Userimage\/hashimage\/hash\/initials_KV\/plain\/1\/res\/128",
+            "description": {
+              "startingWithFirstName": "",
+              "startingWithLastName": ""
+            },
+            "name": {
+              "startingWithFirstName": "Karen Verscheure",
+              "startingWithLastName": "Verscheure Karen"
+            },
+            "sort": "verscheure-karen",
+            "deleted": false
+          }
+        ],
+        "class": {
+          "identifier": "3323_6579",
+          "id": 6579,
+          "platformId": 3323,
+          "name": "CVTI 5TWE",
+          "type": "K",
+          "icon": "briefcase"
+        },
+        "skoreClassId": 5663,
+        "parentCourseId": 1209,
+        "skoreWorkYear": {
+          "id": 25,
+          "dateRange": {
+            "start": "2024-09-01T00:00:00+02:00",
+            "end": "2025-08-31T00:00:00+02:00"
+          }
+        }
+      }
+    ],
+    "period": {
+      "id": 1411,
+      "name": "DW jan-jun",
+      "icon": "cal_purple_generic_week",
+      "class": {
+        "identifier": "3323_6579",
+        "id": 6579,
+        "platformId": 3323,
+        "name": "CVTI 5TWE",
+        "type": "K",
+        "icon": "briefcase"
+      },
+      "skoreWorkYear": {
+        "id": 25,
+        "dateRange": {
+          "start": "2024-09-01T00:00:00+02:00",
+          "end": "2025-08-31T00:00:00+02:00"
+        }
+      },
+      "isActive": true
+    },
+    "feedback": [],
+    "feedbacks": [],
+    "availabilityDate": "2025-02-25T18:00:00+01:00",
+    "isPublished": true,
+    "doesCount": false
+  }
+]
