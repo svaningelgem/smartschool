@@ -19,7 +19,9 @@ class CourseCondensed(objects.CourseCondensed, SessionMixin):
     platformId: int
     descr: str
     icon: str
-    def __init__(self, session: Smartschool, name: str, teacher: str, url: str, id: int | None = None, platformId: int | None = None, descr: str = "", icon: str = ""): ...
+    def __init__(
+        self, session: Smartschool, name: str, teacher: str, url: str, id: int | None = None, platformId: int | None = None, descr: str = "", icon: str = ""
+    ): ...
     def __str__(self): ...
 
 class TopNavCourses(SessionMixin):

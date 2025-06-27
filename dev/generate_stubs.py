@@ -42,13 +42,13 @@ class MethodInfo:
 @dataclass
 class ClassInfo:
     name: str
-    real_class: type = None
+    real_class: type | None = None
     bases: list[Any] = field(default_factory=list)
     attributes: list[FieldInfo] = field(default_factory=list)
-    method_names: list[str] = field(default_factory=list)
+    method_names: dict[str, list[ast.FunctionDef]] = field(default_factory=lambda: defaultdict(list))
     methods: list[MethodInfo | str] = field(default_factory=list)
     annotations: dict = field(default_factory=dict)
-    init_method: MethodInfo = None
+    init_method: MethodInfo | None = None
 
 
 def _format_import(annotation: type, current_module: types.ModuleType) -> str:
@@ -352,7 +352,7 @@ _pydantic_replacements = {
 _MISSING = object()
 
 
-def _extract_method_info(real_class: type, method_name: str, imports_needed: set[str], current_module: types.ModuleType) -> MethodInfo:
+def _extract_method_info(real_class: type, method_name: str) -> MethodInfo:
     sig = inspect.signature(getattr(real_class, method_name))
     method_params = []
     for name, param in sig.parameters.items():
@@ -417,7 +417,7 @@ def extract_class_data(class_info: ClassInfo, imports_needed: set[str], current_
 
     # Extract __init__ method signature
     if hasattr(real_class, "__init__") and real_class.__init__ is not object.__init__:
-        class_info.methods.append(_extract_method_info(real_class, "__init__", imports_needed, current_module))
+        class_info.methods.append(_extract_method_info(real_class, "__init__"))
 
     # Extract other methods from AST
     for method_name in class_info.method_names:
@@ -431,7 +431,7 @@ def extract_class_data(class_info: ClassInfo, imports_needed: set[str], current_
 
             ast_methods = class_info.method_names[method_name]
             if len(ast_methods) == 1:
-                class_info.methods.append(_extract_method_info(real_class, method_name, imports_needed, current_module))
+                class_info.methods.append(_extract_method_info(real_class, method_name))
                 continue
 
             # We need to pass via the ast.FunctionDef here
@@ -577,7 +577,7 @@ def main():
 
     if not args.python_file.exists():
         logger.error(f"File {args.python_file} does not exist")
-        return 1
+        return
 
     output_file = args.output or args.python_file.with_suffix(".pyi")
 
