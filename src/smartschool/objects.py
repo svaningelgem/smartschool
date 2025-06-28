@@ -196,8 +196,8 @@ class CourseCondensed:
     teacher: String
     url: Url = Field()
 
-    id: int = Field(repr=False, default=None)
-    platformId: int = Field(repr=False, default=None)
+    id: int | None = Field(repr=False, default=None)
+    platformId: int | None = Field(repr=False, default=None)
 
     descr: String = Field(repr=False, default="")
     icon: String = Field(repr=False, default="")
@@ -531,3 +531,14 @@ class ApplicableAssignmentType:
     abbreviation: String
     isVisible: bool
     weight: float
+
+
+@dataclass
+class Report:
+    id: int
+    name: String
+    icon: String
+    date: DateTime
+    downloadUrl: Url
+    class_: Class_ = Field(validation_alias=AliasChoices("class", "class_"))
+    schoolyearLabel: String = Field()

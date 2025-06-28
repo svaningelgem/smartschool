@@ -1,4 +1,17 @@
+scripts/list_all_agenda text eol=lf
 scripts/list_all_courses text eol=lf
+scripts/list_all_future_tasks text eol=lf
+scripts/list_all_results text eol=lf
+scripts/smartschool_browse_docs text eol=lf
+scripts/smartschool_cache.sqlite text eol=lf
+scripts/smartschool_download_all_documents text eol=lf
+scripts/smartschool_report_on_future_tasks text eol=lf
+scripts/smartschool_report_on_planned_tasks text eol=lf
+scripts/smartschool_report_on_results text eol=lf
+
 scripts/smartschool_report_on_future_tasks text eol=lf
 scripts/smartschool_report_on_results text eol=lf
-*.py text eol=lf
+
+**/*.py text eol=lf
+run text eol=lf
+restub text eol=lf

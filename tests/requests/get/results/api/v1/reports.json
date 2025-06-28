@@ -1,0 +1,82 @@
+[
+  {
+    "id": 5578,
+    "name": "Rapport 1",
+    "icon": "document_certificate",
+    "date": "2024-10-25T16:00:00+02:00",
+    "downloadUrl": "\/skore\/api\/v1\/reports\/5578\/student\/10880\/class\/49_6634\/download",
+    "class": {
+      "identifier": "49_6634",
+      "id": 6634,
+      "platformId": 49,
+      "name": "4CNW",
+      "type": "K",
+      "icon": "briefcase"
+    },
+    "schoolyearLabel": "2024-2025"
+  },
+  {
+    "id": 5580,
+    "name": "Rapport 2",
+    "icon": "document_certificate",
+    "date": "2024-12-20T08:00:00+01:00",
+    "downloadUrl": "\/skore\/api\/v1\/reports\/5580\/student\/10880\/class\/49_6634\/download",
+    "class": {
+      "identifier": "49_6634",
+      "id": 6634,
+      "platformId": 49,
+      "name": "4CNW",
+      "type": "K",
+      "icon": "briefcase"
+    },
+    "schoolyearLabel": "2024-2025"
+  },
+  {
+    "id": 5586,
+    "name": "Rapport 3",
+    "icon": "document_certificate",
+    "date": "2025-02-28T16:00:00+01:00",
+    "downloadUrl": "\/skore\/api\/v1\/reports\/5586\/student\/10880\/class\/49_6634\/download",
+    "class": {
+      "identifier": "49_6634",
+      "id": 6634,
+      "platformId": 49,
+      "name": "4CNW",
+      "type": "K",
+      "icon": "briefcase"
+    },
+    "schoolyearLabel": "2024-2025"
+  },
+  {
+    "id": 5582,
+    "name": "Rapport 4",
+    "icon": "document_certificate",
+    "date": "2025-04-04T16:00:00+02:00",
+    "downloadUrl": "\/skore\/api\/v1\/reports\/5582\/student\/10880\/class\/49_6634\/download",
+    "class": {
+      "identifier": "49_6634",
+      "id": 6634,
+      "platformId": 49,
+      "name": "4CNW",
+      "type": "K",
+      "icon": "briefcase"
+    },
+    "schoolyearLabel": "2024-2025"
+  },
+  {
+    "id": 5588,
+    "name": "Rapport 5",
+    "icon": "document_certificate",
+    "date": "2025-05-28T16:00:00+02:00",
+    "downloadUrl": "\/skore\/api\/v1\/reports\/5588\/student\/10880\/class\/49_6634\/download",
+    "class": {
+      "identifier": "49_6634",
+      "id": 6634,
+      "platformId": 49,
+      "name": "4CNW",
+      "type": "K",
+      "icon": "briefcase"
+    },
+    "schoolyearLabel": "2024-2025"
+  }
+]

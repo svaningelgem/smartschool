@@ -15,24 +15,44 @@ class CourseCondensed(objects.CourseCondensed, SessionMixin):
     name: str
     teacher: str
     url: str
-    id: int
-    platformId: int
+    id: int | None
+    platformId: int | None
     descr: str
     icon: str
     def __init__(
-        self, session: Smartschool, name: str, teacher: str, url: str, id: int | None = None, platformId: int | None = None, descr: str = "", icon: str = ""
+        self,
+        session: Smartschool,
+        name: str,
+        teacher: str,
+        url: str,
+        id: int | None = None,
+        platformId: int | None = None,
+        descr: str = "",
+        icon: str = "",
     ): ...
-    def __str__(self): ...
+    def __str__(
+        self,
+    ): ...
 
 class TopNavCourses(SessionMixin):
     session: Smartschool
-    def __init__(self, session: Smartschool): ...
-    def __iter__(self) -> Iterator[CourseCondensed]: ...
+    def __init__(
+        self,
+        session: Smartschool,
+    ): ...
+    def __iter__(
+        self,
+    ) -> Iterator[CourseCondensed]: ...
 
 class Courses(SessionMixin):
     session: Smartschool
-    def __init__(self, session: Smartschool): ...
-    def __iter__(self) -> Iterator[Course]: ...
+    def __init__(
+        self,
+        session: Smartschool,
+    ): ...
+    def __iter__(
+        self,
+    ) -> Iterator[Course]: ...
 
 class FileItem(SessionMixin):
     session: Smartschool
@@ -56,7 +76,11 @@ class FileItem(SessionMixin):
         download_url: str | None = None,
         view_url: str | None = None,
     ): ...
-    def download_to_dir(self, target_directory: Path, overwrite: bool = False) -> Path: ...
+    def download_to_dir(
+        self,
+        target_directory: Path,
+        overwrite: bool = False,
+    ) -> Path: ...
     @overload
     def download(self, to_file: Path | str, *, overwrite: bool) -> Path: ...
     @overload
@@ -94,4 +118,11 @@ class FolderItem(SessionMixin):
     course: CourseCondensed
     name: str
     browse_url: str | None
-    def __init__(self, session: Smartschool, parent: FolderItem | None, course: CourseCondensed, name: str, browse_url: str | None = None): ...
+    def __init__(
+        self,
+        session: Smartschool,
+        parent: FolderItem | None,
+        course: CourseCondensed,
+        name: str,
+        browse_url: str | None = None,
+    ): ...

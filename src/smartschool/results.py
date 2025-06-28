@@ -3,17 +3,18 @@ from __future__ import annotations
 from collections.abc import Iterable
 from dataclasses import dataclass
 from itertools import count
-
-from . import objects
-
-__all__ = ["Results"]
-
 from typing import TYPE_CHECKING
 
+from . import objects
 from .session import SessionMixin
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
+
+__all__ = ["Results"]
 
 RESULTS_PER_PAGE = 50
 

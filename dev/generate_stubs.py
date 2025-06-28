@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+import collections.abc
 import importlib.util
 import inspect
 import re
@@ -58,6 +59,9 @@ def _format_import(annotation: type, current_module: types.ModuleType) -> str:
 
     if module == "builtins":
         return ""
+
+    if module == "typing" and getattr(collections.abc, name, None) is not None:
+        module = "collections.abc"
 
     current_parts = current_module.__name__.split(".")
     target_parts = module.split(".")
@@ -215,6 +219,7 @@ def load_module_from_file(file_path: Path):
 
         spec = importlib.util.spec_from_file_location(full_module_name, file_path)
         if not spec or not spec.loader:
+            logger.warning(f"Failed to load module {full_module_name} from {file_path}")
             return None
 
         module = importlib.util.module_from_spec(spec)
@@ -340,12 +345,12 @@ def generate_stub_from_class_info(class_info: ClassInfo, imports_needed: set, cu
 
     # Add methods
     for method in class_info.methods:
-        stub += _generate_method_stub(method)
+        stub += _generate_method_stub(method, imports_needed, current_module)
 
     return stub + "\n"
 
 
-def _generate_method_stub(method: MethodInfo | str | None) -> str:
+def _generate_method_stub(method: MethodInfo | str | None, imports_needed: set[str], current_module: types.ModuleType) -> str:
     if not method:
         return ""
 
@@ -368,11 +373,14 @@ def _generate_method_stub(method: MethodInfo | str | None) -> str:
         params.append(param_str)
 
     if method.return_annotation and method.return_annotation is not inspect.Signature.empty:
-        return_type = f" -> {method.return_annotation}"
+        if isinstance(method.return_annotation, str):
+            return_type = f" -> {method.return_annotation}"
+        else:
+            return_type = f" -> {format_type_annotation(method.return_annotation, imports_needed, current_module)}"
     else:
         return_type = ""
 
-    return f"    def {method.name}({', '.join(params)}){return_type}: ...\n"
+    return f"    def {method.name}({', '.join(params)},){return_type}: ...\n"
 
 
 def _inject_typechecking_imports(tree: ast.Module, imports: list[str], module: types.ModuleType) -> None:
@@ -405,10 +413,10 @@ def generate_stub_file(python_file: Path) -> str:
     classes, imports, ast_tree = parse_class_ast_info(python_file)
     module = load_module_from_file(python_file)
     if not module:
-        return "# Failed to load module\n"
+        raise ModuleNotFoundError(f"Failed to load module {python_file}")
 
     if not classes:
-        return "# No classes found\n"
+        raise ValueError("No classes found")
 
     _inject_typechecking_imports(ast_tree, imports, module)
 
@@ -418,7 +426,7 @@ def generate_stub_file(python_file: Path) -> str:
         if inspect.isclass(obj) and obj.__module__ == module.__name__:
             classes[obj.__name__].real_class = obj
 
-    imports_needed = set()
+    imports_needed = set(imports)
 
     # Extract data for all classes
     for cls in classes.values():
@@ -442,31 +450,48 @@ def generate_stub_file(python_file: Path) -> str:
 
 def reformat_file(output_file):
     try:
-        subprocess.run(["ruff", "format", str(output_file)], check=True, capture_output=True)
-        subprocess.run(["ruff", "check", "--select", "I,F,E", "--fix", str(output_file)], check=True, capture_output=True)
+        subprocess.run(
+            ["ruff", "format", str(output_file)],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+        )
+        subprocess.run(
+            ["ruff", "check", "--select", "I,F,E", "--fix", "--unsafe-fixes", str(output_file)],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+        )
         logger.info(f"Generated and formatted {output_file}")
     except subprocess.CalledProcessError as e:
         logger.warning(f"Generated {output_file} but ruff formatting failed: {e}")
+        for line in e.output.splitlines():
+            logger.warning(line)
     except FileNotFoundError:
         logger.warning(f"Generated {output_file} but ruff not found - install ruff for formatting")
 
 
 def main():
     parser = argparse.ArgumentParser(description="Generate .pyi stub files")
-    parser.add_argument("python_file", type=Path, help="Python file to analyze")
-    parser.add_argument("-o", "--output", type=Path, help="Output .pyi file")
+    parser.add_argument("python_files", nargs="+", type=Path, help="Python file to analyze")
 
     args = parser.parse_args()
 
-    if not args.python_file.exists():
-        logger.error(f"File {args.python_file} does not exist")
-        return
+    for file in args.python_files:
+        file = file.resolve().absolute()
+        if file.suffix == ".pyi":
+            file = file.with_suffix(".py")
 
-    output_file = args.output or args.python_file.with_suffix(".pyi")
+        if not file.exists():
+            logger.error(f"File {file} does not exist")
+            continue
 
-    stub_content = generate_stub_file(args.python_file)
-    output_file.write_text(stub_content)
-    reformat_file(output_file)
+        stub_content = generate_stub_file(file)
+        output_file = file.with_suffix(".pyi")
+        output_file.write_text(stub_content)
+        reformat_file(output_file)
 
 
 if __name__ == "__main__":
