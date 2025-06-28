@@ -40,12 +40,6 @@ jobs:
 
 
   generate-stubs:
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ ubuntu-latest ]
-        python-version: [ "3.11" ]
-
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
     steps:
@@ -55,16 +49,16 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.head_ref }}
 
-      - name: Set up Python ${{ matrix.python-version }}
+      - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: 3.11
 
       - name: cache poetry install
         uses: actions/cache@v4
         with:
           path: ~/.local
-          key: poetry-${{ matrix.os }}-${{ matrix.python-version }}
+          key: poetry-ubuntu-latest-3.11
 
       - name: Install Poetry
         uses: snok/install-poetry@v1
@@ -77,10 +71,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .venv
-          key: venv-${{ matrix.os }}-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
+          key: venv-ubuntu-latest-3.11-${{ hashFiles('**/poetry.lock') }}
 
       - name: Install dependencies
-        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: poetry install --no-interaction --no-root
 
       - name: Install ${{ github.event.repository.name }}
