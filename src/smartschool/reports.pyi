@@ -1,5 +1,4 @@
 # Auto-generated stub file
-
 from collections.abc import Iterable, Iterator
 from datetime import datetime
 

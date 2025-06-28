@@ -196,8 +196,8 @@ class CourseCondensed:
     teacher: String
     url: Url = Field()
 
-    id: int = Field(repr=False, default=None)
-    platformId: int = Field(repr=False, default=None)
+    id: int | None = Field(repr=False, default=None)
+    platformId: int | None = Field(repr=False, default=None)
 
     descr: String = Field(repr=False, default="")
     icon: String = Field(repr=False, default="")

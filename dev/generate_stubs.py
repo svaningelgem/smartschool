@@ -451,7 +451,13 @@ def generate_stub_file(python_file: Path) -> str:
 
 def reformat_file(output_file):
     try:
-        subprocess.run(["ruff", "format", str(output_file)], check=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,)
+        subprocess.run(
+            ["ruff", "format", str(output_file)],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+        )
         subprocess.run(
             ["ruff", "check", "--select", "I,F,E", "--fix", "--unsafe-fixes", str(output_file)],
             check=True,
