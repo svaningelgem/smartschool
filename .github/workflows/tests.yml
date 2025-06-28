@@ -78,10 +78,9 @@ jobs:
 
       - name: Install ${{ github.event.repository.name }}
         run: poetry install --no-interaction
-      - name: list installed packages
-        run: pip list
+
       - name: Generate stubs
-        run: ./restub
+        run: poetry run ./restub
 
       - name: Check for changes
         id: check-changes
