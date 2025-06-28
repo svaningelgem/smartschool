@@ -26,8 +26,8 @@ class CourseCondensed(objects.CourseCondensed, SessionMixin):
         name: str,
         teacher: str,
         url: str,
-        id: int = None,
-        platformId: int = None,
+        id: int | None = None,
+        platformId: int | None = None,
         descr: str = "",
         icon: str = "",
     ): ...

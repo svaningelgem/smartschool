@@ -19,6 +19,7 @@ from .messages import (
 )
 from .periods import Periods
 from .planner import ApplicableAssignmentTypes, PlannedElements
+from .reports import Report, Reports
 from .results import Result, Results
 from .session import Smartschool
 from .student_support import StudentSupportLinks
@@ -50,6 +51,8 @@ __all__ = [
     "PathCredentials",
     "Periods",
     "PlannedElements",
+    "Report",
+    "Reports",
     "Result",
     "Results",
     "SmartSchoolAuthenticationError",

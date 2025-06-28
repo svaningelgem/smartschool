@@ -4,6 +4,8 @@ from dataclasses import dataclass
 from . import objects
 from .session import SessionMixin
 
+__all__ = ["Report", "Reports"]
+
 
 @dataclass
 class Report(objects.Report, SessionMixin):

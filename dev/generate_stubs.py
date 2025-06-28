@@ -11,7 +11,6 @@ import inspect
 import re
 import subprocess
 import sys
-import typing
 from collections import defaultdict
 from collections.abc import Sequence
 from dataclasses import dataclass, field
