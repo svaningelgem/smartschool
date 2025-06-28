@@ -78,7 +78,6 @@ jobs:
 
 
   tests:
-    needs: generate-stubs
     strategy:
       fail-fast: false
       matrix:
