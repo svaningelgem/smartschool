@@ -1,3 +1,10 @@
+# 0.7.1
+* Updating README
+
+# 0.7.0
+* Adding `Report` integration
+* type hints for `Result` and `Course` in IDE
+
 # 0.6.0
 * Major rework of the session system: you'll need to provide it now for each instantiation instead of initialiating it once. (global vs local) The advantage here is that you can have multiple concurrent sessions at once.
 * Added ability to fetch documents from the courses. (see `smartschool_browse_docs` & `smartschool_dwnload_all_documents` scripts)
