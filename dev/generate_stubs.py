@@ -413,10 +413,10 @@ def generate_stub_file(python_file: Path) -> str:
     classes, imports, ast_tree = parse_class_ast_info(python_file)
     module = load_module_from_file(python_file)
     if not module:
-        return "# Failed to load module\n"
+        raise ModuleNotFoundError(f"Failed to load module {python_file}")
 
     if not classes:
-        return "# No classes found\n"
+        raise ValueError("No classes found")
 
     _inject_typechecking_imports(ast_tree, imports, module)
 
