@@ -1,5 +1,4 @@
 # Auto-generated stub file
-
 from __future__ import annotations
 
 from collections.abc import Iterable, Iterator
@@ -48,17 +47,9 @@ class Result(objects.Result, SessionMixin):
         deleted: bool = False,
         details: ResultDetails | None = None,
     ): ...
-    def __getattribute__(
-        self,
-        name: str,
-    ): ...
+    def __getattribute__(self, name: str): ...
 
 class Results(SessionMixin, Iterable[Result]):
     session: Smartschool
-    def __init__(
-        self,
-        session: Smartschool,
-    ): ...
-    def __iter__(
-        self,
-    ) -> Iterator[Result]: ...
+    def __init__(self, session: Smartschool): ...
+    def __iter__(self) -> Iterator[Result]: ...

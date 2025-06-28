@@ -6,7 +6,13 @@ from itertools import count
 from typing import TYPE_CHECKING
 
 from . import objects
+
+from typing import TYPE_CHECKING
+
 from .session import SessionMixin
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
