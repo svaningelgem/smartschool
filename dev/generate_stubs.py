@@ -10,6 +10,7 @@ import inspect
 import re
 import subprocess
 import sys
+import typing
 from collections import defaultdict
 from collections.abc import Sequence
 from dataclasses import dataclass, field
@@ -58,6 +59,10 @@ def _format_import(annotation: type, current_module: types.ModuleType) -> str:
 
     if module == "builtins":
         return ""
+
+    if module == "collections.abc":
+        if getattr(typing, name, None) is not None:
+            module = "typing"
 
     current_parts = current_module.__name__.split(".")
     target_parts = module.split(".")
@@ -340,12 +345,12 @@ def generate_stub_from_class_info(class_info: ClassInfo, imports_needed: set, cu
 
     # Add methods
     for method in class_info.methods:
-        stub += _generate_method_stub(method)
+        stub += _generate_method_stub(method, imports_needed, current_module)
 
     return stub + "\n"
 
 
-def _generate_method_stub(method: MethodInfo | str | None) -> str:
+def _generate_method_stub(method: MethodInfo | str | None, imports_needed: set[str], current_module: types.ModuleType) -> str:
     if not method:
         return ""
 
@@ -368,11 +373,14 @@ def _generate_method_stub(method: MethodInfo | str | None) -> str:
         params.append(param_str)
 
     if method.return_annotation and method.return_annotation is not inspect.Signature.empty:
-        return_type = f" -> {method.return_annotation}"
+        if isinstance(method.return_annotation, str):
+            return_type = f" -> {method.return_annotation}"
+        else:
+            return_type = f" -> {format_type_annotation(method.return_annotation, imports_needed, current_module)}"
     else:
         return_type = ""
 
-    return f"    def {method.name}({', '.join(params)}){return_type}: ...\n"
+    return f"    def {method.name}({', '.join(params)},){return_type}: ...\n"
 
 
 def _inject_typechecking_imports(tree: ast.Module, imports: list[str], module: types.ModuleType) -> None:
@@ -418,7 +426,7 @@ def generate_stub_file(python_file: Path) -> str:
         if inspect.isclass(obj) and obj.__module__ == module.__name__:
             classes[obj.__name__].real_class = obj
 
-    imports_needed = set()
+    imports_needed = set(imports)
 
     # Extract data for all classes
     for cls in classes.values():
@@ -433,7 +441,6 @@ def generate_stub_file(python_file: Path) -> str:
         stub = generate_stub_from_class_info(class_info, imports_needed, module)
         class_stubs.append(stub)
 
-    stub_content += "\n".join(imports) + "\n"
     stub_content += "\n".join(imports_needed) + "\n"
     stub_content += "\n".join(class_stubs) + "\n"
 
@@ -442,11 +449,19 @@ def generate_stub_file(python_file: Path) -> str:
 
 def reformat_file(output_file):
     try:
-        subprocess.run(["ruff", "format", str(output_file)], check=True, capture_output=True)
-        subprocess.run(["ruff", "check", "--select", "I,F,E", "--fix", str(output_file)], check=True, capture_output=True)
+        subprocess.run(["ruff", "format", str(output_file)], check=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+        subprocess.run(
+            ["ruff", "check", "--select", "I,F,E", "--fix", "--unsafe-fixes", str(output_file)],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+        )
         logger.info(f"Generated and formatted {output_file}")
     except subprocess.CalledProcessError as e:
         logger.warning(f"Generated {output_file} but ruff formatting failed: {e}")
+        for line in e.output.splitlines():
+            logger.warning(line)
     except FileNotFoundError:
         logger.warning(f"Generated {output_file} but ruff not found - install ruff for formatting")
 

@@ -531,3 +531,14 @@ class ApplicableAssignmentType:
     abbreviation: String
     isVisible: bool
     weight: float
+
+
+@dataclass
+class Report:
+    id: int
+    name: String
+    icon: String
+    date: DateTime
+    downloadUrl: Url
+    class_: Class_ = Field(validation_alias=AliasChoices("class", "class_"))
+    schoolyearLabel: String = Field()
