@@ -52,7 +52,7 @@ jobs:
           python-version: "3.11"
 
       - name: Install pydantic
-        run: pip install pydantic
+        run: pip install pydantic logprise
 
       - name: Generate stubs
         run: ./restub

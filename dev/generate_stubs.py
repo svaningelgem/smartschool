@@ -60,9 +60,8 @@ def _format_import(annotation: type, current_module: types.ModuleType) -> str:
     if module == "builtins":
         return ""
 
-    if module == "typing":
-        if getattr(collections.abc, name, None) is not None:
-            module = "collections.abc"
+    if module == "typing" and getattr(collections.abc, name, None) is not None:
+        module = "collections.abc"
 
     current_parts = current_module.__name__.split(".")
     target_parts = module.split(".")
