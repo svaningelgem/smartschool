@@ -1,4 +1,5 @@
 # Auto-generated stub file
+
 from __future__ import annotations
 
 from collections.abc import Iterable, Iterator

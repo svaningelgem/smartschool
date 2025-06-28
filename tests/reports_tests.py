@@ -1,5 +1,3 @@
-
-
 from smartschool import Smartschool
 from smartschool.reports import Reports
 

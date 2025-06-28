@@ -55,9 +55,7 @@ jobs:
         run: pip install pydantic
 
       - name: Generate stubs
-        run: |
-          pyi_files=$(find src/smartschool -name "*.pyi" -type f)
-          python dev/generate_stubs.py $pyi_files
+        run: ./restub
 
       - name: Check for changes
         id: check-changes

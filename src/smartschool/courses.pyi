@@ -1,4 +1,5 @@
 # Auto-generated stub file
+
 from __future__ import annotations
 
 from collections.abc import Iterator
@@ -25,8 +26,8 @@ class CourseCondensed(objects.CourseCondensed, SessionMixin):
         name: str,
         teacher: str,
         url: str,
-        id: int | None = None,
-        platformId: int | None = None,
+        id: int = None,
+        platformId: int = None,
         descr: str = "",
         icon: str = "",
     ): ...

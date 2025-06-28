@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+import collections.abc
 import importlib.util
 import inspect
 import re
@@ -60,9 +61,9 @@ def _format_import(annotation: type, current_module: types.ModuleType) -> str:
     if module == "builtins":
         return ""
 
-    if module == "collections.abc":
-        if getattr(typing, name, None) is not None:
-            module = "typing"
+    if module == "typing":
+        if getattr(collections.abc, name, None) is not None:
+            module = "collections.abc"
 
     current_parts = current_module.__name__.split(".")
     target_parts = module.split(".")
@@ -220,6 +221,7 @@ def load_module_from_file(file_path: Path):
 
         spec = importlib.util.spec_from_file_location(full_module_name, file_path)
         if not spec or not spec.loader:
+            logger.warning(f"Failed to load module {full_module_name} from {file_path}")
             return None
 
         module = importlib.util.module_from_spec(spec)
@@ -468,20 +470,23 @@ def reformat_file(output_file):
 
 def main():
     parser = argparse.ArgumentParser(description="Generate .pyi stub files")
-    parser.add_argument("python_file", type=Path, help="Python file to analyze")
-    parser.add_argument("-o", "--output", type=Path, help="Output .pyi file")
+    parser.add_argument("python_files", nargs="+", type=Path, help="Python file to analyze")
 
     args = parser.parse_args()
 
-    if not args.python_file.exists():
-        logger.error(f"File {args.python_file} does not exist")
-        return
+    for file in args.python_files:
+        file = file.resolve().absolute()
+        if file.suffix == ".pyi":
+            file = file.with_suffix(".py")
 
-    output_file = args.output or args.python_file.with_suffix(".pyi")
+        if not file.exists():
+            logger.error(f"File {file} does not exist")
+            continue
 
-    stub_content = generate_stub_file(args.python_file)
-    output_file.write_text(stub_content)
-    reformat_file(output_file)
+        stub_content = generate_stub_file(file)
+        output_file = file.with_suffix(".pyi")
+        output_file.write_text(stub_content)
+        reformat_file(output_file)
 
 
 if __name__ == "__main__":
