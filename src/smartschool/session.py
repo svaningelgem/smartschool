@@ -150,10 +150,32 @@ class Smartschool(Session):
         elif not self._is_auth_url(response.url):  # Original was login, and this is not anymore
             self._reset_login_attempts()
 
+        # Save response with incremental counter
+        self._save_response(response, method, full_url)
+
         # Save cookies
         self.cookies.save(ignore_discard=True)
 
         return response
+
+    def _save_response(self, response: Response, method: str, url: str) -> None:
+        """Save response content with incremental counter."""
+        return # Dummy code for quick enabling of debugging.
+
+        global _response_counter
+        try:
+            _response_counter += 1
+        except NameError:
+            _response_counter = 1
+
+        filename = f"{_response_counter:04d}_{method.lower()}_{response.status_code}.html"
+        filepath = Path.cwd() / filename
+
+        with filepath.open("w", encoding="utf-8") as f:
+            f.write(f"<!-- URL: {url} -->\n")
+            f.write(f"<!-- Status: {response.status_code} -->\n")
+            f.write(f"<!-- Method: {method} -->\n\n")
+            f.write(response.text)
 
     def json(self, url, method: str = "get", **kwargs) -> dict:
         """Handle JSON responses with potential double encoding."""
