@@ -321,20 +321,20 @@ files = [
 
 [[package]]
 name = "logprise"
-version = "1.3.0"
+version = "1.3.1"
 description = "A package integrating loguru and apprise for logging and notifications"
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "logprise-1.3.0-py3-none-any.whl", hash = "sha256:4bbe7de96045ec47428d6e366eb8808ba926e8494a1aa559c48e86b12f0d3f30"},
-    {file = "logprise-1.3.0.tar.gz", hash = "sha256:6d2c847522335d8f5b359e3000834ad847b4ed8472015bc9e03af2b0ef8049e3"},
+    {file = "logprise-1.3.1-py3-none-any.whl", hash = "sha256:a5fe3c382c2e606a1d610010f87ce235e80dc36839dde5c3ea2f0b319bf0b35c"},
+    {file = "logprise-1.3.1.tar.gz", hash = "sha256:5547d8f20731c361280d6e972ff58b2d05bf8c769cbcc780392a85cd41fa51bb"},
 ]
 
 [package.dependencies]
 apprise = "*"
 loguru = "*"
-urllib3 = "<2"
+urllib3 = "<3"
 
 [[package]]
 name = "loguru"
