@@ -5,8 +5,6 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import TYPE_CHECKING, Callable
 
-from requests import Session
-
 if TYPE_CHECKING:
     from requests.models import PreparedRequest, Response
 
@@ -28,7 +26,7 @@ class DevTracingMixin:
             return response
 
     def _save_trace(self, method: str, url: str, kwargs: dict, response: Response = None, error: BaseException | None = None) -> None:
-        """Save detailed request trace to file in human-readable format."""
+        """Save detailed request trace to a file in human-readable format."""
         if not self.dev_tracing:
             return
 

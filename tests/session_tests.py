@@ -6,6 +6,7 @@ import requests
 import yaml
 
 from smartschool import Smartschool, SmartSchoolAuthenticationError
+from smartschool.exceptions import SmartSchoolJsonError
 
 
 def test_smartschool_not_started_yet():
@@ -285,7 +286,7 @@ class TestErrorHandling:
         """Should handle invalid JSON gracefully."""
         requests_mock.get("https://site/api/invalid", text="not json")
 
-        with pytest.raises(json.JSONDecodeError):
+        with pytest.raises(SmartSchoolJsonError):
             session.json("/api/invalid")
 
     def test_request_with_invalid_url(self, session):

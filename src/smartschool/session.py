@@ -4,7 +4,6 @@ import contextlib
 import json
 import re
 from dataclasses import dataclass, field
-from datetime import datetime
 from functools import cached_property
 from http.cookiejar import LoadError, LWPCookieJar
 from pathlib import Path
@@ -17,7 +16,7 @@ from requests import Session
 
 from ._dev_tracing import DevTracingMixin
 from .common import bs4_html, fill_form
-from .exceptions import SmartSchoolAuthenticationError
+from .exceptions import SmartSchoolAuthenticationError, SmartSchoolDownloadError, SmartSchoolJsonError
 
 if TYPE_CHECKING:
     from requests import Response
@@ -168,11 +167,19 @@ class Smartschool(Session, DevTracingMixin):
                 url += ("&" if "?" in url else "?") + data
             r = self.request("GET", url, **kwargs)
 
+        if r.status_code != 200:
+            raise SmartSchoolDownloadError("Failed to retrieve the json", r) from None
+
         json_ = r.text
         while isinstance(json_, str):
             if not json_:
                 return {}
-            json_ = json.loads(json_)
+
+            try:
+                json_ = json.loads(json_)
+            except json.JSONDecodeError:
+                raise SmartSchoolJsonError("Failed to decode the json", r) from None
+
         return json_
 
     def _do_login(self, response: Response) -> Response:
@@ -186,7 +193,7 @@ class Smartschool(Session, DevTracingMixin):
                 "password": self.creds.password,
             },
         )
-        return self._make_traced_request(super().request,"POST", response.url, data=data, allow_redirects=True)
+        return self._make_traced_request(super().request, "POST", response.url, data=data, allow_redirects=True)
 
     def _do_login_verification(self, response: Response) -> Response:
         """Handle account verification (birthday)."""
@@ -198,7 +205,7 @@ class Smartschool(Session, DevTracingMixin):
                 "security_question_answer": self.creds.mfa,
             },
         )
-        return self._make_traced_request(super().request,"POST", response.url, data=data, allow_redirects=True)
+        return self._make_traced_request(super().request, "POST", response.url, data=data, allow_redirects=True)
 
     def _complete_verification_2fa(self) -> Response:
         """Handle 2FA verification using TOTP."""
@@ -208,7 +215,7 @@ class Smartschool(Session, DevTracingMixin):
         logger.info(f"2FA verification for {self.creds.username}")
 
         # Check 2FA config
-        config_resp = self._make_traced_request(super().request,"GET", self.create_url("/2fa/api/v1/config"), allow_redirects=True)
+        config_resp = self._make_traced_request(super().request, "GET", self.create_url("/2fa/api/v1/config"), allow_redirects=True)
         config_resp.raise_for_status()
 
         if config_resp.status_code != 200:
@@ -222,7 +229,7 @@ class Smartschool(Session, DevTracingMixin):
         totp = pyotp.TOTP(self.creds.mfa)
         data = f'{{"google2fa":"{totp.now()}"}}'
 
-        return self._make_traced_request(super().request,"POST", self.create_url("/2fa/api/v1/google-authenticator"), data=data, allow_redirects=True)
+        return self._make_traced_request(super().request, "POST", self.create_url("/2fa/api/v1/google-authenticator"), data=data, allow_redirects=True)
 
     def _parse_login_information(self, response: Response) -> None:
         """Parse authenticated user information from response."""
