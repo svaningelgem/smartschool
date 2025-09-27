@@ -19,7 +19,7 @@ from .common import (
     parse_size,
     save_test_response,
 )
-from .exceptions import SmartSchoolException, SmartSchoolParsingError
+from .exceptions import SmartSchoolException, SmartSchoolJsonError, SmartSchoolParsingError
 from .objects import Course
 from .session import SessionMixin
 
@@ -87,7 +87,14 @@ class Courses(SessionMixin):
 
     @cached_property
     def _list(self) -> list[Course]:
-        return [Course(**course) for course in self.session.json("/results/api/v1/courses/")]
+        try:
+            # This endpoint only works when there are results available. Before that it'll show a blank page.
+            return [Course(**course) for course in self.session.json("/results/api/v1/courses/")]
+        except SmartSchoolJsonError as e:
+            raise SmartSchoolJsonError(
+                "Failed to fetch the courses. Maybe there are no results available yet?  Please try the `TopNavCourses` class as an alternative.",
+                e.response,
+            ) from e
 
     def __iter__(self) -> Iterator[Course]:
         yield from self._list
