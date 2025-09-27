@@ -48,53 +48,75 @@ class DevTracingMixin(abc.ABC):
         filepath.parent.mkdir(parents=True, exist_ok=True)
 
         with filepath.open("w") as f:
-            f.write("=" * 60 + "\n")
-            f.write(f"TRACE #{self._trace_counter} - {datetime.now()}\n")
-            f.write("=" * 60 + "\n")
-
-            # Call context
-            f.write("CALL CONTEXT\n")
-            f.write("-" * 40 + "\n")
-            stack = traceback.extract_stack()[:-1]  # Exclude current frame
-            for frame in stack[-3:]:  # Last 3 frames
-                f.write(f"  {frame.filename}:{frame.lineno} in {frame.name}\n")
-
-            # Authentication state
-            f.write(f"\nAuth state: {hasattr(self, '_login_attempts') and getattr(self, '_login_attempts', 0)} login attempts\n")
-            f.write(f"Has credentials: {self.creds is not None}\n")
-            f.write(f"Session cookies count: {len(self.cookies) if hasattr(self, 'cookies') else 0}\n")
-
-            f.write("\n" + "=" * 60 + "\n")
-            f.write("REQUEST\n")
-            f.write("=" * 60 + "\n")
-            f.write(f"Method: {method}\n")
-            f.write(f"URL: {url}\n")
-
-            f.write("kwargs:\n")
-            for key, value in kwargs.items():
-                f.write(f"  {key}: {value}\n")
+            self._write_header(f)
+            self._write_call_context(f)
+            self._write_auth_state(f)
+            self._write_request(f, method, url, kwargs)
 
             if response is not None:
                 self._write_response_details(f, response, "RESPONSE")
 
             if error is not None:
-                f.write("\n" + "=" * 60 + "\n")
-                f.write("ERROR\n")
-                f.write("=" * 60 + "\n")
-                f.write(f"Exception Type: {type(error).__name__}\n")
-                f.write(f"Exception Message: {error!s}\n")
+                self._write_error(f, error)
 
-                f.write("Full Traceback:\n")
-                f.write("-" * 40 + "\n")
-                f.write(traceback.format_exc())
-                f.write("-" * 40 + "\n")
+            self._write_footer(f)
 
-                if hasattr(error, "response") and error.response is not None:
-                    self._write_response_details(f, error.response, "ERROR RESPONSE")
+    def _write_header(self, f) -> None:
+        """Write the trace header."""
+        f.write("=" * 60 + "\n")
+        f.write(f"TRACE #{self._trace_counter} - {datetime.now()}\n")
+        f.write("=" * 60 + "\n")
 
-            f.write("\n" + "=" * 60 + "\n")
-            f.write("END TRACE\n")
-            f.write("=" * 60 + "\n")
+    def _write_call_context(self, f) -> None:
+        """Write the call context from the stack trace."""
+        f.write("CALL CONTEXT\n")
+        f.write("-" * 40 + "\n")
+        stack = traceback.extract_stack()[:-1]  # Exclude current frame
+        for frame in stack[-3:]:  # Last 3 frames
+            f.write(f"  {frame.filename}:{frame.lineno} in {frame.name}\n")
+
+    def _write_auth_state(self, f) -> None:
+        """Write the authentication state."""
+        login_attempts = getattr(self, "_login_attempts", 0)
+        has_creds = getattr(self, "creds", None) is not None
+        cookies_count = len(getattr(self, "cookies", []))
+        f.write(f"\nAuth state: {login_attempts} login attempts\n")
+        f.write(f"Has credentials: {has_creds}\n")
+        f.write(f"Session cookies count: {cookies_count}\n")
+
+    def _write_request(self, f, method: str, url: str, kwargs: dict) -> None:
+        """Write the request details."""
+        f.write("\n" + "=" * 60 + "\n")
+        f.write("REQUEST\n")
+        f.write("=" * 60 + "\n")
+        f.write(f"Method: {method}\n")
+        f.write(f"URL: {url}\n")
+
+        f.write("kwargs:\n")
+        for key, value in kwargs.items():
+            f.write(f"  {key}: {value}\n")
+
+    def _write_error(self, f, error: BaseException) -> None:
+        """Write the error details."""
+        f.write("\n" + "=" * 60 + "\n")
+        f.write("ERROR\n")
+        f.write("=" * 60 + "\n")
+        f.write(f"Exception Type: {type(error).__name__}\n")
+        f.write(f"Exception Message: {str(error)}\n")
+
+        f.write("Full Traceback:\n")
+        f.write("-" * 40 + "\n")
+        f.write(traceback.format_exc())
+        f.write("-" * 40 + "\n")
+
+        if hasattr(error, "response") and error.response is not None:
+            self._write_response_details(f, error.response, "ERROR RESPONSE")
+
+    def _write_footer(self, f) -> None:
+        """Write the trace footer."""
+        f.write("\n" + "=" * 60 + "\n")
+        f.write("END TRACE\n")
+        f.write("=" * 60 + "\n")
 
     def _write_response_details(self, f, response: Response, title: str) -> None:
         """Write response details to a trace file."""
