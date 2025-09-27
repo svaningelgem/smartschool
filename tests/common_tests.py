@@ -214,7 +214,7 @@ def test_multi_forms():
     """,
         features="html.parser",
     )
-    with pytest.raises(AssertionError, match="We should have only 1 form. We got 2!"):
+    with pytest.raises(AssertionError, match=re.escape("We should have only 1 form. We got 2!")):
         get_all_values_from_form(html, "form")
 
 

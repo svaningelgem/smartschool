@@ -19,7 +19,7 @@ def test_periods_happy_flow(session: Smartschool):
 
 @time_machine.travel("2025-05-06")
 def test_planned_elements_till_date(session: Smartschool):
-    sut = list(PlannedElements(session, till_date=date(2025,5,7)))
+    sut = list(PlannedElements(session, till_date=date(2025, 5, 7)))
 
     assert len(sut) == 1
 

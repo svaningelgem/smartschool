@@ -1,6 +1,5 @@
 import pytest
 import pytest_mock
-from more_itertools.more import side_effect
 
 from smartschool import Courses, Smartschool, TopNavCourses
 from smartschool.exceptions import SmartSchoolJsonError
@@ -23,4 +22,4 @@ def test_courses_normal_flow(session: Smartschool):
 def test_courses_no_results_available_yet(session: Smartschool, mocker: pytest_mock.MockerFixture):
     mocker.patch.object(session, "json", side_effect=SmartSchoolJsonError("msg", mocker.Mock()))
     with pytest.raises(SmartSchoolJsonError, match="Failed to fetch the courses"):
-        sut = list(Courses(session))
+        list(Courses(session))

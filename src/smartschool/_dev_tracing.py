@@ -2,13 +2,13 @@ from __future__ import annotations
 
 import abc
 import traceback
-from abc import ABCMeta
 from dataclasses import dataclass, field
 from datetime import datetime
-from pathlib import Path
 from typing import TYPE_CHECKING, Callable
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from requests.models import PreparedRequest, Response
 
 
@@ -102,7 +102,7 @@ class DevTracingMixin(abc.ABC):
         f.write("ERROR\n")
         f.write("=" * 60 + "\n")
         f.write(f"Exception Type: {type(error).__name__}\n")
-        f.write(f"Exception Message: {str(error)}\n")
+        f.write(f"Exception Message: '{error!s}'\n")
 
         f.write("Full Traceback:\n")
         f.write("-" * 40 + "\n")

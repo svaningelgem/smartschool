@@ -1,5 +1,6 @@
 from pathlib import Path
-from unittest.mock import Mock, MagicMock
+from typing import ClassVar
+from unittest.mock import MagicMock, Mock
 
 import pytest
 
@@ -13,7 +14,7 @@ def sut(tmp_path: Path) -> DevTracingMixin:
         dev_tracing: bool = True
         _login_attempts: int = 1
         creds: str = "fake_creds"
-        cookies: list[str] = ["cookie1=value1", "cookie2=value2"]
+        cookies: ClassVar[list[str]] = ["cookie1=value1", "cookie2=value2"]
 
     return TracingTestClass()
 
@@ -31,7 +32,7 @@ def mock_response():
         path_url="/path",
         headers={"User-Agent": "test"},
         _cookies=[MagicMock(name="session", value="abc123")],
-        body=b"test body"
+        body=b"test body",
     )
     resp.headers = {"Content-Type": "text/plain"}
     resp.cookies = [MagicMock(name="new_cookie", value="new_value")]
@@ -82,11 +83,14 @@ def test_successful_request(sut, mock_response, tmp_path):
     assert "Redirect History:" in content
     assert "Actual Request Details:" in content
     assert "  Body (9 bytes): b'test body'" in content
-    assert """Content:
+    assert (
+        """Content:
 ----------------------------------------
 response text
 ----------------------------------------
-""" in content
+"""
+        in content
+    )
     assert "END TRACE" in content
 
 
@@ -95,7 +99,7 @@ def _get_content_with_exception(sut: DevTracingMixin, tmp_path: Path, mock_respo
         response = mock_response
 
     mock_method = Mock(side_effect=TestExc)
-    with pytest.raises(Exception):
+    with pytest.raises(TestExc):
         sut._make_traced_request(mock_method, "GET", "https://example.com", params={"p": 1})
 
     trace_dir = tmp_path / "dev_tracing"
@@ -109,10 +113,13 @@ def test_failed_request(sut, tmp_path):
 
     assert "TRACE #1" in content
     assert "ERROR" in content
-    assert """Exception Message: 
+    assert (
+        """Exception Message: ''
 Full Traceback:
 ----------------------------------------
-Traceback (most recent call last):""" in content
+Traceback (most recent call last):"""
+        in content
+    )
     assert "ERROR RESPONSE" not in content
     assert "Status Code: 200 OK" not in content
     assert "END TRACE" in content
@@ -123,10 +130,13 @@ def test_failed_request_with_response(sut, mock_response, tmp_path):
 
     assert "TRACE #1" in content
     assert "ERROR" in content
-    assert """Exception Message: 
+    assert (
+        """Exception Message: ''
 Full Traceback:
 ----------------------------------------
-Traceback (most recent call last):""" in content
+Traceback (most recent call last):"""
+        in content
+    )
     assert "ERROR RESPONSE" in content
     assert "Status Code: 200 OK" in content
     assert "END TRACE" in content
@@ -149,17 +159,8 @@ def test_failed_request_with_bare_bones_response2(sut, mock_response, tmp_path):
     mock_response.request.headers = None
     mock_response.request._cookies = None
     mock_response.request.body = None
-    class TestExc(Exception):
-        response = mock_response
 
-    mock_method = Mock(side_effect=TestExc)
-    with pytest.raises(Exception):
-        sut._make_traced_request(mock_method, "GET", "https://example.com", params={"p": 1})
-
-    trace_dir = tmp_path / "dev_tracing"
-    trace_files = list(trace_dir.glob("*.txt"))
-    assert len(trace_files) == 1
-    content = trace_files[0].read_text()
+    content = _get_content_with_exception(sut, tmp_path, mock_response)
 
     assert "Redirect History:" in content
     assert "Actual Request Details:" in content
