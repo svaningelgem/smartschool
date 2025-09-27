@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import abc
 import traceback
+from abc import ABCMeta
 from dataclasses import dataclass, field
 from datetime import datetime
+from pathlib import Path
 from typing import TYPE_CHECKING, Callable
 
 if TYPE_CHECKING:
@@ -10,9 +13,19 @@ if TYPE_CHECKING:
 
 
 @dataclass
-class DevTracingMixin:
+class DevTracingMixin(abc.ABC):
     _trace_filename: str = field(init=False, default_factory=lambda: "dev_tracing/" + datetime.now().strftime("%Y%m%d.%H%M%S.") + "%counter%.txt")
     _trace_counter: int = field(init=False, default=0)
+
+    @property
+    def dev_tracing(self) -> bool:
+        """Option to enable/disable dev tracing."""
+        return False
+
+    @property
+    @abc.abstractmethod
+    def cache_path(self) -> Path:
+        """Where to store the traces."""
 
     def _make_traced_request(self, request_method: Callable, method: str, url: str, **kwargs) -> Response:
         """Make request with optional dev tracing."""
