@@ -1,3 +1,6 @@
+# 0.7.2
+* At the start of the year, there are no results available, so `Courses` will throw an error. Clarify this in the error message.
+
 # 0.7.1
 * Updating README
 
