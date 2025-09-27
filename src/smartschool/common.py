@@ -205,7 +205,7 @@ def get_all_values_from_form(html: BeautifulSoup, form_selector: str):
     return inputs
 
 
-def fill_form(response: Response, form_selector, values: dict[str, str]) -> dict[str, str]:
+def fill_form(response: str | bytes | Response, form_selector, values: dict[str, str]) -> dict[str, str]:
     html = bs4_html(response)
     inputs = get_all_values_from_form(html, form_selector)
 

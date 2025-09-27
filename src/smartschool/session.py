@@ -14,29 +14,31 @@ import yaml
 from logprise import logger
 from requests import Session
 
+from ._dev_tracing import DevTracingMixin
 from .common import bs4_html, fill_form
-from .exceptions import SmartSchoolAuthenticationError
-
-try:
-    import pyotp
-except ImportError:
-    pyotp = None
+from .exceptions import SmartSchoolAuthenticationError, SmartSchoolDownloadError, SmartSchoolJsonError
 
 if TYPE_CHECKING:
     from requests import Response
 
     from .credentials import Credentials
 
+try:
+    import pyotp
+except ImportError:
+    pyotp = None
 
 __all__ = ["Smartschool"]
 
 
 @dataclass
-class Smartschool(Session):
+class Smartschool(Session, DevTracingMixin):
     creds: Credentials | None = None
     _login_attempts: int = field(init=False, default=0)
     _max_login_attempts: int = field(init=False, default=3)
     _authenticated_user: dict | None = field(init=False, default=None)
+
+    dev_tracing: bool = False
 
     def __post_init__(self):
         super().__init__()
@@ -140,12 +142,12 @@ class Smartschool(Session):
         full_url = self.create_url(url) if not url.startswith("http") else url
 
         # Make the request
-        response = super().request(method, full_url, **kwargs)
+        response = self._make_traced_request(super().request, method, full_url, **kwargs)
 
         # Handle auth redirects
         response = self._handle_auth_redirect(response)
         if not self._is_auth_url(full_url):  # The original URL was NOT a login-url
-            response = super().request(method, full_url, **kwargs)
+            response = self._make_traced_request(super().request, method, full_url, **kwargs)
             self._reset_login_attempts()
         elif not self._is_auth_url(response.url):  # Original was login, and this is not anymore
             self._reset_login_attempts()
@@ -165,11 +167,19 @@ class Smartschool(Session):
                 url += ("&" if "?" in url else "?") + data
             r = self.request("GET", url, **kwargs)
 
+        if r.status_code != 200:
+            raise SmartSchoolDownloadError("Failed to retrieve the json", r) from None
+
         json_ = r.text
         while isinstance(json_, str):
             if not json_:
                 return {}
-            json_ = json.loads(json_)
+
+            try:
+                json_ = json.loads(json_)
+            except json.JSONDecodeError:
+                raise SmartSchoolJsonError("Failed to decode the json", r) from None
+
         return json_
 
     def _do_login(self, response: Response) -> Response:
@@ -183,7 +193,7 @@ class Smartschool(Session):
                 "password": self.creds.password,
             },
         )
-        return super().request("POST", response.url, data=data, allow_redirects=True)
+        return self._make_traced_request(super().request, "POST", response.url, data=data, allow_redirects=True)
 
     def _do_login_verification(self, response: Response) -> Response:
         """Handle account verification (birthday)."""
@@ -195,7 +205,7 @@ class Smartschool(Session):
                 "security_question_answer": self.creds.mfa,
             },
         )
-        return super().request("POST", response.url, data=data, allow_redirects=True)
+        return self._make_traced_request(super().request, "POST", response.url, data=data, allow_redirects=True)
 
     def _complete_verification_2fa(self) -> Response:
         """Handle 2FA verification using TOTP."""
@@ -205,7 +215,7 @@ class Smartschool(Session):
         logger.info(f"2FA verification for {self.creds.username}")
 
         # Check 2FA config
-        config_resp = super().request("GET", self.create_url("/2fa/api/v1/config"), allow_redirects=True)
+        config_resp = self._make_traced_request(super().request, "GET", self.create_url("/2fa/api/v1/config"), allow_redirects=True)
         config_resp.raise_for_status()
 
         if config_resp.status_code != 200:
@@ -219,7 +229,7 @@ class Smartschool(Session):
         totp = pyotp.TOTP(self.creds.mfa)
         data = f'{{"google2fa":"{totp.now()}"}}'
 
-        return super().request("POST", self.create_url("/2fa/api/v1/google-authenticator"), data=data, allow_redirects=True)
+        return self._make_traced_request(super().request, "POST", self.create_url("/2fa/api/v1/google-authenticator"), data=data, allow_redirects=True)
 
     def _parse_login_information(self, response: Response) -> None:
         """Parse authenticated user information from response."""

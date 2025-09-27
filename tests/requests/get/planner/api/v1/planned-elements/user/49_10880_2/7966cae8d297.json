@@ -1,0 +1,124 @@
+[
+  {
+    "id": "0a13e756-656a-5053-925e-7aad5db31a87",
+    "platformId": 49,
+    "period": {
+      "dateTimeFrom": "2025-05-06T09:15:00+02:00",
+      "dateTimeTo": "2025-05-06T10:05:00+02:00",
+      "wholeDay": false,
+      "deadline": false
+    },
+    "organisers": {
+      "users": [
+        {
+          "id": "49_8933_0",
+          "pictureHash": "initials_IW",
+          "pictureUrl": "https:\/\/userpicture20.smartschool.be\/User\/Userimage\/hashimage\/hash\/initials_IW\/plain\/1\/res\/128",
+          "description": {
+            "startingWithFirstName": "",
+            "startingWithLastName": ""
+          },
+          "name": {
+            "startingWithFirstName": "Iris Wittevrongel",
+            "startingWithLastName": "Wittevrongel Iris"
+          },
+          "sort": "wittevrongel-iris",
+          "deleted": false
+        }
+      ]
+    },
+    "participants": {
+      "groups": [
+        {
+          "identifier": "49_4522",
+          "id": "49_4522",
+          "platformId": 49,
+          "name": "4CHU",
+          "type": "K",
+          "icon": "briefcase",
+          "sort": "4CHU"
+        },
+        {
+          "identifier": "49_6634",
+          "id": "49_6634",
+          "platformId": 49,
+          "name": "4CNW",
+          "type": "K",
+          "icon": "briefcase",
+          "sort": "4CNW"
+        }
+      ],
+      "users": [],
+      "groupFilters": {
+        "filters": [],
+        "additionalUsers": []
+      }
+    },
+    "plannedElementType": "planned-placeholders",
+    "isParticipant": true,
+    "capabilities": {
+      "canUserTrash": false,
+      "canUserRestoreFromTrash": false,
+      "canUserDelete": false,
+      "canUserEdit": false,
+      "canUserReplace": false,
+      "canUserEditPresence": false,
+      "canUserReschedule": false,
+      "canUserChangeOrganisers": false,
+      "canUserChangeParticipants": false,
+      "canUserChangeParticipantGroupFilters": false,
+      "canUserChangeCourses": false,
+      "canUserChangeLocations": false,
+      "canUserChangeUserColor": true,
+      "canUserChangeUserViewMetadata": true,
+      "canUserSeeProperties": {
+        "id": true,
+        "platformId": true,
+        "period": true,
+        "organisers": true,
+        "participants": true,
+        "plannedElementType": true,
+        "isParticipant": true,
+        "capabilities": true,
+        "courses": true,
+        "locations": true
+      }
+    },
+    "courses": [
+      {
+        "id": "4637d7f7-52de-48b7-ab91-3c6fd4a0abf9",
+        "platformId": 49,
+        "name": "Dummy",
+        "scheduleCodes": [
+          "GO2"
+        ],
+        "icon": "angel",
+        "courseCluster": {
+          "id": 43,
+          "name": "Levensbeschouwing (Godsdienst of Niet-confessionele zedenleer)"
+        },
+        "isVisible": true
+      }
+    ],
+    "locations": [
+      {
+        "id": "cb15a596-f526-4df1-bb6f-9b7639984172",
+        "platformId": 49,
+        "platformName": "Paridaensinstituut",
+        "number": "",
+        "title": "G.2.06",
+        "icon": "classroom_green",
+        "type": "mini-db-item",
+        "selectable": true
+      }
+    ],
+    "sort": "20250506091500_8_4CHU_",
+    "unconfirmed": true,
+    "pinned": false,
+    "color": "aqua-200",
+    "joinIds": {
+      "from": "fd512466-45b8-56b2-ab13-30c94ff46de1",
+      "to": "8e010bd0-718c-58ab-9fc8-462b701f52e6"
+    }
+  }
+]

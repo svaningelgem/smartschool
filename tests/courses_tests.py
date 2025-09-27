@@ -1,4 +1,8 @@
+import pytest
+import pytest_mock
+
 from smartschool import Courses, Smartschool, TopNavCourses
+from smartschool.exceptions import SmartSchoolJsonError
 
 
 def test_topnav_courses_normal_flow(session: Smartschool):
@@ -13,3 +17,9 @@ def test_courses_normal_flow(session: Smartschool):
 
     assert sut[0].name == "Aardrijkskunde"
     assert sut[1].name == "Biologie"
+
+
+def test_courses_no_results_available_yet(session: Smartschool, mocker: pytest_mock.MockerFixture):
+    mocker.patch.object(session, "json", side_effect=SmartSchoolJsonError("msg", mocker.Mock()))
+    with pytest.raises(SmartSchoolJsonError, match="Failed to fetch the courses"):
+        list(Courses(session))

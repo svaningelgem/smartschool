@@ -1,3 +1,5 @@
+from datetime import date
+
 import pytest
 import time_machine
 
@@ -13,6 +15,17 @@ def test_periods_happy_flow(session: Smartschool):
     assert sut[0].courses[0].name == "Godsdienst"
     assert sut[0].plannedElementType == "planned-placeholders"
     assert not sut[0].unconfirmed
+
+
+@time_machine.travel("2025-05-06")
+def test_planned_elements_till_date(session: Smartschool):
+    sut = list(PlannedElements(session, till_date=date(2025, 5, 7)))
+
+    assert len(sut) == 1
+
+    assert sut[0].courses[0].name == "Dummy"
+    assert sut[0].plannedElementType == "planned-placeholders"
+    assert sut[0].unconfirmed
 
 
 def test_applicable_assignment_types(session: Smartschool):

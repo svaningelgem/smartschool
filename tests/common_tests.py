@@ -1,3 +1,4 @@
+import re
 import sys
 import warnings
 from copy import deepcopy
@@ -161,23 +162,29 @@ def test_fill_form(mocker: pytest_mock.MockerFixture):
         <input name="email" value="default_email">
     </form>
     """
-    html = BeautifulSoup(html_content, "html.parser")
-
-    # Mock bs4_html to return our test HTML
-    mocker.patch("smartschool.common.bs4_html", return_value=html)
-
-    # Create mock Response object
-    response = mocker.Mock()
-    response.text = str(html)
 
     # Define values to fill
     values = {"username": "test_user", "email": "test@example.com"}
 
     # Call the function
-    result = fill_form(response, "form", values)
+    result = fill_form(html_content, "form", values)
 
     # Assert the result matches expectations
     assert result == {"username": "test_user", "password": "default_pass", "email": "test@example.com"}
+
+
+def test_fill_form_not_used_value(mocker: pytest_mock.MockerFixture):
+    # Create sample HTML content with a form
+    html_content = """
+    <form>
+        <input name="username" value="default_user">
+    </form>
+    """
+
+    values = {"username": "test_user", "email": "test@example.com"}
+
+    with pytest.raises(AssertionError, match=re.escape("You didn't use: ['email']")):
+        fill_form(html_content, "form", values)
 
 
 def test_missing_name():
@@ -192,6 +199,23 @@ def test_missing_name():
     )
     result = get_all_values_from_form(html, "form")
     assert result == [{"name": "test2", "value": "test2"}]
+
+
+def test_multi_forms():
+    """Test for missing name attribute."""
+    html = BeautifulSoup(
+        """
+    <form id="form1">
+        <input name="test" value="test" />
+    </form>
+    <form id="form2">
+        <input name="test2" value="test2" />
+    </form>
+    """,
+        features="html.parser",
+    )
+    with pytest.raises(AssertionError, match=re.escape("We should have only 1 form. We got 2!")):
+        get_all_values_from_form(html, "form")
 
 
 def test_select_with_explicit_values():
