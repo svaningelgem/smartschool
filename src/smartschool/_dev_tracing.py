@@ -4,9 +4,10 @@ import abc
 import traceback
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from pathlib import Path
 
     from requests.models import PreparedRequest, Response

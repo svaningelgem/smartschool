@@ -13,7 +13,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from enum import Enum, auto
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Literal
+from typing import TYPE_CHECKING, Any, Literal
 from urllib.parse import parse_qs, quote_plus, urlparse
 
 from bs4 import BeautifulSoup, FeatureNotFound, GuessedAtParserWarning
@@ -36,6 +36,8 @@ __all__ = [
 from smartschool.exceptions import SmartSchoolParsingError
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from smartschool.objects import String
 
 _used_bs4_option = None

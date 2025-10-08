@@ -69,7 +69,7 @@ def _format_import(annotation: type, current_module: types.ModuleType) -> str:
     if current_parts == target_parts:
         return ""  # Local stuff
 
-    common_len = next((i for i, (a, b) in enumerate(zip(current_parts, target_parts)) if a != b), min(len(current_parts), len(target_parts)))
+    common_len = next((i for i, (a, b) in enumerate(zip(current_parts, target_parts, strict=False)) if a != b), min(len(current_parts), len(target_parts)))
 
     if not common_len or len(target_parts) < len(current_parts):
         return f"from {module} import {name}"
