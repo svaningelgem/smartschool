@@ -1041,4 +1041,4 @@ mfa = ["pyotp"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.11"
-content-hash = "af56f69ad3888745a32d93365d0e4b383a125d6fa272b272bead595779b3dfb1"
+content-hash = "ff1672f283149b7d55479efb6c9a40aa6320b5bf20a754f1ce8d0638790f5a43"
