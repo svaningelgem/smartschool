@@ -103,3 +103,23 @@ def test_credentials_exporting_as_dict_without_other_info(session: Smartschool):
         "main_url": "site",
         "mfa": "1234-56-78",
     }
+
+def test_env_credentials_mfa_as_datetime(monkeypatch, session: Smartschool):
+    """Test that MFA is properly converted to string when entered as datetime object."""
+    # Set up environment variables
+    #monkeypatch.setenv("SMARTSCHOOL_USERNAME", "bumba")
+    #monkeypatch.setenv("SMARTSCHOOL_PASSWORD", "delu")
+    #monkeypatch.setenv("SMARTSCHOOL_MAIN_URL", "site")
+    
+    sut = EnvCredentials()
+    
+    # Directly set mfa as datetime object (simulating the bug scenario)
+    mfa_datetime = datetime(2024, 1, 15)
+    object.__setattr__(sut, "mfa", mfa_datetime)
+    
+    # Validate should convert datetime to string without raising an error
+    sut.validate()
+    
+    # Verify that MFA is now a string
+    assert isinstance(sut.mfa, str)
+    assert sut.mfa == "2024-01-15 00:00:00"
