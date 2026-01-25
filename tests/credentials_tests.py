@@ -1,9 +1,10 @@
+from datetime import datetime
 from pathlib import Path
 
 import pytest
 import yaml
 
-from smartschool import EnvCredentials, PathCredentials, Smartschool
+from smartschool import AppCredentials, EnvCredentials, PathCredentials, Smartschool
 
 
 def _create_credentials_file(tmp_path: Path):
@@ -103,3 +104,15 @@ def test_credentials_exporting_as_dict_without_other_info(session: Smartschool):
         "main_url": "site",
         "mfa": "1234-56-78",
     }
+
+
+def test_env_credentials_mfa_as_datetime(monkeypatch, session: Smartschool):
+    """Test that MFA is properly converted to string when entered as a datetime object."""
+    sut = AppCredentials("username", "password", "main_url", datetime(2024, 1, 15))
+
+    # Validate should convert datetime to string without raising an error
+    sut.validate()
+
+    # Verify that MFA is now a string
+    assert isinstance(sut.mfa, str)
+    assert sut.mfa == "2024-01-15 00:00:00"
