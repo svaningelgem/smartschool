@@ -24,7 +24,7 @@ class Credentials:
         error = []
         for required in required_fields:
             original_value = getattr(self, required)
-            new_value = (str(original_value) or "").strip()
+            new_value = str(original_value or "").strip()
 
             object.__setattr__(self, required, new_value)
 
