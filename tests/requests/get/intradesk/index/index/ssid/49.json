@@ -1,0 +1,23 @@
+
+<div class="smsc_cm_body">
+<div class="smsc_cm_body_row  first">
+	<div class="smsc_cm_body_row_block" style="background-image:url('/smsc/img/mime_folder/mime_folder_32x32.png');">
+		<div class="name"><a href="/Intradesk/Index/Index/ssID/49/parentID/100" title="My Folder" class="smsc_cm_link">My Folder</a></div>
+		<div class="spacer"></div>
+	</div>
+	<div class="smsc_cm_body_row_block_desc"></div>
+</div>
+<div id="docid_200" class="smsc_cm_body_row ">
+	<div class="smsc_cm_body_row_block" style="background-image:url('/smsc/img/mime_pdf/mime_pdf_32x32.png');">
+		<div class="smsc_cm_body_row_block_mime">PDF-bestand - 75.54 KiB - 2024-10-08 12:45</div>
+		<div class="name">
+			<a href="/Intradesk/Wopi/Index/docID/200/mode/view/ssID/49" class="smsc-download__link">My Document</a>
+		</div>
+		<div class="smsc_cm_body_row_block_inline"></div>
+	</div>
+	<div class="smsc-download">
+		<a href="/Intradesk/Download/Index/docID/200/ssID/49" class="smsc-download__icon--download">Download</a>
+		<a href="/Intradesk/Wopi/Index/docID/200/mode/view/ssID/49" class="smsc-download__link">View</a>
+	</div>
+</div>
+</div>

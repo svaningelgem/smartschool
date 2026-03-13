@@ -1,5 +1,6 @@
 from .agenda import AgendaLesson, AgendaPoster, SmartschoolHours, SmartschoolLessons, SmartschoolMomentInfos
 from .courses import CourseCondensed, Courses, DocumentOrFolderItem, FileItem, FolderItem, InternetShortcut, TopNavCourses
+from .intradesk import Intradesk, IntradeskDocumentOrFolder, IntradeskFolder
 from .credentials import AppCredentials, Credentials, EnvCredentials, PathCredentials
 from .exceptions import SmartSchoolAuthenticationError, SmartSchoolDownloadError, SmartSchoolException, SmartSchoolParsingError
 from .future_tasks import FutureTasks
@@ -41,6 +42,9 @@ __all__ = [
     "FileItem",
     "FolderItem",
     "FutureTasks",
+    "Intradesk",
+    "IntradeskDocumentOrFolder",
+    "IntradeskFolder",
     "InternetShortcut",
     "MarkMessageUnread",
     "Message",

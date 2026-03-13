@@ -1,0 +1,14 @@
+
+<div class="smsc_cm_body">
+<div id="docid_400" class="smsc_cm_body_row ">
+	<div class="smsc_cm_body_row_block" style="background-image:url('/smsc/img/mime_html/mime_html_32x32.png');">
+		<div class="smsc_cm_body_row_block_mime">html - 1.50 KB - 2024-01-01 10:00</div>
+		<div class="name">
+			<a href="#" class="smsc-download__link">Iframe Link</a>
+		</div>
+		<div class="smsc_cm_body_row_block_inline">
+			<iframe src="https://www.youtube.com/embed/abc123"></iframe>
+		</div>
+	</div>
+</div>
+</div>
