@@ -1,0 +1,22 @@
+{
+    "folders": [
+        {
+            "id": 100,
+            "name": "Documents",
+            "platform": {"id": 49}
+        },
+        {
+            "id": 101,
+            "name": "Photos",
+            "platform": {"id": 49}
+        }
+    ],
+    "files": [
+        {
+            "id": 200,
+            "name": "readme.txt",
+            "platform": {"id": 49}
+        }
+    ],
+    "weblinks": []
+}

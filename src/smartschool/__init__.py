@@ -3,6 +3,7 @@ from .courses import CourseCondensed, Courses, DocumentOrFolderItem, FileItem, F
 from .credentials import AppCredentials, Credentials, EnvCredentials, PathCredentials
 from .exceptions import SmartSchoolAuthenticationError, SmartSchoolDownloadError, SmartSchoolException, SmartSchoolParsingError
 from .future_tasks import FutureTasks
+from .intradesk import Intradesk, IntradeskFile, IntradeskFolder, IntradeskItem
 from .messages import (
     AdjustMessageLabel,
     Attachment,
@@ -42,6 +43,10 @@ __all__ = [
     "FolderItem",
     "FutureTasks",
     "InternetShortcut",
+    "Intradesk",
+    "IntradeskFile",
+    "IntradeskFolder",
+    "IntradeskItem",
     "MarkMessageUnread",
     "Message",
     "MessageHeaders",

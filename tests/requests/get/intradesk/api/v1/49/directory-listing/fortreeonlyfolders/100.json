@@ -1,0 +1,16 @@
+{
+    "folders": [],
+    "files": [
+        {
+            "id": 300,
+            "name": "report.pdf",
+            "platform": {"id": 49}
+        },
+        {
+            "id": 301,
+            "name": "data.xlsx",
+            "platform": {"id": 49}
+        }
+    ],
+    "weblinks": []
+}
