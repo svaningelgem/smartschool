@@ -54,7 +54,7 @@ class Smartschool(Session, DevTracingMixin):
     @property
     def authenticated_user(self) -> dict | None:
         if self._authenticated_user is None:
-            raise ValueError("We couldn't retrieve the authenticated user somehow!")
+            self.do_login()
         return self._authenticated_user
 
     @authenticated_user.setter
@@ -156,6 +156,14 @@ class Smartschool(Session, DevTracingMixin):
         self.cookies.save(ignore_discard=True)
 
         return response
+
+    @cached_property
+    def platform_id(self) -> int:
+        courses = self.json("/course-list/api/v1/courses")
+        return courses[0]["platformId"]
+
+    def do_login(self) -> None:
+        _ = self.platform_id
 
     def json(self, url, method: str = "get", **kwargs) -> dict:
         """Handle JSON responses with potential double encoding."""

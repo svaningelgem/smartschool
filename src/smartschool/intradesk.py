@@ -21,7 +21,6 @@ class IntradeskFile(SessionMixin):
     parent: IntradeskFolder = field(repr=False)
     id: str = ""
     name: str = ""
-    platform_id: str = field(repr=False, default="")
 
     @cached_property
     def filename(self) -> str:
@@ -41,7 +40,7 @@ class IntradeskFile(SessionMixin):
             if not overwrite and target.exists():
                 return target
 
-        response = self.session.get(f"/intradesk/api/v1/{self.platform_id}/files/{self.id}/download")
+        response = self.session.get(f"/intradesk/api/v1/{self.session.platform_id}/files/{self.id}/download")
         response.raise_for_status()
 
         if target:
@@ -61,11 +60,10 @@ class IntradeskFolder(SessionMixin):
     parent: IntradeskFolder | None = field(repr=False, default=None)
     id: str = ""
     name: str = ""
-    platform_id: str = field(repr=False, default="")
 
     @cached_property
     def items(self) -> list[IntradeskItem]:
-        data = self.session.json(f"/intradesk/api/v1/{self.platform_id}/directory-listing/forTreeOnlyFolders/{self.id}")
+        data = self.session.json(f"/intradesk/api/v1/{self.session.platform_id}/directory-listing/forTreeOnlyFolders/{self.id}")
 
         result: list[IntradeskItem] = []
 
@@ -76,7 +74,6 @@ class IntradeskFolder(SessionMixin):
                     parent=self,
                     id=str(fo["id"]),
                     name=fo["name"],
-                    platform_id=str(fo["platform"]["id"]),
                 )
             )
 
@@ -87,7 +84,6 @@ class IntradeskFolder(SessionMixin):
                     parent=self,
                     id=str(fi["id"]),
                     name=fi["name"],
-                    platform_id=str(fi["platform"]["id"]),
                 )
             )
 
@@ -102,20 +98,14 @@ class Intradesk(IntradeskFolder):
     """
     Root folder of the intradesk.
 
-    The platform ID is derived from the authenticated user's ID.
-
     Example:
     -------
     >>> intradesk = Intradesk(session)
     >>> for item in intradesk:
     ...     print(item.name)
-
     """
 
-    def __post_init__(self):
-        user_id = str(self.session.authenticated_user["id"])
-        self.platform_id = user_id.split("_")[0]
-        self.name = "intradesk"
+    name: str = "intradesk"
 
 
 IntradeskItem: TypeAlias = IntradeskFile | IntradeskFolder
