@@ -16,8 +16,8 @@ def intradesk(session: Smartschool) -> Intradesk:
     return Intradesk(session=session)
 
 
-def test_intradesk_platform_id(intradesk: Intradesk):
-    assert intradesk.platform_id == "49"
+def test_intradesk_basic_properties(intradesk: Intradesk):
+    assert intradesk.session.platform_id == 49
     assert intradesk.name == "intradesk"
     assert intradesk.parent is None
     assert intradesk.id == ""
@@ -28,20 +28,20 @@ def test_intradesk_items(intradesk: Intradesk):
     assert len(items) == 3
     # Folders first (sorted), then files
     assert isinstance(items[0], IntradeskFolder)
-    assert items[0].name == "Documents"
-    assert items[0].id == "100"
+    assert items[0].name == "Documenten"
+    assert items[0].id == "aaaa1111-1111-4111-b111-111111111111"
     assert isinstance(items[1], IntradeskFolder)
-    assert items[1].name == "Photos"
-    assert items[1].id == "101"
+    assert items[1].name == "Examens"
+    assert items[1].id == "aaaa2222-2222-4222-b222-222222222222"
     assert isinstance(items[2], IntradeskFile)
-    assert items[2].name == "readme.txt"
-    assert items[2].id == "200"
+    assert items[2].name == "welkom.docx"
+    assert items[2].id == "cccc1111-1111-4111-b111-111111111111"
 
 
 def test_intradesk_iter(intradesk: Intradesk):
     items = list(intradesk)
     assert len(items) == 3
-    assert items[0].name == "Documents"
+    assert items[0].name == "Documenten"
 
 
 def test_folder_parent_reference(intradesk: Intradesk):
@@ -51,28 +51,29 @@ def test_folder_parent_reference(intradesk: Intradesk):
 
 
 def test_subfolder_items(intradesk: Intradesk):
-    documents = intradesk.items[0]
-    assert isinstance(documents, IntradeskFolder)
+    documenten = intradesk.items[0]
+    assert isinstance(documenten, IntradeskFolder)
 
-    sub_items = documents.items
+    sub_items = documenten.items
     assert len(sub_items) == 2
-    assert all(isinstance(item, IntradeskFile) for item in sub_items)
-    # Sorted by natural sort
-    assert sub_items[0].name == "data.xlsx"
-    assert sub_items[1].name == "report.pdf"
+    # Folder first, then file
+    assert isinstance(sub_items[0], IntradeskFolder)
+    assert sub_items[0].name == "Archief"
+    assert isinstance(sub_items[1], IntradeskFile)
+    assert sub_items[1].name == "info.pdf"
 
 
 def test_empty_folder(intradesk: Intradesk):
-    photos = intradesk.items[1]
-    assert isinstance(photos, IntradeskFolder)
-    assert photos.items == []
-    assert list(photos) == []
+    examens = intradesk.items[1]
+    assert isinstance(examens, IntradeskFolder)
+    assert examens.items == []
+    assert list(examens) == []
 
 
 def test_file_filename(intradesk: Intradesk):
     file = intradesk.items[2]
     assert isinstance(file, IntradeskFile)
-    assert file.filename == "readme.txt"
+    assert file.filename == "welkom.docx"
 
 
 def test_file_download_bytes(intradesk: Intradesk):
@@ -115,7 +116,7 @@ def test_file_download_to_dir(intradesk: Intradesk, tmp_path):
     file = intradesk.items[2]
     result = file.download_to_dir(tmp_path)
     assert result.exists()
-    assert result.name == "readme.txt"
+    assert result.name == "welkom.docx"
 
 
 def test_file_parent_reference(intradesk: Intradesk):
@@ -125,17 +126,7 @@ def test_file_parent_reference(intradesk: Intradesk):
 
 
 def test_subfolder_file_parent(intradesk: Intradesk):
-    documents = intradesk.items[0]
-    sub_file = documents.items[0]
+    documenten = intradesk.items[0]
+    sub_file = documenten.items[1]
     assert isinstance(sub_file, IntradeskFile)
-    assert sub_file.parent is documents
-
-
-def test_folder_platform_id_propagation(intradesk: Intradesk):
-    documents = intradesk.items[0]
-    assert isinstance(documents, IntradeskFolder)
-    assert documents.platform_id == "49"
-
-    sub_file = documents.items[0]
-    assert isinstance(sub_file, IntradeskFile)
-    assert sub_file.platform_id == "49"
+    assert sub_file.parent is documenten

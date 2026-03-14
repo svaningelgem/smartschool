@@ -1,0 +1,56 @@
+{
+  "folders": [
+    {
+      "id": "bbbb1111-1111-4111-b111-111111111111",
+      "platform": {"id": 49, "name": "Testschool"},
+      "name": "Archief",
+      "color": "yellow",
+      "state": "active",
+      "visible": true,
+      "confidential": false,
+      "officeTemplateFolder": false,
+      "parentFolderId": "aaaa1111-1111-4111-b111-111111111111",
+      "dateStateChanged": "2021-06-19T15:03:06+02:00",
+      "dateCreated": "2020-07-10T08:07:09+02:00",
+      "dateChanged": "2023-05-30T12:36:55+02:00",
+      "isFavourite": false,
+      "inConfidentialFolder": false,
+      "capabilities": {"canManage": false, "canAdd": false, "canSeeHistory": false, "canSeeViewHistory": false},
+      "hasChildren": false
+    }
+  ],
+  "files": [
+    {
+      "id": "cccc2222-2222-4222-b222-222222222222",
+      "platform": {"id": 49, "name": "Testschool"},
+      "name": "info.pdf",
+      "state": "active",
+      "parentFolderId": "aaaa1111-1111-4111-b111-111111111111",
+      "dateCreated": "2023-09-15T09:00:00+02:00",
+      "dateStateChanged": "2023-09-15T09:00:00+02:00",
+      "dateChanged": "2023-09-15T09:00:00+02:00",
+      "currentRevision": {
+        "id": "dddd2222-2222-4222-b222-222222222222",
+        "platform": {"id": 49, "name": "Testschool"},
+        "fileId": "cccc2222-2222-4222-b222-222222222222",
+        "fileSize": 51050,
+        "dateCreated": "2023-09-15T09:00:00+02:00",
+        "label": "info.pdf",
+        "owner": {
+          "userIdentifier": "49_1001_0",
+          "userPictureHash": "initials_JJ",
+          "userPictureUrl": "https://userpicture.example.com/initials_JJ/128",
+          "name": "Jan Janssens",
+          "nameReverse": "Janssens Jan",
+          "description": "",
+          "descriptionReverse": ""
+        }
+      },
+      "isFavourite": false,
+      "confidential": false,
+      "ownerId": "49_1001_0",
+      "capabilities": {"canManage": false, "canMove": false, "canHandleRevisions": false, "canSeeHistory": false, "canSeeViewHistory": false}
+    }
+  ],
+  "weblinks": []
+}
