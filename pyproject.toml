@@ -21,7 +21,7 @@ smartschool_browse_docs = {reference = "scripts/smartschool_browse_docs", type =
 smartschool_download_all_documents = {reference = "scripts/smartschool_download_all_documents", type = "file"}
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.10"
 bs4 = "*"
 requests = "*"
 pyyaml = "*"

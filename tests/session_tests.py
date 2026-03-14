@@ -6,7 +6,7 @@ import requests
 import yaml
 
 from smartschool import Smartschool, SmartSchoolAuthenticationError
-from smartschool.exceptions import SmartSchoolJsonError
+from smartschool.exceptions import SmartSchoolDownloadError, SmartSchoolJsonError
 
 
 def test_smartschool_not_started_yet():
@@ -281,6 +281,13 @@ class TestSmartschoolProperties:
 
 class TestErrorHandling:
     """Test error handling scenarios."""
+
+    def test_json_non_200_response(self, session, requests_mock):
+        """Should raise SmartSchoolDownloadError when status code is not 200."""
+        requests_mock.get("https://site/api/error", status_code=500, text="Internal Server Error")
+
+        with pytest.raises(SmartSchoolDownloadError, match="Failed to retrieve the json"):
+            session.json("/api/error")
 
     def test_invalid_json_response(self, session, requests_mock):
         """Should handle invalid JSON gracefully."""
