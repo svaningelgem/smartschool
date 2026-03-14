@@ -1,0 +1,59 @@
+[
+  {
+    "id": "a1b2c3d4-1111-4aaa-bbbb-000000000001",
+    "platformId": 49,
+    "name": "Aardrijkskunde",
+    "scheduleCodes": [
+      "AAR1",
+      "AAR2"
+    ],
+    "icon": "earth",
+    "courseCluster": {
+      "id": 16,
+      "name": "Aardrijkskunde"
+    },
+    "isVisible": true
+  },
+  {
+    "id": "a1b2c3d4-2222-4aaa-bbbb-000000000002",
+    "platformId": 49,
+    "name": "Wiskunde",
+    "scheduleCodes": [
+      "WIS3",
+      "WIS4"
+    ],
+    "icon": "math_symbol_collection_blue",
+    "courseCluster": {
+      "id": 69,
+      "name": "Wiskunde"
+    },
+    "isVisible": true
+  },
+  {
+    "id": "a1b2c3d4-3333-4aaa-bbbb-000000000003",
+    "platformId": 49,
+    "name": "Maatschappij \u0026 welzijn",
+    "scheduleCodes": [
+      "MW"
+    ],
+    "icon": "people_men_holding_hands",
+    "courseCluster": null,
+    "isVisible": true
+  },
+  {
+    "id": "a1b2c3d4-4444-4aaa-bbbb-000000000004",
+    "platformId": 49,
+    "name": "Frans",
+    "scheduleCodes": [
+      "FR3",
+      "FR4",
+      "FR5"
+    ],
+    "icon": "flag_france",
+    "courseCluster": {
+      "id": 30,
+      "name": "Frans"
+    },
+    "isVisible": false
+  }
+]
