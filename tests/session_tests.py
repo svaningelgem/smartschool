@@ -6,11 +6,11 @@ import requests
 import yaml
 
 from smartschool import Smartschool, SmartSchoolAuthenticationError
-from smartschool.exceptions import SmartSchoolJsonError
+from smartschool.exceptions import SmartSchoolDownloadError, SmartSchoolJsonError
 
 
-def test_smartschool_not_started_yet():
-    with pytest.raises(RuntimeError, match="Smartschool instance must have valid credentials"):
+def test_smartschool_not_started_yet(tmp_path):
+    with patch("smartschool.session.Path.home", return_value=tmp_path), pytest.raises(RuntimeError, match="Smartschool instance must have valid credentials"):
         Smartschool().get("/")
 
 
@@ -18,8 +18,9 @@ def test_smartschool_repr(session: Smartschool):
     assert repr(session) == "Smartschool(for: bumba)"
 
 
-def test_smartschool_without_params():
-    assert Smartschool().creds is None
+def test_smartschool_without_params(tmp_path):
+    with patch("smartschool.session.Path.home", return_value=tmp_path):
+        assert Smartschool().creds is None
 
 
 def test_smartschool_with_credentials(session: Smartschool):
@@ -73,7 +74,7 @@ class TestSmartschoolAuthentication:
         """Should raise ValueError when no authenticated user."""
         session._authenticated_user = None
 
-        with pytest.raises(ValueError, match="We couldn't retrieve the authenticated user"):
+        with pytest.raises(ValueError, match="Could not retrieve authenticated user information"):
             _ = session.authenticated_user
 
     def test_authenticated_user_setter_with_data(self, session, authenticated_user_data):
@@ -282,6 +283,13 @@ class TestSmartschoolProperties:
 class TestErrorHandling:
     """Test error handling scenarios."""
 
+    def test_json_non_200_response(self, session, requests_mock):
+        """Should raise SmartSchoolDownloadError when status code is not 200."""
+        requests_mock.get("https://site/api/error", status_code=500, text="Internal Server Error")
+
+        with pytest.raises(SmartSchoolDownloadError, match="Failed to retrieve the json"):
+            session.json("/api/error")
+
     def test_invalid_json_response(self, session, requests_mock):
         """Should handle invalid JSON gracefully."""
         requests_mock.get("https://site/api/invalid", text="not json")
@@ -297,15 +305,17 @@ class TestErrorHandling:
         assert response is not None
 
 
-def test_no_auth_file():
-    sut = Smartschool()
-    assert sut._authenticated_user_file is None
-    sut.authenticated_user = None
+def test_no_auth_file(tmp_path):
+    with patch("smartschool.session.Path.home", return_value=tmp_path):
+        sut = Smartschool()
+        assert sut._authenticated_user_file is None
+        sut.authenticated_user = None
 
 
-def test_parse_login_information_continue_branch(mocker):
+def test_parse_login_information_continue_branch(mocker, tmp_path):
     """Test continue branch when script has src or no 'extend' in text."""
-    parser = Smartschool()
+    with patch("smartschool.session.Path.home", return_value=tmp_path):
+        parser = Smartschool()
 
     # Mock response with scripts that should be skipped
     mock_response = mocker.Mock()
@@ -320,5 +330,4 @@ def test_parse_login_information_continue_branch(mocker):
     parser._parse_login_information(mock_response)
 
     # Should not set authenticated_user since all scripts are skipped
-    with pytest.raises(ValueError, match="We couldn't retrieve the authenticated user"):
-        _ = parser.authenticated_user
+    assert parser._authenticated_user is None

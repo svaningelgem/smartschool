@@ -1,0 +1,69 @@
+{
+  "files": [
+    {
+      "id": "eeee1111-1111-4111-b111-111111111111",
+      "platform": {"id": 49, "name": "Testschool"},
+      "name": "nieuwsbrief januari.pdf",
+      "state": "active",
+      "parentFolderId": "aaaa1111-1111-4111-b111-111111111111",
+      "dateCreated": "2026-01-09T12:09:12+01:00",
+      "dateStateChanged": "2026-01-09T12:09:12+01:00",
+      "dateChanged": "2026-01-09T12:09:12+01:00",
+      "currentRevision": {
+        "id": "ffff1111-1111-4111-b111-111111111111",
+        "platform": {"id": 49, "name": "Testschool"},
+        "fileId": "eeee1111-1111-4111-b111-111111111111",
+        "fileSize": 93015,
+        "dateCreated": "2026-01-09T12:09:12+01:00",
+        "label": "nieuwsbrief januari.pdf",
+        "owner": {
+          "userIdentifier": "49_1001_0",
+          "userPictureHash": "initials_JJ",
+          "userPictureUrl": "https://userpicture.example.com/initials_JJ/128",
+          "name": "Jan Janssens",
+          "nameReverse": "Janssens Jan",
+          "description": "",
+          "descriptionReverse": ""
+        }
+      },
+      "isFavourite": false,
+      "confidential": false,
+      "ownerId": "49_1001_0",
+      "capabilities": {"canManage": false, "canMove": false, "canHandleRevisions": false, "canSeeHistory": false, "canSeeViewHistory": false},
+      "dateRecentAction": "2026-02-24T16:17:56+00:00"
+    },
+    {
+      "id": "eeee2222-2222-4222-b222-222222222222",
+      "platform": {"id": 49, "name": "Testschool"},
+      "name": "brochure 25-26.pdf",
+      "state": "active",
+      "parentFolderId": "aaaa2222-2222-4222-b222-222222222222",
+      "dateCreated": "2026-01-05T09:31:27+01:00",
+      "dateStateChanged": "2026-01-05T09:31:27+01:00",
+      "dateChanged": "2026-01-05T09:31:27+01:00",
+      "currentRevision": {
+        "id": "ffff2222-2222-4222-b222-222222222222",
+        "platform": {"id": 49, "name": "Testschool"},
+        "fileId": "eeee2222-2222-4222-b222-222222222222",
+        "fileSize": 958711,
+        "dateCreated": "2026-01-05T09:31:27+01:00",
+        "label": "brochure 25-26.pdf",
+        "owner": {
+          "userIdentifier": "49_1002_0",
+          "userPictureHash": "initials_PP",
+          "userPictureUrl": "https://userpicture.example.com/initials_PP/128",
+          "name": "Piet Pieters",
+          "nameReverse": "Pieters Piet",
+          "description": "",
+          "descriptionReverse": ""
+        }
+      },
+      "isFavourite": false,
+      "confidential": false,
+      "ownerId": "49_1002_0",
+      "capabilities": {"canManage": false, "canMove": false, "canHandleRevisions": false, "canSeeHistory": false, "canSeeViewHistory": false},
+      "dateRecentAction": "2026-02-24T16:15:40+00:00"
+    }
+  ],
+  "weblinks": []
+}

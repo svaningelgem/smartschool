@@ -14,3 +14,6 @@ coverage.json
 *.log
 course_downloads/
 *.sqlite
+
+.venv/
+pytest-of-*/

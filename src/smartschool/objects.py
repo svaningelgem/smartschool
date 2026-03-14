@@ -468,7 +468,7 @@ class PlannedElementCourse:
     name: String
     scheduleCodes: list[String]
     icon: String
-    courseCluster: PlannedElementCourseCluster
+    courseCluster: PlannedElementCourseCluster | None
     isVisible: bool
 
 

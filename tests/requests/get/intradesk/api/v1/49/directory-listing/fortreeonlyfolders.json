@@ -1,0 +1,74 @@
+{
+  "folders": [
+    {
+      "id": "aaaa1111-1111-4111-b111-111111111111",
+      "platform": {"id": 49, "name": "Testschool"},
+      "name": "Documenten",
+      "color": "yellow",
+      "state": "active",
+      "visible": true,
+      "confidential": false,
+      "officeTemplateFolder": false,
+      "parentFolderId": "",
+      "dateStateChanged": "2020-01-15T10:00:00+01:00",
+      "dateCreated": "2019-09-01T08:00:00+01:00",
+      "dateChanged": "2024-08-29T17:01:56+02:00",
+      "isFavourite": false,
+      "inConfidentialFolder": false,
+      "capabilities": {"canManage": false, "canAdd": false, "canSeeHistory": false, "canSeeViewHistory": false},
+      "hasChildren": true
+    },
+    {
+      "id": "aaaa2222-2222-4222-b222-222222222222",
+      "platform": {"id": 49, "name": "Testschool"},
+      "name": "Examens",
+      "color": "yellow",
+      "state": "active",
+      "visible": true,
+      "confidential": false,
+      "officeTemplateFolder": false,
+      "parentFolderId": "",
+      "dateStateChanged": "2020-03-10T09:00:00+01:00",
+      "dateCreated": "2019-09-01T08:00:00+01:00",
+      "dateChanged": "2024-05-30T12:36:57+02:00",
+      "isFavourite": false,
+      "inConfidentialFolder": false,
+      "capabilities": {"canManage": false, "canAdd": false, "canSeeHistory": false, "canSeeViewHistory": false},
+      "hasChildren": false
+    }
+  ],
+  "files": [
+    {
+      "id": "cccc1111-1111-4111-b111-111111111111",
+      "platform": {"id": 49, "name": "Testschool"},
+      "name": "welkom.docx",
+      "state": "active",
+      "parentFolderId": "",
+      "dateCreated": "2023-02-13T10:38:11+01:00",
+      "dateStateChanged": "2023-02-13T10:38:11+01:00",
+      "dateChanged": "2023-02-13T10:38:11+01:00",
+      "currentRevision": {
+        "id": "dddd1111-1111-4111-b111-111111111111",
+        "platform": {"id": 49, "name": "Testschool"},
+        "fileId": "cccc1111-1111-4111-b111-111111111111",
+        "fileSize": 182108,
+        "dateCreated": "2023-02-13T10:38:11+01:00",
+        "label": "welkom.docx",
+        "owner": {
+          "userIdentifier": "49_1001_0",
+          "userPictureHash": "initials_JJ",
+          "userPictureUrl": "https://userpicture.example.com/initials_JJ/128",
+          "name": "Jan Janssens",
+          "nameReverse": "Janssens Jan",
+          "description": "",
+          "descriptionReverse": ""
+        }
+      },
+      "isFavourite": false,
+      "confidential": false,
+      "ownerId": "49_1001_0",
+      "capabilities": {"canManage": false, "canMove": false, "canHandleRevisions": false, "canSeeHistory": false, "canSeeViewHistory": false}
+    }
+  ],
+  "weblinks": []
+}
