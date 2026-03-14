@@ -103,6 +103,7 @@ class Intradesk(IntradeskFolder):
     >>> intradesk = Intradesk(session)
     >>> for item in intradesk:
     ...     print(item.name)
+
     """
 
     name: str = "intradesk"
