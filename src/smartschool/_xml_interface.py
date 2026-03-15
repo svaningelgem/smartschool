@@ -14,15 +14,8 @@ from .common import xml_to_dict
 from .session import SessionMixin
 
 
-def _resolve_aliases(cls: type, data: dict) -> dict:
-    """Map camelCase API keys to snake_case field names using pydantic field info."""
-    for parent in cls.__mro__:
-        if hasattr(parent, "__pydantic_fields__"):
-            fields = parent.__pydantic_fields__
-            break
-    else:
-        return data
-
+def _build_alias_map(fields: dict) -> dict[str, str]:
+    """Build a mapping from API alias names to Python field names."""
     alias_to_field: dict[str, str] = {}
     for field_name, field_info in fields.items():
         va = field_info.validation_alias
@@ -34,8 +27,17 @@ def _resolve_aliases(cls: type, data: dict) -> dict:
                     alias_to_field[choice] = field_name
         if field_info.alias:
             alias_to_field.setdefault(field_info.alias, field_name)
+    return alias_to_field
 
-    return {alias_to_field.get(k, k): v for k, v in data.items()}
+
+def _resolve_aliases(cls: type, data: dict) -> dict:
+    """Map camelCase API keys to snake_case field names using pydantic field info."""
+    for parent in cls.__mro__:
+        if hasattr(parent, "__pydantic_fields__"):
+            alias_map = _build_alias_map(parent.__pydantic_fields__)
+            return {alias_map.get(k, k): v for k, v in data.items()}
+
+    return data
 
 
 if TYPE_CHECKING:
