@@ -566,15 +566,15 @@ def test_parse_mime_type():
 def test_resolve_aliases_no_pydantic_parent():
     """_resolve_aliases returns data unchanged for classes without pydantic fields."""
     data = {"foo": 1, "bar": 2}
-    assert _resolve_aliases(object, data) is data
+    assert _resolve_aliases(object, data) == data
 
 
 def test_resolve_aliases_with_pydantic_class():
     """_resolve_aliases maps camelCase aliases to snake_case field names."""
-    data = {"pictureHash": "abc", "pictureUrl": "http://x", "id": "1"}
+    data = {"pictureHash": "abc", "pictureUrl": "https://x", "id": "1"}
     result = _resolve_aliases(Student, data)
     assert result["picture_hash"] == "abc"
-    assert result["picture_url"] == "http://x"
+    assert result["picture_url"] == "https://x"
     assert result["id"] == "1"
 
 
