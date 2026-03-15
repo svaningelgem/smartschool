@@ -1,3 +1,15 @@
+# Unreleased
+
+* Added `Intradesk` module for browsing and downloading intradesk files
+* Added `CourseList` class for `/course-list` API (works even when no results are available)
+* Added `platform_id` property on `Smartschool` session
+* Added dev tracing support for debugging API interactions
+* Made `PlannedElement` fields optional to support `planned-to-dos` responses
+* Use loguru `{}` formatting in all logger calls instead of f-strings
+* Relaxed Python version requirement to `^3.10`
+* Restructured README and added `docs/` folder with detailed usage guides
+* Added utility scripts: `list_all_intradesk`, `list_all_topnavcourses`
+
 # 0.7.2
 * At the start of the year, there are no results available, so `Courses` will throw an error. Clarify this in the error message.
 
