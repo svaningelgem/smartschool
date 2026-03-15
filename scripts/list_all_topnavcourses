@@ -6,4 +6,4 @@ from smartschool import PathCredentials, Smartschool, TopNavCourses
 session = Smartschool(PathCredentials())
 
 for course in TopNavCourses(session):
-    logger.info(f"{course.name} (teacher: {course.teacher}, url: {course.url})")
+    logger.info("{} (teacher: {}, url: {})", course.name, course.teacher, course.url)
