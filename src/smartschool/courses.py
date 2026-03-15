@@ -184,7 +184,7 @@ class FileItem(SessionMixin):
             case "potx":
                 return ".potx"
 
-        logger.warning("Unknown mime type: %s", self.mime_type)
+        logger.warning("Unknown mime type: {}", self.mime_type)
         return f".{self.mime_type}"
 
     @cached_property
@@ -206,14 +206,14 @@ class FileItem(SessionMixin):
 
     def _real_download(self, target: Path | None) -> bytes | Path:
         if target:
-            logger.debug("Downloading file: %s", target.name)
+            logger.debug("Downloading file: {}", target.name)
         response: Response = self.session.get(self.download_url)
         response.raise_for_status()
 
         if match := re.search(r'filename="([^"]+)"', response.headers.get("Content-Disposition") or ""):
             found_filename = Path(match.group(1))
             if found_filename.suffix != self._suffix:
-                logger.warning("Expected suffix %s, got %s", self._suffix, found_filename.suffix)
+                logger.warning("Expected suffix {}, got {}", self._suffix, found_filename.suffix)
 
         save_test_response(response)
 

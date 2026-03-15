@@ -110,7 +110,7 @@ def test_multi_email_on_windows(mocker):
     server = mocker.patch("smtplib.SMTP")
 
     data_outputted = []
-    mocker.patch.object(logger, "info", lambda *args: data_outputted.append(args[0] % args[1:] if len(args) > 1 else args[0]))
+    mocker.patch.object(logger, "info", lambda msg, *args: data_outputted.append(msg.format(*args) if args else msg))
 
     send_email(subject="Test", text="Just a test", email_to=["me@myself.ai", "me2@myself.ai"], email_from="me@myself.ai")
     server.assert_not_called()

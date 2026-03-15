@@ -103,11 +103,11 @@ def send_email(
     message["To"] = ", ".join(email_to)
     message.attach(MIMEText(text, "plain", "utf8"))
 
-    logger.info("Sending email >> %s", subject)
+    logger.info("Sending email >> {}", subject)
 
     if platform.system() == "Windows":  # pragma: no cover
         logger.info("=================== On Linux we would have sent this: ===================")
-        logger.info("Subject: %s", subject)
+        logger.info("Subject: {}", subject)
         logger.info("")
         logger.info(text)
         logger.info("=========================================================================")
