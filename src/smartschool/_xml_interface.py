@@ -8,8 +8,37 @@ from typing import TYPE_CHECKING, TypeVar
 from xml.etree import ElementTree as ET
 from xml.sax.saxutils import quoteattr
 
+from pydantic import AliasChoices
+
 from .common import xml_to_dict
 from .session import SessionMixin
+
+
+def _build_alias_map(fields: dict) -> dict[str, str]:
+    """Build a mapping from API alias names to Python field names."""
+    alias_to_field: dict[str, str] = {}
+    for field_name, field_info in fields.items():
+        va = field_info.validation_alias
+        if isinstance(va, str):
+            alias_to_field[va] = field_name
+        elif isinstance(va, AliasChoices):
+            for choice in va.choices:
+                if isinstance(choice, str):
+                    alias_to_field[choice] = field_name
+        if field_info.alias:
+            alias_to_field.setdefault(field_info.alias, field_name)
+    return alias_to_field
+
+
+def _resolve_aliases(cls: type, data: dict) -> dict:
+    """Map camelCase API keys to snake_case field names using pydantic field info."""
+    for parent in cls.__mro__:
+        if hasattr(parent, "__pydantic_fields__"):
+            alias_map = _build_alias_map(parent.__pydantic_fields__)
+            return {alias_map.get(k, k): v for k, v in data.items()}
+
+    return data
+
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -88,6 +117,7 @@ class SmartschoolXML(ABC, SessionMixin):
             if SessionMixin in as_obj.__mro__:
                 as_dict["session"] = self.session
 
+            as_dict = _resolve_aliases(as_obj, as_dict)
             obj = as_obj(**as_dict)
 
             all_entries.append(obj)
@@ -126,7 +156,7 @@ class SmartschoolXML(ABC, SessionMixin):
 
 
 @dataclass
-class SmartschoolXML_WeeklyCache(SmartschoolXML, ABC):
+class SmartschoolXmlWeeklyCache(SmartschoolXML, ABC):
     timestamp_to_use: datetime | date | None = None
 
     @property
@@ -142,7 +172,7 @@ class SmartschoolXML_WeeklyCache(SmartschoolXML, ABC):
         self.cache[self._cache_key] = obj
 
 
-class SmartschoolXML_NoCache(SmartschoolXML, ABC):
+class SmartschoolXmlNoCache(SmartschoolXML, ABC):
     def _get_from_cache(self) -> object:
         raise KeyError
 

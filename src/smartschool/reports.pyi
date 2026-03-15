@@ -3,7 +3,7 @@ from collections.abc import Iterable, Iterator
 from datetime import datetime
 
 from . import objects
-from .objects import Class_
+from .objects import SchoolClass
 from .session import SessionMixin, Smartschool
 
 class Report(objects.Report, SessionMixin):
@@ -12,9 +12,9 @@ class Report(objects.Report, SessionMixin):
     name: str
     icon: str
     date: datetime
-    downloadUrl: str
-    class_: Class_
-    schoolyearLabel: str
+    download_url: str
+    class_: SchoolClass
+    schoolyear_label: str
     def __init__(
         self,
         session: Smartschool,
@@ -22,9 +22,9 @@ class Report(objects.Report, SessionMixin):
         name: str,
         icon: str,
         date: datetime,
-        downloadUrl: str,
-        class_: Class_,
-        schoolyearLabel: str,
+        download_url: str,
+        class_: SchoolClass,
+        schoolyear_label: str,
     ): ...
     def download(
         self,

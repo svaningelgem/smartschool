@@ -128,32 +128,8 @@ class DevTracingMixin(abc.ABC):
         f.write(f"Status Code: {response.status_code} {response.reason}\n")
         f.write(f"Final URL: {response.url}\n")
 
-        if response.history:
-            f.write("Redirect History:\n")
-            for i, resp in enumerate(response.history):
-                f.write(f"  {i + 1}. {resp.status_code} -> {resp.url}\n")
-
-        # Request details from response
-        if hasattr(response, "request") and response.request:
-            req: PreparedRequest = response.request
-            f.write("\nActual Request Details:\n")
-            f.write(f"  Method: {req.method}\n")
-            f.write(f"  URL: {req.url}\n")
-            f.write(f"  Path URL: {getattr(req, 'path_url', 'N/A')}\n")
-
-            if req.headers:
-                f.write("  Headers:\n")
-                for key, value in req.headers.items():
-                    f.write(f"    {key}: {value}\n")
-
-            if hasattr(req, "_cookies") and req._cookies:
-                f.write("  Request Cookies:\n")
-                for cookie in req._cookies:
-                    f.write(f"    {cookie.name}={cookie.value}\n")
-
-            if hasattr(req, "body") and req.body:
-                body_size = len(req.body) if isinstance(req.body, (str, bytes)) else 0
-                f.write(f"  Body ({body_size} bytes): {req.body}\n")
+        self._write_redirect_history(f, response)
+        self._write_actual_request_details(f, response)
 
         f.write("\nResponse Headers:\n")
         for key, value in response.headers.items():
@@ -172,3 +148,35 @@ class DevTracingMixin(abc.ABC):
         f.write("-" * 40 + "\n")
         f.write(response.text)
         f.write("\n" + "-" * 40 + "\n")
+
+    def _write_redirect_history(self, f, response: Response) -> None:
+        """Write redirect history if present."""
+        if response.history:
+            f.write("Redirect History:\n")
+            for i, resp in enumerate(response.history):
+                f.write(f"  {i + 1}. {resp.status_code} -> {resp.url}\n")
+
+    def _write_actual_request_details(self, f, response: Response) -> None:
+        """Write the actual request details from the response object."""
+        if not (hasattr(response, "request") and response.request):
+            return
+
+        req: PreparedRequest = response.request
+        f.write("\nActual Request Details:\n")
+        f.write(f"  Method: {req.method}\n")
+        f.write(f"  URL: {req.url}\n")
+        f.write(f"  Path URL: {getattr(req, 'path_url', 'N/A')}\n")
+
+        if req.headers:
+            f.write("  Headers:\n")
+            for key, value in req.headers.items():
+                f.write(f"    {key}: {value}\n")
+
+        if hasattr(req, "_cookies") and req._cookies:
+            f.write("  Request Cookies:\n")
+            for cookie in req._cookies:
+                f.write(f"    {cookie.name}={cookie.value}\n")
+
+        if hasattr(req, "body") and req.body:
+            body_size = len(req.body) if isinstance(req.body, (str, bytes)) else 0
+            f.write(f"  Body ({body_size} bytes): {req.body}\n")

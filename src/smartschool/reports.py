@@ -10,7 +10,7 @@ __all__ = ["Report", "Reports"]
 @dataclass
 class Report(objects.Report, SessionMixin):
     def download(self) -> bytes:
-        data = self.session.json(self.downloadUrl)
+        data = self.session.json(self.download_url)
         return self.session.get(data["url"]).content
 
 

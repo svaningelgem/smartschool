@@ -13,6 +13,7 @@ from logprise import logger
 from requests import Response
 
 from smartschool import Smartschool, SmartSchoolParsingError
+from smartschool._xml_interface import _resolve_aliases
 from smartschool.common import (
     IsSaved,
     as_float,
@@ -75,8 +76,8 @@ def test_save(session: Smartschool, tmp_path: Path) -> None:
 def test_save_as_pydantic_dataclass(session: Smartschool, tmp_path: Path) -> None:
     sut = Student(
         id="a",
-        pictureHash="b",
-        pictureUrl="c",
+        picture_hash="b",
+        picture_url="c",
         description={"startingWithFirstName": "d", "startingWithLastName": "e"},
         name={"startingWithFirstName": "f", "startingWithLastName": "g"},
         sort="h",
@@ -120,8 +121,8 @@ def test_multi_email_on_windows(mocker):
 
 
 def test_as_float():
-    assert as_float("123,34") == 123.34
-    assert as_float("123.34") == 123.34
+    assert as_float("123,34") == pytest.approx(123.34)
+    assert as_float("123.34") == pytest.approx(123.34)
 
 
 def test_make_filesystem_safe():
@@ -560,6 +561,21 @@ def test_parse_mime_type():
     assert parse_mime_type("fichier") == ""
     assert parse_mime_type("application/vnd.ms-excel") == "application/vnd.ms excel"
     assert parse_mime_type("image/jpeg") == "image/jpeg"
+
+
+def test_resolve_aliases_no_pydantic_parent():
+    """_resolve_aliases returns data unchanged for classes without pydantic fields."""
+    data = {"foo": 1, "bar": 2}
+    assert _resolve_aliases(object, data) == data
+
+
+def test_resolve_aliases_with_pydantic_class():
+    """_resolve_aliases maps camelCase aliases to snake_case field names."""
+    data = {"pictureHash": "abc", "pictureUrl": "https://x", "id": "1"}
+    result = _resolve_aliases(Student, data)
+    assert result["picture_hash"] == "abc"
+    assert result["picture_url"] == "https://x"
+    assert result["id"] == "1"
 
 
 def test_sorts_numbers_naturally():

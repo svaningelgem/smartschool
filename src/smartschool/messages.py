@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 from urllib.parse import quote_plus
 
 from . import objects
-from ._xml_interface import SmartschoolXML, SmartschoolXML_NoCache
+from ._xml_interface import SmartschoolXML, SmartschoolXmlNoCache
 from .objects import FullMessage, MessageChanged, MessageDeletionStatus, ShortMessage
 from .session import SessionMixin
 
@@ -67,7 +67,7 @@ class _MessagesPoster:
 
 
 @dataclass
-class MessageHeaders(_MessagesPoster, SmartschoolXML_NoCache):
+class MessageHeaders(_MessagesPoster, SmartschoolXmlNoCache):
     """
     Interfaces the mailbox principle in Smartschool.
 
@@ -184,7 +184,7 @@ class Message(_FetchOneMessage):
 @dataclass
 class Attachment(SessionMixin, objects.Attachment):
     def download(self) -> bytes:
-        resp = self.session.get(f"/?module=Messages&file=download&fileID={self.fileID}&target=0")
+        resp = self.session.get(f"/?module=Messages&file=download&fileID={self.file_id}&target=0")
         return base64.b64decode(resp.content)
 
 
@@ -303,7 +303,7 @@ class MessageMoveToArchive(SessionMixin):
 
 
 # Cannot have `@dataclass`
-class MessageMoveToTrash(_MessagesPoster, SmartschoolXML_NoCache):
+class MessageMoveToTrash(_MessagesPoster, SmartschoolXmlNoCache):
     def __init__(self, session: Smartschool, msg_id: int):
         super().__init__(session=session)
 
