@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import overload
 
 from . import objects
-from .objects import Course
+from .objects import Course, PlannedElementCourse
 from .session import SessionMixin, Smartschool
 
 class CourseCondensed(objects.CourseCondensed, SessionMixin):
@@ -53,6 +53,16 @@ class Courses(SessionMixin):
     def __iter__(
         self,
     ) -> Iterator[Course]: ...
+
+class CourseList(SessionMixin):
+    session: Smartschool
+    def __init__(
+        self,
+        session: Smartschool,
+    ): ...
+    def __iter__(
+        self,
+    ) -> Iterator[PlannedElementCourse]: ...
 
 class FileItem(SessionMixin):
     session: Smartschool
