@@ -423,13 +423,14 @@ class UserSeeProperties:
     platformId: bool
     period: bool
     organisers: bool
-    participants: bool
     plannedElementType: bool
-    isParticipant: bool
     capabilities: bool
-    courses: bool
-    locations: bool
+
     name: bool = False
+    participants: bool = False
+    isParticipant: bool = False
+    courses: bool = False
+    locations: bool = False
 
 
 @dataclass
@@ -439,12 +440,12 @@ class UserCapabilities:
     canUserDelete: bool
     canUserEdit: bool
     canUserReplace: bool
-    canUserEditPresence: bool
     canUserReschedule: bool
     canUserChangeUserColor: bool
-    canUserChangeUserViewMetadata: bool
     canUserSeeProperties: UserSeeProperties
 
+    canUserEditPresence: bool = False
+    canUserChangeUserViewMetadata: bool = False
     canUserChangeOrganisers: bool = False
     canUserChangeParticipants: bool = False
     canUserChangeParticipantGroupFilters: bool = False
@@ -505,12 +506,8 @@ class PlannedElement:
     platformId: int
     period: PlannedElementPeriod
     organisers: PlannedElementOrganisers
-    participants: PlannedElementParticipants
     plannedElementType: String
-    isParticipant: bool
     capabilities: UserCapabilities
-    courses: list[PlannedElementCourse]
-    locations: list[PlannedElementLocation]
     sort: String
     unconfirmed: bool
     pinned: bool
@@ -518,6 +515,10 @@ class PlannedElement:
     joinIds: PlannedElementJoinIds
 
     name: String = ""
+    participants: PlannedElementParticipants | None = None
+    isParticipant: bool = False
+    courses: list[PlannedElementCourse] = Field(default_factory=list)
+    locations: list[PlannedElementLocation] = Field(default_factory=list)
     assignmentType: PlannedElementAssignmentType | None = None
     resolvedStatus: String = ""
     onlineSession: String | None = None
