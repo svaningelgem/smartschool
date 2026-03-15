@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 from logprise import logger
 
-from smartschool import PathCredentials, Smartschool, TopNavCourses
+from smartschool import Courses, PathCredentials, Smartschool
 
 session = Smartschool(PathCredentials())
-
-for course in TopNavCourses(session):
-    logger.info("{} (teacher: {}, url: {})", course.name, course.teacher, course.url)
+for course in Courses(session):
+    logger.info(course.name)

@@ -87,7 +87,7 @@ class Smartschool(Session, DevTracingMixin):
         if self._login_attempts >= self._max_login_attempts:
             raise SmartSchoolAuthenticationError(f"Max login attempts ({self._max_login_attempts}) reached")
 
-        logger.debug(f"Auth redirect detected: {response.url}")
+        logger.debug("Auth redirect detected: %s", response.url)
         self._login_attempts += 1
 
         if response.url.endswith("/login"):
@@ -193,7 +193,7 @@ class Smartschool(Session, DevTracingMixin):
 
     def _do_login(self, response: Response) -> Response:
         """Handle login form submission."""
-        logger.info(f"Logging in with {self.creds.username}")
+        logger.info("Logging in with %s", self.creds.username)
         data = fill_form(
             response,
             'form[name="login_form"]',
@@ -206,7 +206,7 @@ class Smartschool(Session, DevTracingMixin):
 
     def _do_login_verification(self, response: Response) -> Response:
         """Handle account verification (birthday)."""
-        logger.info(f"Account verification for {self.creds.username}")
+        logger.info("Account verification for %s", self.creds.username)
         data = fill_form(
             response,
             'form[name="account_verification_form"]',
@@ -221,7 +221,7 @@ class Smartschool(Session, DevTracingMixin):
         if pyotp is None:
             raise SmartSchoolAuthenticationError("2FA verification requires 'pyotp' package. Install with: pip install pyotp")
 
-        logger.info(f"2FA verification for {self.creds.username}")
+        logger.info("2FA verification for %s", self.creds.username)
 
         # Check 2FA config
         config_resp = self._make_traced_request(super().request, "GET", self.create_url("/2fa/api/v1/config"), allow_redirects=True)
