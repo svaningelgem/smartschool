@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, ClassVar
 
 from . import objects
-from ._xml_interface import SmartschoolXML_WeeklyCache
+from ._xml_interface import SmartschoolXmlWeeklyCache
 from .common import convert_to_datetime
 from .objects import AgendaHour, AgendaMomentInfo
 from .session import SessionMixin
@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 __all__ = ["AgendaLesson", "AgendaPoster", "SmartschoolHours", "SmartschoolLessons", "SmartschoolMomentInfos"]
 
 
-class AgendaPoster(SmartschoolXML_WeeklyCache, ABC):
+class AgendaPoster(SmartschoolXmlWeeklyCache, ABC):
     """Caches the information on a weekly basis, and posts to the mentioned URL."""
 
     _url: ClassVar[str] = "/?module=Agenda&file=dispatcher"
@@ -28,7 +28,7 @@ class AgendaPoster(SmartschoolXML_WeeklyCache, ABC):
 class AgendaLesson(SessionMixin, objects.AgendaLesson):
     @property
     def hour_details(self) -> AgendaHour:
-        return SmartschoolHours(self.session).search_by_hourId(self.hourID)
+        return SmartschoolHours(self.session).search_by_hour_id(self.hour_id)
 
 
 class SmartschoolLessons(AgendaPoster):
@@ -137,12 +137,12 @@ class SmartschoolHours(AgendaPoster):
     def _params(self) -> dict:
         return {"date": int(time.time())}
 
-    def search_by_hourId(self, hourId: str):
+    def search_by_hour_id(self, hour_id: str):
         for hour in self._xml():
-            if hour.hourID == hourId:
+            if hour.hour_id == hour_id:
                 return hour
 
-        raise ValueError(f"Couldn't find {hourId}")
+        raise ValueError(f"Couldn't find {hour_id}")
 
 
 class SmartschoolMomentInfos(AgendaPoster):

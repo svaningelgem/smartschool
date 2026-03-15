@@ -16,15 +16,15 @@ class Result(objects.Result, SessionMixin):
     name: str
     graphic: ResultGraphic
     date: datetime
-    gradebookOwner: Teacher
+    gradebook_owner: Teacher
     component: Component | None
     courses: list[Course]
     period: Period
     feedback: list[Feedback]
     feedbacks: list[FeedbackFull]
-    availabilityDate: datetime
-    isPublished: bool
-    doesCount: bool
+    availability_date: datetime
+    is_published: bool
+    does_count: bool
     deleted: bool
     details: ResultDetails | None
     def __init__(
@@ -35,15 +35,15 @@ class Result(objects.Result, SessionMixin):
         name: str,
         graphic: ResultGraphic,
         date: datetime,
-        gradebookOwner: Teacher,
+        gradebook_owner: Teacher,
         component: Component | None,
         courses: list[Course],
         period: Period,
         feedback: list[Feedback],
         feedbacks: list[FeedbackFull],
-        availabilityDate: datetime,
-        isPublished: bool,
-        doesCount: bool,
+        availability_date: datetime,
+        is_published: bool,
+        does_count: bool,
         deleted: bool = False,
         details: ResultDetails | None = None,
     ): ...

@@ -75,8 +75,8 @@ def test_save(session: Smartschool, tmp_path: Path) -> None:
 def test_save_as_pydantic_dataclass(session: Smartschool, tmp_path: Path) -> None:
     sut = Student(
         id="a",
-        pictureHash="b",
-        pictureUrl="c",
+        picture_hash="b",
+        picture_url="c",
         description={"startingWithFirstName": "d", "startingWithLastName": "e"},
         name={"startingWithFirstName": "f", "startingWithLastName": "g"},
         sort="h",
@@ -120,8 +120,8 @@ def test_multi_email_on_windows(mocker):
 
 
 def test_as_float():
-    assert as_float("123,34") == 123.34
-    assert as_float("123.34") == 123.34
+    assert as_float("123,34") == pytest.approx(123.34)
+    assert as_float("123.34") == pytest.approx(123.34)
 
 
 def test_make_filesystem_safe():

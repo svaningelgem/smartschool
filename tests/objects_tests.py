@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 
 import pytest
 
-from smartschool.objects import Class_, Course, CourseGraphic, DateRange, PersonDescription, SkoreWorkYear, Teacher
+from smartschool.objects import Course, CourseGraphic, DateRange, PersonDescription, SchoolClass, SkoreWorkYear, Teacher
 
 
 @pytest.fixture
@@ -11,7 +11,7 @@ def create_course():
         gr = CourseGraphic(type="icon", value="")
         dr = DateRange(start=datetime.now(tz=timezone.utc), end=datetime.now(tz=timezone.utc))
         swy = SkoreWorkYear(0, dr)
-        cl = Class_("0", 0, 0, "", "", "")
+        cl = SchoolClass("0", 0, 0, "", "", "")
 
         teachers = []
         for i in range(1, num_teachers + 1):

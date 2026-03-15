@@ -1,5 +1,3 @@
-# pylint: disable=invalid-name
-
 from __future__ import annotations
 
 import re
@@ -7,7 +5,8 @@ from datetime import date, datetime
 from functools import cached_property
 from typing import Annotated, Literal
 
-from pydantic import AliasChoices, BeforeValidator, constr
+from pydantic import AliasChoices, BeforeValidator, ConfigDict, constr
+from pydantic.alias_generators import to_camel
 from pydantic.dataclasses import Field, dataclass
 
 from .common import as_float, convert_to_date, convert_to_datetime
@@ -19,14 +18,16 @@ Url = String
 Date = Annotated[date, BeforeValidator(convert_to_date)]
 DateTime = Annotated[datetime, BeforeValidator(convert_to_datetime)]
 
+_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
-@dataclass
+
+@dataclass(config=_config)
 class CourseGraphic:
     type: Literal["icon"]
     value: String
 
 
-@dataclass
+@dataclass(config=_config)
 class ResultGraphic:
     type: Literal["percentage"]
     color: Literal["green", "red", "olive", "yellow", "steel"]
@@ -46,120 +47,120 @@ class ResultGraphic:
         return self.achieved_points / self.total_points
 
 
-@dataclass
+@dataclass(config=_config)
 class PersonDescription:
-    startingWithFirstName: String = ""
-    startingWithLastName: String = ""
+    starting_with_first_name: String = ""
+    starting_with_last_name: String = ""
 
 
-@dataclass
+@dataclass(config=_config)
 class _User:
     id: String
-    pictureHash: String
-    pictureUrl: Url
+    picture_hash: String
+    picture_url: Url
     description: PersonDescription
     name: PersonDescription
     sort: String
     deleted: bool = False
 
 
-@dataclass
+@dataclass(config=_config)
 class _Group:
     identifier: String
     id: String
-    platformId: int
+    platform_id: int
     name: String
     type: String
     icon: String
     sort: String
 
 
-@dataclass
+@dataclass(config=_config)
 class DateRange:
     start: DateTime
     end: DateTime
 
 
-@dataclass
+@dataclass(config=_config)
 class SkoreWorkYear:
     id: int
-    dateRange: DateRange
+    date_range: DateRange
 
 
-@dataclass
-class Class_:
+@dataclass(config=_config)
+class SchoolClass:
     identifier: String
     id: int
-    platformId: int
+    platform_id: int
     name: String
     type: String
     icon: String
 
 
-@dataclass
+@dataclass(config=_config)
 class Period:
     id: int
     name: String
     icon: String
-    skoreWorkYear: SkoreWorkYear
-    isActive: bool
-    class_: Class_ = Field(validation_alias=AliasChoices("class", "class_"))
+    skore_work_year: SkoreWorkYear
+    is_active: bool
+    class_: SchoolClass = Field(validation_alias=AliasChoices("class", "class_"))
 
 
-@dataclass
+@dataclass(config=_config)
 class Component:
     id: int
     name: String
     abbreviation: String
 
 
-@dataclass
+@dataclass(config=_config)
 class Teacher(_User): ...
 
 
-@dataclass
+@dataclass(config=_config)
 class Student(_User): ...
 
 
-@dataclass
+@dataclass(config=_config)
 class Course:
     id: int
     name: String
     graphic: CourseGraphic
     teachers: list[Teacher]
-    skoreClassId: int
-    parentCourseId: None | int
-    skoreWorkYear: SkoreWorkYear
-    class_: Class_ = Field(validation_alias=AliasChoices("class", "class_"))
+    skore_class_id: int
+    parent_course_id: None | int
+    skore_work_year: SkoreWorkYear
+    class_: SchoolClass = Field(validation_alias=AliasChoices("class", "class_"))
 
     def __str__(self):
         ret = f"{self.name} (Teacher"
         if len(self.teachers) != 1:
             ret += "s"
-        ret += f": {', '.join(t.name.startingWithLastName for t in self.teachers)}"
+        ret += f": {', '.join(t.name.starting_with_last_name for t in self.teachers)}"
         # ret += f", ID: {self.id}"
         return ret + ")"
 
 
-@dataclass
+@dataclass(config=_config)
 class Feedback:
     text: String
     user: Teacher
 
 
-@dataclass
+@dataclass(config=_config)
 class FeedbackFull:
     attachments: list[String]
-    changedAt: DateTime
-    createdAt: DateTime
-    evaluationId: String
+    changed_at: DateTime
+    created_at: DateTime
+    evaluation_id: String
     id: String
     student: Student
     teacher: Teacher
     text: String
 
 
-@dataclass
+@dataclass(config=_config)
 class Result:
     identifier: String
     type: Literal["normal"]
@@ -167,128 +168,128 @@ class Result:
     graphic: ResultGraphic
     date: DateTime
 
-    gradebookOwner: Teacher
+    gradebook_owner: Teacher
     component: Component | None
     courses: list[Course]
     period: Period
     feedback: list[Feedback]
     feedbacks: list[FeedbackFull]
-    availabilityDate: DateTime
-    isPublished: bool
-    doesCount: bool
+    availability_date: DateTime
+    is_published: bool
+    does_count: bool
     deleted: bool = False
 
     details: ResultDetails | None = None
 
 
-@dataclass
+@dataclass(config=_config)
 class ResultDetails:
-    centralTendencies: list[String]
+    central_tendencies: list[String]
     teachers: list[Teacher]
-    dateChanged: DateTime
-    userChanged: Teacher
-    class_: Class_ = Field(validation_alias=AliasChoices("class", "class_"))
+    date_changed: DateTime
+    user_changed: Teacher
+    class_: SchoolClass = Field(validation_alias=AliasChoices("class", "class_"))
 
 
-@dataclass
+@dataclass(config=_config)
 class CourseCondensed:
     name: String
     teacher: String
     url: Url = Field()
 
     id: int | None = Field(repr=False, default=None)
-    platformId: int | None = Field(repr=False, default=None)
+    platform_id: int | None = Field(repr=False, default=None)
 
     descr: String = Field(repr=False, default="")
     icon: String = Field(repr=False, default="")
 
 
-@dataclass
+@dataclass(config=_config)
 class FutureTaskOneTask:
     label: String
     description: String
     icon: String
     warning: bool
     click_handle: String
-    activityID: int
-    dateID: String
-    assignmentID: String
-    endMomentTS: String | None
-    startMomentID: String
-    endMomentID: String
-    lessonID: String
+    activity_id: Annotated[int, Field(validation_alias="activityID")]
+    date_id: Annotated[String, Field(validation_alias="dateID")]
+    assignment_id: Annotated[String, Field(validation_alias="assignmentID")]
+    end_moment_ts: Annotated[String | None, Field(validation_alias="endMomentTS")]
+    start_moment_id: Annotated[String, Field(validation_alias="startMomentID")]
+    end_moment_id: Annotated[String, Field(validation_alias="endMomentID")]
+    lesson_id: Annotated[String, Field(validation_alias="lessonID")]
     type: String
-    classID: String
+    class_id: Annotated[String, Field(validation_alias="classID")]
     course: String
     date: Date
-    hourID: String
+    hour_id: Annotated[String, Field(validation_alias="hourID")]
 
 
-@dataclass
+@dataclass(config=_config)
 class FutureTaskOneItem:
     tasks: list[FutureTaskOneTask]
     materials: list[String]
 
 
-@dataclass
+@dataclass(config=_config)
 class FutureTaskOneCourse:
-    lessonID: String
-    hourID: String
-    classID: String
+    lesson_id: Annotated[String, Field(validation_alias="lessonID")]
+    hour_id: Annotated[String, Field(validation_alias="hourID")]
+    class_id: Annotated[String, Field(validation_alias="classID")]
     course_title: String
     items: FutureTaskOneItem
 
 
-@dataclass
+@dataclass(config=_config)
 class FutureTaskOneDay:
     date: Date
     pretty_date: String
     courses: list[FutureTaskOneCourse]
 
 
-@dataclass
+@dataclass(config=_config)
 class AgendaHour:
-    hourID: String
+    hour_id: Annotated[String, Field(validation_alias="hourID")]
     start: String
     end: String
     title: String
 
 
-@dataclass
+@dataclass(config=_config)
 class AgendaLesson:
-    momentID: String
-    lessonID: String
-    hourID: String
+    moment_id: Annotated[String, Field(validation_alias="momentID")]
+    lesson_id: Annotated[String, Field(validation_alias="lessonID")]
+    hour_id: Annotated[String, Field(validation_alias="hourID")]
     date: Date
     subject: String | None
     course: String
-    courseTitle: String
+    course_title: String
     classroom: String
-    classroomTitle: String
+    classroom_title: String
     teacher: String
-    teacherTitle: String
+    teacher_title: String
     klassen: String
-    klassenTitle: String
-    classIDs: String
-    bothStartStatus: String
-    assignmentEndStatus: String
-    testDeadlineStatus: String
-    noteStatus: String
+    klassen_title: String
+    class_ids: Annotated[String, Field(validation_alias="classIDs")]
+    both_start_status: String
+    assignment_end_status: String
+    test_deadline_status: String
+    note_status: String
     note: String | None
     date_listview: String
     hour: String
     activity: String
-    activityID: String | None
+    activity_id: Annotated[String | None, Field(validation_alias="activityID")]
     color: String
-    hourValue: String
+    hour_value: String
     components_hidden: object
-    freedayIcon: String
-    someSubjectsEmpty: String | None
+    freeday_icon: String
+    some_subjects_empty: String | None
 
 
-@dataclass
+@dataclass(config=_config)
 class AgendaMomentInfoAssignment:
-    startAssignment: String
+    start_assignment: String
     start: String
     end: String
     type: String
@@ -296,34 +297,34 @@ class AgendaMomentInfoAssignment:
     atdescription: String
     freedeadline: String
     warning: String
-    assignmentInfo: String
-    assignmentDeadline: String
+    assignment_info: String
+    assignment_deadline: String
 
 
-@dataclass
+@dataclass(config=_config)
 class AgendaMomentInfo:
-    className: String
+    class_name: String
     subject: String
     materials: String | None
-    momentID: String
+    moment_id: Annotated[String, Field(validation_alias="momentID")]
     assignments: list[AgendaMomentInfoAssignment]
 
 
-@dataclass
+@dataclass(config=_config)
 class StudentSupportLink:
     id: String
     name: String
     description: String
     icon: String
     link: Url
-    cleanLink: String
-    isVisible: bool
+    clean_link: String
+    is_visible: bool
 
 
-@dataclass
+@dataclass(config=_config)
 class ShortMessage:
     id: int
-    fromImage: Url
+    from_image: Url
     subject: String
     date: DateTime
     status: int
@@ -334,13 +335,13 @@ class ShortMessage:
     allowreply: bool
     allowreplyenabled: bool
     hasreply: bool
-    hasForward: bool
-    realBox: String
-    sendDate: DateTime | None
+    has_forward: bool
+    real_box: String
+    send_date: DateTime | None
     from_: String = Field(validation_alias=AliasChoices("from", "from_"))
 
 
-@dataclass
+@dataclass(config=_config)
 class FullMessage:
     id: int
     to: String | None
@@ -354,130 +355,130 @@ class FullMessage:
     receivers: list[String]
     ccreceivers: list[String]
     bccreceivers: list[String]
-    senderPicture: String
-    markedInLVS: None
-    fromTeam: int
-    totalNrOtherToReciviers: int
-    totalnrOtherCcReceivers: int
-    totalnrOtherBccReceivers: int
-    canReply: bool
-    hasReply: bool
-    hasForward: bool
-    sendDate: DateTime | None
+    sender_picture: String
+    marked_in_lvs: Annotated[None, Field(validation_alias="markedInLVS")]
+    from_team: int
+    total_nr_other_to_reciviers: int
+    total_nr_other_cc_receivers: Annotated[int, Field(validation_alias="totalnrOtherCcReceivers")]
+    total_nr_other_bcc_receivers: Annotated[int, Field(validation_alias="totalnrOtherBccReceivers")]
+    can_reply: bool
+    has_reply: bool
+    has_forward: bool
+    send_date: DateTime | None
     from_: String = Field(validation_alias=AliasChoices("from", "from_"))
 
 
-@dataclass
+@dataclass(config=_config)
 class Attachment:
-    fileID: int
+    file_id: Annotated[int, Field(validation_alias="fileID")]
     name: String
     mime: String
     size: String
     icon: String
-    wopiAllowed: bool
+    wopi_allowed: bool
     order: int
 
 
-@dataclass
+@dataclass(config=_config)
 class MessageChanged:
     id: int
     new: int = Field(validation_alias=AliasChoices("status", "label", "new"))
 
 
-@dataclass
+@dataclass(config=_config)
 class MessageDeletionStatus:
-    msgID: int
-    boxType: String
+    msg_id: Annotated[int, Field(validation_alias="msgID")]
+    box_type: String
     is_deleted: bool = Field(validation_alias=AliasChoices("status", "is_deleted"))
 
 
-@dataclass
+@dataclass(config=_config)
 class PlannedElementPeriod:
-    dateTimeFrom: datetime
-    dateTimeTo: datetime
-    wholeDay: bool
+    date_time_from: datetime
+    date_time_to: datetime
+    whole_day: bool
     deadline: bool
 
 
-@dataclass
+@dataclass(config=_config)
 class PlannedElementOrganisers:
     users: list[_User]
 
 
-@dataclass
+@dataclass(config=_config)
 class GroupFilters:
     filters: list
-    additionalUsers: list[_User]
+    additional_users: list[_User]
 
 
-@dataclass
+@dataclass(config=_config)
 class PlannedElementParticipants:
     groups: list[_Group]
     users: list[_User]
-    groupFilters: GroupFilters
+    group_filters: GroupFilters
 
 
-@dataclass
+@dataclass(config=_config)
 class UserSeeProperties:
     id: bool
-    platformId: bool
+    platform_id: bool
     period: bool
     organisers: bool
-    plannedElementType: bool
+    planned_element_type: bool
     capabilities: bool
 
     name: bool = False
     participants: bool = False
-    isParticipant: bool = False
+    is_participant: bool = False
     courses: bool = False
     locations: bool = False
 
 
-@dataclass
+@dataclass(config=_config)
 class UserCapabilities:
-    canUserTrash: bool
-    canUserRestoreFromTrash: bool
-    canUserDelete: bool
-    canUserEdit: bool
-    canUserReplace: bool
-    canUserReschedule: bool
-    canUserChangeUserColor: bool
-    canUserSeeProperties: UserSeeProperties
+    can_user_trash: bool
+    can_user_restore_from_trash: bool
+    can_user_delete: bool
+    can_user_edit: bool
+    can_user_replace: bool
+    can_user_reschedule: bool
+    can_user_change_user_color: bool
+    can_user_see_properties: UserSeeProperties
 
-    canUserEditPresence: bool = False
-    canUserChangeUserViewMetadata: bool = False
-    canUserChangeOrganisers: bool = False
-    canUserChangeParticipants: bool = False
-    canUserChangeParticipantGroupFilters: bool = False
-    canUserChangeCourses: bool = False
-    canUserChangeLocations: bool = False
-    canUserCreateVideoCall: bool = False
-    canUserSeeVideoCall: bool = False
-    canUserManageVideoCall: bool = False
+    can_user_edit_presence: bool = False
+    can_user_change_user_view_metadata: bool = False
+    can_user_change_organisers: bool = False
+    can_user_change_participants: bool = False
+    can_user_change_participant_group_filters: bool = False
+    can_user_change_courses: bool = False
+    can_user_change_locations: bool = False
+    can_user_create_video_call: bool = False
+    can_user_see_video_call: bool = False
+    can_user_manage_video_call: bool = False
 
 
-@dataclass
+@dataclass(config=_config)
 class PlannedElementCourseCluster:
     id: int
     name: String
 
 
-@dataclass
+@dataclass(config=_config)
 class PlannedElementCourse:
     id: UUID
-    platformId: int
+    platform_id: int
     name: String
-    scheduleCodes: list[String]
+    schedule_codes: list[String]
     icon: String
-    courseCluster: PlannedElementCourseCluster | None
-    isVisible: bool
+    course_cluster: PlannedElementCourseCluster | None
+    is_visible: bool
 
 
-@dataclass
+@dataclass(config=_config)
 class PlannedElementLocation:
     id: UUID
-    platformId: int
-    platformName: String
+    platform_id: int
+    platform_name: String
     number: String
     title: String
     icon: String
@@ -485,61 +486,61 @@ class PlannedElementLocation:
     selectable: bool
 
 
-@dataclass
+@dataclass(config=_config)
 class PlannedElementJoinIds:
     from_: String = Field(validation_alias=AliasChoices("from", "from_"))
     to: String = Field(alias="to")
 
 
-@dataclass
+@dataclass(config=_config)
 class PlannedElementAssignmentType:
     id: UUID
     name: String
     abbreviation: String
-    isVisible: bool
+    is_visible: bool
     weight: int
 
 
-@dataclass
+@dataclass(config=_config)
 class PlannedElement:
     id: UUID
-    platformId: int
+    platform_id: int
     period: PlannedElementPeriod
     organisers: PlannedElementOrganisers
-    plannedElementType: String
+    planned_element_type: String
     capabilities: UserCapabilities
     sort: String
     unconfirmed: bool
     pinned: bool
     color: String
-    joinIds: PlannedElementJoinIds
+    join_ids: PlannedElementJoinIds
 
     name: String = ""
     participants: PlannedElementParticipants | None = None
-    isParticipant: bool = False
+    is_participant: bool = False
     courses: list[PlannedElementCourse] = Field(default_factory=list)
     locations: list[PlannedElementLocation] = Field(default_factory=list)
-    assignmentType: PlannedElementAssignmentType | None = None
-    resolvedStatus: String = ""
-    onlineSession: String | None = None
+    assignment_type: PlannedElementAssignmentType | None = None
+    resolved_status: String = ""
+    online_session: String | None = None
 
 
-@dataclass
+@dataclass(config=_config)
 class ApplicableAssignmentType:
     id: UUID
-    platformId: int
+    platform_id: int
     name: String
     abbreviation: String
-    isVisible: bool
+    is_visible: bool
     weight: float
 
 
-@dataclass
+@dataclass(config=_config)
 class Report:
     id: int
     name: String
     icon: String
     date: DateTime
-    downloadUrl: Url
-    class_: Class_ = Field(validation_alias=AliasChoices("class", "class_"))
-    schoolyearLabel: String = Field()
+    download_url: Url
+    class_: SchoolClass = Field(validation_alias=AliasChoices("class", "class_"))
+    schoolyear_label: String = Field()

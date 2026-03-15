@@ -72,6 +72,6 @@ def test_multi_archive_message_happy_flow(session: Smartschool):
 def test_trash_message_happy_flow(session: Smartschool):
     sut = MessageMoveToTrash(session, msg_id=123).get()
 
-    assert sut.msgID == 123
-    assert sut.boxType == "inbox"
+    assert sut.msg_id == 123
+    assert sut.box_type == "inbox"
     assert sut.is_deleted

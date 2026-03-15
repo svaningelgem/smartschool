@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, TypeAlias, overload
 from logprise import logger
 
 from . import objects
+from ._xml_interface import _resolve_aliases
 from .common import (
     bs4_html,
     convert_to_datetime,
@@ -61,7 +62,10 @@ class TopNavCourses(SessionMixin):
 
     @cached_property
     def _list(self) -> list[CourseCondensed]:
-        return [CourseCondensed(session=self.session, **course) for course in self.session.json("/Topnav/getCourseConfig", method="post")["own"]]
+        return [
+            CourseCondensed(session=self.session, **_resolve_aliases(CourseCondensed, course))
+            for course in self.session.json("/Topnav/getCourseConfig", method="post")["own"]
+        ]
 
     def __iter__(self) -> Iterator[CourseCondensed]:
         yield from self._list
@@ -279,7 +283,7 @@ class FolderItem(SessionMixin):
 
     def __post_init__(self):
         if self.browse_url is None:
-            self.browse_url = f"/Documents/Index/Index/courseID/{self.course.id}/ssID/{self.course.platformId}"
+            self.browse_url = f"/Documents/Index/Index/courseID/{self.course.id}/ssID/{self.course.platform_id}"
 
     def _get_folder_html(self) -> BeautifulSoup:
         """Fetch HTML content for a specific folder."""
@@ -425,7 +429,7 @@ class FolderItem(SessionMixin):
     def items(self) -> list[DocumentOrFolderItem]:
         """Fetch items from this folder."""
         soup = self._get_folder_html()
-        rows = soup.select("div.smsc_cm_body_row", recursive=False)
+        rows = soup.select("div.smsc_cm_body_row")
 
         items = [item for row in rows if (item := self._parse_row(row))]
         return sorted(items, key=lambda x: (0 if isinstance(x, FolderItem) else 1,) + natural_sort(x.name))

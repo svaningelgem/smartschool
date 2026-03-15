@@ -16,7 +16,7 @@ class CourseCondensed(objects.CourseCondensed, SessionMixin):
     teacher: str
     url: str
     id: int | None
-    platformId: int | None
+    platform_id: int | None
     descr: str
     icon: str
     def __init__(
@@ -26,7 +26,7 @@ class CourseCondensed(objects.CourseCondensed, SessionMixin):
         teacher: str,
         url: str,
         id: int | None = None,
-        platformId: int | None = None,
+        platform_id: int | None = None,
         descr: str = "",
         icon: str = "",
     ): ...
