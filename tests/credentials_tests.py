@@ -1,5 +1,7 @@
+import platform
 from datetime import datetime
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 import yaml
@@ -61,9 +63,10 @@ def test_path_credentials_without_path(monkeypatch, tmp_path: Path, session):
     assert sut.mfa == "1234-56-78"
 
 
-def test_path_credentials_file_not_found(tmp_path: Path, session: Smartschool):
-    with pytest.raises(FileNotFoundError):
-        PathCredentials(tmp_path.joinpath("not_found.yml"))
+@pytest.mark.skipif("microsoft" in platform.release().lower(), reason="WSL tmpdir resolves inside project tree, parent-traversal finds credentials.yml")
+def test_path_credentials_file_not_found(tmp_path: Path):
+    with patch.object(Path, "home", return_value=tmp_path), pytest.raises(FileNotFoundError):
+        PathCredentials(tmp_path / "not_found.yml")
 
 
 @pytest.mark.parametrize(

@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import ClassVar, Final
+from typing import TYPE_CHECKING, ClassVar, Final
 
 import yaml
+
+if TYPE_CHECKING:
+    from datetime import date
 
 required_fields: Final[list[str]] = ["username", "password", "main_url", "mfa"]
 
@@ -48,12 +51,18 @@ class PathCredentials(Credentials):
     CREDENTIALS_FILENAME: ClassVar[str] = "credentials.yml"
     filename: str | Path = ""
 
+    username: str = field(init=False, default=None)
+    password: str = field(init=False, default=None)
+    main_url: str = field(init=False, default=None)
+    mfa: date = field(init=False, default=None)
+    other_info: dict = field(init=False, default=None)
+
     def __post_init__(self):
         object.__setattr__(self, "filename", self._find_credentials_file())
 
         cred_file: dict = yaml.safe_load(self.filename.read_text(encoding="utf8"))
-        for field in required_fields:
-            object.__setattr__(self, field, cred_file.pop(field, ""))
+        for attr in required_fields:
+            object.__setattr__(self, attr, cred_file.pop(attr, ""))
 
         object.__setattr__(self, "other_info", cred_file)
 
@@ -95,8 +104,8 @@ class PathCredentials(Credentials):
 @dataclass(frozen=True)
 class EnvCredentials(Credentials):
     def __post_init__(self):
-        for field in required_fields:
-            object.__setattr__(self, field, os.getenv(f"SMARTSCHOOL_{field.upper()}", ""))
+        for attr in required_fields:
+            object.__setattr__(self, attr, os.getenv(f"SMARTSCHOOL_{attr.upper()}", ""))
 
 
 @dataclass(frozen=True)

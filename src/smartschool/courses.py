@@ -20,7 +20,7 @@ from .common import (
     save_test_response,
 )
 from .exceptions import SmartSchoolException, SmartSchoolJsonError, SmartSchoolParsingError
-from .objects import Course
+from .objects import Course, PlannedElementCourse
 from .session import SessionMixin
 
 if TYPE_CHECKING:
@@ -30,7 +30,7 @@ if TYPE_CHECKING:
     from bs4 import BeautifulSoup, Tag
     from requests import Response
 
-__all__ = ["CourseCondensed", "Courses", "DocumentOrFolderItem", "FileItem", "FolderItem", "InternetShortcut", "TopNavCourses"]
+__all__ = ["CourseCondensed", "CourseList", "Courses", "DocumentOrFolderItem", "FileItem", "FolderItem", "InternetShortcut", "TopNavCourses"]
 
 
 @dataclass
@@ -97,6 +97,30 @@ class Courses(SessionMixin):
             ) from e
 
     def __iter__(self) -> Iterator[Course]:
+        yield from self._list
+
+
+@dataclass
+class CourseList(SessionMixin):
+    """
+    Retrieves a list of all courses via the course-list API.
+
+    Unlike `Courses`, this endpoint always works and does not require results to be available.
+
+    Example:
+    -------
+    >>> for course in CourseList(session):
+    >>>     print(course.name)
+    Aardrijkskunde
+    Wiskunde
+
+    """
+
+    @cached_property
+    def _list(self) -> list[PlannedElementCourse]:
+        return [PlannedElementCourse(**course) for course in self.session.json("/course-list/api/v1/courses")]
+
+    def __iter__(self) -> Iterator[PlannedElementCourse]:
         yield from self._list
 
 

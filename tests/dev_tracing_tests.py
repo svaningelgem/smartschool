@@ -42,6 +42,15 @@ def mock_response():
     return resp
 
 
+def test_dev_tracing_default_is_false(tmp_path):
+    class DummyDefault(DevTracingMixin):
+        @property
+        def cache_path(self):
+            return tmp_path
+
+    assert DummyDefault().dev_tracing is False
+
+
 def test_dev_tracing_disabled(tmp_path):
     class DummyDisabled(DevTracingMixin):
         @property
