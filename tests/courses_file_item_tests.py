@@ -89,7 +89,7 @@ def test_real_download_logs_filename_suffix_mismatch(file_item: FileItem, mocker
 
     file_item._real_download(None)
 
-    mock_logger.warning.assert_called_once_with("Expected suffix .pdf, got .txt")
+    mock_logger.warning.assert_called_once_with("Expected suffix {}, got {}", ".pdf", ".txt")
 
 
 def test_real_download_no_warning_when_suffix_matches(file_item: FileItem, mocker):
