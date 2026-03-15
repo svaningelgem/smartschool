@@ -1,3 +1,13 @@
+# 0.8.0
+* Added `Intradesk` module for browsing and downloading intradesk files
+* Added `CourseList` class for `/course-list` API (works even when no results are available)
+* Added `platform_id` property on `Smartschool` session
+* Added dev tracing support for debugging API interactions
+* Relaxed Python version requirement to `^3.10`
+
+# 0.7.3
+* _bugfix_: Fix MFA credential validation when using a `datetime.date` object (#88)
+
 # 0.7.2
 * At the start of the year, there are no results available, so `Courses` will throw an error. Clarify this in the error message.
 
