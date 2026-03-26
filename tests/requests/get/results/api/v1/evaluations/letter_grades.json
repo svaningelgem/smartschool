@@ -1,0 +1,279 @@
+[
+    {
+        "identifier": "1000_2000_0_normal_100001",
+        "type": "normal",
+        "name": "assignment linear algebra vectors",
+        "graphic": {
+            "type": "percentage",
+            "color": "olive",
+            "value": 100,
+            "description": "5/5"
+        },
+        "date": "2025-11-03T00:00:00+01:00",
+        "gradebookOwner": {
+            "id": "1000_1001_0",
+            "pictureHash": "initials_AJ",
+            "pictureUrl": "https://userpicture.example.be/User/Userimage/hashimage/hash/initials_AJ/plain/1/res/128",
+            "description": {
+                "startingWithFirstName": "",
+                "startingWithLastName": ""
+            },
+            "name": {
+                "startingWithFirstName": "Anna Jansen",
+                "startingWithLastName": "Jansen Anna"
+            },
+            "sort": "jansen-anna",
+            "deleted": false
+        },
+        "component": {
+            "id": 2,
+            "name": "Daily work",
+            "abbreviation": "DW"
+        },
+        "courses": [
+            {
+                "id": 101,
+                "name": "Science Lab",
+                "graphic": {
+                    "type": "icon",
+                    "value": "science_beaker"
+                },
+                "teachers": [
+                    {
+                        "id": "1000_1002_0",
+                        "pictureHash": "initials_PD",
+                        "pictureUrl": "https://userpicture.example.be/User/Userimage/hashimage/hash/initials_PD/plain/1/res/128",
+                        "description": {
+                            "startingWithFirstName": "",
+                            "startingWithLastName": ""
+                        },
+                        "name": {
+                            "startingWithFirstName": "Pieter De Vries",
+                            "startingWithLastName": "De Vries Pieter"
+                        },
+                        "sort": "de-vries-pieter",
+                        "deleted": false
+                    },
+                    {
+                        "id": "1000_1001_0",
+                        "pictureHash": "initials_AJ",
+                        "pictureUrl": "https://userpicture.example.be/User/Userimage/hashimage/hash/initials_AJ/plain/1/res/128",
+                        "description": {
+                            "startingWithFirstName": "",
+                            "startingWithLastName": ""
+                        },
+                        "name": {
+                            "startingWithFirstName": "Anna Jansen",
+                            "startingWithLastName": "Jansen Anna"
+                        },
+                        "sort": "jansen-anna",
+                        "deleted": false
+                    }
+                ],
+                "class": {
+                    "identifier": "1000_2001",
+                    "id": 201,
+                    "platformId": 1000,
+                    "name": "Class 6A",
+                    "type": "K",
+                    "icon": "briefcase"
+                },
+                "skoreClassId": 301,
+                "parentCourseId": 1505,
+                "skoreWorkYear": {
+                    "id": 27,
+                    "dateRange": {
+                        "start": "2025-09-01T00:00:00+02:00",
+                        "end": "2026-08-31T00:00:00+02:00"
+                    }
+                }
+            }
+        ],
+        "period": {
+            "id": 1575,
+            "name": "Period 1",
+            "icon": "cal_purple_generic_week",
+            "class": {
+                "identifier": "1000_2001",
+                "id": 201,
+                "platformId": 1000,
+                "name": "Class 6A",
+                "type": "K",
+                "icon": "briefcase"
+            },
+            "skoreWorkYear": {
+                "id": 27,
+                "dateRange": {
+                    "start": "2025-09-01T00:00:00+02:00",
+                    "end": "2026-08-31T00:00:00+02:00"
+                }
+            },
+            "isActive": false
+        },
+        "feedback": [],
+        "feedbacks": [],
+        "availabilityDate": "2025-11-04T14:23:29+01:00",
+        "isPublished": true,
+        "doesCount": false
+    },
+    {
+        "identifier": "1000_2000_0_normal_100002",
+        "type": "normal",
+        "name": "Reading comprehension exercise",
+        "graphic": {
+            "type": "text",
+            "color": "yellow",
+            "value": "B",
+            "description": "First leaves"
+        },
+        "date": "2025-10-27T00:00:00+01:00",
+        "gradebookOwner": {
+            "id": "1000_1003_0",
+            "pictureHash": "initials_SB",
+            "pictureUrl": "https://userpicture.example.be/User/Userimage/hashimage/hash/initials_SB/plain/1/res/128",
+            "description": {
+                "startingWithFirstName": "",
+                "startingWithLastName": ""
+            },
+            "name": {
+                "startingWithFirstName": "Sofie Bakker",
+                "startingWithLastName": "Bakker Sofie"
+            },
+            "sort": "bakker-sofie",
+            "deleted": false
+        },
+        "component": {
+            "id": 2,
+            "name": "Daily work",
+            "abbreviation": "DW"
+        },
+        "courses": [
+            {
+                "id": 102,
+                "name": "French",
+                "graphic": {
+                    "type": "icon",
+                    "value": "flag_generic"
+                },
+                "teachers": [
+                    {
+                        "id": "1000_1003_0",
+                        "pictureHash": "initials_SB",
+                        "pictureUrl": "https://userpicture.example.be/User/Userimage/hashimage/hash/initials_SB/plain/1/res/128",
+                        "description": {
+                            "startingWithFirstName": "",
+                            "startingWithLastName": ""
+                        },
+                        "name": {
+                            "startingWithFirstName": "Sofie Bakker",
+                            "startingWithLastName": "Bakker Sofie"
+                        },
+                        "sort": "bakker-sofie",
+                        "deleted": false
+                    }
+                ],
+                "class": {
+                    "identifier": "1000_2001",
+                    "id": 201,
+                    "platformId": 1000,
+                    "name": "Class 6A",
+                    "type": "K",
+                    "icon": "briefcase"
+                },
+                "skoreClassId": 301,
+                "parentCourseId": 1209,
+                "skoreWorkYear": {
+                    "id": 27,
+                    "dateRange": {
+                        "start": "2025-09-01T00:00:00+02:00",
+                        "end": "2026-08-31T00:00:00+02:00"
+                    }
+                }
+            }
+        ],
+        "period": {
+            "id": 1575,
+            "name": "Period 1",
+            "icon": "cal_purple_generic_week",
+            "class": {
+                "identifier": "1000_2001",
+                "id": 201,
+                "platformId": 1000,
+                "name": "Class 6A",
+                "type": "K",
+                "icon": "briefcase"
+            },
+            "skoreWorkYear": {
+                "id": 27,
+                "dateRange": {
+                    "start": "2025-09-01T00:00:00+02:00",
+                    "end": "2026-08-31T00:00:00+02:00"
+                }
+            },
+            "isActive": false
+        },
+        "feedback": [
+            {
+                "user": {
+                    "id": "1000_1003_0",
+                    "pictureHash": "initials_SB",
+                    "pictureUrl": "https://userpicture.example.be/User/Userimage/hashimage/hash/initials_SB/plain/1/res/128",
+                    "description": {
+                        "startingWithFirstName": "",
+                        "startingWithLastName": ""
+                    },
+                    "name": {
+                        "startingWithFirstName": "Sofie Bakker",
+                        "startingWithLastName": "Bakker Sofie"
+                    },
+                    "sort": "bakker-sofie",
+                    "deleted": false
+                },
+                "text": "Good understanding of the main ideas. Some minor errors in detail questions."
+            }
+        ],
+        "feedbacks": [
+            {
+                "id": "00000000-0000-0000-0000-000000000001",
+                "evaluationId": "1000_100002",
+                "student": {
+                    "id": "1000_2000_0",
+                    "pictureHash": "initials_JP",
+                    "pictureUrl": "https://userpicture.example.be/User/Userimage/hashimage/hash/initials_JP/plain/1/res/128",
+                    "description": {
+                        "startingWithFirstName": "",
+                        "startingWithLastName": ""
+                    },
+                    "name": {
+                        "startingWithFirstName": "Jan Peeters",
+                        "startingWithLastName": "Peeters Jan"
+                    },
+                    "sort": "peeters-jan",
+                    "deleted": false
+                },
+                "teacher": {
+                    "id": "1000_1003_0",
+                    "pictureHash": "initials_SB",
+                    "pictureUrl": "https://userpicture.example.be/User/Userimage/hashimage/hash/initials_SB/plain/1/res/128",
+                    "description": {
+                        "startingWithFirstName": "",
+                        "startingWithLastName": ""
+                    },
+                    "name": {
+                        "startingWithFirstName": "Sofie Bakker",
+                        "startingWithLastName": "Bakker Sofie"
+                    },
+                    "sort": "bakker-sofie",
+                    "deleted": false
+                },
+                "text": "Good understanding of the main ideas. Some minor errors in detail questions.",
+                "createdAt": "2025-10-27T16:57:27+01:00",
+                "changedAt": "2025-10-27T17:19:50+01:00",
+                "attachments": []
+            }
+        ],
+        "availabilityDate": "2025-10-28T17:00:00+01:00",
+        "isPublished": true,
+        "doesCount": false
+    }
+]
