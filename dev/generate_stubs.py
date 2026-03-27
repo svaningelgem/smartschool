@@ -242,9 +242,19 @@ _MISSING = object()
 
 def _extract_method_info(real_class: type, method_name: str) -> MethodInfo:
     sig = inspect.signature(getattr(real_class, method_name))
+
+    # Resolve string annotations (forward references) via class-level type hints
+    try:
+        class_hints = get_type_hints(real_class, include_extras=False)
+    except Exception:
+        class_hints = {}
+
     method_params = []
     for name, param in sig.parameters.items():
         annotation = param.annotation
+        # If annotation is a string (forward reference), resolve it from class hints
+        if isinstance(annotation, str) and name in class_hints:
+            annotation = class_hints[name]
         if annotation in _pydantic_replacements:
             annotation = _pydantic_replacements[annotation]
 
@@ -362,7 +372,10 @@ def _generate_method_stub(method: MethodInfo | str | None, imports_needed: set[s
     for param in method.params:
         param_str = param.name
         if param.type_annotation and param.type_annotation is not inspect.Signature.empty:
-            param_str += f": {param.type_annotation}"
+            if isinstance(param.type_annotation, str):
+                param_str += f": {param.type_annotation}"
+            else:
+                param_str += f": {format_type_annotation(param.type_annotation, imports_needed, current_module)}"
         if param.has_default:
             if isinstance(param.default_value, str):
                 param_str += f' = "{param.default_value}"'
