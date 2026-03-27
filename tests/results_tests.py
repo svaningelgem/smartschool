@@ -32,3 +32,22 @@ def test_mauro_results(session: Smartschool, requests_mock):
     result = sut[0]
     assert result.graphic.color == "olive"
     assert result.component is None
+
+
+def test_letter_grade_results(session: Smartschool, requests_mock):
+    letter_file = Path(__file__).parent / "requests/get/results/api/v1/evaluations/letter_grades.json"
+    requests_mock.get("https://site/results/api/v1/evaluations/?pageNumber=1&itemsOnPage=50", content=letter_file.read_bytes())
+    sut = list(Results(session))
+
+    assert len(sut) == 2
+
+    # Percentage result still works
+    assert sut[0].graphic.type == "percentage"
+    assert sut[0].graphic.value == 100
+
+    # Text/letter grade result
+    result = sut[1]
+    assert result.graphic.type == "text"
+    assert result.graphic.color == "yellow"
+    assert result.graphic.value == "B"
+    assert result.graphic.description == "First leaves"

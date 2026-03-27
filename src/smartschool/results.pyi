@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Literal
 
 from . import objects
-from .objects import Component, Course, Feedback, FeedbackFull, Period, ResultDetails, ResultGraphic, Teacher
+from .objects import Component, Course, Feedback, FeedbackFull, PercentageGraphic, Period, ResultDetails, Teacher, TextGraphic
 from .session import SessionMixin, Smartschool
 
 class Result(objects.Result, SessionMixin):
@@ -14,7 +14,7 @@ class Result(objects.Result, SessionMixin):
     identifier: str
     type: Literal["normal"]
     name: str
-    graphic: ResultGraphic
+    graphic: PercentageGraphic | TextGraphic
     date: datetime
     gradebook_owner: Teacher
     component: Component | None

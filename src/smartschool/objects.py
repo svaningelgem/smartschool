@@ -28,7 +28,7 @@ class CourseGraphic:
 
 
 @dataclass(config=_config)
-class ResultGraphic:
+class PercentageGraphic:
     type: Literal["percentage"]
     color: Literal["green", "red", "olive", "yellow", "steel"]
     value: int
@@ -45,6 +45,17 @@ class ResultGraphic:
     @property
     def percentage(self) -> float:
         return self.achieved_points / self.total_points
+
+
+@dataclass(config=_config)
+class TextGraphic:
+    type: Literal["text"]
+    color: Literal["green", "red", "olive", "yellow", "steel"]
+    value: String
+    description: String
+
+
+ResultGraphic = Annotated[PercentageGraphic | TextGraphic, Field(discriminator="type")]
 
 
 @dataclass(config=_config)
