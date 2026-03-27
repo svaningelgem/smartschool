@@ -33,7 +33,7 @@ class Result(objects.Result, SessionMixin):
         identifier: str,
         type: Literal["normal"],
         name: str,
-        graphic: ResultGraphic,
+        graphic: PercentageGraphic | TextGraphic,
         date: datetime,
         gradebook_owner: Teacher,
         component: Component | None,
