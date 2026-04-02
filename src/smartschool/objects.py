@@ -341,7 +341,6 @@ class ShortMessage:
     status: int
     attachment: int
     unread: bool
-    label: bool
     deleted: bool
     allowreply: bool
     allowreplyenabled: bool
@@ -350,6 +349,7 @@ class ShortMessage:
     real_box: String
     send_date: DateTime | None
     from_: String = Field(validation_alias=AliasChoices("from", "from_"))
+    colored_flag: int = Field(default=0, validation_alias=AliasChoices("colored_flag", "label"))
 
 
 @dataclass(config=_config)
@@ -362,7 +362,6 @@ class FullMessage:
     status: int
     attachment: int
     unread: bool
-    label: bool
     receivers: list[String]
     ccreceivers: list[String]
     bccreceivers: list[String]
@@ -377,6 +376,7 @@ class FullMessage:
     has_forward: bool
     send_date: DateTime | None
     from_: String = Field(validation_alias=AliasChoices("from", "from_"))
+    colored_flag: int = Field(default=0, validation_alias=AliasChoices("colored_flag", "label"))
 
 
 @dataclass(config=_config)
