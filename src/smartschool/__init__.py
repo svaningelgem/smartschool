@@ -4,6 +4,7 @@ from .credentials import AppCredentials, Credentials, EnvCredentials, PathCreden
 from .exceptions import SmartSchoolAuthenticationError, SmartSchoolDownloadError, SmartSchoolException, SmartSchoolParsingError
 from .future_tasks import FutureTasks
 from .intradesk import Intradesk, IntradeskFile, IntradeskFolder, IntradeskItem
+from .message_composer import MessageComposerForm, RecipientType
 from .messages import (
     AdjustMessageLabel,
     Attachment,
@@ -50,6 +51,8 @@ __all__ = [
     "IntradeskItem",
     "MarkMessageUnread",
     "Message",
+    "MessageComposerForm",
+    "MessageComposerForm",
     "MessageHeaders",
     "MessageLabel",
     "MessageMoveToArchive",
@@ -57,6 +60,7 @@ __all__ = [
     "PathCredentials",
     "Periods",
     "PlannedElements",
+    "RecipientType",
     "Report",
     "Reports",
     "Result",

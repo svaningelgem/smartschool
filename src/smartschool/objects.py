@@ -404,6 +404,26 @@ class MessageDeletionStatus:
 
 
 @dataclass(config=_config)
+class MessageSearchUser:
+    user_id: Annotated[int, Field(validation_alias="userID")]
+    value: String
+    ss_id: Annotated[int, Field(validation_alias="ssID")]
+    coaccountname: String | None = None
+    classname: String | None = None
+    schoolname: String | None = None
+    picture: Url | None = None
+
+
+@dataclass(config=_config)
+class MessageSearchGroup:
+    group_id: Annotated[int, Field(validation_alias="groupID")]
+    value: String
+    ss_id: Annotated[int, Field(validation_alias="ssID")]
+    icon: String | None = None
+    description: String | None = None
+
+
+@dataclass(config=_config)
 class PlannedElementPeriod:
     date_time_from: datetime
     date_time_to: datetime
