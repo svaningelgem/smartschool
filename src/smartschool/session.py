@@ -79,11 +79,13 @@ class Smartschool(Session, DevTracingMixin):
             return self.cache_path / "authenticated_user.yml"
         return None
 
-    def _handle_auth_redirect(self, response: Response) -> Response | None:
-        """Handle authentication redirects with chain support."""
-        if not self._is_auth_url(response.url):
-            return None
+    def _handle_auth_redirect(self, response: Response) -> Response:
+        """
+        Handle authentication redirects with chain support.
 
+        Precondition: ``response.url`` must already be an auth URL. Callers
+        must gate on ``self._is_auth_url(response.url)`` before invoking.
+        """
         if self._login_attempts >= self._max_login_attempts:
             raise SmartSchoolAuthenticationError(f"Max login attempts ({self._max_login_attempts}) reached")
 
