@@ -1,7 +1,13 @@
 from .agenda import AgendaLesson, AgendaPoster, SmartschoolHours, SmartschoolLessons, SmartschoolMomentInfos
 from .courses import CourseCondensed, CourseList, Courses, DocumentOrFolderItem, FileItem, FolderItem, InternetShortcut, TopNavCourses
 from .credentials import AppCredentials, Credentials, EnvCredentials, PathCredentials
-from .exceptions import SmartSchoolAuthenticationError, SmartSchoolDownloadError, SmartSchoolException, SmartSchoolParsingError
+from .exceptions import (
+    SmartSchoolAttachmentUploadError,
+    SmartSchoolAuthenticationError,
+    SmartSchoolDownloadError,
+    SmartSchoolException,
+    SmartSchoolParsingError,
+)
 from .future_tasks import FutureTasks
 from .intradesk import Intradesk, IntradeskFile, IntradeskFolder, IntradeskItem
 from .message_composer import MessageComposerForm, RecipientType
@@ -52,7 +58,6 @@ __all__ = [
     "MarkMessageUnread",
     "Message",
     "MessageComposerForm",
-    "MessageComposerForm",
     "MessageHeaders",
     "MessageLabel",
     "MessageMoveToArchive",
@@ -65,6 +70,7 @@ __all__ = [
     "Reports",
     "Result",
     "Results",
+    "SmartSchoolAttachmentUploadError",
     "SmartSchoolAuthenticationError",
     "SmartSchoolDownloadError",
     "SmartSchoolException",

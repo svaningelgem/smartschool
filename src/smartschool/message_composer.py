@@ -21,7 +21,6 @@ if TYPE_CHECKING:
     from .session import Smartschool
 
 __all__ = [
-    "GetComposeForm",
     "MessageComposerForm",
     "RecipientType",
 ]
@@ -254,6 +253,9 @@ class MessageComposerForm(SessionMixin):
             mime_type = "application/octet-stream"
 
         file_content = path.read_bytes()
+        # NOTE: Smartschool.request() currently fires every non-auth request twice
+        # (see session.py), which would upload the file twice. Call the underlying
+        # requests.Session directly to bypass that.
         response = RequestsSession.request(
             self.session,
             "POST",
@@ -276,32 +278,3 @@ class MessageComposerForm(SessionMixin):
     def send(self) -> Response:
         files = {key: (None, value) for key, value in self.payload.items()}
         return self.session.post(self._url, files=files)
-
-
-@dataclass
-class GetComposeForm(SessionMixin):
-    """
-    Fetch and parse compose form hidden fields.
-
-    To reproduce: Open message compose dialog and inspect HTML form fields.
-
-    Example:
-    -------
-    >>> form_fields = GetComposeForm(session=session).get()
-    >>> print(form_fields["randomDir"])
-    xJMYmmPoHfRVKvi4KvaTxXHec...
-
-    """
-
-    box_type: BoxType = BoxType.INBOX
-    compose_type: int = 0
-    msg_id: int = 0
-
-    def get(self) -> dict[str, str]:
-        form = MessageComposerForm.create(
-            session=self.session,
-            box_type=self.box_type,
-            compose_type=self.compose_type,
-            msg_id=str(self.msg_id),
-        )
-        return form.hidden_fields
