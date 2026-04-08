@@ -46,12 +46,10 @@ class RecipientType(Enum):
         return f"insertSearchFieldContainer_{self.request_type}_0"
 
 
+@dataclass
 class _ComposeFormParser(HTMLParser):
     """Extract hidden input values from compose form HTML."""
-
-    def __init__(self):
-        super().__init__()
-        self.fields: dict[str, str] = {}
+    fields: dict[str, str] = field(default_factory=dict)
 
     def handle_starttag(self, tag, attrs):
         if tag != "input":
