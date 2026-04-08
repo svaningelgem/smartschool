@@ -148,12 +148,17 @@ class Smartschool(Session, DevTracingMixin):
         # Make the request
         response = self._make_traced_request(super().request, method, full_url, **kwargs)
 
-        # Handle auth redirects
-        response = self._handle_auth_redirect(response)
-        if not self._is_auth_url(full_url):  # The original URL was NOT a login-url
-            response = self._make_traced_request(super().request, method, full_url, **kwargs)
-            self._reset_login_attempts()
-        elif not self._is_auth_url(response.url):  # Original was login, and this is not anymore
+        # Only intervene if the response landed on an auth page — otherwise the
+        # request already succeeded and there is nothing to redo.
+        if self._is_auth_url(response.url):
+            response = self._handle_auth_redirect(response)
+            # If the caller wasn't explicitly asking for an auth URL, the auth
+            # flow was triggered mid-request: redo the original call now that
+            # we're authed to fetch its actual payload.
+            if not self._is_auth_url(full_url):
+                response = self._make_traced_request(super().request, method, full_url, **kwargs)
+
+        if not self._is_auth_url(response.url):
             self._reset_login_attempts()
 
         # Save cookies
