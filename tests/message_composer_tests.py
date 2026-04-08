@@ -215,6 +215,20 @@ def test_add_attachment_happy_path(session: Smartschool, requests_mock: Mocker, 
     assert "dir123" in body
 
 
+def test_add_attachment_falls_back_to_octet_stream_for_unknown_type(session: Smartschool, requests_mock: Mocker, tmp_path: Path) -> None:
+    form = _make_form(session, requests_mock)
+    requests_mock.post(UPLOAD_URL, text="true")
+
+    # Extensionless filename → mimetypes.guess_type returns None
+    file_path = tmp_path / "blob"
+    file_path.write_bytes(b"raw data")
+
+    form.add_attachment(file_path)
+
+    body = requests_mock.request_history[-1].text or ""
+    assert "application/octet-stream" in body
+
+
 def test_add_attachment_raises_on_false_response(session: Smartschool, requests_mock: Mocker, tmp_path: Path) -> None:
     form = _make_form(session, requests_mock)
     requests_mock.post(UPLOAD_URL, text="false")
