@@ -11,6 +11,7 @@ from xml.etree import ElementTree as ET
 from requests import Session as RequestsSession
 
 from . import objects
+from .exceptions import SmartSchoolAttachmentUploadError
 from .messages import BoxType
 from .session import SessionMixin
 
@@ -49,7 +50,11 @@ class RecipientType(Enum):
 @dataclass
 class _ComposeFormParser(HTMLParser):
     """Extract hidden input values from compose form HTML."""
+
     fields: dict[str, str] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        super().__init__()
 
     def handle_starttag(self, tag, attrs):
         if tag != "input":
@@ -108,7 +113,7 @@ class MessageComposerForm(SessionMixin):
     def _url(self) -> str:
         return f"/?module=Messages&file=composeMessage&boxType={self.box_type.value}&composeType={self.compose_type}&msgID={self.msg_id}"
 
-    def refresh(self) -> MessageComposerForm:
+    def refresh(self) -> None:
         resp = self.session.get(self._url)
         resp.raise_for_status()
 
@@ -142,17 +147,14 @@ class MessageComposerForm(SessionMixin):
             "bcc": "0",
         }
 
-        return self
-
-    def set_field(self, key: str, value: str | int) -> MessageComposerForm:
+    def set_field(self, key: str, value: str | int) -> None:
         self.payload[key] = str(value)
-        return self
 
-    def set_subject(self, subject: str) -> MessageComposerForm:
-        return self.set_field("subject", subject)
+    def set_subject(self, subject: str) -> None:
+        self.set_field("subject", subject)
 
-    def set_message_html(self, message_html: str) -> MessageComposerForm:
-        return self.set_field("message", message_html)
+    def set_message_html(self, message_html: str) -> None:
+        self.set_field("message", message_html)
 
     def search_users(self, search_text: str) -> tuple[list[objects.MessageSearchUser], list[objects.MessageSearchGroup]]:
         unique_usc = self.payload.get("uniqueUsc", "")
@@ -210,7 +212,7 @@ class MessageComposerForm(SessionMixin):
         recipient: objects.MessageSearchUser | objects.MessageSearchGroup,
         recipient_type: RecipientType = RecipientType.TO,
         user_lt: int = 0,
-    ) -> MessageComposerForm:
+    ) -> None:
         unique_usc = self.payload.get("uniqueUsc", "")
         if not unique_usc:
             raise ValueError("uniqueUsc is missing. Call refresh() or create() before adding recipients.")
@@ -237,9 +239,8 @@ class MessageComposerForm(SessionMixin):
             },
         )
         response.raise_for_status()
-        return self
 
-    def add_attachment(self, file_path: str | Path) -> bool:
+    def add_attachment(self, file_path: str | Path) -> None:
         upload_dir = self.payload.get("randomDir", "")
         if not upload_dir:
             raise ValueError("randomDir is missing. Call refresh() or create() before uploading attachments.")
@@ -266,11 +267,11 @@ class MessageComposerForm(SessionMixin):
         response.raise_for_status()
         result = response.text.strip().lower()
         if result == "true":
-            return True
+            return
         if result == "false":
-            raise RuntimeError(f"Attachment upload failed for '{path.name}': server returned false.")
+            raise SmartSchoolAttachmentUploadError(f"Attachment upload failed for '{path.name}': server returned false.")
 
-        raise RuntimeError(f"Attachment upload returned unexpected response for '{path.name}': {response.text!r}")
+        raise SmartSchoolAttachmentUploadError(f"Attachment upload returned unexpected response for '{path.name}': {response.text!r}")
 
     def send(self) -> Response:
         files = {key: (None, value) for key, value in self.payload.items()}

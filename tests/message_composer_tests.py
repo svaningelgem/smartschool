@@ -6,6 +6,7 @@ import pytest
 import requests
 
 from smartschool import objects
+from smartschool.exceptions import SmartSchoolAttachmentUploadError
 from smartschool.message_composer import MessageComposerForm, RecipientType
 
 if TYPE_CHECKING:
@@ -168,7 +169,7 @@ def test_add_attachment_raises_on_false_response(monkeypatch, tmp_path: Path):
 
     monkeypatch.setattr(mc.RequestsSession, "request", fake_request)
 
-    with pytest.raises(RuntimeError, match="server returned false"):
+    with pytest.raises(SmartSchoolAttachmentUploadError, match="server returned false"):
         form.add_attachment(file_path)
 
 
@@ -194,7 +195,7 @@ def test_add_attachment_sends_file_and_uploaddir(monkeypatch, tmp_path: Path):
 
     ok = form.add_attachment(file_path)
 
-    assert ok is True
+    assert ok is None
     assert captured["method"] == "POST"
     assert captured["url"].endswith("/Upload/Upload/Index")
 
