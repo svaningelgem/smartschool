@@ -194,13 +194,14 @@ class TestAuthenticationFlow:
         assert session._is_auth_url("https://site/2fa/")
         assert not session._is_auth_url("https://site/dashboard")
 
-    def test_login_flow(self, session):
-        """Should handle complete login flow successfully."""
-        response = session.get("/login")
-        assert response.url.endswith("/dashboard")
+    def test_handle_auth_redirect_passes_through_non_auth_responses(self, session: Smartschool, mocker):
+        """_handle_auth_redirect must be safe to call on any response."""
+        response = mocker.Mock(spec=requests.Response, url="https://site/dashboard")
 
-        # Should eventually reach dashboard after auth
-        assert session._login_attempts == 0  # Reset after successful auth
+        result = session._handle_auth_redirect(response)
+
+        assert result is response
+        assert session._login_attempts == 0  # counter must not be polluted
 
     def test_authenticated_request_fires_single_http_call(self, session: Smartschool, requests_mock):
         """An already-authenticated request must hit the network exactly once."""
