@@ -1,0 +1,23 @@
+<server>
+<response>
+<status>ok</status>
+<actions>
+<action>
+<subsystem>triggers</subsystem>
+<command>listattachments</command>
+<data>
+<reply>
+<html><div class="attachmentRow">
+	<div class="attachmentIcon smsc-svg--mime_data_xml--24 smsc-svg--24"></div>
+	<div class="attachmentName">V3.xml</div>
+	<div class="attachmentOpen"><button type="button" onclick="document.location.href='?module=Messages&file=download&randomdir=e54Zd5nx6R5EnpBv2cRT4aumL17757290018063146&filename=V3.xml'" class="ssLink attachment-icon attachment-icon--download"></button></div>
+	<div class="attachmentDel"><button type="button" onclick="oTriggers.deleteAttachment('1')" class="ssLink attachment-icon attachment-icon--delete"></button></div>
+	<div class="spacer"></div>
+</div></html>
+<nrattachments>1</nrattachments>
+</reply>
+</data>
+</action>
+</actions>
+</response>
+</server>

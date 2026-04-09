@@ -1,0 +1,32 @@
+<results>
+<type>0</type>
+<ssID>4069</ssID>
+<parentNodeId>insertSearchFieldContainer_0_0</parentNodeId>
+<groups>
+<group>
+<groupID>298</groupID>
+<text><span class="searchDivHighlight">1A</span></text>
+<value>1A</value>
+<selectable>on</selectable>
+<icon>smsc/img/briefcase/briefcase_16x16.png</icon>
+<ssID>4069</ssID>
+<ssPlName />
+<description>1ste leerjaar A</description>
+</group>
+<group>
+<groupID>312</groupID>
+<text>lkr<span class="searchDivHighlight">1A</span></text>
+<value>lkr1A</value>
+<selectable>on</selectable>
+<icon>smsc/img/bullet_ballxl_blue/bullet_ballxl_blue_16x16.png</icon>
+<ssID>4069</ssID>
+<ssPlName />
+<description>leerkrachten 1A</description>
+</group>
+</groups>
+<users />
+<sgrdetails>
+<sgrselect>1</sgrselect>
+<dosgrsearch>0</dosgrsearch>
+</sgrdetails>
+</results>

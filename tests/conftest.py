@@ -103,6 +103,37 @@ def _setup_requests_mocker(request, requests_mock) -> None:
             subsystem = re.search("<subsystem>(.*?)</subsystem>", xml).group(1)
             action = re.search("<action>(.*?)</action>", xml).group(1)
         except (AttributeError, KeyError):
+            query = parse_qs(req.query)
+            module = query.get("module", [""])[0].lower()
+            file = query.get("file", [""])[0].lower()
+            function = query.get("function", [""])[0].lower()
+
+            if module == "messages" and file == "composemessage":
+                compose_path = default_path / "composemessage"
+                specific_filename = compose_path / f"{request.node.name}.html"
+                default_filename = compose_path / "new-message.html"
+                if specific_filename.exists():
+                    return specific_filename
+                return default_filename
+
+            if module == "messages" and file == "searchusers":
+                compose_path = default_path / "composemessage"
+                specific_filename = compose_path / f"{request.node.name}.xml"
+
+                if function == "addusertoselected":
+                    default_filename = compose_path / "add-users-to-selected.xml"
+                else:
+                    body = parse_qs(req.body) if req.body else {}
+                    search_value = body.get("val", [""])[0]
+                    if re.search(r"\d", search_value):
+                        default_filename = compose_path / "search-group.xml"
+                    else:
+                        default_filename = compose_path / "search-user.xml"
+
+                if specific_filename.exists():
+                    return specific_filename
+                return default_filename
+
             if req.query:
                 partial_hash = hashlib.sha256(quote_plus(req.query).encode("utf8")).hexdigest()[:12]
             else:
