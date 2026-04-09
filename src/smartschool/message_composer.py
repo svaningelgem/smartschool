@@ -8,8 +8,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 from xml.etree import ElementTree as ET
 
-from requests import Session as RequestsSession
-
 from . import objects
 from .exceptions import SmartSchoolAttachmentUploadError
 from .messages import BoxType
@@ -253,13 +251,8 @@ class MessageComposerForm(SessionMixin):
             mime_type = "application/octet-stream"
 
         file_content = path.read_bytes()
-        # NOTE: Smartschool.request() currently fires every non-auth request twice
-        # (see session.py), which would upload the file twice. Call the underlying
-        # requests.Session directly to bypass that.
-        response = RequestsSession.request(
-            self.session,
-            "POST",
-            self.session.create_url("/Upload/Upload/Index"),
+        response = self.session.post(
+            "/Upload/Upload/Index",
             files={
                 "file": (path.name, file_content, mime_type),
                 "uploadDir": (None, upload_dir),
