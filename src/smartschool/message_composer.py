@@ -8,8 +8,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 from xml.etree import ElementTree as ET
 
-from requests import Session as RequestsSession
-
 from . import objects
 from .exceptions import SmartSchoolAttachmentUploadError
 from .messages import BoxType
@@ -21,7 +19,6 @@ if TYPE_CHECKING:
     from .session import Smartschool
 
 __all__ = [
-    "GetComposeForm",
     "MessageComposerForm",
     "RecipientType",
 ]
@@ -254,10 +251,8 @@ class MessageComposerForm(SessionMixin):
             mime_type = "application/octet-stream"
 
         file_content = path.read_bytes()
-        response = RequestsSession.request(
-            self.session,
-            "POST",
-            self.session.create_url("/Upload/Upload/Index"),
+        response = self.session.post(
+            "/Upload/Upload/Index",
             files={
                 "file": (path.name, file_content, mime_type),
                 "uploadDir": (None, upload_dir),
@@ -276,32 +271,3 @@ class MessageComposerForm(SessionMixin):
     def send(self) -> Response:
         files = {key: (None, value) for key, value in self.payload.items()}
         return self.session.post(self._url, files=files)
-
-
-@dataclass
-class GetComposeForm(SessionMixin):
-    """
-    Fetch and parse compose form hidden fields.
-
-    To reproduce: Open message compose dialog and inspect HTML form fields.
-
-    Example:
-    -------
-    >>> form_fields = GetComposeForm(session=session).get()
-    >>> print(form_fields["randomDir"])
-    xJMYmmPoHfRVKvi4KvaTxXHec...
-
-    """
-
-    box_type: BoxType = BoxType.INBOX
-    compose_type: int = 0
-    msg_id: int = 0
-
-    def get(self) -> dict[str, str]:
-        form = MessageComposerForm.create(
-            session=self.session,
-            box_type=self.box_type,
-            compose_type=self.compose_type,
-            msg_id=str(self.msg_id),
-        )
-        return form.hidden_fields
