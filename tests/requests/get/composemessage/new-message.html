@@ -440,8 +440,8 @@
 					<div id="compose_editoverlay" class="compose_editoverlay" onmousedown="hideTabs();"></div>
 					<div id="compose_editoverlaytot" class="compose_editoverlaytot" onmousedown="hideTabs();"></div>
 					<textarea id="message" name="message" rows="23" cols="30"  style="width: 100%;" class="mceEditor" mce_editable="true">
-	<p></p><p><p>Groet,</p>
-<p>yvan vander sanden</p>
+	<p></p><p><p>Greetings,</p>
+<p>John Smith</p>
 <p>&nbsp;</p>
 <table cellspacing="0" cellpadding="0">
 <tbody>
@@ -453,7 +453,6 @@
 <tr>
 <td valign="bottom">
 <p>John Smith</p>
-<p>IT Coordinator</p>
 </td>
 </tr>
 <tr>
@@ -574,9 +573,9 @@
 			height: 400.2,
 	        cache_suffix : '?v=6.7.1',
 			language : 'nl',
-			userID 	: '146',
+			userID 	: '147',
 			userLT 	: '0',
-			ssID	: '4069',
+			ssID	: '4079',
 			external_plugins : {
 				'ssUSolvIT': '/modules/TinyMCE/desktop/ssUSolvIT/dist/plugin.min.js',
 				'ssBrowse': '/modules/TinyMCE/desktop/ssBrowse/dist/plugin.min.js',
@@ -1230,28 +1229,6 @@
                 
         <!-- Javascript_symfony -->
                                 
-        <!-- Sentry -->
-        
-<script>
-    window.sentryOnLoad = function() {
-        Sentry.init({"sampleRate":0.1,"tracesSampleRate":0.005,"replaysSessionSampleRate":0.001,"replaysOnErrorSampleRate":0.05,"enableLogs":true,"initialScope":{"user":{"id":"4069_146_0","role":"0"}},"environment":"production",
-            dsn: "https://9ad77b6a87396b7f63935c755ea1d6b9@sentry.smartbit.be/4",
-            integrations: [
-                Sentry.browserTracingIntegration(),
-                Sentry.replayIntegration({
-                    workerUrl: "https://static2.smart-school.net/smsc/resources/sentry/worker.min.rev-9e5db67d19.js",
-                    block: ["[style*=userpicture]"]
-                })
-            ]
-        }
-        );
 
-        Sentry.setContext("device", {
-            screen_width_pixels: window.screen.width,
-            screen_height_pixels: window.screen.height
-        });
-    };
-</script>
- <script src="/smsc/resources/sentry/sdk/10.40.0/bundle.tracing.replay.logs.metrics.min.js" onload="window.sentryOnLoad()"></script>
     </body>
 </html>

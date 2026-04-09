@@ -233,36 +233,6 @@
         <!-- Javascript_requirejs_Urls -->
         <!-- Javascript_legacy_stealjs_Urls -->
         <!-- Javascript_symfony -->
-        <!-- Sentry -->
-        <script>
-            window.sentryOnLoad = function() {
-                Sentry.init({
-                    "sampleRate": 0.1,
-                    "tracesSampleRate": 0.005,
-                    "replaysSessionSampleRate": 0.001,
-                    "replaysOnErrorSampleRate": 0.05,
-                    "enableLogs": true,
-                    "initialScope": {
-                        "user": {
-                            "id": "4069_146_0",
-                            "role": "0"
-                        }
-                    },
-                    "environment": "production",
-                    dsn: "https://9ad77b6a87396b7f63935c755ea1d6b9@sentry.smartbit.be/4",
-                    integrations: [Sentry.browserTracingIntegration(), Sentry.replayIntegration({
-                        workerUrl: "https://static2.smart-school.net/smsc/resources/sentry/worker.min.rev-9e5db67d19.js",
-                        block: ["[style*=userpicture]"]
-                    })]
-                });
-
-                Sentry.setContext("device", {
-                    screen_width_pixels: window.screen.width,
-                    screen_height_pixels: window.screen.height
-                });
-            }
-            ;
-        </script>
-        <script src="/smsc/resources/sentry/sdk/10.40.0/bundle.tracing.replay.logs.metrics.min.js" onload="window.sentryOnLoad()"></script>
+        
     </body>
 </html>
