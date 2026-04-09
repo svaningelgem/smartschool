@@ -202,6 +202,34 @@ class TestAuthenticationFlow:
         # Should eventually reach dashboard after auth
         assert session._login_attempts == 0  # Reset after successful auth
 
+    def test_authenticated_request_fires_single_http_call(self, session: Smartschool, requests_mock):
+        """An already-authenticated request must hit the network exactly once."""
+        target = "https://site/api/v1/echo"
+        requests_mock.get(target, text="ok")
+
+        session.get("/api/v1/echo")
+
+        matching = [r for r in requests_mock.request_history if r.url == target]
+        assert len(matching) == 1
+
+    def test_expired_session_retries_original_request_after_auth(self, session: Smartschool, requests_mock):
+        """When the first attempt is redirected to login, the original request must be retried exactly once after auth completes."""
+        target = "https://site/api/v1/protected"
+        requests_mock.get(
+            target,
+            [
+                {"status_code": 302, "headers": {"Location": "https://site/login"}},
+                {"status_code": 200, "text": "authorized"},
+            ],
+        )
+
+        response = session.get("/api/v1/protected")
+
+        assert response.status_code == 200
+        assert response.text == "authorized"
+        protected_calls = [r for r in requests_mock.request_history if r.url == target]
+        assert len(protected_calls) == 2
+
     def test_max_login_attempts_exceeded(self, session):
         """Should raise error when max login attempts exceeded."""
         session._login_attempts = 3

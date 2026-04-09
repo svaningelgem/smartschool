@@ -79,10 +79,15 @@ class Smartschool(Session, DevTracingMixin):
             return self.cache_path / "authenticated_user.yml"
         return None
 
-    def _handle_auth_redirect(self, response: Response) -> Response | None:
-        """Handle authentication redirects with chain support."""
+    def _handle_auth_redirect(self, response: Response) -> Response:
+        """
+        Run the login/verification/2fa chain when the response is an auth page.
+
+        Returns the incoming response unchanged if it's not on an auth URL, so
+        callers can invoke this on any response without gating themselves.
+        """
         if not self._is_auth_url(response.url):
-            return None
+            return response
 
         if self._login_attempts >= self._max_login_attempts:
             raise SmartSchoolAuthenticationError(f"Max login attempts ({self._max_login_attempts}) reached")
@@ -148,12 +153,20 @@ class Smartschool(Session, DevTracingMixin):
         # Make the request
         response = self._make_traced_request(super().request, method, full_url, **kwargs)
 
-        # Handle auth redirects
+        # Drive the auth chain if the response landed on a login page. The
+        # call is a no-op for non-auth responses, so no pre-check is needed
+        # here — but we still need to remember whether auth actually fired,
+        # so we can redo the caller's original request afterwards.
+        auth_redirected = self._is_auth_url(response.url)
         response = self._handle_auth_redirect(response)
-        if not self._is_auth_url(full_url):  # The original URL was NOT a login-url
+
+        # If auth was triggered mid-request, redo the caller's original call
+        # now that we're logged in — unless the caller was explicitly driving
+        # the auth flow themselves (e.g. session.get("/login")).
+        if auth_redirected and not self._is_auth_url(full_url):
             response = self._make_traced_request(super().request, method, full_url, **kwargs)
-            self._reset_login_attempts()
-        elif not self._is_auth_url(response.url):  # Original was login, and this is not anymore
+
+        if not self._is_auth_url(response.url):
             self._reset_login_attempts()
 
         # Save cookies
