@@ -4,7 +4,6 @@ import pytest
 
 from smartschool import Smartschool, objects
 from smartschool.message_composer import (
-    GetComposeForm,
     MessageComposerForm,
     RecipientType,
     _ComposeFormParser,
@@ -262,20 +261,13 @@ class TestMessageComposerFormAddRecipient:
 class TestMessageComposerFormAddAttachment:
     """Test MessageComposerForm.add_attachment() method."""
 
-    def test_add_attachment_with_valid_file(self, session: Smartschool, mocker):
+    def test_add_attachment_with_valid_file(self, session: Smartschool, tmp_path: Path):
         form = MessageComposerForm.create(session=session)
 
-        # Mock Path methods
-        mocker.patch.object(Path, "exists", return_value=True)
-        mocker.patch.object(Path, "is_file", return_value=True)
-        mocker.patch.object(Path, "read_bytes", return_value=b"PDF content")
+        file_path = tmp_path / "test.pdf"
+        file_path.write_bytes(b"PDF content")
 
-        mock_response = mocker.MagicMock()
-        mock_response.text = "true"
-        mock_response.raise_for_status = mocker.MagicMock()
-        mocker.patch("smartschool.message_composer.RequestsSession.request", return_value=mock_response)
-
-        form.add_attachment("test.pdf")
+        form.add_attachment(file_path)
 
     def test_add_attachment_raises_error_when_randomDir_missing(self, session: Smartschool):
         form = MessageComposerForm(session=session)
@@ -303,51 +295,30 @@ class TestMessageComposerFormAddAttachment:
         with pytest.raises(FileNotFoundError, match="does not exist"):
             form.add_attachment("somedir")
 
-    def test_add_attachment_with_string_path(self, session: Smartschool, mocker):
+    def test_add_attachment_with_string_path(self, session: Smartschool, tmp_path: Path):
         form = MessageComposerForm.create(session=session)
 
-        mocker.patch.object(Path, "exists", return_value=True)
-        mocker.patch.object(Path, "is_file", return_value=True)
-        mocker.patch.object(Path, "read_bytes", return_value=b"content")
+        file_path = tmp_path / "test.pdf"
+        file_path.write_bytes(b"content")
 
-        mock_response = mocker.MagicMock()
-        mock_response.text = "true"
-        mock_response.raise_for_status = mocker.MagicMock()
-        mocker.patch("smartschool.message_composer.RequestsSession.request", return_value=mock_response)
+        form.add_attachment(str(file_path))
 
-        form.add_attachment("test.pdf")
-
-    def test_add_attachment_with_path_object(self, session: Smartschool, mocker):
+    def test_add_attachment_with_path_object(self, session: Smartschool, tmp_path: Path):
         form = MessageComposerForm.create(session=session)
 
-        mocker.patch.object(Path, "exists", return_value=True)
-        mocker.patch.object(Path, "is_file", return_value=True)
-        mocker.patch.object(Path, "read_bytes", return_value=b"content")
+        file_path = tmp_path / "test.pdf"
+        file_path.write_bytes(b"content")
 
-        mock_response = mocker.MagicMock()
-        mock_response.text = "true"
-        mock_response.raise_for_status = mocker.MagicMock()
-        mocker.patch("smartschool.message_composer.RequestsSession.request", return_value=mock_response)
-
-        file_path = Path("test.pdf")
         form.add_attachment(file_path)
 
-    def test_add_attachment_handles_various_file_types(self, session: Smartschool, mocker):
+    def test_add_attachment_handles_various_file_types(self, session: Smartschool, tmp_path: Path):
         form = MessageComposerForm.create(session=session)
-
-        mocker.patch.object(Path, "exists", return_value=True)
-        mocker.patch.object(Path, "is_file", return_value=True)
-        mocker.patch.object(Path, "read_bytes", return_value=b"content")
-
-        # Mock the HTTP response
-        mock_response = mocker.MagicMock()
-        mock_response.text = "true"
-        mock_response.raise_for_status = mocker.MagicMock()
-        mocker.patch("smartschool.message_composer.RequestsSession.request", return_value=mock_response)
 
         # Test various file types
         for filename in ["document.pdf", "image.jpg", "archive.zip", "unknown.xyz"]:
-            form.add_attachment(filename)
+            file_path = tmp_path / filename
+            file_path.write_bytes(b"content")
+            form.add_attachment(file_path)
 
 
 class TestMessageComposerFormSend:
@@ -382,41 +353,6 @@ class TestMessageComposerFormSend:
         # Verify that fields parameter was passed
         call_args = spy.call_args
         assert call_args is not None
-
-
-class TestGetComposeForm:
-    """Test GetComposeForm class."""
-
-    def test_get_compose_form_with_defaults(self, session: Smartschool):
-        form_fields = GetComposeForm(session=session).get()
-
-        assert isinstance(form_fields, dict)
-        assert len(form_fields) > 0
-        assert "randomDir" in form_fields
-        assert "uniqueUsc" in form_fields
-
-    def test_get_compose_form_with_custom_box_type(self, session: Smartschool):
-        form_fields = GetComposeForm(session=session, box_type=BoxType.SENT).get()
-
-        assert isinstance(form_fields, dict)
-
-    def test_get_compose_form_with_compose_type(self, session: Smartschool):
-        form_fields = GetComposeForm(session=session, compose_type=1).get()
-
-        assert isinstance(form_fields, dict)
-
-    def test_get_compose_form_with_msg_id(self, session: Smartschool):
-        form_fields = GetComposeForm(session=session, msg_id="12345").get()
-
-        assert isinstance(form_fields, dict)
-
-    def test_get_returns_hidden_fields(self, session: Smartschool):
-        form_fields = GetComposeForm(session=session).get()
-
-        # Should contain the parsed hidden fields from new-message.html
-        assert isinstance(form_fields, dict)
-        assert "randomDir" in form_fields
-        assert "uniqueUsc" in form_fields
 
 
 class TestMessageComposerFormIntegration:
