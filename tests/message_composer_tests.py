@@ -1,14 +1,23 @@
+from __future__ import annotations
+
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 
-from smartschool import Smartschool, objects
+from smartschool import objects
+from smartschool.exceptions import SmartSchoolAttachmentUploadError
 from smartschool.message_composer import (
     MessageComposerForm,
     RecipientType,
     _ComposeFormParser,
 )
 from smartschool.messages import BoxType
+
+if TYPE_CHECKING:
+    from requests_mock import Mocker
+
+    from smartschool import Smartschool
 
 
 class TestRecipientType:
@@ -318,6 +327,38 @@ class TestMessageComposerFormAddAttachment:
         for filename in ["document.pdf", "image.jpg", "archive.zip", "unknown.xyz"]:
             file_path = tmp_path / filename
             file_path.write_bytes(b"content")
+            form.add_attachment(file_path)
+
+    def test_add_attachment_falls_back_to_octet_stream(self, session: Smartschool, requests_mock: Mocker, tmp_path: Path):
+        form = MessageComposerForm.create(session=session)
+        requests_mock.post("https://site/Upload/Upload/Index", text="true")
+
+        file_path = tmp_path / "blob"
+        file_path.write_bytes(b"raw data")
+
+        form.add_attachment(file_path)
+
+        body = requests_mock.request_history[-1].text or ""
+        assert "application/octet-stream" in body
+
+    def test_add_attachment_raises_on_false_response(self, session: Smartschool, requests_mock: Mocker, tmp_path: Path):
+        form = MessageComposerForm.create(session=session)
+        requests_mock.post("https://site/Upload/Upload/Index", text="false")
+
+        file_path = tmp_path / "test.pdf"
+        file_path.write_bytes(b"content")
+
+        with pytest.raises(SmartSchoolAttachmentUploadError, match="server returned false"):
+            form.add_attachment(file_path)
+
+    def test_add_attachment_raises_on_unexpected_response(self, session: Smartschool, requests_mock: Mocker, tmp_path: Path):
+        form = MessageComposerForm.create(session=session)
+        requests_mock.post("https://site/Upload/Upload/Index", text="maybe?")
+
+        file_path = tmp_path / "test.pdf"
+        file_path.write_bytes(b"content")
+
+        with pytest.raises(SmartSchoolAttachmentUploadError, match="unexpected response"):
             form.add_attachment(file_path)
 
 

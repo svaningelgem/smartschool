@@ -369,8 +369,6 @@ def create_filesystem_safe_filename(filename: str) -> str:
     # Split extension before processing
     path = Path(filename)
     name, ext = path.stem, path.suffix
-    if ext == ".":
-        ext = ""
 
     # Replace unsafe chars and normalize whitespace
     safe_name = name.replace('"', "'")
