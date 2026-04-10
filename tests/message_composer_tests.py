@@ -208,6 +208,15 @@ class TestMessageComposerFormSearchUsers:
             assert hasattr(first_group, "value")
             assert hasattr(first_group, "ss_id")
 
+    def test_search_users_handles_missing_elements(self, session: Smartschool, requests_mock: Mocker):
+        form = MessageComposerForm.create(session=session)
+        requests_mock.post("https://site/?module=Messages&file=searchUsers", text="<results></results>")
+
+        users, groups = form.search_users("nobody")
+
+        assert users == []
+        assert groups == []
+
     def test_search_users_raises_error_when_unique_usc_missing(self, session: Smartschool):
         form = MessageComposerForm(session=session)
         # Don't call refresh, so uniqueUsc is missing
