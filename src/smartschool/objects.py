@@ -341,7 +341,6 @@ class ShortMessage:
     status: int
     attachment: int
     unread: bool
-    label: bool
     deleted: bool
     allowreply: bool
     allowreplyenabled: bool
@@ -350,6 +349,7 @@ class ShortMessage:
     real_box: String
     send_date: DateTime | None
     from_: String = Field(validation_alias=AliasChoices("from", "from_"))
+    colored_flag: int = Field(default=0, validation_alias=AliasChoices("colored_flag", "label"))
 
 
 @dataclass(config=_config)
@@ -362,7 +362,6 @@ class FullMessage:
     status: int
     attachment: int
     unread: bool
-    label: bool
     receivers: list[String]
     ccreceivers: list[String]
     bccreceivers: list[String]
@@ -377,6 +376,7 @@ class FullMessage:
     has_forward: bool
     send_date: DateTime | None
     from_: String = Field(validation_alias=AliasChoices("from", "from_"))
+    colored_flag: int = Field(default=0, validation_alias=AliasChoices("colored_flag", "label"))
 
 
 @dataclass(config=_config)
@@ -401,6 +401,26 @@ class MessageDeletionStatus:
     msg_id: Annotated[int, Field(validation_alias="msgID")]
     box_type: String
     is_deleted: bool = Field(validation_alias=AliasChoices("status", "is_deleted"))
+
+
+@dataclass(config=_config)
+class MessageSearchUser:
+    user_id: Annotated[int, Field(validation_alias="userID")]
+    value: String
+    ss_id: Annotated[int, Field(validation_alias="ssID")]
+    coaccountname: String | None = None
+    classname: String | None = None
+    schoolname: String | None = None
+    picture: Url | None = None
+
+
+@dataclass(config=_config)
+class MessageSearchGroup:
+    group_id: Annotated[int, Field(validation_alias="groupID")]
+    value: String
+    ss_id: Annotated[int, Field(validation_alias="ssID")]
+    icon: String | None = None
+    description: String | None = None
 
 
 @dataclass(config=_config)
