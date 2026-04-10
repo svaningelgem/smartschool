@@ -91,6 +91,39 @@ def _clear_caches_from_agenda() -> Generator[None, Any, None]:
                     v.cache.clear()
 
 
+def _get_compose_fixture(base_path: Path, test_name: str, req) -> Path | None:
+    """Route message compose/search requests to fixture files."""
+    query = parse_qs(req.query)
+    module = query.get("module", [""])[0].lower()
+    file = query.get("file", [""])[0].lower()
+
+    if module != "messages":
+        return None
+
+    compose_path = base_path / "composemessage"
+
+    if file == "composemessage":
+        specific = compose_path / f"{test_name}.html"
+        return specific if specific.exists() else compose_path / "new-message.html"
+
+    if file == "searchusers":
+        specific = compose_path / f"{test_name}.xml"
+        if specific.exists():
+            return specific
+
+        function = query.get("function", [""])[0].lower()
+        if function == "addusertoselected":
+            return compose_path / "add-users-to-selected.xml"
+
+        body = parse_qs(req.body) if req.body else {}
+        search_value = body.get("val", [""])[0]
+        if re.search(r"\d", search_value):
+            return compose_path / "search-group.xml"
+        return compose_path / "search-user.xml"
+
+    return None
+
+
 @pytest.fixture(autouse=True)
 def _setup_requests_mocker(request, requests_mock) -> None:
     """Setup comprehensive request mocking for all tests."""
@@ -103,36 +136,9 @@ def _setup_requests_mocker(request, requests_mock) -> None:
             subsystem = re.search("<subsystem>(.*?)</subsystem>", xml).group(1)
             action = re.search("<action>(.*?)</action>", xml).group(1)
         except (AttributeError, KeyError):
-            query = parse_qs(req.query)
-            module = query.get("module", [""])[0].lower()
-            file = query.get("file", [""])[0].lower()
-            function = query.get("function", [""])[0].lower()
-
-            if module == "messages" and file == "composemessage":
-                compose_path = default_path / "composemessage"
-                specific_filename = compose_path / f"{request.node.name}.html"
-                default_filename = compose_path / "new-message.html"
-                if specific_filename.exists():
-                    return specific_filename
-                return default_filename
-
-            if module == "messages" and file == "searchusers":
-                compose_path = default_path / "composemessage"
-                specific_filename = compose_path / f"{request.node.name}.xml"
-
-                if function == "addusertoselected":
-                    default_filename = compose_path / "add-users-to-selected.xml"
-                else:
-                    body = parse_qs(req.body) if req.body else {}
-                    search_value = body.get("val", [""])[0]
-                    if re.search(r"\d", search_value):
-                        default_filename = compose_path / "search-group.xml"
-                    else:
-                        default_filename = compose_path / "search-user.xml"
-
-                if specific_filename.exists():
-                    return specific_filename
-                return default_filename
+            compose_fixture = _get_compose_fixture(default_path, request.node.name, req)
+            if compose_fixture is not None:
+                return compose_fixture
 
             if req.query:
                 partial_hash = hashlib.sha256(quote_plus(req.query).encode("utf8")).hexdigest()[:12]

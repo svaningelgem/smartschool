@@ -199,7 +199,7 @@ class TestMessageComposerFormSearchUsers:
             assert hasattr(first_group, "value")
             assert hasattr(first_group, "ss_id")
 
-    def test_search_users_raises_error_when_uniqueUsc_missing(self, session: Smartschool):
+    def test_search_users_raises_error_when_unique_usc_missing(self, session: Smartschool):
         form = MessageComposerForm(session=session)
         # Don't call refresh, so uniqueUsc is missing
 
@@ -246,7 +246,7 @@ class TestMessageComposerFormAddRecipient:
         # Verify the request was made
         spy.assert_called()
 
-    def test_add_recipient_raises_error_when_uniqueUsc_missing(self, session: Smartschool):
+    def test_add_recipient_raises_error_when_unique_usc_missing(self, session: Smartschool):
         form = MessageComposerForm(session=session)
         mock_user = objects.MessageSearchUser(
             user_id=1,
@@ -269,7 +269,7 @@ class TestMessageComposerFormAddAttachment:
 
         form.add_attachment(file_path)
 
-    def test_add_attachment_raises_error_when_randomDir_missing(self, session: Smartschool):
+    def test_add_attachment_raises_error_when_random_dir_missing(self, session: Smartschool):
         form = MessageComposerForm(session=session)
         # payload.randomDir is empty string by default
 
