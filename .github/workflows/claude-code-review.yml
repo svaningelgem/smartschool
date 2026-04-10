@@ -1,8 +1,11 @@
 name: Claude Code Review
 
 on:
-  pull_request:
-    types: [opened, synchronize, ready_for_review, reopened, labeled]
+  # pull_request_target runs in the base repo context, so fork PRs don't
+  # need manual approval. Only the 'labeled' type is needed since the job
+  # condition filters on the claude-review label anyway.
+  pull_request_target:
+    types: [labeled]
   issue_comment:
     types: [created]
   workflow_dispatch:
@@ -16,7 +19,7 @@ jobs:
   claude-review:
     if: >-
       github.event_name == 'workflow_dispatch' ||
-      (github.event_name == 'pull_request' && github.event.action == 'labeled' && github.event.label.name == 'claude-review') ||
+      (github.event_name == 'pull_request_target' && github.event.label.name == 'claude-review') ||
       (github.event_name == 'issue_comment' && github.event.issue.pull_request && startsWith(github.event.comment.body, '/claude-review'))
     runs-on: ubuntu-latest
     permissions:
@@ -29,6 +32,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
         with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 1
 
       - name: Run Claude Code Review
