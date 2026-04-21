@@ -44,6 +44,9 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 
+[tool.coverage.run]
+branch = true
+
 [tool.coverage.report]
 exclude_also = [
     'def __repr__',

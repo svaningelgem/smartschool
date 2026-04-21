@@ -57,6 +57,79 @@ for header in MessageHeaders(session):
             print(f"Downloaded: {attachment.name} ({attachment.size})")
 ```
 
+## Composing and Sending Messages
+
+```python
+from smartschool import Smartschool, PathCredentials, MessageComposerForm, RecipientType
+from pathlib import Path
+
+session = Smartschool(PathCredentials())
+
+# Create a new message compose form
+form = MessageComposerForm.create(session=session)
+
+# Set subject and message content
+form.set_subject("Hello")
+form.set_message_html("<p>This is my message</p>")
+
+# Search for recipients
+users, groups = form.search_users("John")
+
+# Add recipients
+if users:
+    form.add_recipient(users[0], RecipientType.TO)
+
+if groups:
+    form.add_recipient(groups[0], RecipientType.CC)
+
+# Add attachments
+form.add_attachment("path/to/document.pdf")
+form.add_attachment("path/to/image.png")
+
+# Send the message
+response = form.send()
+print(f"Message sent: {response.status_code}")
+```
+
+### Recipient Types
+
+```python
+from smartschool import RecipientType
+
+# Available recipient types
+RecipientType.TO    # To field
+RecipientType.CC    # Carbon copy
+RecipientType.BCC   # Blind carbon copy
+```
+
+### Searching Recipients
+
+```python
+# Search for recipients (users and groups)
+users, groups = form.search_users("search term")
+
+# Users have properties: userID, value (display name), ssID, coaccountname, classname, schoolname, picture
+for user in users:
+    print(f"User: {user.value}")
+
+# Groups have properties: groupID, value, icon, ssID, description
+for group in groups:
+    print(f"Group: {group.value}")
+```
+
+### Direct Field Setting
+
+For advanced use cases, set custom payload fields directly:
+
+```python
+# Set arbitrary form fields
+form.set_field("copyToLVS", "copyToLVS")  # Copy to learning management system
+form.set_field("sendDate", "2024-04-10")  # Schedule sending
+
+# Send the message
+response = form.send()
+```
+
 ## Message Operations
 
 ### Mark as Unread
