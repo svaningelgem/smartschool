@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 from datetime import date, datetime
+from enum import StrEnum
 from functools import cached_property
 from typing import Annotated, Literal
 
@@ -21,6 +22,55 @@ DateTime = Annotated[datetime, BeforeValidator(convert_to_datetime)]
 _config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
 
+class GraphicColor(StrEnum):
+    """
+    Known colors for ``PercentageGraphic`` / ``TextGraphic``.
+
+    Smartschool occasionally introduces new color names (e.g. ``grass`` was
+    added in 2026). Fields typed as ``GraphicColor | String`` accept any
+    string but coerce known values to this enum so consumers keep getting
+    autocompletion and ``==`` comparisons against string literals.
+    """
+
+    GREEN = "green"
+    RED = "red"
+    OLIVE = "olive"
+    YELLOW = "yellow"
+    STEEL = "steel"
+    GRASS = "grass"
+
+
+def _coerce_graphic_color(value: object) -> object:
+    if isinstance(value, GraphicColor) or not isinstance(value, str):
+        return value
+    try:
+        return GraphicColor(value)
+    except ValueError:
+        return value
+
+
+GraphicColorType = Annotated[GraphicColor | String, BeforeValidator(_coerce_graphic_color)]
+
+
+class ResultType(StrEnum):
+    """Known ``Result.type`` discriminators reported by Smartschool."""
+
+    NORMAL = "normal"
+    PROJECT_WITH_RUBRICS = "project-with-rubrics"
+
+
+def _coerce_result_type(value: object) -> object:
+    if isinstance(value, ResultType) or not isinstance(value, str):
+        return value
+    try:
+        return ResultType(value)
+    except ValueError:
+        return value
+
+
+ResultTypeType = Annotated[ResultType | String, BeforeValidator(_coerce_result_type)]
+
+
 @dataclass(config=_config)
 class CourseGraphic:
     type: Literal["icon"]
@@ -30,7 +80,7 @@ class CourseGraphic:
 @dataclass(config=_config)
 class PercentageGraphic:
     type: Literal["percentage"]
-    color: Literal["green", "red", "olive", "yellow", "steel"]
+    color: GraphicColorType
     value: int
     description: String
 
@@ -50,12 +100,20 @@ class PercentageGraphic:
 @dataclass(config=_config)
 class TextGraphic:
     type: Literal["text"]
-    color: Literal["green", "red", "olive", "yellow", "steel"]
+    color: GraphicColorType
     value: String
     description: String
 
 
-ResultGraphic = Annotated[PercentageGraphic | TextGraphic, Field(discriminator="type")]
+@dataclass(config=_config)
+class IconGraphic:
+    type: Literal["icon"]
+    color: String | None = None
+    value: String | None = None
+    description: String | None = None
+
+
+ResultGraphic = Annotated[PercentageGraphic | TextGraphic | IconGraphic, Field(discriminator="type")]
 
 
 @dataclass(config=_config)
@@ -174,7 +232,7 @@ class FeedbackFull:
 @dataclass(config=_config)
 class Result:
     identifier: String
-    type: Literal["normal"]
+    type: ResultTypeType
     name: String
     graphic: ResultGraphic
     date: DateTime
