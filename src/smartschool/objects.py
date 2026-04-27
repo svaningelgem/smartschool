@@ -24,12 +24,10 @@ _config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
 class GraphicColor(StrEnum):
     """
-    Known colors for ``PercentageGraphic`` / ``TextGraphic``.
+    Colors emitted by Smartschool for ``PercentageGraphic`` / ``TextGraphic``.
 
-    Smartschool occasionally introduces new color names (e.g. ``grass`` was
-    added in 2026). Fields typed as ``GraphicColor | String`` accept any
-    string but coerce known values to this enum so consumers keep getting
-    autocompletion and ``==`` comparisons against string literals.
+    Validation is strict: an unknown value raises so the missing member
+    surfaces immediately and can be added here.
     """
 
     GREEN = "green"
@@ -40,35 +38,16 @@ class GraphicColor(StrEnum):
     GRASS = "grass"
 
 
-def _coerce_graphic_color(value: object) -> object:
-    if isinstance(value, GraphicColor) or not isinstance(value, str):
-        return value
-    try:
-        return GraphicColor(value)
-    except ValueError:
-        return value
-
-
-GraphicColorType = Annotated[GraphicColor | String, BeforeValidator(_coerce_graphic_color)]
-
-
 class ResultType(StrEnum):
-    """Known ``Result.type`` discriminators reported by Smartschool."""
+    """
+    Discriminators emitted by Smartschool for ``Result.type``.
+
+    Validation is strict: an unknown value raises so the missing member
+    surfaces immediately and can be added here.
+    """
 
     NORMAL = "normal"
     PROJECT_WITH_RUBRICS = "project-with-rubrics"
-
-
-def _coerce_result_type(value: object) -> object:
-    if isinstance(value, ResultType) or not isinstance(value, str):
-        return value
-    try:
-        return ResultType(value)
-    except ValueError:
-        return value
-
-
-ResultTypeType = Annotated[ResultType | String, BeforeValidator(_coerce_result_type)]
 
 
 @dataclass(config=_config)
@@ -80,7 +59,7 @@ class CourseGraphic:
 @dataclass(config=_config)
 class PercentageGraphic:
     type: Literal["percentage"]
-    color: GraphicColorType
+    color: GraphicColor
     value: int
     description: String
 
@@ -100,7 +79,7 @@ class PercentageGraphic:
 @dataclass(config=_config)
 class TextGraphic:
     type: Literal["text"]
-    color: GraphicColorType
+    color: GraphicColor
     value: String
     description: String
 
@@ -232,7 +211,7 @@ class FeedbackFull:
 @dataclass(config=_config)
 class Result:
     identifier: String
-    type: ResultTypeType
+    type: ResultType
     name: String
     graphic: ResultGraphic
     date: DateTime
