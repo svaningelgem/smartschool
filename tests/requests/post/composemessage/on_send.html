@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<!--
+  ___ __  __   _   ___ _____ ___  ___ _  _  ___   ___  _
+ / __|  \/  | /_\ | _ \_   _/ __|/ __| || |/ _ \ / _ \| |
+ \__ \ |\/| |/ _ \|   / | | \__ \ (__| __ | (_) | (_) | |__
+ |___/_|  |_/_/ \_\_|_\ |_| |___/\___|_||_|\___/ \___/|____|
+
+-->
+<html lang="nl">
+    <head>
+        <title>Springfield Academy - Smartschool</title>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <link rel="icon" href="https://static4.smart-school.net/smsc/svg/favicon/favicon.svg">
+        <link rel="mask-icon" href="https://static6.smart-school.net/smsc/svg/favicon/mask-icon.svg" color="#ff520e">
+        <link rel="apple-touch-icon" href="https://static6.smart-school.net/smsc/img/favicon/apple-touch-icon.png">
+        <link rel="manifest" href="/manifest.json">
+        <!-- jQuery & jQueryUI -->
+        <script type="text/javascript" src="https://static2.smart-school.net/smsc/resources/jquery/3.7.1/jquery.min.rev-207d0de71d.js"></script>
+        <script type="text/javascript" src="https://static4.smart-school.net/smsc/resources/jqueryui/1.14.1/jquery-ui.min.rev-726cc0e812.js"></script>
+        <link href="https://static2.smart-school.net/smsc/resources/jqueryui/1.14.1/jquery-ui.min.rev-d1ab50dc84.css" rel="stylesheet"/>
+        <link href="https://static2.smart-school.net/modules/Messages/dist/compose-built.rev-473df37d15.css" rel="stylesheet"/>
+        <link href="https://static2.smart-school.net/modules/Messages/desktop/iconObserver/dist/main-built.rev-9a8de482d7.css" rel="stylesheet"/>
+        <link href="https://static6.smart-school.net/modules/Messages/desktop/delayedMessages/dist/main-built.rev-ca0f7b9425.css" rel="stylesheet"/>
+        <link href="https://static2.smart-school.net/modules/Messages/desktop/coAccountDialog/dist/main-built.rev-71a91d89a8.css" rel="stylesheet"/>
+        <link href="https://static6.smart-school.net/modules/Messages/desktop/compose/dist/main-built.rev-5dc33f8a48.css" rel="stylesheet"/>
+        <!-- TinyMCE HEAD -->
+        <!-- javascriptContent HEAD -->
+        <script type="text/javascript">
+            if (!window.SMSC)
+                window.SMSC = {};
+            if (!window.SMSC.languagehash)
+                window.SMSC.languageHash = {};
+
+            window.SMSC.languageHash['general_legacy'] = {
+                'nl': {
+                    'version': 'f67ae1a26a'
+                },
+                'fr': {
+                    'version': '78b31140fc'
+                },
+            };
+            window.SMSC.languageHash['general_buttons'] = {
+                'nl': {
+                    'version': 'c7e16e451d'
+                },
+                'fr': {
+                    'version': '8c7a75b4c2'
+                },
+            };
+            window.SMSC.languageHash['component_period'] = {
+                'nl': {
+                    'version': '9ab0ec32c3'
+                },
+                'fr': {
+                    'version': 'cec017ad77'
+                },
+            };
+            window.SMSC.languageHash['component_dialog'] = {
+                'nl': {
+                    'version': 'b469de72f5'
+                },
+                'fr': {
+                    'version': '8bf6d9ce5f'
+                },
+            };
+            window.SMSC.languageHash['component_router'] = {
+                'nl': {
+                    'version': '5a85e0caa9'
+                },
+                'fr': {
+                    'version': 'f21ab65892'
+                },
+            };
+            window.SMSC.languageHash['component_sidebar'] = {
+                'nl': {
+                    'version': '0343ee3d51'
+                },
+                'fr': {
+                    'version': 'd935fe731b'
+                },
+            };
+        </script>
+        <!-- javascriptURL HEAD -->
+        <!-- javascriptContent HEAD -->
+    </head>
+    <body class=" modern-ui modern-ui--larger-font">
+        <div id="smscMain" class="smscMain " tabindex="-1">
+            <script>
+                $(document).ready(function() {
+                    checkOpenerActions();
+                    window.close();
+                });
+            </script>
+        </div>
+        <!-- javascript variables -->
+        <script type="text/javascript">
+            var SMSC = SMSC || {};
+        </script>
+        <script type="text/javascript">
+            $.extend(true, SMSC, JSON.parse('\u007B\u0022quickSearch\u0022\u003A\u007B\u0022quicksearch.search_placeholder\u0022\u003A\u0022Zoeken...\u0022,\u0022quicksearch.search_option_own\u002Dplatform\u002Donly\u0022\u003A\u0022Enkel\u0020in\u0020eigen\u0020platform\u0020zoeken\u0022,\u0022quicksearch.search_option_include\u002Ddeleted\u0022\u003A\u0022Ook\u0020\u003Cspan\u0020style\u003D\\\u0022color\u003A\u0023E30000\u003B\u0020font\u002Dweight\u003A\u0020bold\u003B\\\u0022\u003Everwijderde\u003C\\\/span\u003E\u0020gebruikers\u0020tonen\u0022,\u0022quicksearch.default_deleted_string\u0022\u003A\u0022verwijderd\u0022,\u0022quicksearch.search_not_found\u0022\u003A\u0022We\u0020hebben\u0020__SEARCHSTRING__\u0020niet\u0020gevonden.\u0020Probeer\u0020een\u0020andere\u0020zoekterm.\u0022,\u0022quicksearch.search_subtitle_suggestions\u0022\u003A\u0022Suggesties\u0022,\u0022quicksearch.currentUser\u0022\u003A\u0022Aangemelde\u0020gebruiker\u0022,\u0022quicksearch.me\u0022\u003A\u0022Mezelf\u0022,\u0022quicksearch.all_students\u0022\u003A\u0022Alle\u0020leerlingen\u0022,\u0022planner.user_role.1\u0022\u003A\u0022Alle\u0020leerlingen\u0022,\u0022quicksearch.unassigned\u0022\u003A\u0022Niemand\u0022,\u0022quicksearch.search_subtitle_favourites\u0022\u003A\u0022Favorieten\u0022,\u0022quicksearch.mark_as_favourite\u0022\u003A\u0022Toevoegen\u0020aan\u0020favorieten\u0022,\u0022quicksearch.discard_as_favourite\u0022\u003A\u0022Verwijderen\u0020uit\u0020favorieten\u0022,\u0022quicksearch.co_account_type_\u002D1\u0022\u003A\u0022hoofdaccounts\u0022,\u0022quicksearch.co_account_type_\u002D2\u0022\u003A\u0022alle\u0020co\u002Daccounts\u0022,\u0022property.co\u002Daccount\u002Dtype.main\u0022\u003A\u0022Hoofdaccounts\u0022,\u0022bubble_coaccountfilter_title\u0022\u003A\u0022Specifieke\u0020accounttypes\u0020voor\u0020deze\u0020groep\\\/klas\u0020selecteren\u0022,\u0022bubble_coaccountfilter_tokeninput_emptystate\u0022\u003A\u0022Zoek\u0020naar\u0020accounttypes\u0022,\u0022bubble_coaccountfilter_quickfilter_title\u0022\u003A\u0022Snelle\u0020filters\u0022,\u0022quicksearch_clear_selection\u0022\u003A\u0022Selectie\u0020verwijderen\u0022,\u0022\u0025quick\u002Dsearch.co\u002Daccount\u002Dfilter.main\u002Daccounts\u0025\u0022\u003A\u0022Hoofdaccounts\u0022,\u0022\u0025quick\u002Dsearch.co\u002Daccount\u002Dfilter.all\u002Dco\u002Daccounts\u0025\u0022\u003A\u0022alle\u0020Co\u002Daccounts\u0022,\u0022\u0025quick\u002Dsearch.co\u002Daccount\u002Dfilter.non\u002Dprofessional\u002Dco\u002Daccounts\u0025\u0022\u003A\u0022Familie\u0022\u007D,\u0022vars\u0022\u003A\u007B\u0022locale\u0022\u003A\u0022nl\u0022,\u0022userPictureDomain\u0022\u003A\u0022https\u003A\\\/\\\/userpicture.example.test\u0022,\u0022currentUser\u0022\u003A\u007B\u0022userIdentifier\u0022\u003A\u00224069_146_0\u0022,\u0022userPictureHash\u0022\u003A\u00224069_a1b2c3d4\u002D5e6f\u002D7g8h\u002D9i0j\u002Dk1l2m3n4o5p6\u0022,\u0022userPictureUrl\u0022\u003A\u0022https\u003A\\\/\\\/userpicture.example.test\\\/User\\\/Userimage\\\/hashimage\\\/hash\\\/4069_a1b2c3d4\u002D5e6f\u002D7g8h\u002D9i0j\u002Dk1l2m3n4o5p6\\\/plain\\\/1\\\/res\\\/128\u0022,\u0022name\u0022\u003A\u0022John\u0020Smith\u0022,\u0022nameReverse\u0022\u003A\u0022Smith\u0020John\u0022,\u0022description\u0022\u003A\u0022\u0022,\u0022descriptionReverse\u0022\u003A\u0022\u0022\u007D,\u0022authenticatedUser\u0022\u003A\u007B\u0022id\u0022\u003A\u00224069_146_0\u0022,\u0022pictureHash\u0022\u003A\u00224069_a1b2c3d4\u002D5e6f\u002D7g8h\u002D9i0j\u002Dk1l2m3n4o5p6\u0022,\u0022pictureUrl\u0022\u003A\u0022https\u003A\\\/\\\/userpicture.example.test\\\/User\\\/Userimage\\\/hashimage\\\/hash\\\/4069_a1b2c3d4\u002D5e6f\u002D7g8h\u002D9i0j\u002Dk1l2m3n4o5p6\\\/plain\\\/1\\\/res\\\/128\u0022,\u0022description\u0022\u003A\u007B\u0022startingWithFirstName\u0022\u003A\u0022\u0022,\u0022startingWithLastName\u0022\u003A\u0022\u0022\u007D,\u0022name\u0022\u003A\u007B\u0022startingWithFirstName\u0022\u003A\u0022John\u0020Smith\u0022,\u0022startingWithLastName\u0022\u003A\u0022Smith\u0020John\u0022\u007D,\u0022sort\u0022\u003A\u0022smith\u002Djohn\u0022,\u0022deleted\u0022\u003Afalse\u007D,\u0022currentUserRole\u0022\u003A0,\u0022tinyMCEVersion\u0022\u003A\u00226.8.5\u0022,\u0022ssID\u0022\u003A4069\u007D\u007D'));
+        </script>
+        <script type="text/javascript">
+            $.extend(true, SMSC, JSON.parse('\u007B\u0022wopiConfig\u0022\u003A\u007B\u0022wopiActions\u0022\u003A\u007B\u0022pdf\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Pdf\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/mime_pdf\\\/mime_pdf_16x16.png\u0022\u007D\u007D,\u0022csv\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Excel\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Excel\u002Dcolor\\\/Excel\u002Dcolor_16x16.png\u0022\u007D,\u0022convert\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Excel\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Excel\u002Dcolor\\\/Excel\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022ods\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Excel\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Excel\u002Dcolor\\\/Excel\u002Dcolor_16x16.png\u0022\u007D,\u0022edit\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Excel\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Excel\u002Dcolor\\\/Excel\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022xls\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Excel\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Excel\u002Dcolor\\\/Excel\u002Dcolor_16x16.png\u0022\u007D,\u0022convert\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Excel\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Excel\u002Dcolor\\\/Excel\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022xlsb\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Excel\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Excel\u002Dcolor\\\/Excel\u002Dcolor_16x16.png\u0022\u007D,\u0022edit\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Excel\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Excel\u002Dcolor\\\/Excel\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022xlsm\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Excel\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Excel\u002Dcolor\\\/Excel\u002Dcolor_16x16.png\u0022\u007D,\u0022edit\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Excel\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Excel\u002Dcolor\\\/Excel\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022xlsx\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Excel\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Excel\u002Dcolor\\\/Excel\u002Dcolor_16x16.png\u0022\u007D,\u0022edit\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Excel\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Excel\u002Dcolor\\\/Excel\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022odp\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022PowerPoint\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/PowerPoint\u002Dcolor\\\/PowerPoint\u002Dcolor_16x16.png\u0022\u007D,\u0022edit\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022PowerPoint\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/PowerPoint\u002Dcolor\\\/PowerPoint\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022pot\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022PowerPoint\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/PowerPoint\u002Dcolor\\\/PowerPoint\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022potm\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022PowerPoint\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/PowerPoint\u002Dcolor\\\/PowerPoint\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022potx\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022PowerPoint\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/PowerPoint\u002Dcolor\\\/PowerPoint\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022pps\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022PowerPoint\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/PowerPoint\u002Dcolor\\\/PowerPoint\u002Dcolor_16x16.png\u0022\u007D,\u0022convert\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022PowerPoint\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/PowerPoint\u002Dcolor\\\/PowerPoint\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022ppsm\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022PowerPoint\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/PowerPoint\u002Dcolor\\\/PowerPoint\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022ppsx\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022PowerPoint\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/PowerPoint\u002Dcolor\\\/PowerPoint\u002Dcolor_16x16.png\u0022\u007D,\u0022edit\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022PowerPoint\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/PowerPoint\u002Dcolor\\\/PowerPoint\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022ppt\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022PowerPoint\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/PowerPoint\u002Dcolor\\\/PowerPoint\u002Dcolor_16x16.png\u0022\u007D,\u0022convert\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022PowerPoint\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/PowerPoint\u002Dcolor\\\/PowerPoint\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022pptm\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022PowerPoint\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/PowerPoint\u002Dcolor\\\/PowerPoint\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022pptx\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022PowerPoint\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/PowerPoint\u002Dcolor\\\/PowerPoint\u002Dcolor_16x16.png\u0022\u007D,\u0022edit\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022PowerPoint\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/PowerPoint\u002Dcolor\\\/PowerPoint\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022vdw\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Visio\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Visio\u002Dcolor\\\/Visio\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022vsd\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Visio\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Visio\u002Dcolor\\\/Visio\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022vsdm\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Visio\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Visio\u002Dcolor\\\/Visio\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022vsdx\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Visio\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Visio\u002Dcolor\\\/Visio\u002Dcolor_16x16.png\u0022\u007D,\u0022edit\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Visio\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Visio\u002Dcolor\\\/Visio\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022wopitest\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022WopiTest\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/WopiTest\u002Dcolor\\\/WopiTest\u002Dcolor_16x16.png\u0022\u007D,\u0022edit\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022WopiTest\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/WopiTest\u002Dcolor\\\/WopiTest\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022wopitestx\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022WopiTest\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/WopiTest\u002Dcolor\\\/WopiTest\u002Dcolor_16x16.png\u0022\u007D,\u0022edit\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022WopiTest\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/WopiTest\u002Dcolor\\\/WopiTest\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022doc\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Word\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Word\u002Dcolor\\\/Word\u002Dcolor_16x16.png\u0022\u007D,\u0022convert\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Word\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Word\u002Dcolor\\\/Word\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022docm\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Word\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Word\u002Dcolor\\\/Word\u002Dcolor_16x16.png\u0022\u007D,\u0022edit\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Word\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Word\u002Dcolor\\\/Word\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022docx\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Word\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Word\u002Dcolor\\\/Word\u002Dcolor_16x16.png\u0022\u007D,\u0022edit\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Word\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Word\u002Dcolor\\\/Word\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022dot\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Word\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Word\u002Dcolor\\\/Word\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022dotm\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Word\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Word\u002Dcolor\\\/Word\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022dotx\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Word\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Word\u002Dcolor\\\/Word\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022odt\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Word\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Word\u002Dcolor\\\/Word\u002Dcolor_16x16.png\u0022\u007D,\u0022edit\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Word\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Word\u002Dcolor\\\/Word\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022rtf\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022Word\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/Word\u002Dcolor\\\/Word\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022b\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022WordPrague\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/WordPrague\u002Dcolor\\\/WordPrague\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022fluid\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022WordPrague\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/WordPrague\u002Dcolor\\\/WordPrague\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022note\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022WordPrague\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/WordPrague\u002Dcolor\\\/WordPrague\u002Dcolor_16x16.png\u0022\u007D\u007D,\u0022whiteboard\u0022\u003A\u007B\u0022view\u0022\u003A\u007B\u0022applicationName\u0022\u003A\u0022WordPrague\u0022,\u0022applicationIcon\u0022\u003A\u0022\\\/smsc\\\/img\\\/WordPrague\u002Dcolor\\\/WordPrague\u002Dcolor_16x16.png\u0022\u007D\u007D\u007D,\u0022allowCreate\u0022\u003Atrue\u007D\u007D'));
+        </script>
+        <!-- javascriptContent Body  -->
+        <script type="text/javascript">
+            $.extend(true, SMSC, {
+                period: {
+                    "lng_period_between_dateTimeFrom_and_dateTimeTo": "tussen ___COMBO_FULL_DAY_DATE_MONTH_YEAR_TIME___dateTimeFrom___ en ___COMBO_FULL_DAY_DATE_MONTH_YEAR_TIME___dateTimeTo___",
+                    "lng_period_between_dayTimeFrom_and_dayTimeTo": "tussen ___COMBO_FULL_DATE_DAY_TIME___dateTimeFrom___ en ___COMBO_FULL_DATE_DAY_TIME___dateTimeTo___",
+                    "lng_period_between_timeFrom_and_timeTo": "tussen ___TIME_HOUR_MINUTE___dateTimeFrom___ en ___TIME_HOUR_MINUTE___dateTimeTo___",
+                    "lng_period_dateTimeFrom": "___COMBO_FULL_DAY_DATE_MONTH_YEAR_TIME___dateTimeFrom___",
+                    "lng_period_around_dateTimeFrom": "___COMBO_FULL_DAY___dateTimeFrom___ ___COMBO_FULL_DATE_MONTH_YEAR___dateTimeFrom___ rond ___TIME_HOUR_MINUTE___dateTimeFrom___",
+                    "lng_period_long_day_date_sameday_wholeday": "___COMBO_FULL_DAY_DATE_MONTH_YEAR___dateTimeFrom___",
+                    "lng_period_long_date_sameday_wholeday": "___COMBO_FULL_DATE_MONTH_YEAR___dateTimeFrom___",
+                    "lng_period_long_day_sameday_wholeday": "___COMBO_FULL_DAY___dateTimeFrom___",
+                    "lng_period_short_day_date_sameday_wholeday": "___COMBO_SHORT_DAY_DATE_MONTH_YEAR___dateTimeFrom___",
+                    "lng_period_short_date_sameday_wholeday": "___COMBO_SHORT_DATE_MONTH_YEAR___dateTimeFrom___",
+                    "lng_period_numeric_sameday_wholeday": "___COMBO_NUMERIC_DATE_MONTH_YEAR___dateTimeFrom___",
+                    "lng_period_long_day_date_wholeday": "___COMBO_FULL_DAY_DATE_MONTH_YEAR___dateTimeFrom___ tot en met ___COMBO_FULL_DAY_DATE_MONTH_YEAR___dateTimeTo___",
+                    "lng_period_long_date_wholeday": "___COMBO_FULL_DATE_MONTH_YEAR___dateTimeFrom___ tot en met ___COMBO_FULL_DATE_MONTH_YEAR___dateTimeTo___",
+                    "lng_period_long_day_wholeday": "___COMBO_FULL_DAY___dateTimeFrom___ tot en met ___COMBO_FULL_DAY___dateTimeTo___",
+                    "lng_period_short_day_date_wholeday": "___COMBO_SHORT_DAY_DATE_MONTH_YEAR___dateTimeFrom___ tot en met ___COMBO_SHORT_DAY_DATE_MONTH_YEAR___dateTimeTo___",
+                    "lng_period_short_date_wholeday": "___COMBO_SHORT_DATE_MONTH_YEAR___dateTimeFrom___ tot en met ___COMBO_SHORT_DATE_MONTH_YEAR___dateTimeTo___",
+                    "lng_period_numeric_wholeday": "___COMBO_NUMERIC_DATE_MONTH_YEAR___dateTimeFrom___ tot en met ___COMBO_NUMERIC_DATE_MONTH_YEAR___dateTimeTo___",
+                    "lng_period_long_day_date_sameday": "___COMBO_FULL_DAY_DATE_MONTH_YEAR_TIME___dateTimeFrom___ tot ___TIME_HOUR_MINUTE___dateTimeTo___",
+                    "lng_period_long_date_sameday": "___COMBO_FULL_DATE_MONTH_YEAR_TIME___dateTimeFrom___ tot ___TIME_HOUR_MINUTE___dateTimeTo___",
+                    "lng_period_long_day_sameday": "___COMBO_FULL_DATE_DAY_TIME___dateTimeFrom___ tot ___TIME_HOUR_MINUTE___dateTimeTo___",
+                    "lng_period_short_day_date_sameday": "___COMBO_SHORT_DAY_DATE_MONTH_YEAR_TIME___dateTimeFrom___ tot ___TIME_HOUR_MINUTE___dateTimeTo___",
+                    "lng_period_short_date_sameday": "___COMBO_SHORT_DATE_MONTH_YEAR_TIME___dateTimeFrom___ tot ___TIME_HOUR_MINUTE___dateTimeTo___",
+                    "lng_period_numeric_sameday": "___COMBO_NUMERIC_DATE_MONTH_YEAR_TIME___dateTimeFrom___ tot ___TIME_HOUR_MINUTE___dateTimeTo___",
+                    "lng_period_long_day_date_multipledays": "___COMBO_FULL_DAY_DATE_MONTH_YEAR_TIME___dateTimeFrom___ tot ___COMBO_FULL_DAY_DATE_MONTH_YEAR_TIME___dateTimeTo___",
+                    "lng_period_long_date_multipledays": "___COMBO_FULL_DATE_MONTH_YEAR_TIME___dateTimeFrom___ tot ___COMBO_FULL_DATE_MONTH_YEAR_TIME___dateTimeTo___",
+                    "lng_period_long_day_multipledays": "___COMBO_FULL_DATE_DAY_TIME___dateTimeFrom___ tot ___COMBO_FULL_DATE_DAY_TIME___dateTimeTo___",
+                    "lng_period_short_day_date_multipledays": "___COMBO_SHORT_DAY_DATE_MONTH_YEAR_TIME___dateTimeFrom___ tot ___COMBO_SHORT_DAY_DATE_MONTH_YEAR_TIME___dateTimeTo___",
+                    "lng_period_short_date_multipledays": "___COMBO_SHORT_DATE_MONTH_YEAR_TIME___dateTimeFrom___ tot ___COMBO_SHORT_DATE_MONTH_YEAR_TIME___dateTimeTo___",
+                    "lng_period_numeric_multipledays": "___COMBO_NUMERIC_DATE_MONTH_YEAR_TIME___dateTimeFrom___ tot ___COMBO_NUMERIC_DATE_MONTH_YEAR_TIME___dateTimeTo___",
+                    "lng_period_label_between": "tussen",
+                    "lng_period_label_from": "van",
+                    "lng_period_label_to": "tot",
+                    "lng_period_label_to_included": "tot en met",
+                    "lng_period_label_on": "om",
+                    "lng_period_label_around": "rond",
+                    "lng_period_label_and": "en",
+                    "lng_period_label_whole_day": "hele dag",
+                    "lng_period_warning_dateTimeTo_after_dateTimeFrom": "* Het eindmoment kan niet voor het beginmoment liggen.",
+                    "lng_period_warning_timeTo_after_timeFrom": "* Het eindmoment kan niet voor het beginmoment liggen.",
+                    "lng_period_warning_timeFrom_after_timeTo": "* Het beginmoment kan niet voor het eindmoment liggen.",
+                    "lng_period_warning_dateTimeTo_after_endOfWeek": "* Het eindmoment kan niet voorbij de laatste dag van de week liggen.",
+                    "lng_option_deadline": "deadline",
+                    "lng_option_period": "duurtijd",
+                    "lng_period_days_left_years": "___YEARS___ jaar",
+                    "lng_period_days_left_days": "___DAYS___ dagen",
+                    "lng_period_days_left_day": "___DAYS___ dag"
+                }
+            });
+        </script>
+        <script type="text/javascript">
+            var _LNG_ERROR_TITLE = 'Melding';
+            var _LNG_ERROR_MSG = 'Er is een onbekende fout opgetreden waardoor de gevraagde actie niet kon worden uitgevoerd. Vernieuw de pagina (F5) of meld u opnieuw aan indien uw sessie verlopen is.';
+            var _LNG_PHOTOSTRIPNAVLEFT = 'Navigeer links';
+            var _LNG_PHOTOSTRIPNAVRIGHT = 'Navigeer rechts';
+            var _LNG_PHOTOSTRIPGOTOALBUM = 'Ga naar album';
+            var _LNG_PHOTOSTRIPCLICKTOCLOSE = 'Klik om te sluiten';
+            var _LNG_PHOTOSTRIPCLICKTOENLARGE = 'Klik om te vergroten';
+            var _LNG_FOLDERFILESTRIPCLICKFOLDER = 'Klik om deze map binnen te gaan';
+            var _LNG_FOLDERFILESTRIPCLICKFILE = 'Klik om dit bestand te downloaden';
+            var _LNG_FOLDERFILESTRIPCLICKGOUP = 'Klik om een niveau naar boven te gaan';
+            var _LNG_FOLDERFILESTRIPCLICKGOUP_TEXT = 'Terug naar bovenliggende map';
+            var _LNG_FOLDERFILESTRIPCLICKFILE_OPEN = 'Klik om dit bestand te openen';
+            var _LNG_FOLDERFILESTRIPNOCONTENT = 'Deze map is leeg';
+            var _LNG_LIGHTBOX_IMAGE = 'Afbeelding';
+            var _LNG_LIGHTBOX_OF = 'van';
+        </script>
+        <script type="text/javascript">
+            $.extend(true, SMSC, {
+                vars: {
+                    "isScheduledMessagesEnabled": true,
+                    "scheduledMessages": {
+                        "scheduled_messages__send": "Versturen",
+                        "scheduled_messages__bubble__send_delayed": "Uitgesteld versturen",
+                        "scheduled_messages__bubble__send_now": "Nu versturen",
+                        "scheduled_messages__dialog__title": "Wanneer wil je dit bericht versturen?",
+                        "scheduled_messages__dialog__subtitle_send_delayed": "Uitgesteld versturen",
+                        "scheduled_messages__dialog__subtitle_send_immediate": "Dringend bericht",
+                        "scheduled_messages__dialog__later_today": "Later vandaag",
+                        "scheduled_messages__dialog__next_morning__tomorrow": "Morgenochtend",
+                        "scheduled_messages__dialog__next_morning__morning": "Deze ochtend",
+                        "scheduled_messages__dialog__next_morning__monday": "Maandagochtend",
+                        "scheduled_messages__dialog__immediate": "Nu versturen",
+                        "scheduled_messages__dialog__immediate__info": "Zeker? Respecteer de rust van je ontvangers.",
+                        "scheduled_messages__dialog__form_warning": "* Je kan geen tijdstip in het verleden kiezen.",
+                        "scheduled_messages__dialog__cancel": "Annuleren",
+                        "scheduled_messages__dialog__ok": "Versturen"
+                    },
+                    "scheduledMessageOptions": {
+                        "timeLimits": [{
+                            "type": "weekday",
+                            "isEnabled": true,
+                            "startTime": "18:00",
+                            "endTime": "07:30"
+                        }, {
+                            "type": "weekend",
+                            "isEnabled": true,
+                            "startTime": "18:00",
+                            "endTime": "07:30"
+                        }],
+                        "laterToday": "16:00"
+                    },
+                    "composeLng": {
+                        "messages_compose_blob_counters_label": "Dit bericht wordt verstuurd naar",
+                        "messages_compose_blob_counter_main_students": "Leerlingen",
+                        "messages_compose_blob_counter_main_other": "Personeelsleden",
+                        "messages_compose_blob_counter_co_students": "Co-accounts leerlingen",
+                        "messages_compose_blob_counter_co_other": "Co-accounts personeelsleden",
+                        "messages_compose_accounts_to_co": "Co-accounts van deze personen ook in 'Aan' plaatsen",
+                        "messages_compose_accounts_cc_co": "Co-accounts van deze personen ook in 'Kopie' plaatsen",
+                        "messages_compose_accounts_bcc_co": "Co-accounts van deze personen ook in 'Blinde kopie' plaatsen",
+                        "messages_compose_accounts_to_main": "Hoofdaccount van deze personen ook in 'Aan' plaatsen",
+                        "messages_compose_accounts_cc_main": "Hoofdaccount van deze personen ook in 'Kopie' plaatsen",
+                        "messages_compose_accounts_bcc_main": "Hoofdaccount van deze personen ook in 'Blinde kopie' plaatsen"
+                    }
+                }
+            });
+        </script>
+        <!-- Javascript_Body_Urls -->
+        <script type="text/javascript" src="https://static6.smart-school.net/modules/Messages/dist/compose-built.rev-b3fcab6d2e.js"></script>
+        <script type="text/javascript" src="https://static6.smart-school.net/modules/Messages/desktop/iconObserver/dist/main-built.rev-957eed38ba.js"></script>
+        <script type="text/javascript" src="https://static4.smart-school.net/modules/Messages/desktop/delayedMessages/dist/main-built.rev-7c40dc8b10.js"></script>
+        <script type="text/javascript" src="https://static4.smart-school.net/modules/Messages/desktop/coAccountDialog/dist/main-built.rev-39740edf86.js"></script>
+        <script type="text/javascript" src="https://static2.smart-school.net/modules/Messages/desktop/compose/dist/main-built.rev-26f5f4697a.js"></script>
+        <!-- Javascript_requirejs_Urls -->
+        <!-- Javascript_legacy_stealjs_Urls -->
+        <!-- Javascript_symfony -->
+        
+    </body>
+</html>
