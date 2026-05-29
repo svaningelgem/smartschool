@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 from datetime import date, datetime
+from enum import StrEnum
 from functools import cached_property
 from typing import Annotated, Literal
 
@@ -21,6 +22,34 @@ DateTime = Annotated[datetime, BeforeValidator(convert_to_datetime)]
 _config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
 
+class GraphicColor(StrEnum):
+    """
+    Colors emitted by Smartschool for ``PercentageGraphic`` / ``TextGraphic``.
+
+    Validation is strict: an unknown value raises so the missing member
+    surfaces immediately and can be added here.
+    """
+
+    GREEN = "green"
+    RED = "red"
+    OLIVE = "olive"
+    YELLOW = "yellow"
+    STEEL = "steel"
+    GRASS = "grass"
+
+
+class ResultType(StrEnum):
+    """
+    Discriminators emitted by Smartschool for ``Result.type``.
+
+    Validation is strict: an unknown value raises so the missing member
+    surfaces immediately and can be added here.
+    """
+
+    NORMAL = "normal"
+    PROJECT_WITH_RUBRICS = "project-with-rubrics"
+
+
 @dataclass(config=_config)
 class CourseGraphic:
     type: Literal["icon"]
@@ -30,7 +59,7 @@ class CourseGraphic:
 @dataclass(config=_config)
 class PercentageGraphic:
     type: Literal["percentage"]
-    color: Literal["green", "red", "olive", "yellow", "steel"]
+    color: GraphicColor
     value: int
     description: String
 
@@ -50,12 +79,20 @@ class PercentageGraphic:
 @dataclass(config=_config)
 class TextGraphic:
     type: Literal["text"]
-    color: Literal["green", "red", "olive", "yellow", "steel"]
+    color: GraphicColor
     value: String
     description: String
 
 
-ResultGraphic = Annotated[PercentageGraphic | TextGraphic, Field(discriminator="type")]
+@dataclass(config=_config)
+class IconGraphic:
+    type: Literal["icon"]
+    color: String | None = None
+    value: String | None = None
+    description: String | None = None
+
+
+ResultGraphic = Annotated[PercentageGraphic | TextGraphic | IconGraphic, Field(discriminator="type")]
 
 
 @dataclass(config=_config)
@@ -174,7 +211,7 @@ class FeedbackFull:
 @dataclass(config=_config)
 class Result:
     identifier: String
-    type: Literal["normal"]
+    type: ResultType
     name: String
     graphic: ResultGraphic
     date: DateTime
