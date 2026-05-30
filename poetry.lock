@@ -409,14 +409,14 @@ files = [
 
 [[package]]
 name = "logprise"
-version = "1.4.0"
+version = "1.4.1"
 description = "A package integrating loguru and apprise for logging and notifications"
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "logprise-1.4.0-py3-none-any.whl", hash = "sha256:35e62def6327e718173b6a54e094573d5cbb1346572cd3876bac26027bdd6809"},
-    {file = "logprise-1.4.0.tar.gz", hash = "sha256:dfe0de352b71c3c145150b59600ee254457bc5c31f0e8a6c6ddbbfebacaf56da"},
+    {file = "logprise-1.4.1-py3-none-any.whl", hash = "sha256:bfb745b2e01c67e649072d98fbfdf14d33fc40b5091a68545ba32102f66a7c2a"},
+    {file = "logprise-1.4.1.tar.gz", hash = "sha256:7a851612fe19f54d852084347df22f3de49e0e39f59d6054d446288be36faf4a"},
 ]
 
 [package.dependencies]
