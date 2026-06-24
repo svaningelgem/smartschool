@@ -74,7 +74,11 @@ def save(
     if data_was_dict:
         to_write = json.dumps(data, indent=4)
     elif data_was_object:
-        to_write = RootModel[data.__class__](data).model_dump_json(indent=4)
+        # Backward-compat: emit camelCase aliases so newly-written cache files stay byte-compatible
+        # with those written before the Result rework. DEPRECATED: this `by_alias=True` is a
+        # compatibility shim - drop it (letting saves use snake_case field names) in a future major
+        # version, once pre-existing caches are no longer in use.
+        to_write = RootModel[data.__class__](data).model_dump_json(indent=4, by_alias=True)
     else:
         to_write = data
 
