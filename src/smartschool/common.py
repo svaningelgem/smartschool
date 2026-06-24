@@ -8,12 +8,13 @@ import re
 import smtplib
 import warnings
 import xml.etree.ElementTree as ET
+from abc import ABC, abstractmethod
 from datetime import date, datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from enum import Enum, auto
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any, Literal, overload
 from urllib.parse import parse_qs, quote_plus, urlparse
 
 from bs4 import BeautifulSoup, FeatureNotFound, GuessedAtParserWarning
@@ -349,16 +350,13 @@ def parse_mime_type(file_type_string: str) -> str:
 
 
 def create_filesystem_safe_path(path: Path | str) -> Path:
-    """Create a filesystem-safe path with proper length and extension handling."""
-    parts = list(Path(path).parts)
-
-    # Don't modify drive letters (first part on Windows like 'C:')
-    if parts and platform.system() == "Windows" and ":" in parts[0]:  # pragma: no cover
-        safe_parts = [parts[0]] + [create_filesystem_safe_filename(part) for part in parts[1:]]
-    else:
-        safe_parts = [create_filesystem_safe_filename(part) for part in parts]
-
-    return Path(*safe_parts).resolve().absolute()
+    """Create a filesystem-safe path, preserving the root/drive anchor and sanitizing each name component."""
+    path = Path(path)
+    # path.anchor is '/' on POSIX and e.g. 'C:\\' on Windows; sanitizing it would turn an
+    # absolute path into a relative one (the '/' anchor becomes 'unnamed'), so keep it verbatim.
+    name_parts = path.parts[1:] if path.anchor else path.parts
+    safe_parts = [create_filesystem_safe_filename(part) for part in name_parts]
+    return Path(path.anchor, *safe_parts).resolve().absolute()
 
 
 def create_filesystem_safe_filename(filename: str) -> str:
@@ -389,6 +387,31 @@ def create_filesystem_safe_filename(filename: str) -> str:
         safe_name = safe_name[:max_len].rstrip("._")
 
     return safe_name + ext
+
+
+class DownloadableFile(ABC):
+    """Shared download skeleton for remote files; subclasses provide `filename` and implement `_real_download`."""
+
+    @overload
+    def download(self, to_file: Path | str, *, overwrite: bool) -> Path: ...
+    @overload
+    def download(self) -> bytes: ...
+
+    def download(self, to_file: Path | str | None = None, *, overwrite: bool = False) -> bytes | Path:
+        target = None
+        if to_file:
+            target = create_filesystem_safe_path(to_file)
+            target.parent.mkdir(parents=True, exist_ok=True)
+            if not overwrite and target.exists():
+                return target
+        return self._real_download(target)
+
+    def download_to_dir(self, target_directory: Path, *, overwrite: bool = False) -> Path:
+        return self.download(target_directory / self.filename, overwrite=overwrite)
+
+    @abstractmethod
+    def _real_download(self, target: Path | None) -> bytes | Path:
+        """Fetch the file: write to `target` and return it, or return raw bytes when `target` is None."""
 
 
 def save_test_response(response: Response) -> None:  # pragma: no cover

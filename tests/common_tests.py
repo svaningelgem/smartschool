@@ -524,7 +524,8 @@ def test_create_filesystem_safe_path_windows():
 
 def test_create_filesystem_safe_path():
     """Test filesystem-safe path creation."""
-    assert create_filesystem_safe_path(Path(r"/Users/bad*name/doc$.txt")).as_posix().endswith("/Users/bad_name/doc.txt")
+    # Absolute paths must stay absolute: the root anchor is preserved, not sanitized away.
+    assert create_filesystem_safe_path(Path(r"/Users/bad*name/doc$.txt")) == Path("/Users/bad_name/doc.txt")
 
     # Regular paths should sanitize filenames
     assert create_filesystem_safe_path(Path("folder/bad@file#name.txt")).as_posix().endswith("/folder/bad_file_name.txt")

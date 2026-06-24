@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
@@ -14,6 +13,8 @@ from smartschool.message_composer import (
 from smartschool.messages import BoxType
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from requests_mock import Mocker
 
     from smartschool import Smartschool
@@ -259,14 +260,15 @@ class TestMessageComposerFormAddAttachment:
         with pytest.raises(FileNotFoundError, match="does not exist"):
             form.add_attachment("nonexistent.pdf")
 
-    def test_add_attachment_raises_error_when_path_is_not_file(self, session: Smartschool, mocker):
+    def test_add_attachment_raises_error_when_path_is_not_file(self, session: Smartschool, tmp_path: Path):
         form = MessageComposerForm.create(session=session)
 
-        # Mock path as existing but not a file
-        mocker.patch.object(Path, "is_file", autospec=True, return_value=False)
+        # A real directory exists but is not a file, so add_attachment must reject it.
+        a_directory = tmp_path / "somedir"
+        a_directory.mkdir()
 
         with pytest.raises(FileNotFoundError, match="does not exist"):
-            form.add_attachment("somedir")
+            form.add_attachment(a_directory)
 
     def test_add_attachment_with_string_path(self, session: Smartschool, tmp_path: Path):
         form = MessageComposerForm.create(session=session)

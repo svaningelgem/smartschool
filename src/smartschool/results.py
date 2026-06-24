@@ -11,9 +11,6 @@ from .session import SessionMixin
 if TYPE_CHECKING:
     from collections.abc import Iterator
 
-if TYPE_CHECKING:
-    from collections.abc import Iterator
-
 __all__ = ["Results"]
 
 RESULTS_PER_PAGE = 50

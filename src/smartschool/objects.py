@@ -206,7 +206,7 @@ class ResultDetails:
 class CourseCondensed:
     name: String
     teacher: String
-    url: Url = Field()
+    url: Url
 
     id: int | None = Field(repr=False, default=None)
     platform_id: int | None = Field(repr=False, default=None)
@@ -520,7 +520,7 @@ class PlannedElementLocation:
 @dataclass(config=_config)
 class PlannedElementJoinIds:
     from_: String = Field(validation_alias=AliasChoices("from", "from_"))
-    to: String = Field(alias="to")
+    to: String = Field()
 
 
 @dataclass(config=_config)

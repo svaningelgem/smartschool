@@ -4,17 +4,17 @@ import re
 from dataclasses import dataclass, field
 from functools import cached_property
 from pathlib import Path
-from typing import TYPE_CHECKING, TypeAlias, overload
+from typing import TYPE_CHECKING, TypeAlias
 
 from logprise import logger
 
 from . import objects
 from ._xml_interface import _resolve_aliases
 from .common import (
+    DownloadableFile,
     bs4_html,
     convert_to_datetime,
     create_filesystem_safe_filename,
-    create_filesystem_safe_path,
     natural_sort,
     parse_mime_type,
     parse_size,
@@ -129,7 +129,7 @@ class CourseList(SessionMixin):
 
 
 @dataclass
-class FileItem(SessionMixin):
+class FileItem(DownloadableFile, SessionMixin):
     """Represents a file within a course document folder."""
 
     parent: FolderItem = field(repr=False)
@@ -199,15 +199,6 @@ class FileItem(SessionMixin):
 
         return create_filesystem_safe_filename(filename)
 
-    def download_to_dir(self, target_directory: Path, *, overwrite: bool = False) -> Path:
-        return self.download(target_directory / self.filename, overwrite=overwrite)
-
-    @overload
-    def download(self, to_file: Path | str, *, overwrite: bool) -> Path: ...
-
-    @overload
-    def download(self) -> bytes: ...
-
     def _real_download(self, target: Path | None) -> bytes | Path:
         if target:
             logger.debug("Downloading file: {}", target.name)
@@ -219,23 +210,14 @@ class FileItem(SessionMixin):
             if found_filename.suffix != self._suffix:
                 logger.warning("Expected suffix {}, got {}", self._suffix, found_filename.suffix)
 
-        save_test_response(response)
+        if self.session.dev_tracing:  # ponytail: fixture-capture is a dev-only tool, not a runtime side effect
+            save_test_response(response)
 
         if target:
             target.write_bytes(response.content)
             return target
 
         return response.content
-
-    def download(self, to_file: Path | str | None = None, *, overwrite: bool = False) -> bytes | Path:
-        target = None
-        if to_file:
-            target = create_filesystem_safe_path(to_file)
-            target.parent.mkdir(parents=True, exist_ok=True)
-            if not overwrite and target.exists():
-                return target
-
-        return self._real_download(target)
 
 
 @dataclass
@@ -296,7 +278,8 @@ class FolderItem(SessionMixin):
                 },
             )
             response.raise_for_status()
-            save_test_response(response)
+            if self.session.dev_tracing:  # ponytail: fixture-capture is a dev-only tool, not a runtime side effect
+                save_test_response(response)
             return bs4_html(response)
         except Exception as e:
             raise SmartSchoolException(f"Failed to fetch folder HTML: {e}") from e
