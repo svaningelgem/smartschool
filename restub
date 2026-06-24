@@ -1,4 +1,3 @@
 #!/bin/bash -e
 
-pyi_files=$(find src/smartschool -name "*.pyi" -type f)
-python dev/generate_stubs.py $pyi_files
+python dev/generate_stubs.py src/smartschool

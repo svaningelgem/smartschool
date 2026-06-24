@@ -5,9 +5,7 @@ from collections.abc import Iterator
 from datetime import datetime
 
 from . import _objects as objects
-from ._common import (
-    DownloadableFile,
-)
+from ._common import DownloadableFile
 from ._session import SessionMixin, Smartschool
 
 class CourseCondensed(objects.CourseCondensed, SessionMixin):
@@ -30,39 +28,22 @@ class CourseCondensed(objects.CourseCondensed, SessionMixin):
         descr: str = "",
         icon: str = "",
     ): ...
-    def __str__(
-        self,
-    ): ...
+    def __str__(self): ...
 
 class TopNavCourses(SessionMixin):
     session: Smartschool
-    def __init__(
-        self,
-        session: Smartschool,
-    ): ...
-    def __iter__(
-        self,
-    ) -> Iterator[CourseCondensed]: ...
+    def __init__(self, session: Smartschool): ...
+    def __iter__(self) -> Iterator[CourseCondensed]: ...
 
 class Courses(SessionMixin):
     session: Smartschool
-    def __init__(
-        self,
-        session: Smartschool,
-    ): ...
-    def __iter__(
-        self,
-    ) -> Iterator[objects.Course]: ...
+    def __init__(self, session: Smartschool): ...
+    def __iter__(self) -> Iterator[objects.Course]: ...
 
 class CourseList(SessionMixin):
     session: Smartschool
-    def __init__(
-        self,
-        session: Smartschool,
-    ): ...
-    def __iter__(
-        self,
-    ) -> Iterator[objects.PlannedElementCourse]: ...
+    def __init__(self, session: Smartschool): ...
+    def __iter__(self) -> Iterator[objects.PlannedElementCourse]: ...
 
 class FileItem(DownloadableFile, SessionMixin):
     session: Smartschool
