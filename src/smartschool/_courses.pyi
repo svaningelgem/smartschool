@@ -99,4 +99,11 @@ class FolderItem(SessionMixin):
     course: CourseCondensed
     name: str
     browse_url: str | None
-    def __init__(self, session: Smartschool, parent: FolderItem | None, course: CourseCondensed, name: str, browse_url: str | None = None): ...
+    def __init__(
+        self,
+        session: Smartschool,
+        parent: FolderItem | None,
+        course: CourseCondensed,
+        name: str,
+        browse_url: str | None = None,
+    ): ...

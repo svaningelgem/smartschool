@@ -421,10 +421,12 @@ def _generate_method_stub(method: MethodInfo | str | None, imports_needed: set[s
         return_type = ""
 
     signature = f"    def {method.name}({', '.join(params)}){return_type}: ..."
-    if len(signature) <= LINE_LENGTH:
+    real_params = [p for p in method.params if p.name != "self"]
+    if len(real_params) <= 3 and len(signature) <= LINE_LENGTH:
         return signature + "\n"
-    # Too long for one line: a trailing comma makes ruff explode it one
-    # parameter per line, rather than hugging them onto a single over-long line.
+    # Explode one parameter per line — there are more than 3 real parameters, or
+    # the one-line form is too long. The trailing comma makes ruff break it out
+    # rather than hugging everything onto a single over-long line.
     return f"    def {method.name}({', '.join(params)},){return_type}: ...\n"
 
 

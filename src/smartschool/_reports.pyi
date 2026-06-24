@@ -15,7 +15,17 @@ class Report(objects.Report, SessionMixin):
     download_url: str
     class_: SchoolClass
     schoolyear_label: str
-    def __init__(self, session: Smartschool, id: int, name: str, icon: str, date: datetime, download_url: str, class_: SchoolClass, schoolyear_label: str): ...
+    def __init__(
+        self,
+        session: Smartschool,
+        id: int,
+        name: str,
+        icon: str,
+        date: datetime,
+        download_url: str,
+        class_: SchoolClass,
+        schoolyear_label: str,
+    ): ...
     def download(self) -> bytes: ...
 
 class Reports(SessionMixin, Iterable[Report]):

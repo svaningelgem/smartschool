@@ -72,7 +72,17 @@ class Attachment(SessionMixin, objects.Attachment):
     wopi_allowed: bool
     order: int
     session: Smartschool
-    def __init__(self, file_id: int, name: str, mime: str, size: str, icon: str, wopi_allowed: bool, order: int, session: Smartschool): ...
+    def __init__(
+        self,
+        file_id: int,
+        name: str,
+        mime: str,
+        size: str,
+        icon: str,
+        wopi_allowed: bool,
+        order: int,
+        session: Smartschool,
+    ): ...
     def download(self) -> bytes: ...
 
 class Attachments(_FetchOneMessage):
@@ -88,7 +98,13 @@ class MarkMessageUnread(_FetchOneMessage):
 class AdjustMessageLabel(_FetchOneMessage):
     session: Smartschool
     cache: dict
-    def __init__(self, session: Smartschool, msg_id: int, box_type: BoxType = BoxType.INBOX, label: MessageLabel = MessageLabel.NO_FLAG): ...
+    def __init__(
+        self,
+        session: Smartschool,
+        msg_id: int,
+        box_type: BoxType = BoxType.INBOX,
+        label: MessageLabel = MessageLabel.NO_FLAG,
+    ): ...
 
 class MessageMoveToArchive(SessionMixin):
     session: Smartschool
