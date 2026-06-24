@@ -40,12 +40,12 @@ __all__ = [
     "xml_to_dict",
 ]
 
-from smartschool._exceptions import SmartSchoolParsingError
+from ._exceptions import SmartSchoolParsingError
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    from smartschool._objects import String
+    from ._objects import String
 
 
 class IsSaved(Enum):

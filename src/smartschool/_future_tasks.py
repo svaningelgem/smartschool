@@ -1,7 +1,7 @@
 from collections.abc import Iterator
 
-from smartschool._objects import FutureTaskOneDay
-from smartschool._session import SessionMixin
+from ._objects import FutureTaskOneDay
+from ._session import SessionMixin
 
 __all__ = ["FutureTasks"]
 
