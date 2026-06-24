@@ -9,10 +9,10 @@ from smartschool import PathCredentials, Results, Smartschool, SmartSchoolDownlo
 from smartschool.common import IsSaved, save, send_email
 
 if TYPE_CHECKING:
-    from smartschool.objects import ResultWithoutDetails
+    from smartschool.objects import Result
 
 
-def is_punten_json_the_same(previous: ResultWithoutDetails, current: ResultWithoutDetails) -> bool:
+def is_punten_json_the_same(previous: Result, current: Result) -> bool:
     if previous == current:  # No need to dig into it...
         return True
 
@@ -23,22 +23,22 @@ def is_punten_json_the_same(previous: ResultWithoutDetails, current: ResultWitho
         "graphic/value",
         "graphic/description",
         "courses/0/name",
-        "courses/0/teachers/0/name/startingWithFirstName",
-        "feedback/0/user/name/startingWithFirstName",
+        "courses/0/teachers/0/name/starting_with_first_name",
+        "feedback/0/user/name/starting_with_first_name",
         "feedback/0/text",
-        "feedback/1/user/name/startingWithFirstName",
+        "feedback/1/user/name/starting_with_first_name",
         "feedback/1/text",
-        "feedback/2/user/name/startingWithFirstName",
+        "feedback/2/user/name/starting_with_first_name",
         "feedback/2/text",
-        "feedback/3/user/name/startingWithFirstName",
+        "feedback/3/user/name/starting_with_first_name",
         "feedback/3/text",
-        "feedback/4/user/name/startingWithFirstName",
+        "feedback/4/user/name/starting_with_first_name",
         "feedback/4/text",
-        "feedback/5/user/name/startingWithFirstName",
+        "feedback/5/user/name/starting_with_first_name",
         "feedback/5/text",
     ]
 
-    def _grab_sub(d: ResultWithoutDetails | dict, k: list[str]) -> dict | list | str | None:
+    def _grab_sub(d: Result | dict, k: list[str]) -> dict | list | str | None:
         if not k or d is None:
             return d
 
@@ -73,10 +73,10 @@ def is_punten_json_the_same(previous: ResultWithoutDetails, current: ResultWitho
 
 def build_text(
     is_update: bool,  # noqa: FBT001
-    result: ResultWithoutDetails,
+    result: Result,
 ) -> tuple[str, str]:
     course_name = result.courses[0].name
-    teacher_names = [teacher.name.startingWithFirstName for teacher in result.courses[0].teachers]
+    teacher_names = [teacher.name.starting_with_first_name for teacher in result.courses[0].teachers]
     test_name = result.name
 
     achieved = f"{result.graphic.achieved_points:.2f}".rstrip("0").rstrip(".")
@@ -93,7 +93,7 @@ def build_text(
     if result.feedback:
         text += "Feedback:\n"
         for fb in result.feedback:
-            text += f"{fb.user.name.startingWithFirstName}: {fb.text}\n"
+            text += f"{fb.user.name.starting_with_first_name}: {fb.text}\n"
 
     if is_update:
         email_subject = "UPDATE: "
@@ -120,7 +120,7 @@ def build_text(
     return text, email_subject
 
 
-def process_result(session: Smartschool, result: ResultWithoutDetails) -> None:
+def process_result(session: Smartschool, result: Result) -> None:
     assert len(result.courses) == 1, f"Multiple courses? {result.courses}"
 
     logger.info("[{}] Processing '{}'", result.courses[0].name, result.name)
