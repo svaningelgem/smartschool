@@ -12,7 +12,7 @@ from smartschool.common import IsSaved, save, send_email
 if TYPE_CHECKING:
     from datetime import date
 
-    from smartschool.objects import AgendaHour, FutureTaskOneTask
+    from smartschool._objects import AgendaHour, FutureTaskOneTask
 
 
 def _is_equal_task(a: FutureTaskOneTask, b: FutureTaskOneTask) -> bool:
