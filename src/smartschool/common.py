@@ -37,7 +37,7 @@ from smartschool.exceptions import SmartSchoolParsingError
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    from smartschool.objects import String
+    from smartschool._objects import String
 
 
 class IsSaved(Enum):

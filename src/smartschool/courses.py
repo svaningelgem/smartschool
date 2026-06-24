@@ -8,7 +8,8 @@ from typing import TYPE_CHECKING, TypeAlias
 
 from logprise import logger
 
-from . import objects
+from . import _objects as objects
+from ._objects import Course, PlannedElementCourse
 from ._xml_interface import _resolve_aliases
 from .common import (
     DownloadableFile,
@@ -21,7 +22,6 @@ from .common import (
     save_test_response,
 )
 from .exceptions import SmartSchoolException, SmartSchoolJsonError, SmartSchoolParsingError
-from .objects import Course, PlannedElementCourse
 from .session import SessionMixin
 
 if TYPE_CHECKING:

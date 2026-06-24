@@ -1,7 +1,7 @@
 from collections.abc import Iterable, Iterator
 from dataclasses import dataclass
 
-from . import objects
+from . import _objects as objects
 from .session import SessionMixin
 
 __all__ = ["Report", "Reports"]

@@ -12,6 +12,7 @@ from logprise import logger
 from requests import Response
 
 from smartschool import Results, Smartschool, SmartSchoolParsingError
+from smartschool._objects import Student
 from smartschool._xml_interface import _resolve_aliases
 from smartschool.common import (
     IsSaved,
@@ -30,7 +31,6 @@ from smartschool.common import (
     send_email,
     xml_to_dict,
 )
-from smartschool.objects import Student
 
 
 def test_xml_to_dict():

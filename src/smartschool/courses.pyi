@@ -4,11 +4,11 @@ from __future__ import annotations
 from collections.abc import Iterator
 from datetime import datetime
 
-from . import objects
+from . import _objects as objects
+from ._objects import Course, PlannedElementCourse
 from .common import (
     DownloadableFile,
 )
-from .objects import Course, PlannedElementCourse
 from .session import SessionMixin, Smartschool
 
 class CourseCondensed(objects.CourseCondensed, SessionMixin):

@@ -5,10 +5,10 @@ from abc import ABC
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, ClassVar
 
-from . import objects
+from . import _objects as objects
+from ._objects import AgendaHour, AgendaMomentInfo
 from ._xml_interface import SmartschoolXmlWeeklyCache
 from .common import convert_to_datetime
-from .objects import AgendaHour, AgendaMomentInfo
 from .session import SessionMixin
 
 if TYPE_CHECKING:

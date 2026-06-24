@@ -7,9 +7,9 @@ from enum import Enum
 from typing import TYPE_CHECKING
 from urllib.parse import quote_plus
 
-from . import objects
+from . import _objects as objects
+from ._objects import FullMessage, MessageChanged, MessageDeletionStatus, ShortMessage
 from ._xml_interface import SmartschoolXML, SmartschoolXmlNoCache
-from .objects import FullMessage, MessageChanged, MessageDeletionStatus, ShortMessage
 from .session import SessionMixin
 
 if TYPE_CHECKING:

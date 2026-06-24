@@ -6,7 +6,7 @@ from functools import cached_property
 from itertools import count
 from typing import TYPE_CHECKING
 
-from . import objects
+from . import _objects as objects
 from .session import SessionMixin
 
 if TYPE_CHECKING:

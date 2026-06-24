@@ -9,7 +9,7 @@ from smartschool import PathCredentials, Results, Smartschool, SmartSchoolDownlo
 from smartschool.common import IsSaved, save, send_email
 
 if TYPE_CHECKING:
-    from smartschool.objects import Result
+    from smartschool._objects import Result
 
 
 def is_punten_json_the_same(previous: Result, current: Result) -> bool:

@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
 from zoneinfo import ZoneInfo
 
-from .objects import ApplicableAssignmentType, PlannedElement
+from ._objects import ApplicableAssignmentType, PlannedElement
 from .session import SessionMixin
 
 if TYPE_CHECKING:

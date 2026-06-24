@@ -5,8 +5,8 @@ from collections.abc import Iterable, Iterator
 from datetime import datetime
 from typing import Literal
 
-from . import objects
-from .objects import Component, Course, Feedback, FeedbackFull, PercentageGraphic, Period, ResultDetails, Teacher, TextGraphic
+from . import _objects as objects
+from ._objects import Component, Course, Feedback, FeedbackFull, PercentageGraphic, Period, ResultDetails, Teacher, TextGraphic
 from .session import SessionMixin, Smartschool
 
 class Result(objects.Result, SessionMixin):

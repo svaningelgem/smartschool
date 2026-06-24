@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 from xml.etree import ElementTree as ET
 
-from . import objects
+from . import _objects as objects
 from .common import bs4_html
 from .exceptions import SmartSchoolAttachmentUploadError
 from .messages import BoxType

@@ -2,7 +2,8 @@ from pathlib import Path
 
 import pytest
 
-from smartschool import Result, Results, Smartschool, objects
+from smartschool import Result, Results, Smartschool
+from smartschool import _objects as objects
 
 
 def test_results_normal_flow(mocker, session: Smartschool):

@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from smartschool import objects
+from smartschool import _objects as objects
 from smartschool.exceptions import SmartSchoolAttachmentUploadError
 from smartschool.message_composer import (
     MessageComposerForm,
