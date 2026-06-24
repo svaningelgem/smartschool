@@ -252,12 +252,10 @@ class TestMessageComposerFormAddAttachment:
         with pytest.raises(ValueError, match="randomDir is missing"):
             form.add_attachment("test.pdf")
 
-    def test_add_attachment_raises_error_when_file_not_found(self, session: Smartschool, mocker):
+    def test_add_attachment_raises_error_when_file_not_found(self, session: Smartschool):
         form = MessageComposerForm.create(session=session)
 
-        # Mock file as not existing
-        mocker.patch.object(Path, "exists", return_value=False)
-
+        # session fixture chdirs to a tmp dir, so this path genuinely is not a file
         with pytest.raises(FileNotFoundError, match="does not exist"):
             form.add_attachment("nonexistent.pdf")
 
@@ -265,8 +263,7 @@ class TestMessageComposerFormAddAttachment:
         form = MessageComposerForm.create(session=session)
 
         # Mock path as existing but not a file
-        mocker.patch.object(Path, "exists", return_value=True)
-        mocker.patch.object(Path, "is_file", return_value=False)
+        mocker.patch.object(Path, "is_file", autospec=True, return_value=False)
 
         with pytest.raises(FileNotFoundError, match="does not exist"):
             form.add_attachment("somedir")
