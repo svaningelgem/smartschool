@@ -33,6 +33,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -63,6 +64,15 @@ def _load_credentials(path: str = "credentials.yml") -> dict:
     raise FileNotFoundError(f"Could not locate {path} from {here}")
 
 
+def _safe_output_dir(out_dir: Path | str) -> Path:
+    """Resolve the capture directory and confine it to the project tree (rejects path-traversal in CLI args)."""
+    base = Path.cwd().resolve()
+    resolved = Path(base, out_dir).resolve()
+    if os.path.commonpath((base, resolved)) != str(base):
+        raise ValueError(f"--out must stay within {base}; refusing {resolved}")
+    return resolved
+
+
 class SmartschoolMonitor:
     """Playwright session that logs in once and records traffic per visited path."""
 
@@ -75,7 +85,7 @@ class SmartschoolMonitor:
         self.birthday = str(creds.get("mfa") or creds.get("birthday") or "")
         self.totp_secret = str(creds.get("totp") or creds.get("totp_secret") or "")
 
-        self.out_dir = Path(out_dir)
+        self.out_dir = _safe_output_dir(out_dir)
         self.out_dir.mkdir(parents=True, exist_ok=True)
         self.state_file = self.out_dir / "state.json"
         if fresh:
