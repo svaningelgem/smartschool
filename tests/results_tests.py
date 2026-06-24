@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from smartschool import Results, Smartschool
+from smartschool import Result, Results, Smartschool, objects
 
 
 def test_results_normal_flow(mocker, session: Smartschool):
@@ -20,6 +20,17 @@ def test_results_normal_flow(mocker, session: Smartschool):
 
     assert result.details is not None
     assert result.details.class_.name == "3ENW"
+
+
+def test_details_provided_at_construction_is_kept(session: Smartschool):
+    # When the source data already carries `details`, it is kept as-is and not re-fetched.
+    data = session.json("/results/api/v1/evaluations/49_10880_0_normal_769824")
+    pyd = objects.Result(**data)
+    assert pyd.details is not None  # fixture includes details inline
+
+    result = Result(session=session, **pyd.__dict__)
+
+    assert result.details is pyd.details
 
 
 def test_mauro_results(session: Smartschool, requests_mock):

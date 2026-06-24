@@ -47,10 +47,6 @@ class Result(objects.Result, SessionMixin):
         deleted: bool = False,
         details: ResultDetails | None = None,
     ): ...
-    def __getattribute__(
-        self,
-        name: str,
-    ): ...
 
 class Results(SessionMixin, Iterable[Result]):
     session: Smartschool

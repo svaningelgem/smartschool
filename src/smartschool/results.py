@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 from dataclasses import dataclass
+from functools import cached_property
 from itertools import count
 from typing import TYPE_CHECKING
 
@@ -18,18 +19,15 @@ RESULTS_PER_PAGE = 50
 
 @dataclass
 class Result(objects.Result, SessionMixin):
-    def __getattribute__(self, name: str):
-        attr = super().__getattribute__(name)
-        if name != "details":
-            return attr
+    def __post_init__(self) -> None:
+        # Drop an unset `details` so the cached_property below can lazy-load it on first
+        # access; a value supplied at construction is left untouched.
+        if self.__dict__.get("details") is None:
+            self.__dict__.pop("details", None)
 
-        if attr is not None:
-            return attr
-
-        data = self.session.json(f"/results/api/v1/evaluations/{self.identifier}")
-        details_obj = objects.Result(**data)
-        super().__setattr__("details", details_obj.details)
-        return details_obj.details
+    @cached_property
+    def details(self) -> objects.ResultDetails | None:
+        return objects.Result(**self.session.json(f"/results/api/v1/evaluations/{self.identifier}")).details
 
 
 @dataclass
