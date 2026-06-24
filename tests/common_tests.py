@@ -1,6 +1,5 @@
 import re
 import sys
-import warnings
 from copy import deepcopy
 from datetime import date, datetime, time, timedelta, timezone
 from pathlib import Path, WindowsPath
@@ -8,7 +7,7 @@ from pathlib import Path, WindowsPath
 import pytest
 import pytest_mock
 import time_machine
-from bs4 import BeautifulSoup, FeatureNotFound, GuessedAtParserWarning
+from bs4 import BeautifulSoup, FeatureNotFound
 from logprise import logger
 from requests import Response
 
@@ -24,7 +23,6 @@ from smartschool.common import (
     create_filesystem_safe_path,
     fill_form,
     get_all_values_from_form,
-    make_filesystem_safe,
     natural_sort,
     parse_mime_type,
     parse_size,
@@ -125,10 +123,6 @@ def test_as_float():
     assert as_float("123.34") == pytest.approx(123.34)
 
 
-def test_make_filesystem_safe():
-    assert make_filesystem_safe("1 23?34_ab-'\".xml") == "1_23_34_ab-_.xml"
-
-
 def test_bs4_html():
     sut = bs4_html("<html />")
 
@@ -143,14 +137,14 @@ def test_bs4_html_with_response(mocker):
     assert isinstance(sut, BeautifulSoup)
 
 
-def test_bs4_html_no_good_options(mocker):
-    mocker.patch("smartschool.common._used_bs4_option", new=None)
-
-    with warnings.catch_warnings():
-        warnings.filterwarnings("ignore", category=GuessedAtParserWarning)
-        mocker.patch("smartschool.common.BeautifulSoup", side_effect=[FeatureNotFound, FeatureNotFound, FeatureNotFound, BeautifulSoup("<html />")])
+def test_bs4_html_falls_back_to_html_parser_when_lxml_unavailable(mocker):
+    # Simulate an environment without lxml: the first (lxml) attempt raises FeatureNotFound,
+    # so bs4_html must fall back to the stdlib html.parser and still return a parsed tree.
+    real_parse = BeautifulSoup("<html />", features="html.parser")
+    mocker.patch("smartschool.common.BeautifulSoup", autospec=True, side_effect=[FeatureNotFound, real_parse])
 
     sut = bs4_html("<html />")
+
     assert isinstance(sut, BeautifulSoup)
 
 

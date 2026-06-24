@@ -6,7 +6,6 @@ import operator
 import platform
 import re
 import smtplib
-import warnings
 import xml.etree.ElementTree as ET
 from abc import ABC, abstractmethod
 from datetime import date, datetime
@@ -17,7 +16,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal, overload
 from urllib.parse import parse_qs, quote_plus, urlparse
 
-from bs4 import BeautifulSoup, FeatureNotFound, GuessedAtParserWarning
+from bs4 import BeautifulSoup, FeatureNotFound
 from logprise import logger
 from pydantic import RootModel
 from pydantic.dataclasses import is_pydantic_dataclass
@@ -28,7 +27,6 @@ __all__ = [
     "as_float",
     "bs4_html",
     "get_all_values_from_form",
-    "make_filesystem_safe",
     "save",
     "send_email",
     "xml_to_dict",
@@ -40,8 +38,6 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
     from smartschool.objects import String
-
-_used_bs4_option = None
 
 
 class IsSaved(Enum):
@@ -123,31 +119,16 @@ def send_email(
 
 
 def bs4_html(html: str | bytes | Response) -> BeautifulSoup:
-    global _used_bs4_option
-
     if isinstance(html, Response):
         html = html.text
 
-    possible_options = [
-        _used_bs4_option,
-        {"parser": "html.parser", "features": "lxml"},
-        {"features": "html5lib"},
-        {"features": "html.parser"},
-    ]
+    # Prefer lxml (faster, more lenient) when installed; html.parser is stdlib and always
+    # available. Both parsers are passed explicitly so BeautifulSoup never has to guess
+    # (which is what emits GuessedAtParserWarning).
+    with contextlib.suppress(FeatureNotFound):
+        return BeautifulSoup(html, features="lxml")
 
-    for kw in possible_options:  # pragma: no branch
-        if kw is None:
-            continue
-
-        with contextlib.suppress(FeatureNotFound):
-            parsed = BeautifulSoup(html, **kw)
-            _used_bs4_option = kw
-            return parsed
-
-    _used_bs4_option = {}
-    with warnings.catch_warnings():
-        warnings.filterwarnings("ignore", category=GuessedAtParserWarning)
-        return BeautifulSoup(html)
+    return BeautifulSoup(html, features="html.parser")
 
 
 def get_all_values_from_form(html: BeautifulSoup, form_selector: str):
@@ -228,12 +209,6 @@ def fill_form(response: str | bytes | Response, form_selector, values: dict[str,
         raise AssertionError(f"You didn't use: {sorted(values)}")
 
     return data
-
-
-def make_filesystem_safe(name: str) -> str:
-    name = re.sub("[^-_a-z0-9.]+", "_", name, flags=re.IGNORECASE)
-    name = re.sub("_{2,}", "_", name)
-    return name
 
 
 def as_float(txt: str) -> float:
