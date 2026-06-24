@@ -73,6 +73,14 @@ def test_file_properties(mydocs: MyDocs):
     assert file.parent is mydocs
 
 
+def test_is_dir_is_file(mydocs: MyDocs):
+    folder, _, file = mydocs.items
+    assert folder.is_dir() is True
+    assert folder.is_file() is False
+    assert file.is_file() is True
+    assert file.is_dir() is False
+
+
 def test_file_download_bytes(mydocs: MyDocs):
     content = mydocs.items[2].download()
     assert isinstance(content, bytes)

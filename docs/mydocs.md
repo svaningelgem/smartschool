@@ -24,14 +24,19 @@ for item in mydocs:
 
 ## Recursive Listing
 
+`is_dir()` / `is_file()` mirror `pathlib` and read nicely when you only need
+the common fields. (Use `isinstance(...)` instead when you then access
+folder-only fields like `color` or file-only fields like `size`, so the type
+checker narrows the type — as in the browsing example above.)
+
 ```python
 def print_tree(folder, indent=0):
     for item in folder:
         prefix = "  " * indent
-        if isinstance(item, MyDocsFolder):
+        if item.is_dir():
             print(f"{prefix}[folder] {item.name}")
             print_tree(item, indent + 1)
-        elif isinstance(item, MyDocsFile):
+        else:
             print(f"{prefix}[file]   {item.name}")
 
 print_tree(MyDocs(session=session))

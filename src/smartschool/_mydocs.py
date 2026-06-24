@@ -30,6 +30,12 @@ class MyDocsFile(DownloadableFile, SessionMixin):
     def filename(self) -> str:
         return create_filesystem_safe_filename(self.name)
 
+    def is_dir(self) -> bool:
+        return False
+
+    def is_file(self) -> bool:
+        return True
+
     def _real_download(self, target: Path | None) -> bytes | Path:
         # The download endpoint 302-redirects to a (short-lived) presigned URL; requests follows it.
         response = self.session.get(f"/mydoc/api/v1/files/{self.id}/revisions/{self.revision_id}/download")
@@ -55,6 +61,12 @@ class MyDocsFolder(SessionMixin):
     id: str = ""
     name: str = ""
     color: str = ""
+
+    def is_dir(self) -> bool:
+        return True
+
+    def is_file(self) -> bool:
+        return False
 
     @property
     def _listing_url(self) -> str:
