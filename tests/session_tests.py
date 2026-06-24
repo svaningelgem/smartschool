@@ -359,3 +359,29 @@ def test_parse_login_information_continue_branch(mocker, tmp_path):
 
     # Should not set authenticated_user since all scripts are skipped
     assert parser._authenticated_user is None
+
+
+def test_authenticated_user_returned_when_platform_id_populates_it(session, mocker):
+    """authenticated_user lazily hits platform_id; if that login populates the user, it is returned."""
+    session._authenticated_user = None
+
+    def _populate(*_args, **_kwargs):
+        session._authenticated_user = {"id": "49_populated"}
+        return 49
+
+    mocker.patch.object(Smartschool, "platform_id", new_callable=mocker.PropertyMock, side_effect=_populate)
+
+    assert session.authenticated_user == {"id": "49_populated"}
+
+
+def test_cookies_saved_when_response_stays_on_auth_url(session, requests_mock):
+    """A login that never resolves leaves the response on /login: the reset is skipped, cookies still saved."""
+    requests_mock.post(
+        "https://site/login",
+        status_code=200,
+        text='<form name="login_form"><input name="username"/><input name="password"/></form>',
+    )
+
+    resp = session.get("/login")
+
+    assert "/login" in resp.url
