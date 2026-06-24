@@ -297,12 +297,14 @@ def parse_size(size_str: str | float) -> float | None:
         value = float(match.group(1).replace(",", "."))
         unit = match.group(2).upper()
 
+        # Binary (1024-based) factors throughout, matching the memory/OS convention
+        # where MB == MiB == 1024 KB. (Moot in practice: real data is always KiB.)
         multipliers = {
             "KB": 1,
             "KIB": 1,
-            "MB": 1_000,
+            "MB": 1_024,
             "MIB": 1_024,
-            "GB": 1_000 * 1_000,
+            "GB": 1_024 * 1_024,
             "GIB": 1_024 * 1_024,
         }
 
