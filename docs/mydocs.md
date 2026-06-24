@@ -75,3 +75,23 @@ print(uploaded.name, uploaded.size)
 uploaded.delete()
 homework.delete()
 ```
+
+## Managing Items
+
+Files and folders share the same management operations (most return the item,
+so they chain):
+
+```python
+mydocs = MyDocs(session=session)
+archive = mydocs.create_folder("Archive")
+report = mydocs.create_folder("Reports").upload("report.pdf")
+
+report.rename("report-2024.pdf")
+report.mark_favourite()           # and .unmark_favourite()
+report.move(archive)              # move into another folder
+backup = report.copy(archive)     # copy returns the new item
+
+report.trash()                    # reversible delete (recycle bin)...
+report.restore()                  # ...undo it (back to its folder, or pass one)
+report.delete()                   # permanent delete
+```

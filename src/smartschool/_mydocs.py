@@ -4,7 +4,7 @@ import mimetypes
 from dataclasses import dataclass, field
 from functools import cached_property
 from pathlib import Path
-from typing import TYPE_CHECKING, TypeAlias
+from typing import TYPE_CHECKING, ClassVar, TypeAlias, TypeVar
 
 from ._common import DownloadableFile, create_filesystem_safe_filename, natural_sort
 from ._exceptions import SmartSchoolAttachmentUploadError
@@ -13,18 +13,101 @@ from ._session import SessionMixin
 if TYPE_CHECKING:
     from collections.abc import Iterator
 
+    from ._session import Smartschool
+
 __all__ = ["MyDocs", "MyDocsFile", "MyDocsFolder", "MyDocsItem"]
+
+_ItemT = TypeVar("_ItemT", bound="_MyDocsItem")
+
+
+def _refresh(folder: MyDocsFolder | None) -> None:
+    if folder is not None:
+        folder.refresh()
+
+
+class _MyDocsItem:
+    """Operations shared by files and folders in My Documents (see MyDocsFile / MyDocsFolder)."""
+
+    _endpoint: ClassVar[str]  # "files" or "folders"
+
+    if TYPE_CHECKING:
+        session: Smartschool
+        id: str
+        name: str
+        is_favourite: bool
+        parent: MyDocsFolder | None
+
+    def _post(self, action: str, **kwargs) -> dict:
+        response = self.session.post(f"/mydoc/api/v1/{self._endpoint}/{self.id}/{action}", **kwargs)
+        response.raise_for_status()
+        return response.json() if response.content else {}
+
+    def rename(self: _ItemT, new_name: str) -> _ItemT:
+        """Rename this item (the server may adjust the name on a clash)."""
+        data = self._post("rename", json={"newName": new_name})
+        self.name = data.get("name", new_name)
+        self.__dict__.pop("filename", None)
+        _refresh(self.parent)
+        return self
+
+    def move(self: _ItemT, target: MyDocsFolder) -> _ItemT:
+        """Move this item into ``target``."""
+        old_parent = self.parent
+        data = self._post("move", json={"parentId": target.id})
+        self.parent = target
+        self.name = data.get("name", self.name)
+        self.__dict__.pop("filename", None)
+        _refresh(old_parent)
+        target.refresh()
+        return self
+
+    def copy(self, target: MyDocsFolder) -> MyDocsItem:
+        """Copy this item into ``target`` and return the new copy."""
+        data = self._post("copy", json={"parentId": target.id})
+        target.refresh()
+        return target._make_item(data)
+
+    def trash(self) -> None:
+        """Move this item to the recycle bin (reversible with :meth:`restore`)."""
+        self._post("trash")
+        _refresh(self.parent)
+
+    def restore(self: _ItemT, into: MyDocsFolder | None = None) -> _ItemT:
+        """Restore this item from the recycle bin, into ``into`` or its original folder."""
+        target = into if into is not None else self.parent
+        data = self._post("restore", json={"parentId": target.id if target is not None else ""})
+        if into is not None:
+            self.parent = into
+        self.name = data.get("name", self.name)
+        self.__dict__.pop("filename", None)
+        _refresh(self.parent)
+        return self
+
+    def mark_favourite(self: _ItemT) -> _ItemT:
+        """Add this item to your favourites."""
+        data = self._post("mark-as-favourite")
+        self.is_favourite = bool(data.get("isFavourite", True))
+        return self
+
+    def unmark_favourite(self: _ItemT) -> _ItemT:
+        """Remove this item from your favourites."""
+        data = self._post("unmark-as-favourite")
+        self.is_favourite = bool(data.get("isFavourite", False))
+        return self
 
 
 @dataclass
-class MyDocsFile(DownloadableFile, SessionMixin):
+class MyDocsFile(_MyDocsItem, DownloadableFile, SessionMixin):
     """A file in the personal "My Documents" (``/mydoc``) storage."""
+
+    _endpoint: ClassVar[str] = "files"
 
     parent: MyDocsFolder = field(repr=False)
     id: str = ""
     name: str = ""
     revision_id: str = ""
     size: int = 0
+    is_favourite: bool = False
 
     @cached_property
     def filename(self) -> str:
@@ -48,19 +131,22 @@ class MyDocsFile(DownloadableFile, SessionMixin):
         return response.content
 
     def delete(self) -> None:
-        """Permanently delete this file."""
+        """Permanently delete this file (use :meth:`trash` for a reversible delete)."""
         self.session.delete(f"/mydoc/api/v1/files/{self.id}").raise_for_status()
         self.parent.refresh()
 
 
 @dataclass
-class MyDocsFolder(SessionMixin):
+class MyDocsFolder(_MyDocsItem, SessionMixin):
     """A folder in the personal "My Documents" storage."""
+
+    _endpoint: ClassVar[str] = "folders"
 
     parent: MyDocsFolder | None = field(repr=False, default=None)
     id: str = ""
     name: str = ""
     color: str = ""
+    is_favourite: bool = False
 
     def is_dir(self) -> bool:
         return True
@@ -77,25 +163,22 @@ class MyDocsFolder(SessionMixin):
     def items(self) -> list[MyDocsItem]:
         data = self.session.json(self._listing_url)
 
-        result: list[MyDocsItem] = []
-
-        for fo in data.get("folders", []):
-            result.append(
-                MyDocsFolder(
-                    session=self.session,
-                    parent=self,
-                    id=str(fo["id"]),
-                    name=fo["name"],
-                    color=fo.get("color", ""),
-                )
-            )
-
-        for fi in data.get("files", []):
-            result.append(self._build_file(fi))
+        result: list[MyDocsItem] = [self._make_folder(fo) for fo in data.get("folders", [])]
+        result += [self._make_file(fi) for fi in data.get("files", [])]
 
         return sorted(result, key=lambda x: (0 if isinstance(x, MyDocsFolder) else 1,) + natural_sort(x.name))
 
-    def _build_file(self, fi: dict) -> MyDocsFile:
+    def _make_folder(self, fo: dict) -> MyDocsFolder:
+        return MyDocsFolder(
+            session=self.session,
+            parent=self,
+            id=str(fo["id"]),
+            name=fo["name"],
+            color=fo.get("color", ""),
+            is_favourite=bool(fo.get("isFavourite", False)),
+        )
+
+    def _make_file(self, fi: dict) -> MyDocsFile:
         revision = fi.get("currentRevision") or {}
         return MyDocsFile(
             session=self.session,
@@ -104,7 +187,13 @@ class MyDocsFolder(SessionMixin):
             name=fi["name"],
             revision_id=str(fi.get("currentRevisionId") or revision.get("id", "")),
             size=int(revision.get("fileSize", 0)),
+            is_favourite=bool(fi.get("isFavourite", False)),
         )
+
+    def _make_item(self, data: dict) -> MyDocsItem:
+        if data.get("currentRevisionId") or data.get("currentRevision"):
+            return self._make_file(data)
+        return self._make_folder(data)
 
     def refresh(self) -> None:
         """Drop the cached listing so the next access re-fetches it."""
@@ -117,10 +206,9 @@ class MyDocsFolder(SessionMixin):
         """Create a subfolder inside this folder and return it."""
         response = self.session.post("/mydoc/api/v1/folders/", json={"name": name, "color": color, "parentId": self.id})
         response.raise_for_status()
-        data = response.json()
 
         self.refresh()
-        return MyDocsFolder(session=self.session, parent=self, id=str(data["id"]), name=data["name"], color=data.get("color", color))
+        return self._make_folder(response.json())
 
     def upload(self, file_path: str | Path) -> MyDocsFile:
         """Upload a local file into this folder and return the created file."""
@@ -152,13 +240,12 @@ class MyDocsFolder(SessionMixin):
 
         self.refresh()
         chosen = next((fi for fi in registered if fi.get("name") == path.name), registered[0])
-        return self._build_file(chosen)
+        return self._make_file(chosen)
 
     def delete(self) -> None:
-        """Permanently delete this folder and everything in it."""
+        """Permanently delete this folder and everything in it (use :meth:`trash` to make it reversible)."""
         self.session.delete(f"/mydoc/api/v1/folders/{self.id}").raise_for_status()
-        if self.parent is not None:
-            self.parent.refresh()
+        _refresh(self.parent)
 
 
 @dataclass
