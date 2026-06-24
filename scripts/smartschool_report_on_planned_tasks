@@ -4,9 +4,7 @@ from typing import TYPE_CHECKING
 
 from _common_tasks_stuff import _email_text, _next_weekday
 
-from smartschool import PathCredentials, PlannedElement, Smartschool
-from smartschool.common import IsSaved, save, send_email
-from smartschool.planner import PlannedElements
+from smartschool import IsSaved, PathCredentials, PlannedElement, PlannedElements, Smartschool, save, send_email
 
 if TYPE_CHECKING:
     from datetime import date

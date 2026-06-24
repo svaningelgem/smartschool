@@ -11,11 +11,12 @@ from bs4 import BeautifulSoup, FeatureNotFound
 from logprise import logger
 from requests import Response
 
-from smartschool import Results, Smartschool, SmartSchoolParsingError
-from smartschool._objects import Student
-from smartschool._xml_interface import _resolve_aliases
-from smartschool.common import (
+from smartschool import (
     IsSaved,
+    Results,
+    Smartschool,
+    SmartSchoolParsingError,
+    Student,
     as_float,
     bs4_html,
     convert_to_date,
@@ -31,6 +32,7 @@ from smartschool.common import (
     send_email,
     xml_to_dict,
 )
+from smartschool._xml_interface import _resolve_aliases
 
 
 def test_xml_to_dict():

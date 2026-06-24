@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 from smartschool import FutureTasks, Smartschool
 
 if TYPE_CHECKING:
-    from smartschool._objects import FutureTaskOneDay
+    from smartschool import FutureTaskOneDay
 
 
 def test_future_tasks_normal_flow(session: Smartschool):

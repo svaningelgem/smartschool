@@ -1,7 +1,6 @@
 import pytest
 
-from smartschool import Smartschool, SmartschoolHours
-from smartschool._objects import AgendaHour
+from smartschool import AgendaHour, Smartschool, SmartschoolHours
 
 
 def test_agenda_hours_normal_flow(session: Smartschool):

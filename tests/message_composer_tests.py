@@ -4,13 +4,14 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from smartschool._objects import MessageSearchGroup, MessageSearchUser
-from smartschool.exceptions import SmartSchoolAttachmentUploadError
-from smartschool.message_composer import (
+from smartschool import (
+    BoxType,
     MessageComposerForm,
+    MessageSearchGroup,
+    MessageSearchUser,
     RecipientType,
+    SmartSchoolAttachmentUploadError,
 )
-from smartschool.messages import BoxType
 
 if TYPE_CHECKING:
     from pathlib import Path

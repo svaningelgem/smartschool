@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 
 import pytest
 
-from smartschool._objects import Course, CourseGraphic, DateRange, PersonDescription, SchoolClass, SkoreWorkYear, Teacher
+from smartschool import Course, CourseGraphic, DateRange, PersonDescription, SchoolClass, SkoreWorkYear, Teacher
 
 
 @pytest.fixture

@@ -4,9 +4,8 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from smartschool import Result, Results, Smartschool
+from smartschool import GraphicColor, IconGraphic, PercentageGraphic, Result, Results, ResultType, Smartschool
 from smartschool import _objects as objects
-from smartschool._objects import GraphicColor, IconGraphic, PercentageGraphic, ResultType
 
 
 def test_results_normal_flow(mocker, session: Smartschool):

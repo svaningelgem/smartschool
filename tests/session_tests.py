@@ -5,8 +5,7 @@ import pytest
 import requests
 import yaml
 
-from smartschool import Smartschool, SmartSchoolAuthenticationError
-from smartschool.exceptions import SmartSchoolDownloadError, SmartSchoolJsonError
+from smartschool import Smartschool, SmartSchoolAuthenticationError, SmartSchoolDownloadError, SmartSchoolJsonError
 
 
 def test_smartschool_not_started_yet(tmp_path):

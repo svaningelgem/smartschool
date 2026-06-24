@@ -46,6 +46,23 @@ from ._objects import (
     UserSeeProperties,
 )
 from .agenda import AgendaLesson, AgendaPoster, SmartschoolHours, SmartschoolLessons, SmartschoolMomentInfos
+from .common import (
+    IsSaved,
+    as_float,
+    bs4_html,
+    convert_to_date,
+    convert_to_datetime,
+    create_filesystem_safe_filename,
+    create_filesystem_safe_path,
+    fill_form,
+    get_all_values_from_form,
+    natural_sort,
+    parse_mime_type,
+    parse_size,
+    save,
+    send_email,
+    xml_to_dict,
+)
 from .courses import CourseCondensed, CourseList, Courses, DocumentOrFolderItem, FileItem, FolderItem, InternetShortcut, TopNavCourses
 from .credentials import AppCredentials, Credentials, EnvCredentials, PathCredentials
 from .exceptions import (
@@ -53,6 +70,7 @@ from .exceptions import (
     SmartSchoolAuthenticationError,
     SmartSchoolDownloadError,
     SmartSchoolException,
+    SmartSchoolJsonError,
     SmartSchoolParsingError,
 )
 from .future_tasks import FutureTasks
@@ -120,6 +138,7 @@ __all__ = [
     "IntradeskFile",
     "IntradeskFolder",
     "IntradeskItem",
+    "IsSaved",
     "MarkMessageUnread",
     "Message",
     "MessageChanged",
@@ -160,6 +179,7 @@ __all__ = [
     "SmartSchoolAuthenticationError",
     "SmartSchoolDownloadError",
     "SmartSchoolException",
+    "SmartSchoolJsonError",
     "SmartSchoolParsingError",
     "Smartschool",
     "SmartschoolHours",
@@ -175,4 +195,18 @@ __all__ = [
     "TopNavCourses",
     "UserCapabilities",
     "UserSeeProperties",
+    "as_float",
+    "bs4_html",
+    "convert_to_date",
+    "convert_to_datetime",
+    "create_filesystem_safe_filename",
+    "create_filesystem_safe_path",
+    "fill_form",
+    "get_all_values_from_form",
+    "natural_sort",
+    "parse_mime_type",
+    "parse_size",
+    "save",
+    "send_email",
+    "xml_to_dict",
 ]

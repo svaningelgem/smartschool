@@ -5,8 +5,7 @@ from typing import TYPE_CHECKING
 
 from logprise import logger
 
-from smartschool import PathCredentials, Results, Smartschool, SmartSchoolDownloadError
-from smartschool.common import IsSaved, save, send_email
+from smartschool import IsSaved, PathCredentials, Results, Smartschool, SmartSchoolDownloadError, save, send_email
 
 if TYPE_CHECKING:
     from smartschool import Result
