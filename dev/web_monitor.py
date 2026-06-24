@@ -13,6 +13,11 @@ writing a client module for it (this is how the `/mydoc` module was mapped).
 Login state is cached to a storage-state file, so repeated runs reuse the
 session instead of logging in again (Smartschool rate-limits failed logins).
 
+Requires Playwright (kept out of the project dependencies as this is a
+standalone dev tool)::
+
+    pip install playwright && playwright install chromium
+
 Usage
 -----
     python dev/web_monitor.py /mydoc
