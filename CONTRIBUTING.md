@@ -64,8 +64,10 @@ from smartschool import Smartschool, PathCredentials, Results, ResultType
 ```
 
 Implementation lives in **private, underscore-prefixed modules**
-(`_session.py`, `_results.py`, `_objects.py`, …). They import each other
-directly, but they are not part of the public API — never import from
+(`_session.py`, `_results.py`, `_objects.py`, …). They import each other with
+**relative** imports (`from ._objects import …`), never the absolute
+`from smartschool._objects import …` form — keep it consistent across the
+package. These modules are not part of the public API, so never import from
 `smartschool._something` in user-facing code, the bundled scripts, or the docs.
 
 When you add a new public class, function, or enum:
