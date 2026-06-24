@@ -35,6 +35,7 @@ for course in Courses(session):
 |----------|---------|-------------|
 | **Courses** | `TopNavCourses`, `Courses`, `CourseList` | Browse courses and download documents |
 | **Intradesk** | `Intradesk` | Browse and download files from the intradesk |
+| **My Documents** | `MyDocs` | Browse, download, upload and manage your personal documents |
 | **Results** | `Results`, `Reports`, `Periods` | Grades, evaluations, report cards |
 | **Messages** | `MessageHeaders`, `Message`, `Attachments`, `MessageComposerForm`, `RecipientType` | Inbox/outbox, compose, attachments, labels |
 | **Schedule** | `SmartschoolLessons`, `SmartschoolHours` | Daily schedules, class periods |
@@ -48,6 +49,7 @@ Detailed usage guides with examples:
 - [Authentication](docs/authentication.md) - Credential setup and MFA
 - [Courses & Documents](docs/courses.md) - Browsing courses and downloading files
 - [Intradesk](docs/intradesk.md) - Intradesk file management
+- [My Documents](docs/mydocs.md) - Personal document browsing, upload and download
 - [Results & Reports](docs/results.md) - Grades, evaluations, and report cards
 - [Messages](docs/messages.md) - Inbox, compose/send, attachments, and message management
 - [Schedule & Agenda](docs/schedule.md) - Lessons, hours, and moment info

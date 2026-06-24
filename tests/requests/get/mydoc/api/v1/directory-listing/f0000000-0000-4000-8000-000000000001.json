@@ -1,0 +1,33 @@
+{
+  "folders": [
+    {
+      "id": "f0000000-0000-4000-8000-000000000010",
+      "name": "Archief",
+      "color": "green",
+      "state": "active",
+      "parentId": "f0000000-0000-4000-8000-000000000001",
+      "dateCreated": "2023-09-15T08:00:00+01:00",
+      "dateChanged": "2024-01-02T10:00:00+01:00",
+      "hasSubFolders": false,
+      "isFavourite": false
+    }
+  ],
+  "files": [
+    {
+      "id": "a0000000-0000-4000-8000-000000000010",
+      "name": "info.pdf",
+      "state": "active",
+      "parentId": "f0000000-0000-4000-8000-000000000001",
+      "dateCreated": "2024-03-01T09:00:00+01:00",
+      "dateChanged": "2024-03-01T09:00:00+01:00",
+      "currentRevisionId": "b0000000-0000-4000-8000-000000000010",
+      "currentRevision": {
+        "id": "b0000000-0000-4000-8000-000000000010",
+        "label": "info.pdf",
+        "fileId": "a0000000-0000-4000-8000-000000000010",
+        "fileSize": 5555
+      },
+      "isFavourite": false
+    }
+  ]
+}

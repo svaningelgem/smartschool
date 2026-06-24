@@ -9,6 +9,7 @@ logs/
 *.iml
 credentials.yml
 cookies.txt
+dev/_captures/
 .coverage
 coverage.json
 *.log

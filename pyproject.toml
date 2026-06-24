@@ -39,6 +39,7 @@ requests-mock = "*"
 ruff = "*"
 time_machine = "*"
 commitizen = "*"
+playwright = "*"
 
 [build-system]
 requires = ["poetry-core"]
