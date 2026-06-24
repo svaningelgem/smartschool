@@ -137,6 +137,44 @@ def _get_import_from_ast(node: ast.AST) -> str:
     return result[:-2]
 
 
+def _render_base(base: ast.expr) -> str | None:
+    """Render a single base-class expression as written in source."""
+    if isinstance(base, ast.Name):
+        return base.id
+    if isinstance(base, ast.Subscript) and isinstance(base.value, ast.Name):
+        # Generic base like Iterable[Result]
+        if isinstance(base.slice, ast.Name):
+            return f"{base.value.id}[{base.slice.id}]"
+        return base.value.id
+    if isinstance(base, ast.Attribute):
+        # Qualified name like objects.Result
+        parts = []
+        current: ast.expr = base
+        while isinstance(current, ast.Attribute):
+            parts.insert(0, current.attr)
+            current = current.value
+        if isinstance(current, ast.Name):
+            parts.insert(0, current.id)
+        return ".".join(parts)
+    return None
+
+
+def _parse_class_def(node: ast.ClassDef) -> ClassInfo:
+    """Build a ClassInfo from a ClassDef node, as written in source."""
+    bases = [rendered for base in node.bases if (rendered := _render_base(base)) is not None]
+
+    methods = defaultdict(list)
+    annotations = {}
+    for item in node.body:
+        # Skip hidden helpers, but keep dunders.
+        if isinstance(item, ast.FunctionDef) and (not item.name.startswith("_") or re.match("^__.+__$", item.name)):
+            methods[item.name].append(item)
+        elif isinstance(item, ast.AnnAssign) and isinstance(item.target, ast.Name):
+            annotations[item.target.id] = ast.unparse(item.annotation)
+
+    return ClassInfo(name=node.name, method_names=methods, bases=bases, annotations=annotations)
+
+
 def parse_class_ast_info(file_path: Path) -> tuple[dict[str, ClassInfo], list[str]]:
     """Parse AST to get class structure info as written in source."""
     try:
@@ -151,45 +189,7 @@ def parse_class_ast_info(file_path: Path) -> tuple[dict[str, ClassInfo], list[st
         if isinstance(node, (ast.Import, ast.ImportFrom)):
             imports.append(_get_import_from_ast(node))
         elif isinstance(node, ast.ClassDef):
-            methods = defaultdict(list)
-            bases = []
-            annotations = {}
-
-            # Get base classes as written in source
-            for base in node.bases:
-                if isinstance(base, ast.Name):
-                    bases.append(base.id)
-                elif isinstance(base, ast.Subscript):
-                    # Handle generic bases like Iterable[Result]
-                    if isinstance(base.value, ast.Name):
-                        base_name = base.value.id
-                        if isinstance(base.slice, ast.Name):
-                            slice_name = base.slice.id
-                            bases.append(f"{base_name}[{slice_name}]")
-                        else:
-                            bases.append(base_name)
-                elif isinstance(base, ast.Attribute):
-                    # Handle qualified names like objects.Result
-                    parts = []
-                    current = base
-                    while isinstance(current, ast.Attribute):
-                        parts.insert(0, current.attr)
-                        current = current.value
-                    if isinstance(current, ast.Name):
-                        parts.insert(0, current.id)
-                    bases.append(".".join(parts))
-
-            # Get method names
-            for item in node.body:
-                if isinstance(item, ast.FunctionDef):
-                    if not item.name.startswith("_") or re.match("^__.+__$", item.name):  # Don't add hidden functions
-                        methods[item.name].append(item)
-                elif isinstance(item, ast.AnnAssign) and isinstance(item.target, ast.Name):
-                    # Get type annotations as written
-                    annotation_str = ast.unparse(item.annotation)
-                    annotations[item.target.id] = annotation_str
-
-            class_info[node.name] = ClassInfo(name=node.name, method_names=methods, bases=bases, annotations=annotations)
+            class_info[node.name] = _parse_class_def(node)
 
     return class_info, imports
 
@@ -282,6 +282,45 @@ def _extract_method_info(real_class: type, method_name: str) -> MethodInfo:
     return MethodInfo(name=method_name, params=method_params, return_annotation=sig.return_annotation)
 
 
+def _collect_annotations(real_class: type) -> dict[str, Any]:
+    """Gather every public annotation for a class (type hints + pydantic fields)."""
+    all_annotations: dict[str, Any] = {}
+
+    # Type hints are the single source of truth (and include pydantic fields).
+    try:
+        all_annotations.update(get_type_hints(real_class))
+    except Exception as e:
+        logger.exception(f"Could not get type hints: {e}")
+
+    # Also check pydantic model_fields to get any that might be missing.
+    for field_name, field_info in getattr(real_class, "model_fields", {}).items():
+        if field_name not in all_annotations and hasattr(field_info, "annotation"):
+            all_annotations[field_name] = field_info.annotation
+
+    return {name: annotation for name, annotation in all_annotations.items() if not name.startswith("_")}
+
+
+def _collect_methods(class_info: ClassInfo) -> None:
+    """Append __init__ and the public methods of a class to its ClassInfo."""
+    real_class = class_info.real_class
+
+    if real_class.__init__ is not object.__init__:
+        class_info.methods.append(_extract_method_info(real_class, "__init__"))
+
+    for method_name, ast_methods in class_info.method_names.items():
+        if method_name in ("__init__", "__post_init__"):
+            continue
+        if not callable(getattr(real_class, method_name, None)):
+            continue
+        if len(ast_methods) == 1:
+            class_info.methods.append(_extract_method_info(real_class, method_name))
+            continue
+        # Overloaded method: pass each signature through verbatim from the AST.
+        for overloaded_method in ast_methods:
+            overloaded_method.body.clear()
+            class_info.methods.append(ast.unparse(overloaded_method) + " ...")
+
+
 def extract_class_data(class_info: ClassInfo) -> ClassInfo:
     """Extract all class data into unified structure."""
     real_class = class_info.real_class
@@ -291,61 +330,8 @@ def extract_class_data(class_info: ClassInfo) -> ClassInfo:
         class_info.is_enum = True
         return class_info
 
-    # Get ALL type annotations from the class - this is the single source of truth
-    all_annotations = {}
-
-    # Get from type hints (this includes pydantic fields)
-    try:
-        type_hints = get_type_hints(real_class)
-        all_annotations.update(type_hints)
-        logger.debug(f"Got type hints for {real_class.__name__}: {list(type_hints.keys())}")
-    except Exception as e:
-        logger.exception(f"Could not get type hints: {e}")
-
-    # # Update types from pydantic:
-    # if hasattr(real_class, '__dataclass_fields__'):
-    #     for attr, field in real_class.__dataclass_fields__.items():
-    #         if attr not in all_annotations and hasattr(field, 'type'):
-    #             all_annotations[attr] = field.type
-    #             logger.debug(f"Added pydantic field {attr}: {field.type}")
-
-    # Also check pydantic model_fields to get any that might be missing
-    if hasattr(real_class, "model_fields"):
-        for field_name, field_info in real_class.model_fields.items():
-            if field_name not in all_annotations and hasattr(field_info, "annotation"):
-                all_annotations[field_name] = field_info.annotation
-                logger.debug(f"Added pydantic field {field_name}: {field_info.annotation}")
-
-    # Convert all annotations to attributes
-    for name, annotation in all_annotations.items():
-        if not name.startswith("_"):
-            field_info = FieldInfo(name=name, type_annotation=annotation)
-            class_info.attributes.append(field_info)
-
-    # Extract __init__ method signature
-    if hasattr(real_class, "__init__") and real_class.__init__ is not object.__init__:
-        class_info.methods.append(_extract_method_info(real_class, "__init__"))
-
-    # Extract other methods from AST
-    for method_name in class_info.method_names:
-        if method_name in ("__init__", "__post_init__"):
-            continue
-
-        if hasattr(real_class, method_name):
-            method = getattr(real_class, method_name)
-            if not callable(method):
-                continue
-
-            ast_methods = class_info.method_names[method_name]
-            if len(ast_methods) == 1:
-                class_info.methods.append(_extract_method_info(real_class, method_name))
-                continue
-
-            # We need to pass via the ast.FunctionDef here
-            for overloaded_method in ast_methods:
-                overloaded_method.body.clear()
-                class_info.methods.append(ast.unparse(overloaded_method) + " ...")
-
+    class_info.attributes.extend(FieldInfo(name=name, type_annotation=annotation) for name, annotation in _collect_annotations(real_class).items())
+    _collect_methods(class_info)
     return class_info
 
 
@@ -433,6 +419,23 @@ def _is_type_checking_block(node: ast.AST) -> bool:
     )
 
 
+def _bind_typechecking_import(module: types.ModuleType, stmt: ast.stmt) -> None:
+    """Bind the names of one ``if TYPE_CHECKING:`` import into ``module`` at runtime."""
+    if isinstance(stmt, ast.ImportFrom):
+        # Resolve relative imports (level > 0) against the module's package.
+        source = importlib.import_module("." * stmt.level + (stmt.module or ""), module.__package__)
+        targets = [(alias.asname or alias.name, source, alias.name) for alias in stmt.names]
+    elif isinstance(stmt, ast.Import):
+        targets = [(alias.asname or alias.name, None, alias.name) for alias in stmt.names]
+    else:
+        return
+
+    for name, source, attr in targets:
+        if hasattr(module, name):
+            continue
+        setattr(module, name, getattr(source, attr) if source is not None else importlib.import_module(attr))
+
+
 def _inject_typechecking_imports(module: types.ModuleType) -> list[str]:
     """
     Make a module's ``if TYPE_CHECKING:`` imports importable at runtime.
@@ -452,18 +455,7 @@ def _inject_typechecking_imports(module: types.ModuleType) -> list[str]:
             continue
         for stmt in ast.walk(node):
             collected.append(_get_import_from_ast(stmt))  # Ensure the imports are available in the stub
-            if isinstance(stmt, ast.ImportFrom):
-                # Resolve relative imports (level > 0) against the module's package.
-                source = importlib.import_module("." * stmt.level + (stmt.module or ""), module.__package__)
-                for alias in stmt.names:
-                    name = alias.asname or alias.name
-                    if not hasattr(module, name):
-                        setattr(module, name, getattr(source, alias.name))
-            elif isinstance(stmt, ast.Import):
-                for alias in stmt.names:
-                    name = alias.asname or alias.name
-                    if not hasattr(module, name):
-                        setattr(module, name, importlib.import_module(alias.name))
+            _bind_typechecking_import(module, stmt)
     return collected
 
 
@@ -522,8 +514,10 @@ def generate_stub_file(python_file: Path) -> str:
 
 def reformat_file(output_file):
     # Use the project's full ruff config (not a fixed --select) so a stub is
-    # byte-identical to what `ruff check --fix && ruff format` produces — this
-    # keeps the generated tree clean under CI lint and re-runs a no-op.
+    # clean under CI lint and re-runs a no-op. skip-magic-trailing-comma
+    # collapses short imports/signatures onto one line (e.g. a single-name
+    # `from x import (\n    Name,\n)` becomes `from x import Name`); the result
+    # is a fixed point of the default formatter, so no drift.
     try:
         subprocess.run(
             ["ruff", "check", "--fix", "--unsafe-fixes", str(output_file)],
@@ -533,7 +527,7 @@ def reformat_file(output_file):
             text=True,
         )
         subprocess.run(
-            ["ruff", "format", str(output_file)],
+            ["ruff", "format", "--config", "format.skip-magic-trailing-comma=true", str(output_file)],
             check=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,

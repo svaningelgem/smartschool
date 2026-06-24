@@ -56,22 +56,12 @@ class MessageHeaders(_MessagesPoster, SmartschoolXmlNoCache):
 class _FetchOneMessage(_MessagesPoster, SmartschoolXML, ABC):
     session: Smartschool
     cache: dict
-    def __init__(
-        self,
-        session: Smartschool,
-        msg_id: int,
-        box_type: BoxType = BoxType.INBOX,
-    ): ...
+    def __init__(self, session: Smartschool, msg_id: int, box_type: BoxType = BoxType.INBOX): ...
 
 class Message(_FetchOneMessage):
     session: Smartschool
     cache: dict
-    def __init__(
-        self,
-        session: Smartschool,
-        msg_id: int,
-        box_type: BoxType = BoxType.INBOX,
-    ): ...
+    def __init__(self, session: Smartschool, msg_id: int, box_type: BoxType = BoxType.INBOX): ...
 
 class Attachment(SessionMixin, objects.Attachment):
     file_id: int
@@ -82,71 +72,31 @@ class Attachment(SessionMixin, objects.Attachment):
     wopi_allowed: bool
     order: int
     session: Smartschool
-    def __init__(
-        self,
-        file_id: int,
-        name: str,
-        mime: str,
-        size: str,
-        icon: str,
-        wopi_allowed: bool,
-        order: int,
-        session: Smartschool,
-    ): ...
-    def download(
-        self,
-    ) -> bytes: ...
+    def __init__(self, file_id: int, name: str, mime: str, size: str, icon: str, wopi_allowed: bool, order: int, session: Smartschool): ...
+    def download(self) -> bytes: ...
 
 class Attachments(_FetchOneMessage):
     session: Smartschool
     cache: dict
-    def __init__(
-        self,
-        session: Smartschool,
-        msg_id: int,
-        box_type: BoxType = BoxType.INBOX,
-    ): ...
+    def __init__(self, session: Smartschool, msg_id: int, box_type: BoxType = BoxType.INBOX): ...
 
 class MarkMessageUnread(_FetchOneMessage):
     session: Smartschool
     cache: dict
-    def __init__(
-        self,
-        session: Smartschool,
-        msg_id: int,
-        box_type: BoxType = BoxType.INBOX,
-    ): ...
+    def __init__(self, session: Smartschool, msg_id: int, box_type: BoxType = BoxType.INBOX): ...
 
 class AdjustMessageLabel(_FetchOneMessage):
     session: Smartschool
     cache: dict
-    def __init__(
-        self,
-        session: Smartschool,
-        msg_id: int,
-        box_type: BoxType = BoxType.INBOX,
-        label: MessageLabel = MessageLabel.NO_FLAG,
-    ): ...
+    def __init__(self, session: Smartschool, msg_id: int, box_type: BoxType = BoxType.INBOX, label: MessageLabel = MessageLabel.NO_FLAG): ...
 
 class MessageMoveToArchive(SessionMixin):
     session: Smartschool
-    def __init__(
-        self,
-        session: Smartschool,
-        msg_id: int | list[int],
-    ): ...
-    def get(
-        self,
-    ) -> objects.MessageChanged: ...
-    def __iter__(
-        self,
-    ) -> Iterator[objects.MessageChanged]: ...
+    def __init__(self, session: Smartschool, msg_id: int | list[int]): ...
+    def get(self) -> objects.MessageChanged: ...
+    def __iter__(self) -> Iterator[objects.MessageChanged]: ...
 
 class MessageMoveToTrash(_MessagesPoster, SmartschoolXmlNoCache):
     session: Smartschool
     cache: dict
-    def __init__(
-        self,
-        session: Smartschool,
-        msg_id: int,
-    ): ...
+    def __init__(self, session: Smartschool, msg_id: int): ...

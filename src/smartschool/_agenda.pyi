@@ -12,12 +12,7 @@ class AgendaPoster(SmartschoolXmlWeeklyCache, ABC):
     session: Smartschool
     cache: dict
     timestamp_to_use: datetime | date | None
-    def __init__(
-        self,
-        session: Smartschool,
-        cache: dict = ...,
-        timestamp_to_use: datetime | date | None = None,
-    ): ...
+    def __init__(self, session: Smartschool, cache: dict = ..., timestamp_to_use: datetime | date | None = None): ...
 
 class AgendaLesson(SessionMixin, objects.AgendaLesson):
     moment_id: str
@@ -86,34 +81,17 @@ class SmartschoolLessons(AgendaPoster):
     session: Smartschool
     cache: dict
     timestamp_to_use: datetime | date | None
-    def __init__(
-        self,
-        session: Smartschool,
-        cache: dict = ...,
-        timestamp_to_use: datetime | date | None = None,
-    ): ...
+    def __init__(self, session: Smartschool, cache: dict = ..., timestamp_to_use: datetime | date | None = None): ...
 
 class SmartschoolHours(AgendaPoster):
     session: Smartschool
     cache: dict
     timestamp_to_use: datetime | date | None
-    def __init__(
-        self,
-        session: Smartschool,
-        cache: dict = ...,
-        timestamp_to_use: datetime | date | None = None,
-    ): ...
-    def search_by_hour_id(
-        self,
-        hour_id: str,
-    ): ...
+    def __init__(self, session: Smartschool, cache: dict = ..., timestamp_to_use: datetime | date | None = None): ...
+    def search_by_hour_id(self, hour_id: str): ...
 
 class SmartschoolMomentInfos(AgendaPoster):
     session: Smartschool
     cache: dict
     timestamp_to_use: datetime | date | None
-    def __init__(
-        self,
-        session: Smartschool,
-        moment_id: str,
-    ): ...
+    def __init__(self, session: Smartschool, moment_id: str): ...
