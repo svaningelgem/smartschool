@@ -61,6 +61,16 @@ def save(
     data_was_dict = isinstance(data, dict)
     data_was_object = is_pydantic_dataclass(data.__class__)
 
+    if not data_was_dict and not data_was_object:
+        # A session-aware object (e.g. results.Result) is a std-dataclass subclass of a pydantic
+        # dataclass: is_pydantic_dataclass() is False for it, but a pydantic base sits in its MRO.
+        # Project onto that base via __dict__ so we serialize only the wire fields - dropping the
+        # `session` field, and without triggering lazy attributes such as Result.details.
+        pydantic_base = next((cls for cls in type(data).__mro__ if is_pydantic_dataclass(cls)), None)
+        if pydantic_base is not None:
+            data = pydantic_base(**{name: data.__dict__.get(name) for name in pydantic_base.__pydantic_fields__})
+            data_was_object = True
+
     if data_was_dict:
         to_write = json.dumps(data, indent=4)
     elif data_was_object:

@@ -11,7 +11,7 @@ from bs4 import BeautifulSoup, FeatureNotFound
 from logprise import logger
 from requests import Response
 
-from smartschool import Smartschool, SmartSchoolParsingError
+from smartschool import Results, Smartschool, SmartSchoolParsingError
 from smartschool._xml_interface import _resolve_aliases
 from smartschool.common import (
     IsSaved,
@@ -87,6 +87,28 @@ def test_save_as_pydantic_dataclass(session: Smartschool, tmp_path: Path) -> Non
 
     sut.id = "i"
     assert save(session, type_="todo", course_name="test", id_="123", data=sut) == original
+
+
+def test_save_session_aware_result(session: Smartschool, mocker, tmp_path: Path) -> None:
+    """
+    A session-aware Result is a std-dataclass subclass of a pydantic dataclass.
+
+    save() must serialize it (projecting onto objects.Result) without crashing, without dragging
+    in the `session` field, and without triggering a lazy `details` fetch.
+    """
+    mocker.patch("smartschool.results.RESULTS_PER_PAGE", new=1)
+    result = next(iter(Results(session)))  # details deliberately not accessed
+
+    spy = mocker.spy(session, "json")
+    assert save(session, type_="punten", course_name="Frans", id_=result.identifier, data=result) is IsSaved.NEW
+    assert spy.call_count == 0  # no network fetch for details during serialization
+
+    written = (session.cache_path / f"_punten/Frans/{result.identifier}.json").read_text(encoding="utf8")
+    assert '"session"' not in written
+    assert result.identifier in written
+
+    # re-saving identical data is detected as unchanged
+    assert save(session, type_="punten", course_name="Frans", id_=result.identifier, data=result) is IsSaved.SAME
 
 
 def test_send_email(mocker):
