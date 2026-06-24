@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from smartschool import _objects as objects
+from smartschool._objects import MessageSearchGroup, MessageSearchUser
 from smartschool.exceptions import SmartSchoolAttachmentUploadError
 from smartschool.message_composer import (
     MessageComposerForm,
@@ -198,26 +198,26 @@ class TestMessageComposerFormAddRecipient:
     def test_add_user_as_cc_recipient(self, session: Smartschool):
         form = MessageComposerForm.create(session=session)
 
-        mock_user = objects.MessageSearchUser(user_id=1, value="Test User", ss_id=123)
+        mock_user = MessageSearchUser(user_id=1, value="Test User", ss_id=123)
         form.add_recipient(mock_user, RecipientType.CC)
 
     def test_add_user_as_bcc_recipient(self, session: Smartschool):
         form = MessageComposerForm.create(session=session)
 
-        mock_user = objects.MessageSearchUser(user_id=1, value="Test User", ss_id=123)
+        mock_user = MessageSearchUser(user_id=1, value="Test User", ss_id=123)
         form.add_recipient(mock_user, RecipientType.BCC)
 
     def test_add_group_recipient(self, session: Smartschool):
         form = MessageComposerForm.create(session=session)
 
-        mock_group = objects.MessageSearchGroup(group_id=2, value="Class A", ss_id=123)
+        mock_group = MessageSearchGroup(group_id=2, value="Class A", ss_id=123)
         form.add_recipient(mock_group, RecipientType.TO)
 
     def test_add_recipient_with_user_lt(self, session: Smartschool, mocker):
         form = MessageComposerForm.create(session=session)
         spy = mocker.spy(session, "post")
 
-        mock_user = objects.MessageSearchUser(user_id=1, value="Test User", ss_id=123)
+        mock_user = MessageSearchUser(user_id=1, value="Test User", ss_id=123)
         form.add_recipient(mock_user, RecipientType.TO, user_lt=42)
 
         # Verify the request was made
@@ -225,7 +225,7 @@ class TestMessageComposerFormAddRecipient:
 
     def test_add_recipient_raises_error_when_unique_usc_missing(self, session: Smartschool):
         form = MessageComposerForm(session=session)
-        mock_user = objects.MessageSearchUser(
+        mock_user = MessageSearchUser(
             user_id=1,
             value="Test User",
             ss_id=4069,

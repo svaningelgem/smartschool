@@ -93,7 +93,7 @@ def test_save_session_aware_result(session: Smartschool, mocker, tmp_path: Path)
     """
     A session-aware Result is a std-dataclass subclass of a pydantic dataclass.
 
-    save() must serialize it (projecting onto objects.Result) without crashing, without dragging
+    save() must serialize it (projecting onto _objects.Result) without crashing, without dragging
     in the `session` field, and without triggering a lazy `details` fetch.
     """
     mocker.patch("smartschool.results.RESULTS_PER_PAGE", new=1)

@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 from xml.etree import ElementTree as ET
 
-from . import _objects as objects
+from ._objects import MessageSearchGroup, MessageSearchUser
 from .common import bs4_html
 from .exceptions import SmartSchoolAttachmentUploadError
 from .messages import BoxType
@@ -121,7 +121,7 @@ class MessageComposerForm(SessionMixin):
     def set_message_html(self, message_html: str) -> None:
         self.set_field("message", message_html)
 
-    def search_users(self, search_text: str) -> tuple[list[objects.MessageSearchUser], list[objects.MessageSearchGroup]]:
+    def search_users(self, search_text: str) -> tuple[list[MessageSearchUser], list[MessageSearchGroup]]:
         unique_usc = self.payload.get("uniqueUsc", "")
         if not unique_usc:
             raise ValueError("uniqueUsc is missing. Call refresh() or create() before searching users.")
@@ -139,14 +139,14 @@ class MessageComposerForm(SessionMixin):
         response.raise_for_status()
 
         root = ET.fromstring(response.text.strip())
-        users: list[objects.MessageSearchUser] = []
-        groups: list[objects.MessageSearchGroup] = []
+        users: list[MessageSearchUser] = []
+        groups: list[MessageSearchGroup] = []
 
         users_element = root.find("users")
         if users_element is not None:
             for user in users_element.findall("user"):
                 users.append(
-                    objects.MessageSearchUser(
+                    MessageSearchUser(
                         userID=int(user.findtext("userID", default="0")),
                         value=user.findtext("value", default=""),
                         ssID=int(user.findtext("ssID", default="0")),
@@ -161,7 +161,7 @@ class MessageComposerForm(SessionMixin):
         if groups_element is not None:
             for group in groups_element.findall("group"):
                 groups.append(
-                    objects.MessageSearchGroup(
+                    MessageSearchGroup(
                         groupID=int(group.findtext("groupID", default="0")),
                         value=group.findtext("value", default=""),
                         icon=group.findtext("icon") or None,
@@ -174,7 +174,7 @@ class MessageComposerForm(SessionMixin):
 
     def add_recipient(
         self,
-        recipient: objects.MessageSearchUser | objects.MessageSearchGroup,
+        recipient: MessageSearchUser | MessageSearchGroup,
         recipient_type: RecipientType = RecipientType.TO,
         user_lt: int = 0,
     ) -> None:
@@ -183,7 +183,7 @@ class MessageComposerForm(SessionMixin):
             raise ValueError("uniqueUsc is missing. Call refresh() or create() before adding recipients.")
 
         ssid = recipient.ss_id
-        if isinstance(recipient, objects.MessageSearchUser):
+        if isinstance(recipient, MessageSearchUser):
             recipient_id = recipient.user_id
             type_id = "users"
         else:
