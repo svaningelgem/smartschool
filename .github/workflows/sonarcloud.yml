@@ -1,0 +1,60 @@
+name: SonarCloud
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  sonarcloud:
+    name: Analyze
+    runs-on: ubuntu-latest
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    steps:
+      # No-op until SONAR_TOKEN is added to repo secrets *and* Automatic
+      # Analysis is turned off in the SonarCloud UI (the two cannot run
+      # together). Every step below is gated on this, so the job stays green
+      # until the switch is made.
+      - name: Check SonarCloud is configured
+        id: guard
+        run: |
+          if [ -n "$SONAR_TOKEN" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::SONAR_TOKEN not set — skipping SonarCloud analysis."
+          fi
+
+      - uses: actions/checkout@v7
+        if: steps.guard.outputs.enabled == 'true'
+        with:
+          fetch-depth: 0  # full history for accurate new-code / blame data
+
+      - uses: actions/setup-python@v6
+        if: steps.guard.outputs.enabled == 'true'
+        with:
+          python-version: "3.11"
+
+      - name: Install Poetry
+        if: steps.guard.outputs.enabled == 'true'
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Install dependencies
+        if: steps.guard.outputs.enabled == 'true'
+        run: poetry install --no-interaction
+
+      - name: Run tests with coverage
+        if: steps.guard.outputs.enabled == 'true'
+        run: poetry run pytest --cov=${{ github.event.repository.name }} --cov-branch --cov-report=xml
+
+      - name: SonarQube Scan
+        if: steps.guard.outputs.enabled == 'true'
+        uses: SonarSource/sonarqube-scan-action@v8
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: https://sonarcloud.io
