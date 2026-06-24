@@ -5,7 +5,6 @@ from collections.abc import Iterator
 from datetime import datetime
 
 from . import _objects as objects
-from ._objects import Course, PlannedElementCourse
 from .common import (
     DownloadableFile,
 )
@@ -53,7 +52,7 @@ class Courses(SessionMixin):
     ): ...
     def __iter__(
         self,
-    ) -> Iterator[Course]: ...
+    ) -> Iterator[objects.Course]: ...
 
 class CourseList(SessionMixin):
     session: Smartschool
@@ -63,7 +62,7 @@ class CourseList(SessionMixin):
     ): ...
     def __iter__(
         self,
-    ) -> Iterator[PlannedElementCourse]: ...
+    ) -> Iterator[objects.PlannedElementCourse]: ...
 
 class FileItem(DownloadableFile, SessionMixin):
     session: Smartschool
