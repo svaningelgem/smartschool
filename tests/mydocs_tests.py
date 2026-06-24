@@ -222,6 +222,51 @@ def test_restore(mydocs: MyDocs, requests_mock):
     assert requests_mock.request_history[-1].json() == {"parentId": ""}
 
 
+def test_restore_into_other_folder(mydocs: MyDocs, requests_mock):
+    file = mydocs.items[2]
+    target = mydocs.items[0]
+    requests_mock.post(
+        f"/mydoc/api/v1/files/{file.id}/restore",
+        json={"id": file.id, "name": "welkom.docx", "parentId": target.id, "isFavourite": False},
+    )
+
+    file.restore(into=target)
+    assert file.parent is target
+    assert requests_mock.request_history[-1].json() == {"parentId": target.id}
+
+
+def test_folder_copy_returns_folder(mydocs: MyDocs, requests_mock):
+    folder = mydocs.items[0]
+    target = mydocs.items[1]
+    requests_mock.post(
+        f"/mydoc/api/v1/folders/{folder.id}/copy",
+        json={"id": "f0000000-0000-4000-8000-0000000000ff", "name": "Documenten", "color": "yellow", "parentId": target.id, "isFavourite": False},
+    )
+
+    copy = folder.copy(target)
+    assert isinstance(copy, MyDocsFolder)
+    assert copy.parent is target
+    assert copy.color == "yellow"
+
+
+def test_upload_not_registered(mydocs: MyDocs, tmp_path, requests_mock):
+    requests_mock.post("/mydoc/api/v1/files/upload", json={"files": {}})
+    to_upload = tmp_path / "report.txt"
+    to_upload.write_text("x")
+
+    with pytest.raises(SmartSchoolAttachmentUploadError):
+        mydocs.upload(to_upload)
+
+
+def test_op_on_folder_without_parent(session, requests_mock):
+    orphan = MyDocsFolder(session=session, id="orphan-id")
+    assert orphan.parent is None
+    requests_mock.post("/mydoc/api/v1/folders/orphan-id/trash", status_code=204)
+
+    orphan.trash()  # parent is None -> _refresh() must no-op without error
+    assert requests_mock.request_history[-1].path == "/mydoc/api/v1/folders/orphan-id/trash"
+
+
 def test_mark_and_unmark_favourite(mydocs: MyDocs, requests_mock):
     file = mydocs.items[2]
     requests_mock.post(f"/mydoc/api/v1/files/{file.id}/mark-as-favourite", json={"id": file.id, "isFavourite": True})
