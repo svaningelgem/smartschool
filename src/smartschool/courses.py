@@ -9,7 +9,6 @@ from typing import TYPE_CHECKING, TypeAlias
 from logprise import logger
 
 from . import _objects as objects
-from ._objects import Course, PlannedElementCourse
 from ._xml_interface import _resolve_aliases
 from .common import (
     DownloadableFile,
@@ -90,17 +89,17 @@ class Courses(SessionMixin):
     """
 
     @cached_property
-    def _list(self) -> list[Course]:
+    def _list(self) -> list[objects.Course]:
         try:
             # This endpoint only works when there are results available. Before that it'll show a blank page.
-            return [Course(**course) for course in self.session.json("/results/api/v1/courses/")]
+            return [objects.Course(**course) for course in self.session.json("/results/api/v1/courses/")]
         except SmartSchoolJsonError as e:
             raise SmartSchoolJsonError(
                 "Failed to fetch the courses. Maybe there are no results available yet?  Please try the `TopNavCourses` class as an alternative.",
                 e.response,
             ) from e
 
-    def __iter__(self) -> Iterator[Course]:
+    def __iter__(self) -> Iterator[objects.Course]:
         yield from self._list
 
 
@@ -121,10 +120,10 @@ class CourseList(SessionMixin):
     """
 
     @cached_property
-    def _list(self) -> list[PlannedElementCourse]:
-        return [PlannedElementCourse(**course) for course in self.session.json("/course-list/api/v1/courses")]
+    def _list(self) -> list[objects.PlannedElementCourse]:
+        return [objects.PlannedElementCourse(**course) for course in self.session.json("/course-list/api/v1/courses")]
 
-    def __iter__(self) -> Iterator[PlannedElementCourse]:
+    def __iter__(self) -> Iterator[objects.PlannedElementCourse]:
         yield from self._list
 
 

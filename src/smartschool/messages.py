@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING
 from urllib.parse import quote_plus
 
 from . import _objects as objects
-from ._objects import FullMessage, MessageChanged, MessageDeletionStatus, ShortMessage
 from ._xml_interface import SmartschoolXML, SmartschoolXmlNoCache
 from .session import SessionMixin
 
@@ -112,8 +111,8 @@ class MessageHeaders(_MessagesPoster, SmartschoolXmlNoCache):
         return ".//messages/message"
 
     @property
-    def _object_to_instantiate(self) -> type[ShortMessage]:
-        return ShortMessage
+    def _object_to_instantiate(self) -> type[objects.ShortMessage]:
+        return objects.ShortMessage
 
 
 # Cannot have `@dataclass`
@@ -166,8 +165,8 @@ class Message(_FetchOneMessage):
         return ".//data/message"
 
     @property
-    def _object_to_instantiate(self) -> type[FullMessage]:
-        return FullMessage
+    def _object_to_instantiate(self) -> type[objects.FullMessage]:
+        return objects.FullMessage
 
     def _post_process_element(self, element: dict) -> None:
         for modify_this in ["receivers", "ccreceivers", "bccreceivers"]:
@@ -226,8 +225,8 @@ class MarkMessageUnread(_FetchOneMessage):
         return ".//data/message"
 
     @property
-    def _object_to_instantiate(self) -> type[MessageChanged]:
-        return MessageChanged
+    def _object_to_instantiate(self) -> type[objects.MessageChanged]:
+        return objects.MessageChanged
 
     @property
     def _params(self) -> dict:
@@ -254,8 +253,8 @@ class AdjustMessageLabel(_FetchOneMessage):
         return ".//data/message"
 
     @property
-    def _object_to_instantiate(self) -> type[MessageChanged]:
-        return MessageChanged
+    def _object_to_instantiate(self) -> type[objects.MessageChanged]:
+        return objects.MessageChanged
 
     @property
     def _params(self) -> dict:
@@ -283,10 +282,10 @@ class MessageMoveToArchive(SessionMixin):
 
         self.msg_ids = msg_id
 
-    def get(self) -> MessageChanged:
+    def get(self) -> objects.MessageChanged:
         return next(iter(self))
 
-    def __iter__(self) -> Iterator[MessageChanged]:
+    def __iter__(self) -> Iterator[objects.MessageChanged]:
         construction = "&".join("msgIDs%5B%5D=" + quote_plus(str(msg_id)) for msg_id in self.msg_ids)
 
         resp = self.session.post(
@@ -299,7 +298,7 @@ class MessageMoveToArchive(SessionMixin):
 
         success = resp.json()["success"]
         for msg_id in self.msg_ids:
-            yield MessageChanged(id=msg_id, new=1 if msg_id in success else 0)
+            yield objects.MessageChanged(id=msg_id, new=1 if msg_id in success else 0)
 
 
 # Cannot have `@dataclass`
@@ -322,8 +321,8 @@ class MessageMoveToTrash(_MessagesPoster, SmartschoolXmlNoCache):
         return ".//data/details"
 
     @property
-    def _object_to_instantiate(self) -> type[MessageDeletionStatus]:
-        return MessageDeletionStatus
+    def _object_to_instantiate(self) -> type[objects.MessageDeletionStatus]:
+        return objects.MessageDeletionStatus
 
     @property
     def _params(self) -> dict:

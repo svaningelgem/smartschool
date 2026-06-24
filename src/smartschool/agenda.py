@@ -6,7 +6,6 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, ClassVar
 
 from . import _objects as objects
-from ._objects import AgendaHour, AgendaMomentInfo
 from ._xml_interface import SmartschoolXmlWeeklyCache
 from .common import convert_to_datetime
 from .session import SessionMixin
@@ -27,7 +26,7 @@ class AgendaPoster(SmartschoolXmlWeeklyCache, ABC):
 @dataclass
 class AgendaLesson(SessionMixin, objects.AgendaLesson):
     @property
-    def hour_details(self) -> AgendaHour:
+    def hour_details(self) -> objects.AgendaHour:
         return SmartschoolHours(self.session).search_by_hour_id(self.hour_id)
 
 
@@ -122,8 +121,8 @@ class SmartschoolHours(AgendaPoster):
         return ".//hour"
 
     @property
-    def _object_to_instantiate(self) -> type[AgendaHour]:
-        return AgendaHour
+    def _object_to_instantiate(self) -> type[objects.AgendaHour]:
+        return objects.AgendaHour
 
     @property
     def _subsystem(self) -> str:
@@ -170,8 +169,8 @@ class SmartschoolMomentInfos(AgendaPoster):
         return ".//class"
 
     @property
-    def _object_to_instantiate(self) -> type[AgendaMomentInfo]:
-        return AgendaMomentInfo
+    def _object_to_instantiate(self) -> type[objects.AgendaMomentInfo]:
+        return objects.AgendaMomentInfo
 
     @property
     def _subsystem(self) -> str:
