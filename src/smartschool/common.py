@@ -300,10 +300,10 @@ def parse_size(size_str: str | float) -> float | None:
         multipliers = {
             "KB": 1,
             "KIB": 1,
-            "MB": 1_024,
-            "MIB": 1_000,
-            "GB": 1_024 * 1_024,
-            "GIB": 1_000_000,
+            "MB": 1_000,
+            "MIB": 1_024,
+            "GB": 1_000 * 1_000,
+            "GIB": 1_024 * 1_024,
         }
 
         return value * multipliers.get(unit, 1)

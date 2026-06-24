@@ -481,13 +481,13 @@ def test_parse_size():
     assert parse_size("100 KB") == pytest.approx(100.0)
     assert parse_size("100KB") == pytest.approx(100.0)
     assert parse_size("100 KiB") == pytest.approx(100.0)
-    assert parse_size("1 MB") == pytest.approx(1_024.0)
-    assert parse_size("1 MiB") == pytest.approx(1_000.0)
-    assert parse_size("1 GB") == pytest.approx(1_048_576.0)
-    assert parse_size("1 GiB") == pytest.approx(1_000_000.0)
-    assert parse_size("1.5 MB") == pytest.approx(1_536.0)
-    assert parse_size("1,5 MB") == pytest.approx(1_536.0)
-    assert parse_size("2.5 GB") == pytest.approx(2_621_440.0)
+    assert parse_size("1 MB") == pytest.approx(1_000.0)
+    assert parse_size("1 MiB") == pytest.approx(1_024.0)
+    assert parse_size("1 GB") == pytest.approx(1_000_000.0)
+    assert parse_size("1 GiB") == pytest.approx(1_048_576.0)
+    assert parse_size("1.5 MB") == pytest.approx(1_500.0)
+    assert parse_size("1,5 MB") == pytest.approx(1_500.0)
+    assert parse_size("2.5 GB") == pytest.approx(2_500_000.0)
 
 
 def test_create_safe_filename():
