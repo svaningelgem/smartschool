@@ -1,0 +1,11 @@
+{
+  "id": "f0000000-0000-4000-8000-000000000077",
+  "name": "Homework",
+  "color": "blue",
+  "state": "active",
+  "parentId": "",
+  "dateCreated": "2024-06-01T12:00:00+02:00",
+  "dateChanged": "2024-06-01T12:00:00+02:00",
+  "hasSubFolders": false,
+  "isFavourite": false
+}

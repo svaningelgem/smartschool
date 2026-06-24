@@ -1,0 +1,44 @@
+{
+  "folders": [
+    {
+      "id": "f0000000-0000-4000-8000-000000000002",
+      "name": "Examens",
+      "color": "blue",
+      "state": "active",
+      "parentId": "",
+      "dateCreated": "2024-01-10T08:00:00+01:00",
+      "dateChanged": "2024-08-29T17:01:56+02:00",
+      "hasSubFolders": false,
+      "isFavourite": false
+    },
+    {
+      "id": "f0000000-0000-4000-8000-000000000001",
+      "name": "Documenten",
+      "color": "yellow",
+      "state": "active",
+      "parentId": "",
+      "dateCreated": "2023-09-01T08:00:00+01:00",
+      "dateChanged": "2024-08-29T17:01:56+02:00",
+      "hasSubFolders": true,
+      "isFavourite": true
+    }
+  ],
+  "files": [
+    {
+      "id": "a0000000-0000-4000-8000-000000000001",
+      "name": "welkom.docx",
+      "state": "active",
+      "parentId": "",
+      "dateCreated": "2024-02-05T17:32:06+01:00",
+      "dateChanged": "2024-02-05T17:32:06+01:00",
+      "currentRevisionId": "b0000000-0000-4000-8000-000000000001",
+      "currentRevision": {
+        "id": "b0000000-0000-4000-8000-000000000001",
+        "label": "welkom.docx",
+        "fileId": "a0000000-0000-4000-8000-000000000001",
+        "fileSize": 1234
+      },
+      "isFavourite": false
+    }
+  ]
+}

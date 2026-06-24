@@ -1,0 +1,304 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+import pytest
+
+from smartschool import MyDocs, MyDocsFile, MyDocsFolder
+from smartschool._exceptions import SmartSchoolAttachmentUploadError
+
+if TYPE_CHECKING:
+    from smartschool import Smartschool
+
+
+@pytest.fixture
+def mydocs(session: Smartschool) -> MyDocs:
+    return MyDocs(session=session)
+
+
+def test_mydocs_basic_properties(mydocs: MyDocs):
+    assert mydocs.name == "mydocs"
+    assert mydocs.parent is None
+    assert mydocs.id == ""
+
+
+def test_mydocs_items(mydocs: MyDocs):
+    items = mydocs.items
+    assert len(items) == 3
+    # Folders first (natural-sorted), then files.
+    assert isinstance(items[0], MyDocsFolder)
+    assert items[0].name == "Documenten"
+    assert items[0].id == "f0000000-0000-4000-8000-000000000001"
+    assert items[0].color == "yellow"
+    assert isinstance(items[1], MyDocsFolder)
+    assert items[1].name == "Examens"
+    assert isinstance(items[2], MyDocsFile)
+    assert items[2].name == "welkom.docx"
+
+
+def test_mydocs_iter(mydocs: MyDocs):
+    assert [item.name for item in mydocs] == ["Documenten", "Examens", "welkom.docx"]
+
+
+def test_folder_parent_reference(mydocs: MyDocs):
+    assert mydocs.items[0].parent is mydocs
+
+
+def test_subfolder_items(mydocs: MyDocs):
+    documenten = mydocs.items[0]
+    assert isinstance(documenten, MyDocsFolder)
+
+    sub_items = documenten.items
+    assert len(sub_items) == 2
+    assert isinstance(sub_items[0], MyDocsFolder)
+    assert sub_items[0].name == "Archief"
+    assert isinstance(sub_items[1], MyDocsFile)
+    assert sub_items[1].name == "info.pdf"
+    assert sub_items[1].parent is documenten
+
+
+def test_empty_folder(mydocs: MyDocs):
+    examens = mydocs.items[1]
+    assert isinstance(examens, MyDocsFolder)
+    assert examens.items == []
+    assert list(examens) == []
+
+
+def test_file_properties(mydocs: MyDocs):
+    file = mydocs.items[2]
+    assert isinstance(file, MyDocsFile)
+    assert file.filename == "welkom.docx"
+    assert file.size == 1234
+    assert file.revision_id == "b0000000-0000-4000-8000-000000000001"
+    assert file.parent is mydocs
+
+
+def test_is_dir_is_file(mydocs: MyDocs):
+    folder, _, file = mydocs.items
+    assert folder.is_dir() is True
+    assert folder.is_file() is False
+    assert file.is_file() is True
+    assert file.is_dir() is False
+
+
+def test_file_download_bytes(mydocs: MyDocs):
+    content = mydocs.items[2].download()
+    assert isinstance(content, bytes)
+    assert b"test file content" in content
+
+
+def test_file_download_to_file(mydocs: MyDocs, tmp_path):
+    target = tmp_path / "downloaded.docx"
+    result = mydocs.items[2].download(target, overwrite=True)
+    assert result.exists()
+    assert b"test file content" in result.read_bytes()
+
+
+def test_file_download_to_dir(mydocs: MyDocs, tmp_path):
+    result = mydocs.items[2].download_to_dir(tmp_path)
+    assert result.exists()
+    assert result.name == "welkom.docx"
+
+
+def test_create_folder(mydocs: MyDocs, requests_mock):
+    folder = mydocs.create_folder("Homework")
+    assert isinstance(folder, MyDocsFolder)
+    assert folder.name == "Homework"
+    assert folder.id == "f0000000-0000-4000-8000-000000000077"
+    assert folder.color == "blue"
+    assert folder.parent is mydocs
+
+    last = requests_mock.request_history[-1]
+    assert last.method == "POST"
+    assert last.path == "/mydoc/api/v1/folders/"
+    assert last.json() == {"name": "Homework", "color": "blue", "parentId": ""}
+
+
+def test_upload(mydocs: MyDocs, tmp_path):
+    to_upload = tmp_path / "report.txt"
+    to_upload.write_text("the quick brown fox")
+
+    documenten = mydocs.items[0]
+    uploaded = documenten.upload(to_upload)
+
+    assert isinstance(uploaded, MyDocsFile)
+    assert uploaded.name == "report.txt"
+    assert uploaded.size == 19
+    assert uploaded.revision_id == "b0000000-0000-4000-8000-000000000099"
+    assert uploaded.parent is documenten
+
+
+def test_upload_missing_file(mydocs: MyDocs, tmp_path):
+    with pytest.raises(FileNotFoundError):
+        mydocs.upload(tmp_path / "does-not-exist.txt")
+
+
+def test_upload_rejected_by_server(mydocs: MyDocs, tmp_path, requests_mock):
+    requests_mock.post("/Upload/Upload/Index", text="false")
+    to_upload = tmp_path / "report.txt"
+    to_upload.write_text("x")
+
+    with pytest.raises(SmartSchoolAttachmentUploadError):
+        mydocs.upload(to_upload)
+
+
+def test_is_favourite_populated(mydocs: MyDocs):
+    documenten, _, welkom = mydocs.items
+    assert documenten.is_favourite is True
+    assert welkom.is_favourite is False
+
+
+def test_rename(mydocs: MyDocs, requests_mock):
+    file = mydocs.items[2]
+    requests_mock.post(
+        f"/mydoc/api/v1/files/{file.id}/rename",
+        json={"id": file.id, "name": "renamed.docx", "parentId": "", "isFavourite": False},
+    )
+
+    result = file.rename("renamed.docx")
+    assert result is file
+    assert file.name == "renamed.docx"
+    assert file.filename == "renamed.docx"  # cached filename was invalidated
+
+    last = requests_mock.request_history[-1]
+    assert last.path == f"/mydoc/api/v1/files/{file.id}/rename"
+    assert last.json() == {"newName": "renamed.docx"}
+
+
+def test_move(mydocs: MyDocs, requests_mock):
+    file = mydocs.items[2]
+    target = mydocs.items[0]
+    requests_mock.post(
+        f"/mydoc/api/v1/files/{file.id}/move",
+        json={"id": file.id, "name": "welkom.docx", "parentId": target.id, "isFavourite": False},
+    )
+
+    file.move(target)
+    assert file.parent is target
+    assert requests_mock.request_history[-1].json() == {"parentId": target.id}
+
+
+def test_copy(mydocs: MyDocs, requests_mock):
+    file = mydocs.items[2]
+    target = mydocs.items[0]
+    requests_mock.post(
+        f"/mydoc/api/v1/files/{file.id}/copy",
+        json={
+            "id": "a0000000-0000-4000-8000-0000000000cc",
+            "name": "welkom (1).docx",
+            "parentId": target.id,
+            "currentRevisionId": "b0000000-0000-4000-8000-0000000000cc",
+            "currentRevision": {"id": "b0000000-0000-4000-8000-0000000000cc", "fileId": "a0000000-0000-4000-8000-0000000000cc", "fileSize": 99},
+            "isFavourite": False,
+        },
+    )
+
+    copy = file.copy(target)
+    assert isinstance(copy, MyDocsFile)
+    assert copy.parent is target
+    assert copy.name == "welkom (1).docx"
+    assert copy.size == 99
+    assert requests_mock.request_history[-1].json() == {"parentId": target.id}
+
+
+def test_trash(mydocs: MyDocs, requests_mock):
+    file = mydocs.items[2]
+    requests_mock.post(f"/mydoc/api/v1/files/{file.id}/trash", status_code=204)
+
+    assert file.trash() is None
+    last = requests_mock.request_history[-1]
+    assert last.method == "POST"
+    assert last.path == f"/mydoc/api/v1/files/{file.id}/trash"
+
+
+def test_restore(mydocs: MyDocs, requests_mock):
+    file = mydocs.items[2]  # parent is the (empty-id) root
+    requests_mock.post(
+        f"/mydoc/api/v1/files/{file.id}/restore",
+        json={"id": file.id, "name": "welkom.docx", "parentId": "", "isFavourite": False},
+    )
+
+    file.restore()
+    assert requests_mock.request_history[-1].json() == {"parentId": ""}
+
+
+def test_restore_into_other_folder(mydocs: MyDocs, requests_mock):
+    file = mydocs.items[2]
+    target = mydocs.items[0]
+    requests_mock.post(
+        f"/mydoc/api/v1/files/{file.id}/restore",
+        json={"id": file.id, "name": "welkom.docx", "parentId": target.id, "isFavourite": False},
+    )
+
+    file.restore(into=target)
+    assert file.parent is target
+    assert requests_mock.request_history[-1].json() == {"parentId": target.id}
+
+
+def test_folder_copy_returns_folder(mydocs: MyDocs, requests_mock):
+    folder = mydocs.items[0]
+    target = mydocs.items[1]
+    requests_mock.post(
+        f"/mydoc/api/v1/folders/{folder.id}/copy",
+        json={"id": "f0000000-0000-4000-8000-0000000000ff", "name": "Documenten", "color": "yellow", "parentId": target.id, "isFavourite": False},
+    )
+
+    copy = folder.copy(target)
+    assert isinstance(copy, MyDocsFolder)
+    assert copy.parent is target
+    assert copy.color == "yellow"
+
+
+def test_upload_not_registered(mydocs: MyDocs, tmp_path, requests_mock):
+    requests_mock.post("/mydoc/api/v1/files/upload", json={"files": {}})
+    to_upload = tmp_path / "report.txt"
+    to_upload.write_text("x")
+
+    with pytest.raises(SmartSchoolAttachmentUploadError):
+        mydocs.upload(to_upload)
+
+
+def test_op_on_folder_without_parent(session, requests_mock):
+    orphan = MyDocsFolder(session=session, id="orphan-id")
+    assert orphan.parent is None
+    requests_mock.post("/mydoc/api/v1/folders/orphan-id/trash", status_code=204)
+
+    orphan.trash()  # parent is None -> _refresh() must no-op without error
+    assert requests_mock.request_history[-1].path == "/mydoc/api/v1/folders/orphan-id/trash"
+
+
+def test_mark_and_unmark_favourite(mydocs: MyDocs, requests_mock):
+    file = mydocs.items[2]
+    requests_mock.post(f"/mydoc/api/v1/files/{file.id}/mark-as-favourite", json={"id": file.id, "isFavourite": True})
+    requests_mock.post(f"/mydoc/api/v1/files/{file.id}/unmark-as-favourite", json={"id": file.id, "isFavourite": False})
+
+    file.mark_favourite()
+    assert file.is_favourite is True
+    file.unmark_favourite()
+    assert file.is_favourite is False
+
+
+def test_folder_rename_uses_folders_endpoint(mydocs: MyDocs, requests_mock):
+    folder = mydocs.items[0]
+    requests_mock.post(
+        f"/mydoc/api/v1/folders/{folder.id}/rename",
+        json={"id": folder.id, "name": "Docs", "color": "yellow", "isFavourite": False},
+    )
+
+    folder.rename("Docs")
+    assert folder.name == "Docs"
+    assert requests_mock.request_history[-1].path == f"/mydoc/api/v1/folders/{folder.id}/rename"
+
+
+def test_delete_file(mydocs: MyDocs, requests_mock):
+    mydocs.items[2].delete()
+    last = requests_mock.request_history[-1]
+    assert last.method == "DELETE"
+    assert last.path == "/mydoc/api/v1/files/a0000000-0000-4000-8000-000000000001"
+
+
+def test_delete_folder(mydocs: MyDocs, requests_mock):
+    mydocs.items[0].delete()
+    last = requests_mock.request_history[-1]
+    assert last.method == "DELETE"
+    assert last.path == "/mydoc/api/v1/folders/f0000000-0000-4000-8000-000000000001"

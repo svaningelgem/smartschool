@@ -43,6 +43,7 @@ from ._messages import (
     SortField,
     SortOrder,
 )
+from ._mydocs import MyDocs, MyDocsFile, MyDocsFolder, MyDocsItem
 from ._objects import (
     AgendaHour,
     AgendaMomentInfo,
@@ -150,6 +151,10 @@ __all__ = [
     "MessageMoveToTrash",
     "MessageSearchGroup",
     "MessageSearchUser",
+    "MyDocs",
+    "MyDocsFile",
+    "MyDocsFolder",
+    "MyDocsItem",
     "PathCredentials",
     "PercentageGraphic",
     "Period",
