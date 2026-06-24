@@ -153,6 +153,27 @@ def bs4_html(html: str | bytes | Response) -> BeautifulSoup:
     return BeautifulSoup(html, features="html.parser")
 
 
+def _resolve_select_value(select_tag) -> tuple[list[str], str | list[str] | None]:
+    """Return a <select>'s option values and its selected value(s)."""
+    options: list[str] = []
+    selected: list[str] = []
+    for option in select_tag.find_all("option"):
+        value = option.attrs.get("value")
+        if value is None:  # fall back to the option's text
+            value = option.get_text().strip()
+        if not value:  # skip empty values
+            continue
+        options.append(value)
+        if any(attr.lower() == "selected" for attr in option.attrs):
+            selected.append(value)
+
+    if any(attr.lower() == "multiple" for attr in select_tag.attrs):
+        return options, selected
+    if selected:
+        return options, selected[-1]  # last selected wins for a single select
+    return options, (options[0] if options else None)
+
+
 def get_all_values_from_form(html: BeautifulSoup, form_selector: str):
     """Extract form input values from HTML."""
     form = html.select(form_selector)
@@ -162,50 +183,15 @@ def get_all_values_from_form(html: BeautifulSoup, form_selector: str):
 
     form = form[0]
 
-    all_inputs = form.find_all(["input", "button", "textarea", "select"])
-
     inputs = []
-    for input_tag in all_inputs:
-        tag_name = input_tag.name.lower()
+    for input_tag in form.find_all(["input", "button", "textarea", "select"]):
         attrs = input_tag.attrs
-
         if "name" not in attrs:
             continue
 
-        form_element = {
-            "name": attrs.get("name"),
-            "value": attrs.get("value", ""),
-        }
-
-        if tag_name == "select":
-            select_options = []
-            form_element["values"] = select_options
-
-            is_multiple = "multiple" in [attr.lower() for attr in attrs]
-            selected_values = []
-
-            for select_option in input_tag.find_all("option"):
-                # Use value attribute if present, otherwise use text content
-                option_value = select_option.attrs.get("value")
-                if option_value is None:
-                    option_value = select_option.get_text().strip()
-
-                if option_value:  # Only add non-empty values
-                    select_options.append(option_value)
-                    # Case-insensitive check for selected attribute
-                    if any(attr.lower() == "selected" for attr in select_option.attrs):
-                        selected_values.append(option_value)
-
-            # Handle value assignment based on multiple attribute
-            if is_multiple:
-                form_element["value"] = selected_values
-            else:
-                if selected_values:
-                    form_element["value"] = selected_values[-1]  # Last selected wins for single select
-                elif select_options:
-                    form_element["value"] = select_options[0]
-                else:
-                    form_element["value"] = None
+        form_element = {"name": attrs.get("name"), "value": attrs.get("value", "")}
+        if input_tag.name.lower() == "select":
+            form_element["values"], form_element["value"] = _resolve_select_value(input_tag)
 
         inputs.append(form_element)
     return inputs

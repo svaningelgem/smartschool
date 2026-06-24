@@ -187,7 +187,6 @@ class Course:
         if len(self.teachers) != 1:
             ret += "s"
         ret += f": {', '.join(t.name.starting_with_last_name for t in self.teachers)}"
-        # ret += f", ID: {self.id}"
         return ret + ")"
 
 
