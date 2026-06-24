@@ -3,18 +3,17 @@ from __future__ import annotations
 
 from collections.abc import Iterable, Iterator
 from datetime import datetime
-from typing import Literal
 
 from . import _objects as objects
-from ._objects import Component, Course, Feedback, FeedbackFull, PercentageGraphic, Period, ResultDetails, Teacher, TextGraphic
+from ._objects import Component, Course, Feedback, FeedbackFull, IconGraphic, PercentageGraphic, Period, ResultDetails, ResultType, Teacher, TextGraphic
 from .session import SessionMixin, Smartschool
 
 class Result(objects.Result, SessionMixin):
     session: Smartschool
     identifier: str
-    type: Literal["normal"]
+    type: ResultType
     name: str
-    graphic: PercentageGraphic | TextGraphic
+    graphic: PercentageGraphic | TextGraphic | IconGraphic
     date: datetime
     gradebook_owner: Teacher
     component: Component | None
@@ -31,9 +30,9 @@ class Result(objects.Result, SessionMixin):
         self,
         session: Smartschool,
         identifier: str,
-        type: Literal["normal"],
+        type: ResultType,
         name: str,
-        graphic: PercentageGraphic | TextGraphic,
+        graphic: PercentageGraphic | TextGraphic | IconGraphic,
         date: datetime,
         gradebook_owner: Teacher,
         component: Component | None,
