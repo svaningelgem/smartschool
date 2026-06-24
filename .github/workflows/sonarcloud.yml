@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [ "master" ]
 
+permissions:
+  contents: read
+
 jobs:
   sonarcloud:
     name: Analyze
@@ -50,7 +53,7 @@ jobs:
 
       - name: Run tests with coverage
         if: steps.guard.outputs.enabled == 'true'
-        run: poetry run pytest --cov=${{ github.event.repository.name }} --cov-branch --cov-report=xml
+        run: poetry run pytest --cov=smartschool --cov-branch --cov-report=xml
 
       - name: SonarQube Scan
         if: steps.guard.outputs.enabled == 'true'
