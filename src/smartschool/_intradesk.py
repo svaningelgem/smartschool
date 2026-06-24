@@ -4,8 +4,8 @@ from dataclasses import dataclass, field
 from functools import cached_property
 from typing import TYPE_CHECKING, TypeAlias
 
-from .common import DownloadableFile, create_filesystem_safe_filename, natural_sort
-from .session import SessionMixin
+from ._common import DownloadableFile, create_filesystem_safe_filename, natural_sort
+from ._session import SessionMixin
 
 if TYPE_CHECKING:
     from collections.abc import Iterator

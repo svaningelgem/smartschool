@@ -9,7 +9,7 @@ from pydantic import AliasChoices, BeforeValidator, ConfigDict, StringConstraint
 from pydantic.alias_generators import to_camel
 from pydantic.dataclasses import Field, dataclass
 
-from .common import as_float, convert_to_date, convert_to_datetime
+from ._common import as_float, convert_to_date, convert_to_datetime
 
 String = constr(strip_whitespace=True)
 # `(?i)` inline flag = case-insensitive; pydantic-v2 StringConstraints over the legacy

@@ -40,7 +40,7 @@ __all__ = [
     "xml_to_dict",
 ]
 
-from smartschool.exceptions import SmartSchoolParsingError
+from smartschool._exceptions import SmartSchoolParsingError
 
 if TYPE_CHECKING:
     from collections.abc import Callable

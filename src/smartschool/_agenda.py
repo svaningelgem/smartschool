@@ -6,12 +6,12 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, ClassVar
 
 from . import _objects as objects
+from ._common import convert_to_datetime
+from ._session import SessionMixin
 from ._xml_interface import SmartschoolXmlWeeklyCache
-from .common import convert_to_datetime
-from .session import SessionMixin
 
 if TYPE_CHECKING:
-    from .session import Smartschool
+    from ._session import Smartschool
 
 
 __all__ = ["AgendaLesson", "AgendaPoster", "SmartschoolHours", "SmartschoolLessons", "SmartschoolMomentInfos"]

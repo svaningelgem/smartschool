@@ -10,8 +10,8 @@ from xml.sax.saxutils import quoteattr
 
 from pydantic import AliasChoices
 
-from .common import xml_to_dict
-from .session import SessionMixin
+from ._common import xml_to_dict
+from ._session import SessionMixin
 
 
 def _build_alias_map(fields: dict) -> dict[str, str]:

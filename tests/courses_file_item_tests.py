@@ -81,7 +81,7 @@ def test_real_download_writes_to_target_and_returns_path(file_item: FileItem, mo
 
 def test_real_download_logs_filename_suffix_mismatch(file_item: FileItem, mocker):
     _mock_get(file_item, mocker, headers={"Content-Disposition": 'attachment; filename="test.txt"'})
-    mock_logger = mocker.patch("smartschool.courses.logger")
+    mock_logger = mocker.patch("smartschool._courses.logger")
 
     file_item._real_download(None)
 
@@ -90,7 +90,7 @@ def test_real_download_logs_filename_suffix_mismatch(file_item: FileItem, mocker
 
 def test_real_download_no_warning_when_suffix_matches(file_item: FileItem, mocker):
     _mock_get(file_item, mocker, headers={"Content-Disposition": 'attachment; filename="test.pdf"'})
-    mock_logger = mocker.patch("smartschool.courses.logger")
+    mock_logger = mocker.patch("smartschool._courses.logger")
 
     file_item._real_download(None)
 
@@ -111,7 +111,7 @@ def test_real_download_content_disposition_without_filename(file_item: FileItem,
 
 def test_real_download_skips_fixture_capture_unless_dev_tracing(file_item: FileItem, mocker):
     _mock_get(file_item, mocker)
-    save = mocker.patch("smartschool.courses.save_test_response")
+    save = mocker.patch("smartschool._courses.save_test_response")
 
     file_item._real_download(None)
     save.assert_not_called()

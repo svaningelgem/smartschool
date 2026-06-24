@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 from zoneinfo import ZoneInfo
 
 from ._objects import ApplicableAssignmentType, PlannedElement
-from .session import SessionMixin
+from ._session import SessionMixin
 
 if TYPE_CHECKING:
     from collections.abc import Iterator

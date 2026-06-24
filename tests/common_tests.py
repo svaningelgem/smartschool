@@ -98,7 +98,7 @@ def test_save_session_aware_result(session: Smartschool, mocker, tmp_path: Path)
     save() must serialize it (projecting onto _objects.Result) without crashing, without dragging
     in the `session` field, and without triggering a lazy `details` fetch.
     """
-    mocker.patch("smartschool.results.RESULTS_PER_PAGE", new=1)
+    mocker.patch("smartschool._results.RESULTS_PER_PAGE", new=1)
     result = next(iter(Results(session)))  # details deliberately not accessed
 
     spy = mocker.spy(session, "json")
@@ -165,7 +165,7 @@ def test_bs4_html_falls_back_to_html_parser_when_lxml_unavailable(mocker):
     # Simulate an environment without lxml: the first (lxml) attempt raises FeatureNotFound,
     # so bs4_html must fall back to the stdlib html.parser and still return a parsed tree.
     real_parse = BeautifulSoup("<html />", features="html.parser")
-    mocker.patch("smartschool.common.BeautifulSoup", autospec=True, side_effect=[FeatureNotFound, real_parse])
+    mocker.patch("smartschool._common.BeautifulSoup", autospec=True, side_effect=[FeatureNotFound, real_parse])
 
     sut = bs4_html("<html />")
 

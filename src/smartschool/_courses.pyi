@@ -5,10 +5,10 @@ from collections.abc import Iterator
 from datetime import datetime
 
 from . import _objects as objects
-from .common import (
+from ._common import (
     DownloadableFile,
 )
-from .session import SessionMixin, Smartschool
+from ._session import SessionMixin, Smartschool
 
 class CourseCondensed(objects.CourseCondensed, SessionMixin):
     session: Smartschool

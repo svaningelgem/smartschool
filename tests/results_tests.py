@@ -9,7 +9,7 @@ from smartschool import _objects as objects
 
 
 def test_results_normal_flow(mocker, session: Smartschool):
-    mocker.patch("smartschool.results.RESULTS_PER_PAGE", new=1)
+    mocker.patch("smartschool._results.RESULTS_PER_PAGE", new=1)
 
     sut = list(Results(session))
 

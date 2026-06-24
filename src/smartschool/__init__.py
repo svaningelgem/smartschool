@@ -1,3 +1,48 @@
+from ._agenda import AgendaLesson, AgendaPoster, SmartschoolHours, SmartschoolLessons, SmartschoolMomentInfos
+from ._common import (
+    IsSaved,
+    as_float,
+    bs4_html,
+    convert_to_date,
+    convert_to_datetime,
+    create_filesystem_safe_filename,
+    create_filesystem_safe_path,
+    fill_form,
+    get_all_values_from_form,
+    natural_sort,
+    parse_mime_type,
+    parse_size,
+    save,
+    send_email,
+    xml_to_dict,
+)
+from ._courses import CourseCondensed, CourseList, Courses, DocumentOrFolderItem, FileItem, FolderItem, InternetShortcut, TopNavCourses
+from ._credentials import AppCredentials, Credentials, EnvCredentials, PathCredentials
+from ._exceptions import (
+    SmartSchoolAttachmentUploadError,
+    SmartSchoolAuthenticationError,
+    SmartSchoolDownloadError,
+    SmartSchoolException,
+    SmartSchoolJsonError,
+    SmartSchoolParsingError,
+)
+from ._future_tasks import FutureTasks
+from ._intradesk import Intradesk, IntradeskFile, IntradeskFolder, IntradeskItem
+from ._message_composer import MessageComposerForm, RecipientType
+from ._messages import (
+    AdjustMessageLabel,
+    Attachment,
+    Attachments,
+    BoxType,
+    MarkMessageUnread,
+    Message,
+    MessageHeaders,
+    MessageLabel,
+    MessageMoveToArchive,
+    MessageMoveToTrash,
+    SortField,
+    SortOrder,
+)
 from ._objects import (
     AgendaHour,
     AgendaMomentInfo,
@@ -45,57 +90,12 @@ from ._objects import (
     UserCapabilities,
     UserSeeProperties,
 )
-from .agenda import AgendaLesson, AgendaPoster, SmartschoolHours, SmartschoolLessons, SmartschoolMomentInfos
-from .common import (
-    IsSaved,
-    as_float,
-    bs4_html,
-    convert_to_date,
-    convert_to_datetime,
-    create_filesystem_safe_filename,
-    create_filesystem_safe_path,
-    fill_form,
-    get_all_values_from_form,
-    natural_sort,
-    parse_mime_type,
-    parse_size,
-    save,
-    send_email,
-    xml_to_dict,
-)
-from .courses import CourseCondensed, CourseList, Courses, DocumentOrFolderItem, FileItem, FolderItem, InternetShortcut, TopNavCourses
-from .credentials import AppCredentials, Credentials, EnvCredentials, PathCredentials
-from .exceptions import (
-    SmartSchoolAttachmentUploadError,
-    SmartSchoolAuthenticationError,
-    SmartSchoolDownloadError,
-    SmartSchoolException,
-    SmartSchoolJsonError,
-    SmartSchoolParsingError,
-)
-from .future_tasks import FutureTasks
-from .intradesk import Intradesk, IntradeskFile, IntradeskFolder, IntradeskItem
-from .message_composer import MessageComposerForm, RecipientType
-from .messages import (
-    AdjustMessageLabel,
-    Attachment,
-    Attachments,
-    BoxType,
-    MarkMessageUnread,
-    Message,
-    MessageHeaders,
-    MessageLabel,
-    MessageMoveToArchive,
-    MessageMoveToTrash,
-    SortField,
-    SortOrder,
-)
-from .periods import Periods
-from .planner import ApplicableAssignmentTypes, PlannedElements
-from .reports import Report, Reports
-from .results import Result, Results
-from .session import Smartschool
-from .student_support import StudentSupportLinks
+from ._periods import Periods
+from ._planner import ApplicableAssignmentTypes, PlannedElements
+from ._reports import Report, Reports
+from ._results import Result, Results
+from ._session import Smartschool
+from ._student_support import StudentSupportLinks
 
 __all__ = [
     "AdjustMessageLabel",

@@ -9,8 +9,7 @@ from typing import TYPE_CHECKING, TypeAlias
 from logprise import logger
 
 from . import _objects as objects
-from ._xml_interface import _resolve_aliases
-from .common import (
+from ._common import (
     DownloadableFile,
     bs4_html,
     convert_to_datetime,
@@ -20,8 +19,9 @@ from .common import (
     parse_size,
     save_test_response,
 )
-from .exceptions import SmartSchoolException, SmartSchoolJsonError, SmartSchoolParsingError
-from .session import SessionMixin
+from ._exceptions import SmartSchoolException, SmartSchoolJsonError, SmartSchoolParsingError
+from ._session import SessionMixin
+from ._xml_interface import _resolve_aliases
 
 if TYPE_CHECKING:
     from collections.abc import Iterator

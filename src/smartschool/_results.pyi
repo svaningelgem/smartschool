@@ -6,7 +6,7 @@ from datetime import datetime
 
 from . import _objects as objects
 from ._objects import Component, Course, Feedback, FeedbackFull, IconGraphic, PercentageGraphic, Period, ResultDetails, ResultType, Teacher, TextGraphic
-from .session import SessionMixin, Smartschool
+from ._session import SessionMixin, Smartschool
 
 class Result(objects.Result, SessionMixin):
     session: Smartschool

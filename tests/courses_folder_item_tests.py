@@ -29,7 +29,7 @@ def test_get_folder_html_exception_handling(folder, mocker):
 
 def test_get_folder_html_captures_fixture_only_when_dev_tracing(folder, mocker):
     """Fixture capture is a dev-only side effect, gated behind dev_tracing."""
-    save = mocker.patch("smartschool.courses.save_test_response")
+    save = mocker.patch("smartschool._courses.save_test_response")
 
     folder._get_folder_html()
     save.assert_not_called()

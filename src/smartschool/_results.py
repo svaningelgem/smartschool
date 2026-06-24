@@ -7,7 +7,7 @@ from itertools import count
 from typing import TYPE_CHECKING
 
 from . import _objects as objects
-from .session import SessionMixin
+from ._session import SessionMixin
 
 if TYPE_CHECKING:
     from collections.abc import Iterator

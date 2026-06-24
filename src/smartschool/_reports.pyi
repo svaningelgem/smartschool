@@ -4,7 +4,7 @@ from datetime import datetime
 
 from . import _objects as objects
 from ._objects import SchoolClass
-from .session import SessionMixin, Smartschool
+from ._session import SessionMixin, Smartschool
 
 class Report(objects.Report, SessionMixin):
     session: Smartschool

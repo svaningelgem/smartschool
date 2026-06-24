@@ -2,7 +2,7 @@ from collections.abc import Iterable, Iterator
 from dataclasses import dataclass
 
 from ._objects import StudentSupportLink
-from .session import SessionMixin
+from ._session import SessionMixin
 
 __all__ = ["StudentSupportLinks"]
 

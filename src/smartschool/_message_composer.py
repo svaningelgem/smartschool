@@ -7,16 +7,16 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 from xml.etree import ElementTree as ET
 
+from ._common import bs4_html
+from ._exceptions import SmartSchoolAttachmentUploadError
+from ._messages import BoxType
 from ._objects import MessageSearchGroup, MessageSearchUser
-from .common import bs4_html
-from .exceptions import SmartSchoolAttachmentUploadError
-from .messages import BoxType
-from .session import SessionMixin
+from ._session import SessionMixin
 
 if TYPE_CHECKING:
     from requests import Response
 
-    from .session import Smartschool
+    from ._session import Smartschool
 
 __all__ = [
     "MessageComposerForm",

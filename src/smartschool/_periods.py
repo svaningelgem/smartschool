@@ -2,7 +2,7 @@ from collections.abc import Iterator
 from dataclasses import dataclass
 
 from ._objects import Period
-from .session import SessionMixin
+from ._session import SessionMixin
 
 __all__ = ["Periods"]
 

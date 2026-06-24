@@ -8,13 +8,13 @@ from typing import TYPE_CHECKING
 from urllib.parse import quote_plus
 
 from . import _objects as objects
+from ._session import SessionMixin
 from ._xml_interface import SmartschoolXML, SmartschoolXmlNoCache
-from .session import SessionMixin
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
 
-    from .session import Smartschool
+    from ._session import Smartschool
 
 __all__ = [
     "AdjustMessageLabel",
