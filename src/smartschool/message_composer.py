@@ -3,12 +3,12 @@ from __future__ import annotations
 import mimetypes
 from dataclasses import dataclass, field
 from enum import Enum
-from html.parser import HTMLParser
 from pathlib import Path
 from typing import TYPE_CHECKING
 from xml.etree import ElementTree as ET
 
 from . import objects
+from .common import bs4_html
 from .exceptions import SmartSchoolAttachmentUploadError
 from .messages import BoxType
 from .session import SessionMixin
@@ -27,44 +27,13 @@ __all__ = [
 class RecipientType(Enum):
     """Recipient type for message composition (TO, CC, BCC)."""
 
-    TO = "to"
-    CC = "cc"
-    BCC = "bcc"
-
-    @property
-    def request_type(self) -> str:
-        return {
-            RecipientType.TO: "0",
-            RecipientType.CC: "2",
-            RecipientType.BCC: "3",
-        }[self]
+    TO = "0"
+    CC = "2"
+    BCC = "3"
 
     @property
     def parent_node_id(self) -> str:
-        return f"insertSearchFieldContainer_{self.request_type}_0"
-
-
-@dataclass
-class _ComposeFormParser(HTMLParser):
-    """Extract hidden input values from compose form HTML."""
-
-    fields: dict[str, str] = field(default_factory=dict)
-
-    def __post_init__(self) -> None:
-        super().__init__()
-
-    def handle_starttag(self, tag, attrs):
-        if tag != "input":
-            return
-
-        attrs_dict = dict(attrs)
-        if attrs_dict.get("type") != "hidden":
-            return
-
-        name = attrs_dict.get("name")
-        value = attrs_dict.get("value", "")
-        if name:
-            self.fields[name] = value
+        return f"insertSearchFieldContainer_{self.value}_0"
 
 
 @dataclass
@@ -114,9 +83,8 @@ class MessageComposerForm(SessionMixin):
         resp = self.session.get(self._url)
         resp.raise_for_status()
 
-        parser = _ComposeFormParser()
-        parser.feed(resp.text)
-        self.hidden_fields = parser.fields
+        soup = bs4_html(resp)
+        self.hidden_fields = {inp["name"]: inp.get("value", "") for inp in soup.select("input[type=hidden][name]")}
 
         self.payload = {
             "module": "Messages",
@@ -214,21 +182,20 @@ class MessageComposerForm(SessionMixin):
         if not unique_usc:
             raise ValueError("uniqueUsc is missing. Call refresh() or create() before adding recipients.")
 
+        ssid = recipient.ss_id
         if isinstance(recipient, objects.MessageSearchUser):
             recipient_id = recipient.user_id
             type_id = "users"
-            ssid = recipient.ss_id
         else:
             recipient_id = recipient.group_id
             type_id = "groups"
-            ssid = recipient.ss_id
 
         response = self.session.post(
             "/?module=Messages&file=searchUsers&function=addUserToSelected",
             data={
                 "id": str(recipient_id),
                 "typeId": type_id,
-                "type": recipient_type.request_type,
+                "type": recipient_type.value,
                 "parentNodeId": recipient_type.parent_node_id,
                 "ssid": str(ssid),
                 "userlt": str(user_lt),
@@ -243,7 +210,7 @@ class MessageComposerForm(SessionMixin):
             raise ValueError("randomDir is missing. Call refresh() or create() before uploading attachments.")
 
         path = Path(file_path)
-        if not path.exists() or not path.is_file():
+        if not path.is_file():
             raise FileNotFoundError(f"Attachment file does not exist: {path}")
 
         mime_type, _ = mimetypes.guess_type(path.name)

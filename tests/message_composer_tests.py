@@ -10,7 +10,6 @@ from smartschool.exceptions import SmartSchoolAttachmentUploadError
 from smartschool.message_composer import (
     MessageComposerForm,
     RecipientType,
-    _ComposeFormParser,
 )
 from smartschool.messages import BoxType
 
@@ -23,51 +22,10 @@ if TYPE_CHECKING:
 class TestRecipientType:
     """Test RecipientType enum."""
 
-    def test_recipient_type_to_request_type(self):
-        assert RecipientType.TO.request_type == "0"
-        assert RecipientType.CC.request_type == "2"
-        assert RecipientType.BCC.request_type == "3"
-
     def test_recipient_type_to_parent_node_id(self):
         assert RecipientType.TO.parent_node_id == "insertSearchFieldContainer_0_0"
         assert RecipientType.CC.parent_node_id == "insertSearchFieldContainer_2_0"
         assert RecipientType.BCC.parent_node_id == "insertSearchFieldContainer_3_0"
-
-
-class TestComposeFormParser:
-    """Test _ComposeFormParser HTML parsing."""
-
-    def test_parser_extracts_hidden_input_fields(self):
-        parser = _ComposeFormParser()
-        parser.feed("""
-            <input type="hidden" name="randomDir" value="dnV3ujSKmTkE48qLbjMxFrG4y17757280351002146">
-            <input type="hidden" name="uniqueUsc" value="4069fDsFgJGxHbeGeCwnF3HXbNTDg17757280354069">
-            <input type="hidden" name="encryptedSender" value="76542a9717766d290cf71e6028dc4a7f">
-            <input type="text" name="username">
-            <input type="email" name="email">
-        """)
-
-        assert parser.fields["randomDir"] == "dnV3ujSKmTkE48qLbjMxFrG4y17757280351002146"
-        assert parser.fields["uniqueUsc"] == "4069fDsFgJGxHbeGeCwnF3HXbNTDg17757280354069"
-        assert parser.fields["encryptedSender"] == "76542a9717766d290cf71e6028dc4a7f"
-        assert "username" not in parser.fields
-        assert "email" not in parser.fields
-
-    def test_parser_handles_missing_value(self):
-        parser = _ComposeFormParser()
-        parser.feed('<input type="hidden" name="field" value="">')
-
-        assert parser.fields["field"] == ""
-
-    def test_parser_ignores_non_input_tags(self):
-        parser = _ComposeFormParser()
-        parser.feed("""
-            <div name="field" value="test"></div>
-            <input type="hidden" name="valid" value="yes">
-        """)
-
-        assert "field" not in parser.fields
-        assert parser.fields["valid"] == "yes"
 
 
 class TestMessageComposerFormCreate:
