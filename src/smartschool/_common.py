@@ -6,17 +6,17 @@ import operator
 import platform
 import re
 import smtplib
-import warnings
 import xml.etree.ElementTree as ET
+from abc import ABC, abstractmethod
 from datetime import date, datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from enum import Enum, auto
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any, Literal, overload
 from urllib.parse import parse_qs, quote_plus, urlparse
 
-from bs4 import BeautifulSoup, FeatureNotFound, GuessedAtParserWarning
+from bs4 import BeautifulSoup, FeatureNotFound
 from logprise import logger
 from pydantic import RootModel
 from pydantic.dataclasses import is_pydantic_dataclass
@@ -26,21 +26,26 @@ __all__ = [
     "IsSaved",
     "as_float",
     "bs4_html",
+    "convert_to_date",
+    "convert_to_datetime",
+    "create_filesystem_safe_filename",
+    "create_filesystem_safe_path",
+    "fill_form",
     "get_all_values_from_form",
-    "make_filesystem_safe",
+    "natural_sort",
+    "parse_mime_type",
+    "parse_size",
     "save",
     "send_email",
     "xml_to_dict",
 ]
 
-from smartschool.exceptions import SmartSchoolParsingError
+from ._exceptions import SmartSchoolParsingError
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    from smartschool.objects import String
-
-_used_bs4_option = None
+    from ._objects import String
 
 
 class IsSaved(Enum):
@@ -64,10 +69,24 @@ def save(
     data_was_dict = isinstance(data, dict)
     data_was_object = is_pydantic_dataclass(data.__class__)
 
+    if not data_was_dict and not data_was_object:
+        # A session-aware object (e.g. results.Result) is a std-dataclass subclass of a pydantic
+        # dataclass: is_pydantic_dataclass() is False for it, but a pydantic base sits in its MRO.
+        # Project onto that base via __dict__ so we serialize only the wire fields - dropping the
+        # `session` field, and without triggering lazy attributes such as Result.details.
+        pydantic_base = next((cls for cls in type(data).__mro__ if is_pydantic_dataclass(cls)), None)
+        if pydantic_base is not None:
+            data = pydantic_base(**{name: data.__dict__.get(name) for name in pydantic_base.__pydantic_fields__})
+            data_was_object = True
+
     if data_was_dict:
         to_write = json.dumps(data, indent=4)
     elif data_was_object:
-        to_write = RootModel[data.__class__](data).model_dump_json(indent=4)
+        # Backward-compat: emit camelCase aliases so newly-written cache files stay byte-compatible
+        # with those written before the Result rework. DEPRECATED: this `by_alias=True` is a
+        # compatibility shim - drop it (letting saves use snake_case field names) in a future major
+        # version, once pre-existing caches are no longer in use.
+        to_write = RootModel[data.__class__](data).model_dump_json(indent=4, by_alias=True)
     else:
         to_write = data
 
@@ -122,31 +141,37 @@ def send_email(
 
 
 def bs4_html(html: str | bytes | Response) -> BeautifulSoup:
-    global _used_bs4_option
-
     if isinstance(html, Response):
         html = html.text
 
-    possible_options = [
-        _used_bs4_option,
-        {"parser": "html.parser", "features": "lxml"},
-        {"features": "html5lib"},
-        {"features": "html.parser"},
-    ]
+    # Prefer lxml (faster, more lenient) when installed; html.parser is stdlib and always
+    # available. Both parsers are passed explicitly so BeautifulSoup never has to guess
+    # (which is what emits GuessedAtParserWarning).
+    with contextlib.suppress(FeatureNotFound):
+        return BeautifulSoup(html, features="lxml")
 
-    for kw in possible_options:  # pragma: no branch
-        if kw is None:
+    return BeautifulSoup(html, features="html.parser")
+
+
+def _resolve_select_value(select_tag) -> tuple[list[str], str | list[str] | None]:
+    """Return a <select>'s option values and its selected value(s)."""
+    options: list[str] = []
+    selected: list[str] = []
+    for option in select_tag.find_all("option"):
+        value = option.attrs.get("value")
+        if value is None:  # fall back to the option's text
+            value = option.get_text().strip()
+        if not value:  # skip empty values
             continue
+        options.append(value)
+        if any(attr.lower() == "selected" for attr in option.attrs):
+            selected.append(value)
 
-        with contextlib.suppress(FeatureNotFound):
-            parsed = BeautifulSoup(html, **kw)
-            _used_bs4_option = kw
-            return parsed
-
-    _used_bs4_option = {}
-    with warnings.catch_warnings():
-        warnings.filterwarnings("ignore", category=GuessedAtParserWarning)
-        return BeautifulSoup(html)
+    if any(attr.lower() == "multiple" for attr in select_tag.attrs):
+        return options, selected
+    if selected:
+        return options, selected[-1]  # last selected wins for a single select
+    return options, (options[0] if options else None)
 
 
 def get_all_values_from_form(html: BeautifulSoup, form_selector: str):
@@ -158,50 +183,15 @@ def get_all_values_from_form(html: BeautifulSoup, form_selector: str):
 
     form = form[0]
 
-    all_inputs = form.find_all(["input", "button", "textarea", "select"])
-
     inputs = []
-    for input_tag in all_inputs:
-        tag_name = input_tag.name.lower()
+    for input_tag in form.find_all(["input", "button", "textarea", "select"]):
         attrs = input_tag.attrs
-
         if "name" not in attrs:
             continue
 
-        form_element = {
-            "name": attrs.get("name"),
-            "value": attrs.get("value", ""),
-        }
-
-        if tag_name == "select":
-            select_options = []
-            form_element["values"] = select_options
-
-            is_multiple = "multiple" in [attr.lower() for attr in attrs]
-            selected_values = []
-
-            for select_option in input_tag.find_all("option"):
-                # Use value attribute if present, otherwise use text content
-                option_value = select_option.attrs.get("value")
-                if option_value is None:
-                    option_value = select_option.get_text().strip()
-
-                if option_value:  # Only add non-empty values
-                    select_options.append(option_value)
-                    # Case-insensitive check for selected attribute
-                    if any(attr.lower() == "selected" for attr in select_option.attrs):
-                        selected_values.append(option_value)
-
-            # Handle value assignment based on multiple attribute
-            if is_multiple:
-                form_element["value"] = selected_values
-            else:
-                if selected_values:
-                    form_element["value"] = selected_values[-1]  # Last selected wins for single select
-                elif select_options:
-                    form_element["value"] = select_options[0]
-                else:
-                    form_element["value"] = None
+        form_element = {"name": attrs.get("name"), "value": attrs.get("value", "")}
+        if input_tag.name.lower() == "select":
+            form_element["values"], form_element["value"] = _resolve_select_value(input_tag)
 
         inputs.append(form_element)
     return inputs
@@ -227,12 +217,6 @@ def fill_form(response: str | bytes | Response, form_selector, values: dict[str,
         raise AssertionError(f"You didn't use: {sorted(values)}")
 
     return data
-
-
-def make_filesystem_safe(name: str) -> str:
-    name = re.sub("[^-_a-z0-9.]+", "_", name, flags=re.IGNORECASE)
-    name = re.sub("_{2,}", "_", name)
-    return name
 
 
 def as_float(txt: str) -> float:
@@ -321,13 +305,17 @@ def parse_size(size_str: str | float) -> float | None:
         value = float(match.group(1).replace(",", "."))
         unit = match.group(2).upper()
 
+        # All factors are binary (1024-based). In the memory/OS world a MB has always
+        # been 1024 KB (RAM sizing, Windows file sizes), and the IEC's later decimal
+        # redefinition (MB=1000, MiB=1024) never won out in practice. So here MB == MiB
+        # and GB == GiB. Moot anyway: real Smartschool sizes are always reported in KiB.
         multipliers = {
             "KB": 1,
             "KIB": 1,
             "MB": 1_024,
-            "MIB": 1_000,
+            "MIB": 1_024,
             "GB": 1_024 * 1_024,
-            "GIB": 1_000_000,
+            "GIB": 1_024 * 1_024,
         }
 
         return value * multipliers.get(unit, 1)
@@ -349,16 +337,13 @@ def parse_mime_type(file_type_string: str) -> str:
 
 
 def create_filesystem_safe_path(path: Path | str) -> Path:
-    """Create a filesystem-safe path with proper length and extension handling."""
-    parts = list(Path(path).parts)
-
-    # Don't modify drive letters (first part on Windows like 'C:')
-    if parts and platform.system() == "Windows" and ":" in parts[0]:  # pragma: no cover
-        safe_parts = [parts[0]] + [create_filesystem_safe_filename(part) for part in parts[1:]]
-    else:
-        safe_parts = [create_filesystem_safe_filename(part) for part in parts]
-
-    return Path(*safe_parts).resolve().absolute()
+    """Create a filesystem-safe path, preserving the root/drive anchor and sanitizing each name component."""
+    path = Path(path)
+    # path.anchor is '/' on POSIX and e.g. 'C:\\' on Windows; sanitizing it would turn an
+    # absolute path into a relative one (the '/' anchor becomes 'unnamed'), so keep it verbatim.
+    name_parts = path.parts[1:] if path.anchor else path.parts
+    safe_parts = [create_filesystem_safe_filename(part) for part in name_parts]
+    return Path(path.anchor, *safe_parts).resolve().absolute()
 
 
 def create_filesystem_safe_filename(filename: str) -> str:
@@ -389,6 +374,31 @@ def create_filesystem_safe_filename(filename: str) -> str:
         safe_name = safe_name[:max_len].rstrip("._")
 
     return safe_name + ext
+
+
+class DownloadableFile(ABC):
+    """Shared download skeleton for remote files; subclasses provide `filename` and implement `_real_download`."""
+
+    @overload
+    def download(self, to_file: Path | str, *, overwrite: bool) -> Path: ...
+    @overload
+    def download(self) -> bytes: ...
+
+    def download(self, to_file: Path | str | None = None, *, overwrite: bool = False) -> bytes | Path:
+        target = None
+        if to_file:
+            target = create_filesystem_safe_path(to_file)
+            target.parent.mkdir(parents=True, exist_ok=True)
+            if not overwrite and target.exists():
+                return target
+        return self._real_download(target)
+
+    def download_to_dir(self, target_directory: Path, *, overwrite: bool = False) -> Path:
+        return self.download(target_directory / self.filename, overwrite=overwrite)
+
+    @abstractmethod
+    def _real_download(self, target: Path | None) -> bytes | Path:
+        """Fetch the file: write to `target` and return it, or return raw bytes when `target` is None."""
 
 
 def save_test_response(response: Response) -> None:  # pragma: no cover

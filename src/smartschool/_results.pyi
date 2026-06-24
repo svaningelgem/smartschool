@@ -4,9 +4,9 @@ from __future__ import annotations
 from collections.abc import Iterable, Iterator
 from datetime import datetime
 
-from . import objects
-from .objects import Component, Course, Feedback, FeedbackFull, IconGraphic, PercentageGraphic, Period, ResultDetails, ResultType, Teacher, TextGraphic
-from .session import SessionMixin, Smartschool
+from . import _objects as objects
+from ._objects import Component, Course, Feedback, FeedbackFull, IconGraphic, PercentageGraphic, Period, ResultDetails, ResultType, Teacher, TextGraphic
+from ._session import SessionMixin, Smartschool
 
 class Result(objects.Result, SessionMixin):
     session: Smartschool
@@ -45,10 +45,6 @@ class Result(objects.Result, SessionMixin):
         does_count: bool,
         deleted: bool = False,
         details: ResultDetails | None = None,
-    ): ...
-    def __getattribute__(
-        self,
-        name: str,
     ): ...
 
 class Results(SessionMixin, Iterable[Result]):

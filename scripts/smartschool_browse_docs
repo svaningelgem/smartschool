@@ -16,8 +16,8 @@ from smartschool import (
     SmartSchoolAuthenticationError,
     SmartSchoolException,
     TopNavCourses,
+    natural_sort,
 )
-from smartschool.common import natural_sort
 
 if TYPE_CHECKING:
     from smartschool import (

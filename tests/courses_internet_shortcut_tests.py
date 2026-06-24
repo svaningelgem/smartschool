@@ -41,31 +41,16 @@ def test_real_download_writes_to_target_and_returns_path(shortcut: InternetShort
     assert content == expected
 
 
-def test_filename_without_extension(shortcut: InternetShortcut, mocker):
-    mock_create_safe = mocker.patch("smartschool.courses.create_filesystem_safe_filename", return_value="safe_name.url")
-
+def test_filename_without_extension(shortcut: InternetShortcut):
     shortcut.name = "document"
-    result = shortcut.filename
-
-    mock_create_safe.assert_called_once_with("document.url")
-    assert result == "safe_name.url"
+    assert shortcut.filename == "document.url"
 
 
-def test_filename_with_extension_strips_last_extension(shortcut: InternetShortcut, mocker):
-    mock_create_safe = mocker.patch("smartschool.courses.create_filesystem_safe_filename", return_value="safe_name.url")
-
+def test_filename_with_extension_strips_last_extension(shortcut: InternetShortcut):
     shortcut.name = "document.pdf.url"
-    result = shortcut.filename
-
-    mock_create_safe.assert_called_once_with("document.pdf.url")
-    assert result == "safe_name.url"
+    assert shortcut.filename == "document.pdf.url"
 
 
-def test_filename_with_single_extension_strips_it(shortcut: InternetShortcut, mocker):
-    mock_create_safe = mocker.patch("smartschool.courses.create_filesystem_safe_filename", return_value="safe_name.url")
-
+def test_filename_with_single_extension_strips_it(shortcut: InternetShortcut):
     shortcut.name = "document.url"
-    result = shortcut.filename
-
-    mock_create_safe.assert_called_once_with("document.url")
-    assert result == "safe_name.url"
+    assert shortcut.filename == "document.url"

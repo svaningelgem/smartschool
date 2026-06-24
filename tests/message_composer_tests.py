@@ -1,19 +1,21 @@
 from __future__ import annotations
 
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
 
-from smartschool import objects
-from smartschool.exceptions import SmartSchoolAttachmentUploadError
-from smartschool.message_composer import (
+from smartschool import (
+    BoxType,
     MessageComposerForm,
+    MessageSearchGroup,
+    MessageSearchUser,
     RecipientType,
+    SmartSchoolAttachmentUploadError,
 )
-from smartschool.messages import BoxType
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from requests_mock import Mocker
 
     from smartschool import Smartschool
@@ -197,26 +199,26 @@ class TestMessageComposerFormAddRecipient:
     def test_add_user_as_cc_recipient(self, session: Smartschool):
         form = MessageComposerForm.create(session=session)
 
-        mock_user = objects.MessageSearchUser(user_id=1, value="Test User", ss_id=123)
+        mock_user = MessageSearchUser(user_id=1, value="Test User", ss_id=123)
         form.add_recipient(mock_user, RecipientType.CC)
 
     def test_add_user_as_bcc_recipient(self, session: Smartschool):
         form = MessageComposerForm.create(session=session)
 
-        mock_user = objects.MessageSearchUser(user_id=1, value="Test User", ss_id=123)
+        mock_user = MessageSearchUser(user_id=1, value="Test User", ss_id=123)
         form.add_recipient(mock_user, RecipientType.BCC)
 
     def test_add_group_recipient(self, session: Smartschool):
         form = MessageComposerForm.create(session=session)
 
-        mock_group = objects.MessageSearchGroup(group_id=2, value="Class A", ss_id=123)
+        mock_group = MessageSearchGroup(group_id=2, value="Class A", ss_id=123)
         form.add_recipient(mock_group, RecipientType.TO)
 
     def test_add_recipient_with_user_lt(self, session: Smartschool, mocker):
         form = MessageComposerForm.create(session=session)
         spy = mocker.spy(session, "post")
 
-        mock_user = objects.MessageSearchUser(user_id=1, value="Test User", ss_id=123)
+        mock_user = MessageSearchUser(user_id=1, value="Test User", ss_id=123)
         form.add_recipient(mock_user, RecipientType.TO, user_lt=42)
 
         # Verify the request was made
@@ -224,7 +226,7 @@ class TestMessageComposerFormAddRecipient:
 
     def test_add_recipient_raises_error_when_unique_usc_missing(self, session: Smartschool):
         form = MessageComposerForm(session=session)
-        mock_user = objects.MessageSearchUser(
+        mock_user = MessageSearchUser(
             user_id=1,
             value="Test User",
             ss_id=4069,
@@ -259,14 +261,15 @@ class TestMessageComposerFormAddAttachment:
         with pytest.raises(FileNotFoundError, match="does not exist"):
             form.add_attachment("nonexistent.pdf")
 
-    def test_add_attachment_raises_error_when_path_is_not_file(self, session: Smartschool, mocker):
+    def test_add_attachment_raises_error_when_path_is_not_file(self, session: Smartschool, tmp_path: Path):
         form = MessageComposerForm.create(session=session)
 
-        # Mock path as existing but not a file
-        mocker.patch.object(Path, "is_file", autospec=True, return_value=False)
+        # A real directory exists but is not a file, so add_attachment must reject it.
+        a_directory = tmp_path / "somedir"
+        a_directory.mkdir()
 
         with pytest.raises(FileNotFoundError, match="does not exist"):
-            form.add_attachment("somedir")
+            form.add_attachment(a_directory)
 
     def test_add_attachment_with_string_path(self, session: Smartschool, tmp_path: Path):
         form = MessageComposerForm.create(session=session)

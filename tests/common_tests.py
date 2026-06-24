@@ -1,6 +1,5 @@
 import re
 import sys
-import warnings
 from copy import deepcopy
 from datetime import date, datetime, time, timedelta, timezone
 from pathlib import Path, WindowsPath
@@ -8,14 +7,16 @@ from pathlib import Path, WindowsPath
 import pytest
 import pytest_mock
 import time_machine
-from bs4 import BeautifulSoup, FeatureNotFound, GuessedAtParserWarning
+from bs4 import BeautifulSoup, FeatureNotFound
 from logprise import logger
 from requests import Response
 
-from smartschool import Smartschool, SmartSchoolParsingError
-from smartschool._xml_interface import _resolve_aliases
-from smartschool.common import (
+from smartschool import (
     IsSaved,
+    Results,
+    Smartschool,
+    SmartSchoolParsingError,
+    Student,
     as_float,
     bs4_html,
     convert_to_date,
@@ -24,7 +25,6 @@ from smartschool.common import (
     create_filesystem_safe_path,
     fill_form,
     get_all_values_from_form,
-    make_filesystem_safe,
     natural_sort,
     parse_mime_type,
     parse_size,
@@ -32,7 +32,7 @@ from smartschool.common import (
     send_email,
     xml_to_dict,
 )
-from smartschool.objects import Student
+from smartschool._xml_interface import _resolve_aliases
 
 
 def test_xml_to_dict():
@@ -91,6 +91,28 @@ def test_save_as_pydantic_dataclass(session: Smartschool, tmp_path: Path) -> Non
     assert save(session, type_="todo", course_name="test", id_="123", data=sut) == original
 
 
+def test_save_session_aware_result(session: Smartschool, mocker, tmp_path: Path) -> None:
+    """
+    A session-aware Result is a std-dataclass subclass of a pydantic dataclass.
+
+    save() must serialize it (projecting onto _objects.Result) without crashing, without dragging
+    in the `session` field, and without triggering a lazy `details` fetch.
+    """
+    mocker.patch("smartschool._results.RESULTS_PER_PAGE", new=1)
+    result = next(iter(Results(session)))  # details deliberately not accessed
+
+    spy = mocker.spy(session, "json")
+    assert save(session, type_="punten", course_name="Frans", id_=result.identifier, data=result) is IsSaved.NEW
+    assert spy.call_count == 0  # no network fetch for details during serialization
+
+    written = (session.cache_path / f"_punten/Frans/{result.identifier}.json").read_text(encoding="utf8")
+    assert '"session"' not in written
+    assert result.identifier in written
+
+    # re-saving identical data is detected as unchanged
+    assert save(session, type_="punten", course_name="Frans", id_=result.identifier, data=result) is IsSaved.SAME
+
+
 def test_send_email(mocker):
     mocker.patch("platform.system", return_value="Linux")
     server = mocker.patch("smtplib.SMTP")
@@ -125,10 +147,6 @@ def test_as_float():
     assert as_float("123.34") == pytest.approx(123.34)
 
 
-def test_make_filesystem_safe():
-    assert make_filesystem_safe("1 23?34_ab-'\".xml") == "1_23_34_ab-_.xml"
-
-
 def test_bs4_html():
     sut = bs4_html("<html />")
 
@@ -143,14 +161,14 @@ def test_bs4_html_with_response(mocker):
     assert isinstance(sut, BeautifulSoup)
 
 
-def test_bs4_html_no_good_options(mocker):
-    mocker.patch("smartschool.common._used_bs4_option", new=None)
-
-    with warnings.catch_warnings():
-        warnings.filterwarnings("ignore", category=GuessedAtParserWarning)
-        mocker.patch("smartschool.common.BeautifulSoup", side_effect=[FeatureNotFound, FeatureNotFound, FeatureNotFound, BeautifulSoup("<html />")])
+def test_bs4_html_falls_back_to_html_parser_when_lxml_unavailable(mocker):
+    # Simulate an environment without lxml: the first (lxml) attempt raises FeatureNotFound,
+    # so bs4_html must fall back to the stdlib html.parser and still return a parsed tree.
+    real_parse = BeautifulSoup("<html />", features="html.parser")
+    mocker.patch("smartschool._common.BeautifulSoup", autospec=True, side_effect=[FeatureNotFound, real_parse])
 
     sut = bs4_html("<html />")
+
     assert isinstance(sut, BeautifulSoup)
 
 
@@ -488,9 +506,9 @@ def test_parse_size():
     assert parse_size("100KB") == pytest.approx(100.0)
     assert parse_size("100 KiB") == pytest.approx(100.0)
     assert parse_size("1 MB") == pytest.approx(1_024.0)
-    assert parse_size("1 MiB") == pytest.approx(1_000.0)
+    assert parse_size("1 MiB") == pytest.approx(1_024.0)
     assert parse_size("1 GB") == pytest.approx(1_048_576.0)
-    assert parse_size("1 GiB") == pytest.approx(1_000_000.0)
+    assert parse_size("1 GiB") == pytest.approx(1_048_576.0)
     assert parse_size("1.5 MB") == pytest.approx(1_536.0)
     assert parse_size("1,5 MB") == pytest.approx(1_536.0)
     assert parse_size("2.5 GB") == pytest.approx(2_621_440.0)
@@ -524,7 +542,8 @@ def test_create_filesystem_safe_path_windows():
 
 def test_create_filesystem_safe_path():
     """Test filesystem-safe path creation."""
-    assert create_filesystem_safe_path(Path(r"/Users/bad*name/doc$.txt")).as_posix().endswith("/Users/bad_name/doc.txt")
+    # Absolute paths must stay absolute: the root anchor is preserved, not sanitized away.
+    assert create_filesystem_safe_path(Path(r"/Users/bad*name/doc$.txt")) == Path("/Users/bad_name/doc.txt")
 
     # Regular paths should sanitize filenames
     assert create_filesystem_safe_path(Path("folder/bad@file#name.txt")).as_posix().endswith("/folder/bad_file_name.txt")

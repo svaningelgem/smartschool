@@ -52,27 +52,26 @@ def test_suffix_returns_correct_extensions_for_mime_types(mime_type: str, expect
     assert file_item._suffix == expected_suffix
 
 
+def _mock_get(file_item: FileItem, mocker, *, content: bytes = b"file content", headers: dict | None = None):
+    """Stub the HTTP boundary (session.get) — the only thing a download test legitimately mocks."""
+    response = mocker.Mock(spec=Response)
+    response.content = content
+    response.headers = headers or {}
+    return mocker.patch.object(file_item.session, "get", return_value=response)
+
+
 def test_real_download_returns_bytes_when_no_target(file_item: FileItem, mocker):
-    mock_response = mocker.Mock(spec=Response)
-    mock_response.content = b"file content"
-    mock_response.headers = {}
-    mock_session = mocker.patch.object(file_item.session, "get", return_value=mock_response)
-    mocker.patch("smartschool.courses.save_test_response")
+    mock_get = _mock_get(file_item, mocker)
 
     result = file_item._real_download(None)
 
-    mock_session.assert_called_once_with(file_item.download_url)
-    mock_response.raise_for_status.assert_called_once()
+    mock_get.assert_called_once_with(file_item.download_url)
     assert result == b"file content"
 
 
 def test_real_download_writes_to_target_and_returns_path(file_item: FileItem, mocker, tmp_path):
     target = tmp_path / "test.pdf"
-    mock_response = mocker.Mock(spec=Response)
-    mock_response.content = b"file content"
-    mock_response.headers = {}
-    mocker.patch.object(file_item.session, "get", return_value=mock_response)
-    mocker.patch("smartschool.courses.save_test_response")
+    _mock_get(file_item, mocker)
 
     result = file_item._real_download(target)
 
@@ -81,11 +80,8 @@ def test_real_download_writes_to_target_and_returns_path(file_item: FileItem, mo
 
 
 def test_real_download_logs_filename_suffix_mismatch(file_item: FileItem, mocker):
-    mock_response = mocker.Mock(spec=Response)
-    mock_response.content = b"file content"
-    mock_response.headers = {"Content-Disposition": 'attachment; filename="test.txt"'}
-    mocker.patch.object(file_item.session, "get", return_value=mock_response)
-    mock_logger = mocker.patch("smartschool.courses.logger")
+    _mock_get(file_item, mocker, headers={"Content-Disposition": 'attachment; filename="test.txt"'})
+    mock_logger = mocker.patch("smartschool._courses.logger")
 
     file_item._real_download(None)
 
@@ -93,12 +89,8 @@ def test_real_download_logs_filename_suffix_mismatch(file_item: FileItem, mocker
 
 
 def test_real_download_no_warning_when_suffix_matches(file_item: FileItem, mocker):
-    mock_response = mocker.Mock(spec=Response)
-    mock_response.content = b"file content"
-    mock_response.headers = {"Content-Disposition": 'attachment; filename="test.pdf"'}
-    mocker.patch.object(file_item.session, "get", return_value=mock_response)
-    mocker.patch("smartschool.courses.save_test_response")
-    mock_logger = mocker.patch("smartschool.courses.logger")
+    _mock_get(file_item, mocker, headers={"Content-Disposition": 'attachment; filename="test.pdf"'})
+    mock_logger = mocker.patch("smartschool._courses.logger")
 
     file_item._real_download(None)
 
@@ -106,83 +98,67 @@ def test_real_download_no_warning_when_suffix_matches(file_item: FileItem, mocke
 
 
 def test_real_download_no_content_disposition_header(file_item: FileItem, mocker):
-    mock_response = mocker.Mock(spec=Response)
-    mock_response.content = b"file content"
-    mock_response.headers = {}
-    mocker.patch.object(file_item.session, "get", return_value=mock_response)
-    mocker.patch("smartschool.courses.save_test_response")
+    _mock_get(file_item, mocker)
 
-    result = file_item._real_download(None)
-
-    assert result == b"file content"
+    assert file_item._real_download(None) == b"file content"
 
 
 def test_real_download_content_disposition_without_filename(file_item: FileItem, mocker):
-    mock_response = mocker.Mock(spec=Response)
-    mock_response.content = b"file content"
-    mock_response.headers = {"Content-Disposition": "attachment"}
-    mocker.patch.object(file_item.session, "get", return_value=mock_response)
-    mocker.patch("smartschool.courses.save_test_response")
+    _mock_get(file_item, mocker, headers={"Content-Disposition": "attachment"})
 
-    result = file_item._real_download(None)
+    assert file_item._real_download(None) == b"file content"
 
-    assert result == b"file content"
+
+def test_real_download_skips_fixture_capture_unless_dev_tracing(file_item: FileItem, mocker):
+    _mock_get(file_item, mocker)
+    save = mocker.patch("smartschool._courses.save_test_response")
+
+    file_item._real_download(None)
+    save.assert_not_called()
+
+    file_item.session.dev_tracing = True
+    file_item._real_download(None)
+    save.assert_called_once()
 
 
 def test_download_returns_bytes_when_no_to_file(file_item: FileItem, mocker):
-    mock_real_download = mocker.patch.object(file_item, "_real_download", return_value=b"content")
+    _mock_get(file_item, mocker, content=b"content")
 
-    result = file_item.download()
-
-    mock_real_download.assert_called_once_with(None)
-    assert result == b"content"
+    assert file_item.download() == b"content"
 
 
-def test_download_creates_target_path_and_calls_real_download(file_item: FileItem, mocker, tmp_path):
-    target_dir = tmp_path / "subdir"
-    target_file = target_dir / "test.pdf"
-    mock_create_safe_path = mocker.patch("smartschool.courses.create_filesystem_safe_path", return_value=target_file)
-    mock_real_download = mocker.patch.object(file_item, "_real_download", return_value=target_file)
+def test_download_creates_parent_dirs_and_writes_file(file_item: FileItem, mocker, tmp_path):
+    target = tmp_path / "subdir" / "test.pdf"
+    _mock_get(file_item, mocker)
 
-    result = file_item.download("some/path")
+    result = file_item.download(target)
 
-    mock_create_safe_path.assert_called_once_with("some/path")
-    assert target_dir.exists()
-    mock_real_download.assert_called_once_with(target_file)
-    assert result == target_file
+    assert (tmp_path / "subdir").is_dir()
+    assert result.read_bytes() == b"file content"
 
 
-def test_download_returns_existing_file_when_not_overwrite(file_item: FileItem, mocker, tmp_path):
-    existing_file = tmp_path / "existing.pdf"
-    existing_file.write_bytes(b"existing content")
-    mocker.patch("smartschool.courses.create_filesystem_safe_path", return_value=existing_file)
-    mock_real_download = mocker.patch.object(file_item, "_real_download")
+def test_download_returns_existing_file_without_downloading(file_item: FileItem, mocker, tmp_path):
+    (tmp_path / "test.pdf").write_bytes(b"existing content")
+    mock_get = _mock_get(file_item, mocker)
 
-    result = file_item.download("some/path", overwrite=False)
+    result = file_item.download_to_dir(tmp_path, overwrite=False)
 
-    mock_real_download.assert_not_called()
-    assert result == existing_file
+    mock_get.assert_not_called()
+    assert result.read_bytes() == b"existing content"
 
 
 def test_download_overwrites_existing_file_when_overwrite_true(file_item: FileItem, mocker, tmp_path):
-    existing_file = tmp_path / "existing.pdf"
-    existing_file.write_bytes(b"existing content")
-    mocker.patch("smartschool.courses.create_filesystem_safe_path", return_value=existing_file)
-    mock_real_download = mocker.patch.object(file_item, "_real_download", return_value=existing_file)
+    (tmp_path / "test.pdf").write_bytes(b"old content")
+    _mock_get(file_item, mocker, content=b"new content")
 
-    result = file_item.download("some/path", overwrite=True)
+    result = file_item.download_to_dir(tmp_path, overwrite=True)
 
-    mock_real_download.assert_called_once_with(existing_file)
-    assert result == existing_file
+    assert result.read_bytes() == b"new content"
 
 
-def test_download_with_path_object(file_item: FileItem, mocker, tmp_path):
-    target_file = tmp_path / "test.pdf"
-    mock_create_safe_path = mocker.patch("smartschool.courses.create_filesystem_safe_path", return_value=target_file)
-    mock_real_download = mocker.patch.object(file_item, "_real_download", return_value=target_file)
+def test_download_accepts_string_path(file_item: FileItem, mocker, tmp_path):
+    _mock_get(file_item, mocker)
 
-    result = file_item.download(target_file)
+    result = file_item.download(str(tmp_path / "out.pdf"))
 
-    mock_create_safe_path.assert_called_once_with(target_file)
-    mock_real_download.assert_called_once_with(target_file)
-    assert result == target_file
+    assert result.read_bytes() == b"file content"

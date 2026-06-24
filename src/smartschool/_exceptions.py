@@ -3,6 +3,7 @@ __all__ = [
     "SmartSchoolAuthenticationError",
     "SmartSchoolDownloadError",
     "SmartSchoolException",
+    "SmartSchoolJsonError",
     "SmartSchoolParsingError",
 ]
 

@@ -1,8 +1,7 @@
 import pytest
 import pytest_mock
 
-from smartschool import CourseList, Courses, Smartschool, TopNavCourses
-from smartschool.exceptions import SmartSchoolJsonError
+from smartschool import CourseList, Courses, Smartschool, SmartSchoolJsonError, TopNavCourses
 
 
 def test_topnav_courses_normal_flow(session: Smartschool):

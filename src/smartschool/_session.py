@@ -14,14 +14,14 @@ import yaml
 from logprise import logger
 from requests import Session
 
+from ._common import bs4_html, fill_form
 from ._dev_tracing import DevTracingMixin
-from .common import bs4_html, fill_form
-from .exceptions import SmartSchoolAuthenticationError, SmartSchoolDownloadError, SmartSchoolJsonError
+from ._exceptions import SmartSchoolAuthenticationError, SmartSchoolDownloadError, SmartSchoolJsonError
 
 if TYPE_CHECKING:
     from requests import Response
 
-    from .credentials import Credentials
+    from ._credentials import Credentials
 
 try:
     import pyotp

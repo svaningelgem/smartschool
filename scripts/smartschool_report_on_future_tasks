@@ -6,13 +6,12 @@ from typing import TYPE_CHECKING
 
 from _common_tasks_stuff import _next_weekday
 
-from smartschool import FutureTasks, PathCredentials, Smartschool, SmartschoolHours
-from smartschool.common import IsSaved, save, send_email
+from smartschool import FutureTasks, IsSaved, PathCredentials, Smartschool, SmartschoolHours, save, send_email
 
 if TYPE_CHECKING:
     from datetime import date
 
-    from smartschool.objects import AgendaHour, FutureTaskOneTask
+    from smartschool import AgendaHour, FutureTaskOneTask
 
 
 def _is_equal_task(a: FutureTaskOneTask, b: FutureTaskOneTask) -> bool:

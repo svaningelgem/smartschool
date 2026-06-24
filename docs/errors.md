@@ -24,8 +24,10 @@ SmartSchoolException
 ## Usage
 
 ```python
-from smartschool import Smartschool, PathCredentials, Results
-from smartschool.exceptions import (
+from smartschool import (
+    Smartschool,
+    PathCredentials,
+    Results,
     SmartSchoolAuthenticationError,
     SmartSchoolDownloadError,
     SmartSchoolJsonError,

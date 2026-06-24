@@ -148,7 +148,7 @@ jobs:
       - name: Run tests
         run: |
           source .venv/bin/activate
-          pytest --cov=${{ github.event.repository.name }} --cov-append --cov-fail-under=90 --cov-branch --cov-report=json --cov-report=term
+          pytest --cov=${{ github.event.repository.name }} --cov-append --cov-fail-under=100 --cov-branch --cov-report=xml --cov-report=term
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v7

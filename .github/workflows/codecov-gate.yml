@@ -1,0 +1,89 @@
+name: Codecov gate
+
+# Posts a ``codecov-reported`` commit status that:
+#   - flips to *pending* (yellow) when a PR is opened or pushed to,
+#   - flips to *success* (green) once both ``codecov/project`` and
+#     ``codecov/patch`` check-runs have attached to the head commit.
+#
+# It does NOT inspect whether the Codecov contexts themselves passed -
+# the codecov/* check-runs already surface that. The gate's only job is to
+# prevent merging before Codecov has had a chance to weigh in. Add
+# ``codecov-reported`` to the required-status list in branch protection to
+# make the gate enforcing.
+#
+# Codecov reports via the Checks API, so the listener uses ``on: check_run``
+# (the legacy ``on: status`` would never fire). The gate itself stays a
+# *commit status* so it lines up with the other status-style required checks.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  check_run:
+    types: [completed]
+
+permissions:
+  statuses: write
+  checks: read
+  contents: read
+  pull-requests: read
+
+jobs:
+  init:
+    # Mark the PR head SHA. If the PR changes no path that triggers the
+    # test/coverage run (poetry.lock / pyproject.toml / *.py / the tests
+    # workflow itself), pytest won't run and Codecov won't post - short-circuit
+    # the gate to ``success`` so the PR isn't blocked forever. Otherwise post
+    # ``pending`` and wait for ``finalize``. No-op on check_run events.
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Decide initial state from the PR's changed paths
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          files="$(gh api --paginate "/repos/${REPO}/pulls/${PR}/files" --jq '.[].filename')"
+          # Mirror the paths that make tests.yml run pytest + upload coverage.
+          if echo "$files" | grep -qE '(\.py$|^poetry\.lock$|^pyproject\.toml$|^\.github/workflows/tests\.yml$)'; then
+            state=pending
+            desc="waiting for codecov to report"
+          else
+            state=success
+            desc="no python paths changed; codecov not expected"
+          fi
+          echo "Posting codecov-reported=$state ($desc)"
+          gh api -X POST "/repos/${REPO}/statuses/${SHA}" \
+            -f state=$state \
+            -f context=codecov-reported \
+            -f description="$desc"
+
+  finalize:
+    # Re-fires on every check_run completion for the SHA. We only act when one
+    # of the two Codecov contexts is the trigger. Codecov posts via the Checks
+    # API (not legacy commit statuses), so ``on: status`` would never fire.
+    if: |
+      github.event_name == 'check_run'
+      && (github.event.check_run.name == 'codecov/project' || github.event.check_run.name == 'codecov/patch')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Flip codecov-reported to success when both contexts have attached
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.event.check_run.head_sha }}
+        run: |
+          set -euo pipefail
+          json="$(gh api "/repos/${REPO}/commits/${SHA}/check-runs")"
+          have_project=$(echo "$json" | jq '[.check_runs[] | select(.name=="codecov/project")] | length')
+          have_patch=$(echo "$json"   | jq '[.check_runs[] | select(.name=="codecov/patch")]   | length')
+          if [ "$have_project" -gt 0 ] && [ "$have_patch" -gt 0 ]; then
+            gh api -X POST "/repos/${REPO}/statuses/${SHA}" \
+              -f state=success \
+              -f context=codecov-reported \
+              -f description="codecov has reported"
+          else
+            echo "Only one codecov context attached so far - staying pending."
+          fi

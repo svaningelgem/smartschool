@@ -3,12 +3,12 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 from datetime import datetime
-from pathlib import Path
-from typing import overload
 
-from . import objects
-from .objects import Course, PlannedElementCourse
-from .session import SessionMixin, Smartschool
+from . import _objects as objects
+from ._common import (
+    DownloadableFile,
+)
+from ._session import SessionMixin, Smartschool
 
 class CourseCondensed(objects.CourseCondensed, SessionMixin):
     session: Smartschool
@@ -52,7 +52,7 @@ class Courses(SessionMixin):
     ): ...
     def __iter__(
         self,
-    ) -> Iterator[Course]: ...
+    ) -> Iterator[objects.Course]: ...
 
 class CourseList(SessionMixin):
     session: Smartschool
@@ -62,9 +62,9 @@ class CourseList(SessionMixin):
     ): ...
     def __iter__(
         self,
-    ) -> Iterator[PlannedElementCourse]: ...
+    ) -> Iterator[objects.PlannedElementCourse]: ...
 
-class FileItem(SessionMixin):
+class FileItem(DownloadableFile, SessionMixin):
     session: Smartschool
     parent: FolderItem
     id: int
@@ -86,16 +86,6 @@ class FileItem(SessionMixin):
         download_url: str | None = None,
         view_url: str | None = None,
     ): ...
-    def download_to_dir(
-        self,
-        target_directory: Path,
-        overwrite: bool = False,
-    ) -> Path: ...
-    @overload
-    def download(self, to_file: Path | str, *, overwrite: bool) -> Path: ...
-    @overload
-    def download(self) -> bytes: ...
-    def download(self, to_file: Path | str | None = None, *, overwrite: bool = False) -> bytes | Path: ...
 
 class InternetShortcut(FileItem):
     session: Smartschool

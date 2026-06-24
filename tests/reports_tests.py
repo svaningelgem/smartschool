@@ -1,5 +1,4 @@
-from smartschool import Smartschool
-from smartschool.reports import Reports
+from smartschool import Reports, Smartschool
 
 
 def test_reports_normal_flow(session: Smartschool):

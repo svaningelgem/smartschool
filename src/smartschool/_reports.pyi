@@ -2,9 +2,9 @@
 from collections.abc import Iterable, Iterator
 from datetime import datetime
 
-from . import objects
-from .objects import SchoolClass
-from .session import SessionMixin, Smartschool
+from . import _objects as objects
+from ._objects import SchoolClass
+from ._session import SessionMixin, Smartschool
 
 class Report(objects.Report, SessionMixin):
     session: Smartschool

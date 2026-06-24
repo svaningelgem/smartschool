@@ -27,6 +27,18 @@ def test_get_folder_html_exception_handling(folder, mocker):
         folder._get_folder_html()
 
 
+def test_get_folder_html_captures_fixture_only_when_dev_tracing(folder, mocker):
+    """Fixture capture is a dev-only side effect, gated behind dev_tracing."""
+    save = mocker.patch("smartschool._courses.save_test_response")
+
+    folder._get_folder_html()
+    save.assert_not_called()
+
+    folder.session.dev_tracing = True
+    folder._get_folder_html()
+    save.assert_called_once()
+
+
 def test_get_mime_from_row_image_return_none(folder, mocker):
     """Test return None when no background-image found."""
     mock_row = mocker.Mock()

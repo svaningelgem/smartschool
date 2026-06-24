@@ -6,8 +6,8 @@ from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
 from zoneinfo import ZoneInfo
 
-from .objects import ApplicableAssignmentType, PlannedElement
-from .session import SessionMixin
+from ._objects import ApplicableAssignmentType, PlannedElement
+from ._session import SessionMixin
 
 if TYPE_CHECKING:
     from collections.abc import Iterator

@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from functools import cached_property
-from typing import TYPE_CHECKING, TypeAlias, overload
+from typing import TYPE_CHECKING, TypeAlias
 
-from .common import create_filesystem_safe_filename, create_filesystem_safe_path, natural_sort
-from .session import SessionMixin
+from ._common import DownloadableFile, create_filesystem_safe_filename, natural_sort
+from ._session import SessionMixin
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -15,7 +15,7 @@ __all__ = ["Intradesk", "IntradeskFile", "IntradeskFolder", "IntradeskItem"]
 
 
 @dataclass
-class IntradeskFile(SessionMixin):
+class IntradeskFile(DownloadableFile, SessionMixin):
     """Represents a file in the intradesk."""
 
     parent: IntradeskFolder = field(repr=False)
@@ -26,20 +26,7 @@ class IntradeskFile(SessionMixin):
     def filename(self) -> str:
         return create_filesystem_safe_filename(self.name)
 
-    @overload
-    def download(self, to_file: Path | str, *, overwrite: bool) -> Path: ...
-
-    @overload
-    def download(self) -> bytes: ...
-
-    def download(self, to_file: Path | str | None = None, *, overwrite: bool = False) -> bytes | Path:
-        target = None
-        if to_file:
-            target = create_filesystem_safe_path(to_file)
-            target.parent.mkdir(parents=True, exist_ok=True)
-            if not overwrite and target.exists():
-                return target
-
+    def _real_download(self, target: Path | None) -> bytes | Path:
         response = self.session.get(f"/intradesk/api/v1/{self.session.platform_id}/files/{self.id}/download")
         response.raise_for_status()
 
@@ -48,9 +35,6 @@ class IntradeskFile(SessionMixin):
             return target
 
         return response.content
-
-    def download_to_dir(self, target_directory: Path, *, overwrite: bool = False) -> Path:
-        return self.download(target_directory / self.filename, overwrite=overwrite)
 
 
 @dataclass

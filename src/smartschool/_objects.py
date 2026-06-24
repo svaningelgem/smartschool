@@ -1,19 +1,20 @@
 from __future__ import annotations
 
-import re
 from datetime import date, datetime
 from enum import StrEnum
 from functools import cached_property
 from typing import Annotated, Literal
 
-from pydantic import AliasChoices, BeforeValidator, ConfigDict, constr
+from pydantic import AliasChoices, BeforeValidator, ConfigDict, StringConstraints, constr
 from pydantic.alias_generators import to_camel
 from pydantic.dataclasses import Field, dataclass
 
-from .common import as_float, convert_to_date, convert_to_datetime
+from ._common import as_float, convert_to_date, convert_to_datetime
 
 String = constr(strip_whitespace=True)
-UUID = constr(pattern=re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", flags=re.IGNORECASE))
+# `(?i)` inline flag = case-insensitive; pydantic-v2 StringConstraints over the legacy
+# constr(pattern=...) form (which static analysers using v1 stubs misread).
+UUID = Annotated[str, StringConstraints(pattern=r"(?i)^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")]
 
 Url = String
 Date = Annotated[date, BeforeValidator(convert_to_date)]
@@ -186,7 +187,6 @@ class Course:
         if len(self.teachers) != 1:
             ret += "s"
         ret += f": {', '.join(t.name.starting_with_last_name for t in self.teachers)}"
-        # ret += f", ID: {self.id}"
         return ret + ")"
 
 
@@ -243,7 +243,7 @@ class ResultDetails:
 class CourseCondensed:
     name: String
     teacher: String
-    url: Url = Field()
+    url: Url
 
     id: int | None = Field(repr=False, default=None)
     platform_id: int | None = Field(repr=False, default=None)
@@ -557,7 +557,7 @@ class PlannedElementLocation:
 @dataclass(config=_config)
 class PlannedElementJoinIds:
     from_: String = Field(validation_alias=AliasChoices("from", "from_"))
-    to: String = Field(alias="to")
+    to: String = Field()
 
 
 @dataclass(config=_config)

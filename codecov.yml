@@ -1,0 +1,16 @@
+coverage:
+  # The branch is at 100% line + branch coverage and CI fails under 100%
+  # (--cov-fail-under=100 --cov-branch), so hold Codecov to the same bar.
+  status:
+    project:
+      default:
+        target: 100%
+        threshold: 0%
+        # A PR that only *removes* covered code mechanically shrinks the
+        # denominator; don't fail those — patch coverage is the real gate.
+        removed_code_behavior: fully_covered_patch
+    patch:
+      default:
+        target: 100%
+        # Docs / YAML / config-only PRs (no measurable code change) pass.
+        if_not_found: success

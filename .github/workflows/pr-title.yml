@@ -1,0 +1,29 @@
+name: Lint PR title
+
+# Squash-merges use the PR title as the commit subject, so it must follow
+# Conventional Commits. Validate it with commitizen on every title change.
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  conventional-pr-title:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - run: pip install commitizen
+      - name: Validate PR title against Conventional Commits
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: cz check --message "$PR_TITLE"
