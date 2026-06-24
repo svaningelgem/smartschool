@@ -1,5 +1,5 @@
 import json
-from unittest.mock import patch
+from pathlib import Path
 
 import pytest
 import requests
@@ -8,8 +8,9 @@ import yaml
 from smartschool import Smartschool, SmartSchoolAuthenticationError, SmartSchoolDownloadError, SmartSchoolJsonError
 
 
-def test_smartschool_not_started_yet(tmp_path):
-    with patch("smartschool._session.Path.home", return_value=tmp_path), pytest.raises(RuntimeError, match="Smartschool instance must have valid credentials"):
+def test_smartschool_not_started_yet(tmp_path, mocker):
+    mocker.patch.object(Path, "home", return_value=tmp_path)
+    with pytest.raises(RuntimeError, match="Smartschool instance must have valid credentials"):
         Smartschool().get("/")
 
 
@@ -17,9 +18,9 @@ def test_smartschool_repr(session: Smartschool):
     assert repr(session) == "Smartschool(for: bumba)"
 
 
-def test_smartschool_without_params(tmp_path):
-    with patch("smartschool._session.Path.home", return_value=tmp_path):
-        assert Smartschool().creds is None
+def test_smartschool_without_params(tmp_path, mocker):
+    mocker.patch.object(Path, "home", return_value=tmp_path)
+    assert Smartschool().creds is None
 
 
 def test_smartschool_with_credentials(session: Smartschool):
@@ -29,23 +30,23 @@ def test_smartschool_with_credentials(session: Smartschool):
 class TestSmartschoolInitialization:
     """Test Smartschool session initialization."""
 
-    def test_initialization_with_credentials(self, mock_credentials, tmp_path):
+    def test_initialization_with_credentials(self, mock_credentials, tmp_path, mocker):
         """Should initialize properly with credentials."""
-        with patch("smartschool._session.Path.home", return_value=tmp_path):
-            ss = Smartschool(creds=mock_credentials)
+        mocker.patch.object(Path, "home", return_value=tmp_path)
+        ss = Smartschool(creds=mock_credentials)
 
-            assert ss.creds == mock_credentials
-            assert ss._login_attempts == 0
-            assert ss._max_login_attempts == 3
-            assert ss._authenticated_user is None
+        assert ss.creds == mock_credentials
+        assert ss._login_attempts == 0
+        assert ss._max_login_attempts == 3
+        assert ss._authenticated_user is None
 
-    def test_initialization_without_credentials(self, tmp_path):
+    def test_initialization_without_credentials(self, tmp_path, mocker):
         """Should initialize without credentials."""
-        with patch("smartschool._session.Path.home", return_value=tmp_path):
-            ss = Smartschool()
+        mocker.patch.object(Path, "home", return_value=tmp_path)
+        ss = Smartschool()
 
-            assert ss.creds is None
-            assert ss._login_attempts == 0
+        assert ss.creds is None
+        assert ss._login_attempts == 0
 
     def test_cache_path_creation(self, session):
         """Should create a proper cache path structure."""
@@ -100,7 +101,7 @@ class TestSmartschoolAuthentication:
         assert not user_file.exists()
         assert session._authenticated_user is None
 
-    def test_authenticated_user_file_loading(self, session, authenticated_user_data, tmp_path):
+    def test_authenticated_user_file_loading(self, session, authenticated_user_data, tmp_path, mocker):
         """Should load existing user file on initialization."""
         # Create user file manually
         user_file = session.cache_path / "authenticated_user.yml"
@@ -108,9 +109,9 @@ class TestSmartschoolAuthentication:
             yaml.dump(authenticated_user_data, f)
 
         # Create new session that should load the file
-        with patch("smartschool._session.Path.home", return_value=tmp_path):
-            new_session = Smartschool(creds=session.creds)
-            assert new_session._authenticated_user == authenticated_user_data
+        mocker.patch.object(Path, "home", return_value=tmp_path)
+        new_session = Smartschool(creds=session.creds)
+        assert new_session._authenticated_user == authenticated_user_data
 
 
 class TestSmartschoolRequests:
@@ -249,37 +250,37 @@ class TestAuthenticationFlow:
 
     def test_2fa_success(self, session, mocker):
         """Should handle 2FA authentication successfully when pyotp is available."""
-        with patch("smartschool._session.pyotp") as mock_pyotp:
-            # Setup mock TOTP
-            mock_totp = mock_pyotp.TOTP.return_value
-            mock_totp.now.return_value = "123456"
+        mock_pyotp = mocker.patch("smartschool._session.pyotp")
+        # Setup mock TOTP
+        mock_totp = mock_pyotp.TOTP.return_value
+        mock_totp.now.return_value = "123456"
 
-            mock_response = mocker.Mock(
-                spec=requests.Response,
-                url="https://site/2fa",
-                status_code=302,
-            )
+        mock_response = mocker.Mock(
+            spec=requests.Response,
+            url="https://site/2fa",
+            status_code=302,
+        )
 
-            # This should complete without error
-            result = session._handle_auth_redirect(mock_response)
-            assert result.url == "https://site/dashboard"
+        # This should complete without error
+        result = session._handle_auth_redirect(mock_response)
+        assert result.url == "https://site/dashboard"
 
     def test_2fa_not_returning_200(self, session, requests_mock, mocker):
-        with patch("smartschool._session.pyotp"):
-            requests_mock.get("https://site/2fa/api/v1/config", status_code=304)
-            mock_response = mocker.Mock(spec=requests.Response, url="https://site/2fa", status_code=302)
-            with pytest.raises(SmartSchoolAuthenticationError, match="Could not access 2FA API endpoint"):
-                session._handle_auth_redirect(mock_response)
+        mocker.patch("smartschool._session.pyotp")
+        requests_mock.get("https://site/2fa/api/v1/config", status_code=304)
+        mock_response = mocker.Mock(spec=requests.Response, url="https://site/2fa", status_code=302)
+        with pytest.raises(SmartSchoolAuthenticationError, match="Could not access 2FA API endpoint"):
+            session._handle_auth_redirect(mock_response)
 
     def test_2fa_unsupported_mechanism(self, session, requests_mock, mocker):
         """Should raise error for unsupported 2FA mechanisms."""
         # Mock config response without googleAuthenticator
-        with patch("smartschool._session.pyotp"):
-            requests_mock.get("https://site/2fa/api/v1/config", json={"possibleAuthenticationMechanisms": ["sms"]})
+        mocker.patch("smartschool._session.pyotp")
+        requests_mock.get("https://site/2fa/api/v1/config", json={"possibleAuthenticationMechanisms": ["sms"]})
 
-            mock_response = mocker.Mock(spec=requests.Response, url="https://site/2fa")
-            with pytest.raises(SmartSchoolAuthenticationError, match="Only googleAuthenticator 2FA is supported"):
-                session._handle_auth_redirect(mock_response)
+        mock_response = mocker.Mock(spec=requests.Response, url="https://site/2fa")
+        with pytest.raises(SmartSchoolAuthenticationError, match="Only googleAuthenticator 2FA is supported"):
+            session._handle_auth_redirect(mock_response)
 
 
 class TestSmartschoolProperties:
@@ -291,20 +292,20 @@ class TestSmartschoolProperties:
         assert "Smartschool" in repr_str
         assert "bumba" in repr_str  # username from fixture
 
-    def test_cache_path_without_credentials(self, tmp_path):
+    def test_cache_path_without_credentials(self, tmp_path, mocker):
         """Should create cache path without username when no credentials."""
-        with patch("smartschool._session.Path.home", return_value=tmp_path):
-            ss = Smartschool()
-            cache_path = ss.cache_path
+        mocker.patch.object(Path, "home", return_value=tmp_path)
+        ss = Smartschool()
+        cache_path = ss.cache_path
 
-            assert cache_path.exists()
-            assert cache_path == tmp_path / ".cache/smartschool"
+        assert cache_path.exists()
+        assert cache_path == tmp_path / ".cache/smartschool"
 
-    def test_authenticated_user_file_without_credentials(self, tmp_path):
+    def test_authenticated_user_file_without_credentials(self, tmp_path, mocker):
         """Should return None for authenticated user file without credentials."""
-        with patch("smartschool._session.Path.home", return_value=tmp_path):
-            ss = Smartschool()
-            assert ss._authenticated_user_file is None
+        mocker.patch.object(Path, "home", return_value=tmp_path)
+        ss = Smartschool()
+        assert ss._authenticated_user_file is None
 
 
 class TestErrorHandling:
@@ -332,17 +333,17 @@ class TestErrorHandling:
         assert response is not None
 
 
-def test_no_auth_file(tmp_path):
-    with patch("smartschool._session.Path.home", return_value=tmp_path):
-        sut = Smartschool()
-        assert sut._authenticated_user_file is None
-        sut.authenticated_user = None
+def test_no_auth_file(tmp_path, mocker):
+    mocker.patch.object(Path, "home", return_value=tmp_path)
+    sut = Smartschool()
+    assert sut._authenticated_user_file is None
+    sut.authenticated_user = None
 
 
 def test_parse_login_information_continue_branch(mocker, tmp_path):
     """Test continue branch when script has src or no 'extend' in text."""
-    with patch("smartschool._session.Path.home", return_value=tmp_path):
-        parser = Smartschool()
+    mocker.patch.object(Path, "home", return_value=tmp_path)
+    parser = Smartschool()
 
     # Mock response with scripts that should be skipped
     mock_response = mocker.Mock()
