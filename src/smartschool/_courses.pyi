@@ -18,7 +18,15 @@ class CourseCondensed(objects.CourseCondensed, SessionMixin):
     descr: str
     icon: str
     def __init__(
-        self, session: Smartschool, name: str, teacher: str, url: str, id: int | None = None, platform_id: int | None = None, descr: str = "", icon: str = ""
+        self,
+        session: Smartschool,
+        name: str,
+        teacher: str,
+        url: str,
+        id: int | None = None,
+        platform_id: int | None = None,
+        descr: str = "",
+        icon: str = "",
     ): ...
     def __str__(self): ...
 

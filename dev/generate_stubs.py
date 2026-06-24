@@ -243,6 +243,22 @@ _pydantic_replacements = {
 _MISSING = object()
 
 
+def _ruff_line_length(default: int = 160) -> int:
+    """Read `line-length` from [tool.ruff] in pyproject.toml (fall back to default)."""
+    pyproject = Path(__file__).resolve().parent.parent / "pyproject.toml"
+    try:
+        text = pyproject.read_text()
+    except OSError:
+        return default
+    match = re.search(r"^\s*line-length\s*=\s*(\d+)", text, re.MULTILINE)
+    return int(match.group(1)) if match else default
+
+
+# Decides whether a generated signature stays on one line or gets a trailing
+# comma to explode it; kept in sync with ruff via pyproject.toml.
+LINE_LENGTH = _ruff_line_length()
+
+
 def _extract_method_info(real_class: type, method_name: str) -> MethodInfo:
     sig = inspect.signature(getattr(real_class, method_name))
 
@@ -404,6 +420,11 @@ def _generate_method_stub(method: MethodInfo | str | None, imports_needed: set[s
     else:
         return_type = ""
 
+    signature = f"    def {method.name}({', '.join(params)}){return_type}: ..."
+    if len(signature) <= LINE_LENGTH:
+        return signature + "\n"
+    # Too long for one line: a trailing comma makes ruff explode it one
+    # parameter per line, rather than hugging them onto a single over-long line.
     return f"    def {method.name}({', '.join(params)},){return_type}: ...\n"
 
 
@@ -514,20 +535,21 @@ def generate_stub_file(python_file: Path) -> str:
 
 def reformat_file(output_file):
     # Use the project's full ruff config (not a fixed --select) so a stub is
-    # clean under CI lint and re-runs a no-op. skip-magic-trailing-comma
-    # collapses short imports/signatures onto one line (e.g. a single-name
-    # `from x import (\n    Name,\n)` becomes `from x import Name`); the result
-    # is a fixed point of the default formatter, so no drift.
+    # clean under CI lint and re-runs a no-op. isort's split-on-trailing-comma
+    # is disabled only here so a single-name `from x import (\n    Name,\n)`
+    # collapses to one line; signatures are left to the default formatter,
+    # which keeps short ones on one line and explodes long ones one-per-line.
+    # The result is a fixed point of the default formatter, so no drift.
     try:
         subprocess.run(
-            ["ruff", "check", "--fix", "--unsafe-fixes", str(output_file)],
+            ["ruff", "check", "--fix", "--unsafe-fixes", "--config", "lint.isort.split-on-trailing-comma=false", str(output_file)],
             check=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
         )
         subprocess.run(
-            ["ruff", "format", "--config", "format.skip-magic-trailing-comma=true", str(output_file)],
+            ["ruff", "format", str(output_file)],
             check=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
