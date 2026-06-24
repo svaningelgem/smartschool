@@ -297,8 +297,10 @@ def parse_size(size_str: str | float) -> float | None:
         value = float(match.group(1).replace(",", "."))
         unit = match.group(2).upper()
 
-        # Binary (1024-based) factors throughout, matching the memory/OS convention
-        # where MB == MiB == 1024 KB. (Moot in practice: real data is always KiB.)
+        # All factors are binary (1024-based). In the memory/OS world a MB has always
+        # been 1024 KB (RAM sizing, Windows file sizes), and the IEC's later decimal
+        # redefinition (MB=1000, MiB=1024) never won out in practice. So here MB == MiB
+        # and GB == GiB. Moot anyway: real Smartschool sizes are always reported in KiB.
         multipliers = {
             "KB": 1,
             "KIB": 1,
