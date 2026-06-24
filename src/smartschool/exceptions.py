@@ -1,4 +1,10 @@
-__all__ = ["SmartSchoolAuthenticationError", "SmartSchoolDownloadError", "SmartSchoolException", "SmartSchoolParsingError"]
+__all__ = [
+    "SmartSchoolAttachmentUploadError",
+    "SmartSchoolAuthenticationError",
+    "SmartSchoolDownloadError",
+    "SmartSchoolException",
+    "SmartSchoolParsingError",
+]
 
 from dataclasses import dataclass
 
@@ -18,6 +24,10 @@ class SmartSchoolAuthenticationError(SmartSchoolException):
 
 class SmartSchoolParsingError(SmartSchoolException):
     """Indicates an error occurred while parsing data from Smartschool."""
+
+
+class SmartSchoolAttachmentUploadError(SmartSchoolException):
+    """Indicates an error while uploading a message attachment."""
 
 
 @dataclass

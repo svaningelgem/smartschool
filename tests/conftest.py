@@ -91,34 +91,74 @@ def _clear_caches_from_agenda() -> Generator[None, Any, None]:
                     v.cache.clear()
 
 
+def _get_compose_fixture(base_path: Path, test_name: str, req) -> Path | None:
+    """Route message compose/search requests to fixture files."""
+    query = parse_qs(req.query)
+    module = query.get("module", [""])[0].lower()
+    file = query.get("file", [""])[0].lower()
+
+    if module != "messages":
+        return None
+
+    compose_path = base_path / "composemessage"
+
+    if file == "composemessage":
+        specific = compose_path / f"{test_name}.html"
+        return specific if specific.exists() else compose_path / "new-message.html"
+
+    if file == "searchusers":
+        specific = compose_path / f"{test_name}.xml"
+        if specific.exists():
+            return specific
+
+        function = query.get("function", [""])[0].lower()
+        if function == "addusertoselected":
+            return compose_path / "add-users-to-selected.xml"
+
+        body = parse_qs(req.body) if req.body else {}
+        search_value = body.get("val", [""])[0]
+        if re.search(r"\d", search_value):
+            return compose_path / "search-group.xml"
+        return compose_path / "search-user.xml"
+
+    return None
+
+
+def _get_fixture_filename(base_dir: Path, test_name: str, req) -> Path:
+    """Map a mocked request to the fixture file that should serve it."""
+    default_path = base_dir / req.method.lower()
+
+    try:
+        xml = parse_qs(req.body)["command"][0]
+        subsystem = re.search("<subsystem>(.*?)</subsystem>", xml).group(1)
+        action = re.search("<action>(.*?)</action>", xml).group(1)
+    except (AttributeError, KeyError):
+        compose_fixture = _get_compose_fixture(default_path, test_name, req)
+        if compose_fixture is not None:
+            return compose_fixture
+
+        if req.query:
+            partial_hash = hashlib.sha256(quote_plus(req.query).encode("utf8")).hexdigest()[:12]
+        else:
+            partial_hash = ""
+        specific_filename = default_path / req.path.strip("/").lower() / partial_hash / f"{test_name}.json"
+        default_filename = specific_filename.parent.with_suffix(".json")
+    else:
+        specific_filename = default_path / subsystem / f"{test_name}.xml"
+        default_filename = specific_filename.with_stem(action)
+
+    if specific_filename.exists():
+        return specific_filename
+    return default_filename
+
+
 @pytest.fixture(autouse=True)
 def _setup_requests_mocker(request, requests_mock) -> None:
     """Setup comprehensive request mocking for all tests."""
-
-    def get_filename(req) -> Path:
-        default_path = Path(__file__).parent / "requests" / req.method.lower()
-
-        try:
-            xml = parse_qs(req.body)["command"][0]
-            subsystem = re.search("<subsystem>(.*?)</subsystem>", xml).group(1)
-            action = re.search("<action>(.*?)</action>", xml).group(1)
-        except (AttributeError, KeyError):
-            if req.query:
-                partial_hash = hashlib.sha256(quote_plus(req.query).encode("utf8")).hexdigest()[:12]
-            else:
-                partial_hash = ""
-            specific_filename = default_path / req.path.strip("/").lower() / partial_hash / f"{request.node.name}.json"
-            default_filename = specific_filename.parent.with_suffix(".json")
-        else:
-            specific_filename = default_path / subsystem / f"{request.node.name}.xml"
-            default_filename = specific_filename.with_stem(action)
-
-        if specific_filename.exists():
-            return specific_filename
-        return default_filename
+    base_dir = Path(__file__).parent / "requests"
 
     def binary_callback(req, _) -> bytes:
-        filename = get_filename(req)
+        filename = _get_fixture_filename(base_dir, request.node.name, req)
 
         if req.text:
             logger.debug(f"[REQUESTMOCK] {req} [{req.text}]")
@@ -128,7 +168,6 @@ def _setup_requests_mocker(request, requests_mock) -> None:
         if filename.exists():
             return filename.read_bytes()
 
-        # Fallback for missing files
         return b'{"error": "mock response not found"}'
 
     requests_mock.register_uri(ANY, ANY, content=binary_callback)
