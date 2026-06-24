@@ -50,7 +50,6 @@ if TYPE_CHECKING:
 
 class IsSaved(Enum):
     NEW = auto()
-    UPDATED = auto()
     SAME = auto()
 
 

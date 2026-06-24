@@ -50,8 +50,6 @@ class ClassInfo:
     attributes: list[FieldInfo] = field(default_factory=list)
     method_names: dict[str, list[ast.FunctionDef]] = field(default_factory=lambda: defaultdict(list))
     methods: list[MethodInfo | str] = field(default_factory=list)
-    annotations: dict = field(default_factory=dict)
-    init_method: MethodInfo | None = None
     is_enum: bool = False
 
 
@@ -164,15 +162,12 @@ def _parse_class_def(node: ast.ClassDef) -> ClassInfo:
     bases = [rendered for base in node.bases if (rendered := _render_base(base)) is not None]
 
     methods = defaultdict(list)
-    annotations = {}
     for item in node.body:
         # Skip hidden helpers, but keep dunders.
         if isinstance(item, ast.FunctionDef) and (not item.name.startswith("_") or re.match("^__.+__$", item.name)):
             methods[item.name].append(item)
-        elif isinstance(item, ast.AnnAssign) and isinstance(item.target, ast.Name):
-            annotations[item.target.id] = ast.unparse(item.annotation)
 
-    return ClassInfo(name=node.name, method_names=methods, bases=bases, annotations=annotations)
+    return ClassInfo(name=node.name, method_names=methods, bases=bases)
 
 
 def parse_class_ast_info(file_path: Path) -> tuple[dict[str, ClassInfo], list[str]]:
@@ -392,10 +387,7 @@ def _format_default(value: Any) -> str:
     return "..."
 
 
-def _generate_method_stub(method: MethodInfo | str | None, imports_needed: set[str], current_module: types.ModuleType) -> str:
-    if not method:
-        return ""
-
+def _generate_method_stub(method: MethodInfo | str, imports_needed: set[str], current_module: types.ModuleType) -> str:
     if isinstance(method, str):
         lines = method.splitlines()
         return "\n".join(f"{' ' * 4}{line}" for line in lines) + "\n"
