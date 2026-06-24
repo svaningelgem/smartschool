@@ -16,6 +16,50 @@ poetry install
 Run everything below either inside `poetry run …` or after activating the
 virtualenv (`poetry shell`).
 
+## Coding guidelines
+
+How the codebase is meant to read and evolve:
+
+### Keep it simple
+
+- Reach for the standard library before adding a dependency, and a few lines
+  before a new dependency. Don't introduce an abstraction (an interface with one
+  implementation, a factory for one product, config for a value that never
+  changes) until something actually needs it.
+- Deletion beats addition. When a change makes a variable, import, alias, or
+  helper redundant, remove it in the same pass — don't leave cascading dead code.
+- Unreachable code *is* dead code: delete it, don't bury it under
+  `# pragma: no cover`. A pragma is only for code that is reachable in production
+  but genuinely can't be exercised by a test (a `__main__` block, real-network
+  wiring with no logic to assert).
+
+### Style
+
+- Prefer `@dataclass` over a hand-written `__init__`.
+- Imports go at the top of the file, never inline — the only exception is
+  breaking a real circular import.
+- Internal modules use relative imports (`from ._objects import …`); user-facing
+  code imports from `smartschool` (see *Project layout & the public API*).
+- Log through `logprise` / `loguru` with `{}`-style or f-string arguments —
+  **never** printf-style. `logger.info("got %d", n)` silently drops the argument
+  and logs the literal `"got %d"`; write `logger.info("got {}", n)` or an
+  f-string.
+- Use a bare `assert` to *document* an invariant that is structurally always
+  true; use an explicit `if cond: raise …` to *enforce* a condition that can
+  actually fail at runtime — `python -O` strips `assert`, so it must never be
+  your only guard.
+
+### Tests
+
+- Test behaviour, not implementation. Drive the public API and assert on
+  observable results, backed by the captured fixtures or a real `tmp_path` file.
+  Don't patch internal helpers or stdlib calls (`Path.exists`, `Path.is_file`, a
+  private function) — a test that only passes because of such a mock isn't
+  testing the code.
+- Use pytest-mock's `mocker` fixture, not `unittest.mock` directly, and pass
+  `autospec=True` when patching something from an external library so signature
+  drift is caught.
+
 ## Running the tests
 
 ```bash
@@ -27,10 +71,8 @@ there is no Smartschool account required to run them.
 
 **Coverage must be 100% (line *and* branch).** CI runs with
 `--cov-fail-under=100 --cov-branch`, and Codecov gates both `project` and `patch`
-at 100%, so every new line and branch needs a test. Prefer behavioural tests over
-mocking internals: if you find yourself patching an implementation detail (a
-private helper, `Path.exists`, …), reach for a real `tmp_path` file or fixture
-instead.
+at 100%, so every new line and branch needs a test. See *Coding guidelines →
+Tests* for the behaviour-over-mocking rule.
 
 ## Linting & formatting
 
