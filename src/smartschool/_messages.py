@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import base64
 from abc import ABC
 from dataclasses import dataclass, field
 from enum import Enum
@@ -184,7 +183,7 @@ class Message(_FetchOneMessage):
 class Attachment(SessionMixin, objects.Attachment):
     def download(self) -> bytes:
         resp = self.session.get(f"/?module=Messages&file=download&fileID={self.file_id}&target=0")
-        return base64.b64decode(resp.content)
+        return resp.content
 
 
 class Attachments(_FetchOneMessage):
