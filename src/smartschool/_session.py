@@ -135,7 +135,7 @@ class Smartschool(Session, DevTracingMixin):
     def create_url(self, url: str) -> str:
         return urljoin(self._url, url)
 
-    def _is_auth_url(self, url: str | Response) -> bool:
+    def _is_auth_url(self, url: str) -> bool:
         """Check if the URL contains authentication-related path segments."""
         auth_segments = {"login", "account-verification", "2fa"}
         path_segments = set(urlparse(url).path.split("/"))

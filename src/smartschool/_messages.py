@@ -5,7 +5,7 @@ from abc import ABC
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import TYPE_CHECKING
-from urllib.parse import quote_plus
+from urllib.parse import urlencode
 
 from . import _objects as objects
 from ._session import SessionMixin
@@ -286,7 +286,7 @@ class MessageMoveToArchive(SessionMixin):
         return next(iter(self))
 
     def __iter__(self) -> Iterator[objects.MessageChanged]:
-        construction = "&".join("msgIDs%5B%5D=" + quote_plus(str(msg_id)) for msg_id in self.msg_ids)
+        construction = urlencode({"msgIDs[]": self.msg_ids}, doseq=True)
 
         resp = self.session.post(
             "/Messages/Xhr/archivemessages",

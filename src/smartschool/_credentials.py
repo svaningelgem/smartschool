@@ -3,12 +3,9 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import TYPE_CHECKING, ClassVar, Final
+from typing import ClassVar, Final
 
 import yaml
-
-if TYPE_CHECKING:
-    from datetime import date
 
 required_fields: Final[list[str]] = ["username", "password", "main_url", "mfa"]
 
@@ -38,7 +35,7 @@ class Credentials:
             raise RuntimeError(f"Please verify and correct these attributes: {error}")
 
     def as_dict(self) -> dict[str, str | dict]:
-        data: dict = {field: getattr(self, field) for field in required_fields}
+        data: dict = {name: getattr(self, name) for name in required_fields}
 
         if self.other_info:
             data["other_info"] = self.other_info
@@ -54,7 +51,7 @@ class PathCredentials(Credentials):
     username: str = field(init=False, default=None)
     password: str = field(init=False, default=None)
     main_url: str = field(init=False, default=None)
-    mfa: date = field(init=False, default=None)
+    mfa: str = field(init=False, default=None)
     other_info: dict = field(init=False, default=None)
 
     def __post_init__(self):
@@ -66,7 +63,7 @@ class PathCredentials(Credentials):
 
         object.__setattr__(self, "other_info", cred_file)
 
-    def _find_credentials_file(self) -> Path | None:
+    def _find_credentials_file(self) -> Path:
         to_investigate = self.filename
         potential_paths = [to_investigate]
 

@@ -259,7 +259,7 @@ class FolderItem(SessionMixin):
 
     parent: FolderItem | None = field(repr=False)
     course: CourseCondensed = field(repr=False)
-    name: str = field()
+    name: str
     browse_url: str | None = field(default=None, repr=False)
 
     def __post_init__(self):

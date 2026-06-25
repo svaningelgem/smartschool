@@ -213,9 +213,7 @@ class MessageComposerForm(SessionMixin):
         if not path.is_file():
             raise FileNotFoundError(f"Attachment file does not exist: {path}")
 
-        mime_type, _ = mimetypes.guess_type(path.name)
-        if mime_type is None:
-            mime_type = "application/octet-stream"
+        mime_type = mimetypes.guess_type(path.name)[0] or "application/octet-stream"
 
         file_content = path.read_bytes()
         response = self.session.post(
