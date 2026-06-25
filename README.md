@@ -89,7 +89,7 @@ GNU General Public License v3.0
 
 ## Contributing
 
-Contributions welcome! Please ensure:
+Contributions welcome! See **[CONTRIBUTING.md](CONTRIBUTING.md)** for the full guide (local setup, conventions, project layout). In short, please ensure:
 - Tests pass: `poetry run pytest`
 - Code is formatted: `poetry run ruff format .`
 - Linting passes: `poetry run ruff check .`
