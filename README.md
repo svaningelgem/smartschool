@@ -1,6 +1,11 @@
 # Smartschool Parser
 
+[![PyPI version](https://img.shields.io/pypi/v/smartschool.svg)](https://pypi.org/project/smartschool/)
+[![Python versions](https://img.shields.io/pypi/pyversions/smartschool.svg)](https://pypi.org/project/smartschool/)
+[![Tests](https://github.com/svaningelgem/smartschool/actions/workflows/tests.yml/badge.svg)](https://github.com/svaningelgem/smartschool/actions/workflows/tests.yml)
 [![codecov](https://codecov.io/gh/svaningelgem/smartschool/graph/badge.svg?token=U0A3H3K4L0)](https://codecov.io/gh/svaningelgem/smartschool)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=svaningelgem_smartschool&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=svaningelgem_smartschool)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 Unofficial Python library providing programmatic access to Smartschool's web platform. Access courses, documents, messages, results, agenda, and more through a clean, type-safe API.
 
@@ -84,7 +89,7 @@ GNU General Public License v3.0
 
 ## Contributing
 
-Contributions welcome! Please ensure:
+Contributions welcome! See **[CONTRIBUTING.md](CONTRIBUTING.md)** for the full guide (local setup, conventions, project layout). In short, please ensure:
 - Tests pass: `poetry run pytest`
 - Code is formatted: `poetry run ruff format .`
 - Linting passes: `poetry run ruff check .`
