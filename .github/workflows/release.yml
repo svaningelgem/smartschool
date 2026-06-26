@@ -15,10 +15,14 @@ jobs:
         python-version: ["3.11"]
 
     permissions:
-      id-token: write
+      id-token: write   # PyPI trusted publishing
+      contents: write   # push the regenerated changelog back to master
 
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: master       # tag is created on master HEAD; check out the branch so we can commit to it
+          fetch-depth: 0    # full history + all tags so commitizen can build the changelog
 
       - name: Install Poetry
         uses: snok/install-poetry@v1
@@ -43,6 +47,7 @@ jobs:
           VERSION=${VERSION#v}              # Remove 'v' prefix if present
           VERSION=${VERSION#V}              # Remove 'V' prefix if present
           echo "Setting version to $VERSION"
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
           poetry version $VERSION
 
       - name: Run ruff format check
@@ -64,8 +69,32 @@ jobs:
           files: ./coverage.xml
           token: ${{ secrets.CODECOV_TOKEN }}
 
+      - name: Generate changelog
+        run: poetry run cz changelog --incremental   # chore/docs/ci/deps excluded by default; only feat/fix/refactor/perf/BREAKING
+
       - name: Build packages
         run: poetry build
 
       - name: Publish package distributions to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          poetry run cz changelog "$VERSION" --dry-run --template .github/changelog/release_notes.md.j2 > release-notes.md
+          gh release create "$VERSION" dist/* --title "$VERSION" --notes-file release-notes.md
+
+      # Push the changelog to master only after a successful publish, so a failed
+      # release never leaves a changelog entry for a version that isn't on PyPI.
+      - name: Commit changelog to master
+        run: |
+          if git diff --quiet -- CHANGELOG.md; then
+            echo "No changelog changes to commit"
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add CHANGELOG.md
+          git commit -m "docs: update changelog for ${VERSION} [skip ci]"
+          git push origin HEAD:master
