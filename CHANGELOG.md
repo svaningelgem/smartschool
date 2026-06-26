@@ -1,3 +1,19 @@
+# 0.9.0
+* **Breaking**: importing from `smartschool.<submodule>` no longer works; import from `smartschool` directly. The public API is now flat. (#151)
+* Added a `My Documents` (mydoc) client: browse, download, upload and manage your personal files. (#154)
+* Added sending of messages. (#117)
+* Stub generation (`.pyi`) is now self-maintaining. (#153)
+* _bugfix_: Don't base64-decode message attachment downloads. (#159)
+* _bugfix_: Tolerate new colors, result types, and icon graphics. (#131)
+* _bugfix_: The session no longer re-fires every non-auth request. (#120)
+
+# 0.8.2
+* _bugfix_: Resolve forward-reference annotations in the stub generator. (#113)
+
+# 0.8.1
+* _bugfix_: Support letter-grade (text) results in `ResultGraphic`. (#110)
+* _bugfix_: Make `PlannedElement` fields optional for planned to-dos. (#103)
+
 # 0.8.0
 * Added `Intradesk` module for browsing and downloading intradesk files
 * Added `CourseList` class for `/course-list` API (works even when no results are available)
