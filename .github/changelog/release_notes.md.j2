@@ -5,7 +5,7 @@
 ### {{ icons.get(change_key, "📌") }} {{ change_key }}
 
 {% for change in changes %}
-- {% if change.scope %}**{{ change.scope }}**: {% endif %}{{ change.message }}
+- {% if change.scope %}**{{ change.scope }}**: {% endif %}{{ change.message | replace("\n", " ") }}
 {% endfor %}
 
 {% endfor %}
