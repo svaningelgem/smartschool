@@ -49,6 +49,7 @@ build-backend = "poetry.core.masonry.api"
 name = "cz_conventional_commits"
 version_provider = "poetry"
 tag_format = "$version"
+template = ".github/changelog/changelog.md.j2"   # flat "- fix: ..." format; release notes use release_notes.md.j2 via --template
 
 
 [tool.coverage.run]
