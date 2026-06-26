@@ -3,7 +3,7 @@
 
 {% for change_key, changes in entry.changes.items() %}
 {% for change in changes %}
-- {{ change_key | lower }}{% if change.scope %}({{ change.scope }}){% endif %}: {{ change.message }}
+- {{ change_key | lower }}{% if change.scope %}({{ change.scope }}){% endif %}: {{ change.message | replace("\n", " ") }}
 {% endfor %}
 {% endfor %}
 

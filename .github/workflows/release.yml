@@ -23,6 +23,10 @@ jobs:
         with:
           ref: master       # tag is created on master HEAD; check out the branch so we can commit to it
           fetch-depth: 0    # full history + all tags so commitizen can build the changelog
+          # Push the changelog back to the protected master with an admin PAT.
+          # The default github-actions[bot] token can't bypass the required-PR
+          # rule; enforce_admins is off, so an admin token pushes directly.
+          token: ${{ secrets.RELEASE_PAT }}
 
       - name: Install Poetry
         uses: snok/install-poetry@v1
@@ -83,7 +87,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           poetry run cz changelog "$VERSION" --dry-run --template .github/changelog/release_notes.md.j2 > release-notes.md
-          gh release create "$VERSION" dist/* --title "$VERSION" --notes-file release-notes.md
+          # Only the installable distributions; the *.publish.attestation files the
+          # PyPI publish step drops into dist/ live on PyPI, not the GitHub release.
+          gh release create "$VERSION" dist/*.whl dist/*.tar.gz --title "$VERSION" --notes-file release-notes.md
 
       # Push the changelog to master only after a successful publish, so a failed
       # release never leaves a changelog entry for a version that isn't on PyPI.

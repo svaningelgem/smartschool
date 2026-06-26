@@ -1,12 +1,11 @@
 {% set icons = {"Feat": "✨", "Fix": "🔧", "Refactor": "♻️", "Perf": "⚡", "BREAKING CHANGE": "💥"} %}
 {% for entry in tree %}
-## {{ entry.version }}{{ " (" ~ entry.date ~ ")" if entry.date else "" }}
-
+{# Version + date header omitted: GitHub already shows them as the release title. #}
 {% for change_key, changes in entry.changes.items() %}
 ### {{ icons.get(change_key, "📌") }} {{ change_key }}
 
 {% for change in changes %}
-- {% if change.scope %}**{{ change.scope }}**: {% endif %}{{ change.message }}
+- {% if change.scope %}**{{ change.scope }}**: {% endif %}{{ change.message | replace("\n", " ") }}
 {% endfor %}
 
 {% endfor %}
