@@ -83,7 +83,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           poetry run cz changelog "$VERSION" --dry-run --template .github/changelog/release_notes.md.j2 > release-notes.md
-          gh release create "$VERSION" dist/* --title "$VERSION" --notes-file release-notes.md
+          # Only the installable distributions; the *.publish.attestation files the
+          # PyPI publish step drops into dist/ live on PyPI, not the GitHub release.
+          gh release create "$VERSION" dist/*.whl dist/*.tar.gz --title "$VERSION" --notes-file release-notes.md
 
       # Push the changelog to master only after a successful publish, so a failed
       # release never leaves a changelog entry for a version that isn't on PyPI.
