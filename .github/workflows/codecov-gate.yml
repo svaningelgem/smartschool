@@ -47,7 +47,7 @@ jobs:
           set -euo pipefail
           files="$(gh api --paginate "/repos/${REPO}/pulls/${PR}/files" --jq '.[].filename')"
           # Mirror the paths that make tests.yml run pytest + upload coverage.
-          if echo "$files" | grep -qE '(\.py$|^poetry\.lock$|^pyproject\.toml$|^\.github/workflows/tests\.yml$)'; then
+          if echo "$files" | grep -qE '(\.py$|\.pyi$|^poetry\.lock$|^pyproject\.toml$|^\.github/workflows/tests\.yml$)'; then
             state=pending
             desc="waiting for codecov to report"
           else
