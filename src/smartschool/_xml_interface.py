@@ -96,6 +96,11 @@ class SmartschoolXML(ABC, SessionMixin):
         with contextlib.suppress(KeyError):
             return self._get_from_cache()
 
+        # The XML dispatcher answers an empty 200 (not a login redirect) to an
+        # unauthenticated session, so the transparent auth chain in
+        # Session.request never fires. Force the lazy login before POSTing.
+        self.session.ensure_authenticated()
+
         response = self.session.post(
             self._url,
             data={
@@ -106,21 +111,22 @@ class SmartschoolXML(ABC, SessionMixin):
             },
         )
 
-        root = ET.fromstring(response.text)
-
         all_entries = []
-        as_obj = self._object_to_instantiate
-        for el in root.findall(self._xpath):
-            as_dict = xml_to_dict(el)
-            self._post_process_element(as_dict)
+        text = response.text.strip()
+        if text:  # an empty body means an empty result set (e.g. an empty inbox)
+            root = ET.fromstring(text)
+            as_obj = self._object_to_instantiate
+            for el in root.findall(self._xpath):
+                as_dict = xml_to_dict(el)
+                self._post_process_element(as_dict)
 
-            if SessionMixin in as_obj.__mro__:
-                as_dict["session"] = self.session
+                if SessionMixin in as_obj.__mro__:
+                    as_dict["session"] = self.session
 
-            as_dict = _resolve_aliases(as_obj, as_dict)
-            obj = as_obj(**as_dict)
+                as_dict = _resolve_aliases(as_obj, as_dict)
+                obj = as_obj(**as_dict)
 
-            all_entries.append(obj)
+                all_entries.append(obj)
 
         self._store_into_cache(all_entries)
 
