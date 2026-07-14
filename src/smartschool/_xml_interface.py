@@ -99,7 +99,7 @@ class SmartschoolXML(ABC, SessionMixin):
         # The XML dispatcher answers an empty 200 (not a login redirect) to an
         # unauthenticated session, so the transparent auth chain in
         # Session.request never fires. Force the lazy login before POSTing.
-        _ = self.session.authenticated_user
+        self.session.ensure_authenticated()
 
         response = self.session.post(
             self._url,

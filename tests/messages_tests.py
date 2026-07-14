@@ -93,11 +93,11 @@ def test_empty_inbox_returns_empty_iterator(session: Smartschool, requests_mock:
 
 def test_messages_force_authentication_before_posting(session: Smartschool, mocker: MockerFixture):
     """Issue #165: an unauthenticated session gets an empty 200 (no redirect), so the interface forces the lazy login before POSTing."""
-    auth = mocker.patch.object(type(session), "authenticated_user", new_callable=mocker.PropertyMock, return_value={"id": "x"})
+    ensure = mocker.patch.object(session, "ensure_authenticated")
 
     sut = list(MessageHeaders(session))
 
-    auth.assert_called()  # login was forced before the POST
+    ensure.assert_called_once()  # login was forced before the POST
     assert len(sut) == 2  # and the messages still parse afterwards
 
 
