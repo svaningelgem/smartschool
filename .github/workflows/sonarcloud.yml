@@ -43,7 +43,7 @@ jobs:
         with:
           fetch-depth: 0  # full history for accurate new-code / blame data
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         if: steps.guard.outputs.enabled == 'true'
         with:
           python-version: "3.11"
