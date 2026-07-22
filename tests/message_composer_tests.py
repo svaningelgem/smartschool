@@ -268,32 +268,6 @@ class TestMessageComposerFormSearchUsers:
         assert data["type"] == "0"
         assert data["parentNodeId"] == "insertSearchFieldContainer_0_0"
 
-    def test_search_users_can_target_coaccounts(self, session: Smartschool, mocker):
-        form = MessageComposerForm.create(session=session)
-        spy = mocker.spy(session, "post")
-
-        form.search_users("Luka", coaccount=True)
-
-        data = spy.call_args.kwargs["data"]
-        assert data["type"] == "1"
-        assert data["parentNodeId"] == "insertSearchFieldContainer_1_0"
-
-    def test_search_users_parses_coaccount_user_lt(self, session: Smartschool, requests_mock: Mocker):
-        form = MessageComposerForm.create(session=session)
-        # A co-account search returns the parents as extra <user> entries that share the
-        # student's userID/ssID but carry userLT=1,2,... and a coaccountname.
-        requests_mock.post(
-            "https://site/?module=Messages&file=searchUsers",
-            text=_COACCOUNT_SEARCH_XML,
-        )
-
-        users, _ = form.search_users("Robin", coaccount=True)
-
-        assert [(u.user_id, u.ss_id, u.user_lt, u.coaccountname) for u in users] == [
-            (111, 222, 1, "Co-account 1"),
-            (111, 222, 2, "Co-account 2"),
-        ]
-
     def test_search_users_user_lt_defaults_to_zero_for_main_accounts(self, session: Smartschool):
         form = MessageComposerForm.create(session=session)
 

@@ -122,8 +122,8 @@ RecipientType.BCC   # Blind carbon copy
 # Search for recipients (users and groups)
 users, groups = form.search_users("search term")
 
-# Search a person's co-accounts (parents) instead of accounts
-coaccounts, _ = form.search_users("search term", coaccount=True)
+# Get a specific user's co-accounts (parents)
+coaccounts = form.get_coaccounts(users[0])
 
 # Users have properties: user_id, value (display name), ss_id, user_lt (0 = main account, 1+ = co-account), coaccountname, classname, schoolname, picture
 for user in users:

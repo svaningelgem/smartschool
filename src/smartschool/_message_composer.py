@@ -141,19 +141,21 @@ class MessageComposerForm(SessionMixin):
     def set_message_html(self, message_html: str) -> None:
         self.set_field("message", message_html)
 
-    def search_users(
+    def search_users(self, search_text: str) -> tuple[list[MessageSearchUser], list[MessageSearchGroup]]:
+        """Search accounts (users and groups) by name. For a user's co-accounts use :meth:`get_coaccounts`."""
+        return self._search_recipients(search_text, coaccount=False)
+
+    def _search_recipients(
         self,
         search_text: str,
         *,
-        coaccount: bool = False,
+        coaccount: bool,
     ) -> tuple[list[MessageSearchUser], list[MessageSearchGroup]]:
         """
-        Search recipients.
+        POST a recipient search and parse the result.
 
-        With ``coaccount=True`` the search returns co-accounts (parents) instead of accounts:
-        each comes back as a user sharing the account's ``user_id``/``ss_id`` with ``user_lt``
-        >= 1. Add them with :meth:`add_recipient` as usual - they are routed to the co-account
-        field automatically.
+        ``coaccount`` picks accounts (``False``) or co-accounts (``True``); a co-account search
+        returns only co-accounts (``user_lt`` >= 1).
         """
         unique_usc = self.payload.get("uniqueUsc", "")
         if not unique_usc:
@@ -210,6 +212,9 @@ class MessageComposerForm(SessionMixin):
                     ),
                 )
 
+        if coaccount:  # a co-account search must yield co-accounts, never the main accounts
+            users = [u for u in users if u.user_lt > 0]
+
         return users, groups
 
     def add_recipient(
@@ -260,13 +265,13 @@ class MessageComposerForm(SessionMixin):
         """
         Return the co-accounts (typically the parents) of ``user``.
 
-        Co-accounts are discovered through a name search, which can also surface namesakes and
-        the account itself, so this narrows the results to the ones that actually belong to
-        ``user`` (same ``user_id``/``ss_id``, ``user_lt`` >= 1). Add them with
-        :meth:`add_recipient` - they are routed to the co-account field automatically.
+        Co-accounts are discovered through a name search, which can span namesakes, so this
+        narrows the co-account search to the ones that actually belong to ``user`` (same
+        ``user_id``/``ss_id``). Add them with :meth:`add_recipient` - they are routed to the
+        co-account field automatically.
         """
-        found, _ = self.search_users(user.value, coaccount=True)
-        return [c for c in found if c.user_id == user.user_id and c.ss_id == user.ss_id and c.user_lt > 0]
+        found, _ = self._search_recipients(user.value, coaccount=True)
+        return [c for c in found if c.user_id == user.user_id and c.ss_id == user.ss_id]
 
     def add_all_coaccounts(
         self,
