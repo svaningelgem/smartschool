@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import mimetypes
 import re
 from dataclasses import dataclass, field
@@ -101,9 +102,10 @@ class MessageComposerForm(SessionMixin):
 
         soup = bs4_html(resp)
         self.hidden_fields = {inp["name"]: inp.get("value", "") for inp in soup.select("input[type=hidden][name]")}
-        # The compose page embeds this flag; the co-account recipient block is always rendered,
-        # so this is the real capability signal (staff/school-gated), not the block's presence.
-        self.can_send_to_coaccounts = bool(re.search(r'"canSendToCoAccounts"\s*:\s*true', resp.text))
+        # The compose page always renders the co-account recipient block, so its presence is not
+        # a capability signal. The real (staff/school-gated) flag lives in the embedded SMSC.vars
+        # config object, which we parse as JSON.
+        self.can_send_to_coaccounts = bool(self._compose_vars(resp.text).get("canSendToCoAccounts"))
 
         self.payload = {
             "module": "Messages",
@@ -130,6 +132,17 @@ class MessageComposerForm(SessionMixin):
             "message": "",
             "bcc": "0",
         }
+
+    @staticmethod
+    def _compose_vars(html: str) -> dict:
+        """Return the ``SMSC.vars`` config object embedded in the compose page (``{}`` if absent/unparseable)."""
+        match = re.search(r"SMSC\s*,\s*\{\s*vars\s*:\s*", html)
+        if not match:
+            return {}
+        try:
+            return json.JSONDecoder().raw_decode(html, match.end())[0]
+        except json.JSONDecodeError:
+            return {}
 
     def set_field(self, key: str, value: str | int) -> None:
         self.payload[key] = str(value)
@@ -288,7 +301,7 @@ class MessageComposerForm(SessionMixin):
     def _ensure_coaccounts_available(self) -> None:
         """Guard every co-account path: raise if this account cannot message co-accounts."""
         if not self.can_send_to_coaccounts:
-            raise SmartSchoolCoAccountsUnavailableError("This account cannot message co-accounts (canSendToCoAccounts is false).")
+            raise SmartSchoolCoAccountsUnavailableError
 
     def add_all_coaccounts(
         self,

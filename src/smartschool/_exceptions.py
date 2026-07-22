@@ -35,6 +35,12 @@ class SmartSchoolAttachmentUploadError(SmartSchoolException):
 class SmartSchoolCoAccountsUnavailableError(SmartSchoolException):
     """Raised when co-accounts (parents) are used on an account that lacks that capability."""
 
+    def __init__(self, message: str = "This account cannot message co-accounts"):
+        super().__init__(message)
+
+    def __str__(self) -> str:
+        return self.message
+
 
 @dataclass
 class SmartSchoolDownloadError(SmartSchoolException):

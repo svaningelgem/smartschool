@@ -177,19 +177,34 @@ class TestMessageComposerFormRefresh:
         assert "msgID=789" in call_url
 
     def test_refresh_detects_coaccount_support(self, session: Smartschool):
-        # The compose fixture embeds "canSendToCoAccounts":true (a staff/school-gated account).
+        # The compose fixture embeds SMSC.vars with "canSendToCoAccounts":true (staff/school-gated).
         form = MessageComposerForm.create(session=session)
 
         assert form.can_send_to_coaccounts is True
 
-    def test_refresh_reports_no_coaccount_support_when_flag_is_false(self, session: Smartschool, requests_mock: Mocker):
+    def _refresh_with_compose_html(self, session: Smartschool, requests_mock: Mocker, html: str) -> MessageComposerForm:
         form = MessageComposerForm(session=session)
         requests_mock.get(
             "https://site/?module=Messages&file=composeMessage&boxType=inbox&composeType=0&msgID=undefined",
-            text='<html><script>var cfg={"canSendToCoAccounts":false};</script></html>',
+            text=html,
         )
-
         form.refresh()
+        return form
+
+    def test_refresh_no_support_when_flag_is_false(self, session: Smartschool, requests_mock: Mocker):
+        html = '<script>$.extend(true, SMSC, { vars : {"canSendToCoAccounts":false} });</script>'
+        form = self._refresh_with_compose_html(session, requests_mock, html)
+
+        assert form.can_send_to_coaccounts is False
+
+    def test_refresh_no_support_when_config_absent(self, session: Smartschool, requests_mock: Mocker):
+        form = self._refresh_with_compose_html(session, requests_mock, "<html><body>no config here</body></html>")
+
+        assert form.can_send_to_coaccounts is False
+
+    def test_refresh_no_support_when_config_is_malformed(self, session: Smartschool, requests_mock: Mocker):
+        html = '<script>$.extend(true, SMSC, { vars : {"canSendToCoAccounts": tru</script>'  # truncated JSON
+        form = self._refresh_with_compose_html(session, requests_mock, html)
 
         assert form.can_send_to_coaccounts is False
 
