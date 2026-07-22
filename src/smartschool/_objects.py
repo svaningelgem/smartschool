@@ -53,7 +53,7 @@ class ResultType(StrEnum):
 
 @dataclass(config=_config)
 class CourseGraphic:
-    type: Literal["icon"]
+    type: Literal["icon", "image"]
     value: String
 
 
@@ -395,7 +395,7 @@ class FullMessage:
     to: String | None
     subject: String
     date: DateTime
-    body: String
+    body: Annotated[String, BeforeValidator(lambda v: v or "")]  # a subject-only message has an empty (None) body
     status: int
     attachment: int
     unread: bool

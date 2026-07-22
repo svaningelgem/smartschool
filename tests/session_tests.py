@@ -77,6 +77,19 @@ class TestSmartschoolAuthentication:
         with pytest.raises(ValueError, match="Could not retrieve authenticated user information"):
             _ = session.authenticated_user
 
+    def test_ensure_authenticated_is_noop_when_already_logged_in(self, session):
+        """An already-authenticated session stays authenticated and does not raise."""
+        session.ensure_authenticated()
+
+        assert session._authenticated_user is not None
+
+    def test_ensure_authenticated_raises_when_login_fails(self, session):
+        """When the lazy login cannot establish a user, the failure surfaces."""
+        session._authenticated_user = None
+
+        with pytest.raises(ValueError, match="Could not retrieve authenticated user information"):
+            session.ensure_authenticated()
+
     def test_authenticated_user_setter_with_data(self, session, authenticated_user_data):
         """Should save authenticated user data to file."""
         session.authenticated_user = authenticated_user_data

@@ -72,6 +72,16 @@ class Smartschool(Session, DevTracingMixin):
         else:
             self._authenticated_user_file.unlink(missing_ok=True)
 
+    def ensure_authenticated(self) -> None:
+        """
+        Make sure the session is logged in, triggering the lazy login when needed.
+
+        Handy before hitting an endpoint that answers unauthenticated requests with an
+        empty 200 instead of redirecting to ``/login`` (e.g. the XML message dispatcher),
+        where the transparent auth chain in :meth:`request` never fires.
+        """
+        _ = self.authenticated_user
+
     @property
     def _authenticated_user_file(self) -> Path | None:
         if self.creds:

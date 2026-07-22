@@ -1,3 +1,8 @@
+from pathlib import Path
+
+from pytest_mock import MockerFixture
+from requests_mock import Mocker
+
 from smartschool import (
     AdjustMessageLabel,
     Attachments,
@@ -9,6 +14,8 @@ from smartschool import (
     MessageMoveToTrash,
     Smartschool,
 )
+
+_DISPATCHER_URL = "https://site/?module=Messages&file=dispatcher"
 
 
 def test_messages_happy_flow(session: Smartschool):
@@ -75,3 +82,31 @@ def test_trash_message_happy_flow(session: Smartschool):
     assert sut.msg_id == 123
     assert sut.box_type == "inbox"
     assert sut.is_deleted
+
+
+def test_empty_inbox_returns_empty_iterator(session: Smartschool, requests_mock: Mocker):
+    """Issue #165: an empty inbox returns an empty 200 body; iterate to nothing instead of raising ParseError."""
+    requests_mock.post(_DISPATCHER_URL, text="")
+
+    assert list(MessageHeaders(session)) == []
+
+
+def test_messages_force_authentication_before_posting(session: Smartschool, mocker: MockerFixture):
+    """Issue #165: an unauthenticated session gets an empty 200 (no redirect), so the interface forces the lazy login before POSTing."""
+    ensure = mocker.patch.object(session, "ensure_authenticated")
+
+    sut = list(MessageHeaders(session))
+
+    ensure.assert_called_once()  # login was forced before the POST
+    assert len(sut) == 2  # and the messages still parse afterwards
+
+
+def test_message_with_empty_body_coerced_to_empty_string(session: Smartschool, requests_mock: Mocker):
+    """Issue #165: a message with a subject but no body has body=None in the XML; coerce it to ''."""
+    fixture = Path(__file__).parent / "requests/post/postboxes/show message.xml"
+    empty_body_xml = fixture.read_text(encoding="utf8").replace("<body>&lt;p&gt;Beste&lt;/p&gt;</body>", "<body/>")
+    requests_mock.post(_DISPATCHER_URL, text=empty_body_xml)
+
+    sut = Message(session, 123).get()
+
+    assert sut.body == ""

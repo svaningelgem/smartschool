@@ -36,3 +36,9 @@ def test_course_str_multiple_teachers(create_course):
 def test_course_str_no_teachers(create_course):
     course = create_course(0)
     assert str(course) == "Math (Teachers: )"
+
+
+def test_course_graphic_accepts_image():
+    """Issue #165: some schools use image graphics for courses, not only icons."""
+    assert CourseGraphic(type="image", value="foo").type == "image"
+    assert CourseGraphic(type="icon", value="foo").type == "icon"

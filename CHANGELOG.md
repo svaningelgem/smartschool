@@ -1,3 +1,7 @@
+## 0.9.1 (2026-07-14)
+- fix: handle empty inbox, image graphics, empty body and lazy login (#165) (#166)
+
+
 # 0.9.0
 * **Breaking**: importing from `smartschool.<submodule>` no longer works; import from `smartschool` directly. The public API is now flat. (#151)
 * Added a `My Documents` (mydoc) client: browse, download, upload and manage your personal files. (#154)
