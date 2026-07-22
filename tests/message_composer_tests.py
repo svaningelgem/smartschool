@@ -445,6 +445,22 @@ class TestMessageComposerFormAddAllCoaccounts:
         assert [c.kwargs["data"]["userlt"] for c in add_calls] == ["1", "2"]
         assert all(c.kwargs["data"]["type"] == "1" for c in add_calls)  # co-account To container
 
+    def test_adds_coaccounts_for_multiple_users(self, session: Smartschool, requests_mock: Mocker):
+        form = MessageComposerForm.create(session=session)
+        requests_mock.post("https://site/?module=Messages&file=searchUsers", text=_COACCOUNT_SEARCH_MIXED_XML)
+        student_a = MessageSearchUser(user_id=111, value="Robin Doe", ss_id=222)
+        student_b = MessageSearchUser(user_id=999, value="Robin Roe", ss_id=222)
+
+        added = form.add_all_coaccounts(student_a, student_b)
+
+        # Each user's own co-accounts, in order: A's two parents then B's one.
+        assert [(c.user_id, c.user_lt) for c in added] == [(111, 1), (111, 2), (999, 1)]
+
+    def test_add_all_coaccounts_with_no_users_is_a_noop(self, session: Smartschool):
+        form = MessageComposerForm.create(session=session)
+
+        assert form.add_all_coaccounts() == []
+
 
 class TestMessageComposerFormAddAttachment:
     """Test MessageComposerForm.add_attachment() method."""

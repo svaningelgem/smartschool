@@ -275,19 +275,23 @@ class MessageComposerForm(SessionMixin):
 
     def add_all_coaccounts(
         self,
-        user: MessageSearchUser,
+        *users: MessageSearchUser,
         recipient_type: RecipientType = RecipientType.TO,
     ) -> list[MessageSearchUser]:
         """
-        Add every co-account (typically the parents) of ``user`` as recipients.
+        Add every co-account (typically the parents) of each user in ``users`` as recipients.
 
-        Returns the co-accounts added (empty if the account has none). ``recipient_type`` picks
+        Accepts one or more users (e.g. ``add_all_coaccounts(*students)``) and returns the
+        co-accounts added across all of them (empty if none have any). ``recipient_type`` picks
         the field (To/Cc/Bcc); the co-account routing is handled automatically.
         """
-        coaccounts = self.get_coaccounts(user)
-        for coaccount in coaccounts:
-            self.add_recipient(coaccount, recipient_type)
-        return coaccounts
+        added: list[MessageSearchUser] = []
+        for user in users:
+            coaccounts = self.get_coaccounts(user)
+            for coaccount in coaccounts:
+                self.add_recipient(coaccount, recipient_type)
+            added.extend(coaccounts)
+        return added
 
     def add_attachment(self, file_path: str | Path) -> None:
         upload_dir = self.payload.get("randomDir", "")
