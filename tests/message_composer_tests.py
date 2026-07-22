@@ -103,21 +103,6 @@ class TestRecipientType:
         assert RecipientType.CC.parent_node_id == "insertSearchFieldContainer_2_0"
         assert RecipientType.BCC.parent_node_id == "insertSearchFieldContainer_3_0"
 
-    def test_coaccount_recipient_type_to_parent_node_id(self):
-        # The compose form has a second recipient block for co-accounts (parents):
-        # its To/Cc/Bcc live in containers 1/4/5 (main accounts are 0/2/3).
-        assert RecipientType.COACCOUNT_TO.parent_node_id == "insertSearchFieldContainer_1_0"
-        assert RecipientType.COACCOUNT_CC.parent_node_id == "insertSearchFieldContainer_4_0"
-        assert RecipientType.COACCOUNT_BCC.parent_node_id == "insertSearchFieldContainer_5_0"
-
-    def test_is_coaccount(self):
-        assert RecipientType.COACCOUNT_TO.is_coaccount
-        assert RecipientType.COACCOUNT_CC.is_coaccount
-        assert RecipientType.COACCOUNT_BCC.is_coaccount
-        assert not RecipientType.TO.is_coaccount
-        assert not RecipientType.CC.is_coaccount
-        assert not RecipientType.BCC.is_coaccount
-
 
 class TestMessageComposerFormCreate:
     """Test MessageComposerForm.create() classmethod."""
@@ -273,7 +258,7 @@ class TestMessageComposerFormSearchUsers:
         with pytest.raises(ValueError, match="uniqueUsc is missing"):
             form.search_users("John")
 
-    def test_search_users_defaults_to_main_to_field(self, session: Smartschool, mocker):
+    def test_search_users_defaults_to_main_accounts(self, session: Smartschool, mocker):
         form = MessageComposerForm.create(session=session)
         spy = mocker.spy(session, "post")
 
@@ -283,11 +268,11 @@ class TestMessageComposerFormSearchUsers:
         assert data["type"] == "0"
         assert data["parentNodeId"] == "insertSearchFieldContainer_0_0"
 
-    def test_search_users_can_target_the_coaccount_field(self, session: Smartschool, mocker):
+    def test_search_users_can_target_coaccounts(self, session: Smartschool, mocker):
         form = MessageComposerForm.create(session=session)
         spy = mocker.spy(session, "post")
 
-        form.search_users("Luka", RecipientType.COACCOUNT_TO)
+        form.search_users("Luka", coaccount=True)
 
         data = spy.call_args.kwargs["data"]
         assert data["type"] == "1"
@@ -302,7 +287,7 @@ class TestMessageComposerFormSearchUsers:
             text=_COACCOUNT_SEARCH_XML,
         )
 
-        users, _ = form.search_users("Robin", RecipientType.COACCOUNT_TO)
+        users, _ = form.search_users("Robin", coaccount=True)
 
         assert [(u.user_id, u.ss_id, u.user_lt, u.coaccountname) for u in users] == [
             (111, 222, 1, "Co-account 1"),
@@ -368,13 +353,14 @@ class TestMessageComposerFormAddRecipient:
         with pytest.raises(ValueError, match="uniqueUsc is missing"):
             form.add_recipient(mock_user)
 
-    def test_add_coaccount_recipient_targets_coaccount_container(self, session: Smartschool, mocker):
+    def test_add_coaccount_is_routed_to_the_coaccount_field_automatically(self, session: Smartschool, mocker):
         form = MessageComposerForm.create(session=session)
         spy = mocker.spy(session, "post")
 
-        # A parent: shares the student's userID/ssID, distinguished by user_lt.
+        # A parent: shares the student's userID/ssID, distinguished by user_lt. The caller
+        # picks the plain TO field; the co-account container (1) is chosen automatically.
         parent = MessageSearchUser(user_id=111, value="Robin Doe", ss_id=222, user_lt=2, coaccountname="Co-account 2")
-        form.add_recipient(parent, RecipientType.COACCOUNT_TO)
+        form.add_recipient(parent, RecipientType.TO)
 
         data = spy.call_args.kwargs["data"]
         assert data["id"] == "111"
@@ -384,12 +370,35 @@ class TestMessageComposerFormAddRecipient:
         assert data["parentNodeId"] == "insertSearchFieldContainer_1_0"
         assert data["userlt"] == "2"
 
+    def test_add_coaccount_as_cc_uses_the_coaccount_cc_container(self, session: Smartschool, mocker):
+        form = MessageComposerForm.create(session=session)
+        spy = mocker.spy(session, "post")
+
+        parent = MessageSearchUser(user_id=111, value="Robin Doe", ss_id=222, user_lt=1)
+        form.add_recipient(parent, RecipientType.CC)
+
+        data = spy.call_args.kwargs["data"]
+        assert data["type"] == "4"
+        assert data["parentNodeId"] == "insertSearchFieldContainer_4_0"
+
+    def test_add_main_account_stays_in_the_main_field(self, session: Smartschool, mocker):
+        form = MessageComposerForm.create(session=session)
+        spy = mocker.spy(session, "post")
+
+        student = MessageSearchUser(user_id=111, value="Robin Doe", ss_id=222)  # user_lt defaults to 0
+        form.add_recipient(student, RecipientType.TO)
+
+        data = spy.call_args.kwargs["data"]
+        assert data["type"] == "0"
+        assert data["parentNodeId"] == "insertSearchFieldContainer_0_0"
+        assert data["userlt"] == "0"
+
     def test_add_recipient_defaults_user_lt_to_the_recipient(self, session: Smartschool, mocker):
         form = MessageComposerForm.create(session=session)
         spy = mocker.spy(session, "post")
 
         parent = MessageSearchUser(user_id=111, value="Robin Doe", ss_id=222, user_lt=1)
-        form.add_recipient(parent, RecipientType.COACCOUNT_TO)
+        form.add_recipient(parent, RecipientType.TO)
 
         assert spy.call_args.kwargs["data"]["userlt"] == "1"
 
@@ -398,7 +407,7 @@ class TestMessageComposerFormAddRecipient:
         spy = mocker.spy(session, "post")
 
         parent = MessageSearchUser(user_id=111, value="Robin Doe", ss_id=222, user_lt=1)
-        form.add_recipient(parent, RecipientType.COACCOUNT_TO, user_lt=2)
+        form.add_recipient(parent, RecipientType.TO, user_lt=2)
 
         assert spy.call_args.kwargs["data"]["userlt"] == "2"
 
@@ -447,13 +456,6 @@ class TestMessageComposerFormAddAllCoaccounts:
         student = MessageSearchUser(user_id=111, value="Robin Doe", ss_id=222)
 
         assert form.add_all_coaccounts(student) == []
-
-    def test_rejects_a_non_coaccount_recipient_type(self, session: Smartschool):
-        form = MessageComposerForm.create(session=session)
-        student = MessageSearchUser(user_id=111, value="Robin Doe", ss_id=222)
-
-        with pytest.raises(ValueError, match="COACCOUNT"):
-            form.add_all_coaccounts(student, RecipientType.TO)
 
 
 class TestMessageComposerFormAddAttachment:

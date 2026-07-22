@@ -26,27 +26,33 @@ __all__ = [
 
 class RecipientType(Enum):
     """
-    Recipient slot in the compose form.
+    Recipient field of the compose form (To / Cc / Bcc).
 
-    The form has two blocks: one for the accounts themselves (``TO``/``CC``/``BCC``) and one
-    for their co-accounts / parents (``COACCOUNT_TO``/``COACCOUNT_CC``/``COACCOUNT_BCC``). The
-    value is the search-field container index Smartschool assigns to each slot.
+    The value is the search-field container index Smartschool assigns to the field. Co-accounts
+    (parents) live in a mirrored block of containers; the composer routes a recipient there
+    automatically when it is a co-account (``user_lt`` > 0), so callers only pick To/Cc/Bcc.
     """
 
     TO = "0"
     CC = "2"
     BCC = "3"
-    COACCOUNT_TO = "1"
-    COACCOUNT_CC = "4"
-    COACCOUNT_BCC = "5"
 
     @property
     def parent_node_id(self) -> str:
         return f"insertSearchFieldContainer_{self.value}_0"
 
-    @property
-    def is_coaccount(self) -> bool:
-        return self in (RecipientType.COACCOUNT_TO, RecipientType.COACCOUNT_CC, RecipientType.COACCOUNT_BCC)
+
+# The compose form mirrors each To/Cc/Bcc field into a second block for co-accounts (parents),
+# with these container indices.
+_COACCOUNT_FIELD = {RecipientType.TO: "1", RecipientType.CC: "4", RecipientType.BCC: "5"}
+
+
+def _field_ids(recipient_type: RecipientType, *, coaccount: bool) -> tuple[str, str]:
+    """Return the ``(type, parentNodeId)`` request fields for a recipient field."""
+    if coaccount:
+        container = _COACCOUNT_FIELD[recipient_type]
+        return container, f"insertSearchFieldContainer_{container}_0"
+    return recipient_type.value, recipient_type.parent_node_id
 
 
 @dataclass
@@ -138,24 +144,28 @@ class MessageComposerForm(SessionMixin):
     def search_users(
         self,
         search_text: str,
-        recipient_type: RecipientType = RecipientType.TO,
+        *,
+        coaccount: bool = False,
     ) -> tuple[list[MessageSearchUser], list[MessageSearchGroup]]:
         """
-        Search recipients for the given slot.
+        Search recipients.
 
-        Search a ``COACCOUNT_*`` slot to find a student's co-accounts (parents): they come
-        back as extra users sharing the student's ``user_id``/``ss_id`` with ``user_lt`` >= 1.
+        With ``coaccount=True`` the search returns co-accounts (parents) instead of accounts:
+        each comes back as a user sharing the account's ``user_id``/``ss_id`` with ``user_lt``
+        >= 1. Add them with :meth:`add_recipient` as usual - they are routed to the co-account
+        field automatically.
         """
         unique_usc = self.payload.get("uniqueUsc", "")
         if not unique_usc:
             raise ValueError("uniqueUsc is missing. Call refresh() or create() before searching users.")
 
+        search_type, parent_node_id = _field_ids(RecipientType.TO, coaccount=coaccount)
         response = self.session.post(
             "/?module=Messages&file=searchUsers",
             data={
                 "val": search_text,
-                "type": recipient_type.value,
-                "parentNodeId": recipient_type.parent_node_id,
+                "type": search_type,
+                "parentNodeId": parent_node_id,
                 "xml": "<results></results>",
                 "uniqueUsc": unique_usc,
             },
@@ -204,11 +214,12 @@ class MessageComposerForm(SessionMixin):
         user_lt: int | None = None,
     ) -> None:
         """
-        Add a recipient to the given slot.
+        Add a recipient to the given field (To/Cc/Bcc).
 
         ``user_lt`` defaults to the recipient's own ``user_lt`` (0 for a main account or a
         group, 1+ for a co-account), so a co-account returned by :meth:`search_users` is added
-        correctly without passing it explicitly. Pass it to override.
+        correctly without passing it explicitly. Pass it to override. A co-account (resolved
+        ``user_lt`` > 0) is routed to the co-account block of the chosen field automatically.
         """
         unique_usc = self.payload.get("uniqueUsc", "")
         if not unique_usc:
@@ -225,13 +236,14 @@ class MessageComposerForm(SessionMixin):
         if user_lt is None:
             user_lt = getattr(recipient, "user_lt", 0)
 
+        add_type, parent_node_id = _field_ids(recipient_type, coaccount=user_lt > 0)
         response = self.session.post(
             "/?module=Messages&file=searchUsers&function=addUserToSelected",
             data={
                 "id": str(recipient_id),
                 "typeId": type_id,
-                "type": recipient_type.value,
-                "parentNodeId": recipient_type.parent_node_id,
+                "type": add_type,
+                "parentNodeId": parent_node_id,
                 "ssid": str(ssid),
                 "userlt": str(user_lt),
                 "uniqueUsc": unique_usc,
@@ -242,19 +254,16 @@ class MessageComposerForm(SessionMixin):
     def add_all_coaccounts(
         self,
         user: MessageSearchUser,
-        recipient_type: RecipientType = RecipientType.COACCOUNT_TO,
+        recipient_type: RecipientType = RecipientType.TO,
     ) -> list[MessageSearchUser]:
         """
         Add every co-account (typically the parents) of ``user`` as recipients.
 
-        Searches the co-account slot for ``user`` and adds each co-account belonging to them,
-        returning the co-accounts added (empty if the account has none). ``recipient_type``
-        must be one of the ``COACCOUNT_*`` slots (defaults to the co-account To field).
+        Searches the co-accounts for ``user`` and adds each one belonging to them, returning the
+        co-accounts added (empty if the account has none). ``recipient_type`` picks the field
+        (To/Cc/Bcc); the co-account routing is handled automatically.
         """
-        if not recipient_type.is_coaccount:
-            raise ValueError(f"add_all_coaccounts needs a COACCOUNT_* recipient type, got {recipient_type.name}.")
-
-        found, _ = self.search_users(user.value, recipient_type)
+        found, _ = self.search_users(user.value, coaccount=True)
         coaccounts = [c for c in found if c.user_id == user.user_id and c.ss_id == user.ss_id and c.user_lt > 0]
         for coaccount in coaccounts:
             self.add_recipient(coaccount, recipient_type)

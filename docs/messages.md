@@ -86,11 +86,12 @@ if groups:
 if users:
     form.add_all_coaccounts(users[0])
 
-# ...or add them yourself. Search the co-account slot: the parents come back as extra
-# users sharing the student's userID/ssID, with user_lt 1, 2, ...
-parents, _ = form.search_users("John", RecipientType.COACCOUNT_TO)
+# ...or add them yourself. Search co-accounts: the parents come back as extra users
+# sharing the student's userID/ssID, with user_lt 1, 2, ... add_recipient routes a
+# co-account to the co-account field automatically, so you still just pick TO/CC/BCC.
+parents, _ = form.search_users("John", coaccount=True)
 for parent in parents:
-    form.add_recipient(parent, RecipientType.COACCOUNT_TO)
+    form.add_recipient(parent, RecipientType.TO)
 
 # Add attachments
 form.add_attachment("path/to/document.pdf")
@@ -111,10 +112,8 @@ RecipientType.TO    # To field
 RecipientType.CC    # Carbon copy
 RecipientType.BCC   # Blind carbon copy
 
-# Same three fields, but for the recipients' co-accounts (parents):
-RecipientType.COACCOUNT_TO
-RecipientType.COACCOUNT_CC
-RecipientType.COACCOUNT_BCC
+# Co-accounts (parents) use the same three fields — a recipient with user_lt > 0 is routed
+# to the co-account block automatically, so there's no separate co-account recipient type.
 ```
 
 ### Searching Recipients
@@ -122,6 +121,9 @@ RecipientType.COACCOUNT_BCC
 ```python
 # Search for recipients (users and groups)
 users, groups = form.search_users("search term")
+
+# Search a person's co-accounts (parents) instead of accounts
+coaccounts, _ = form.search_users("search term", coaccount=True)
 
 # Users have properties: user_id, value (display name), ss_id, user_lt (0 = main account, 1+ = co-account), coaccountname, classname, schoolname, picture
 for user in users:
