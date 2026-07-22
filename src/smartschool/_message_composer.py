@@ -159,11 +159,12 @@ class MessageComposerForm(SessionMixin):
         if not unique_usc:
             raise ValueError("uniqueUsc is missing. Call refresh() or create() before searching users.")
 
-        # The search field only selects accounts (container 0) vs co-accounts (container 1) --
-        # the To/Cc/Bcc choice doesn't change which people match (anyone can be To/Cc/Bcc), and
-        # a picked result is placed by add_recipient() using its own ids, not this field. So we
-        # always search the To slot; only the coaccount flag matters here.
-        search_type, parent_node_id = _field_ids(RecipientType.TO, coaccount=coaccount)
+        # Search only distinguishes accounts (container 0) from co-accounts (container 1). The
+        # To/Cc/Bcc field is irrelevant to which people match (anyone can be To/Cc/Bcc), and a
+        # picked result is placed later by add_recipient() using its own ids -- so there's no
+        # field to thread through here, only the coaccount flag.
+        search_type = "1" if coaccount else "0"
+        parent_node_id = f"insertSearchFieldContainer_{search_type}_0"
         response = self.session.post(
             "/?module=Messages&file=searchUsers",
             data={
