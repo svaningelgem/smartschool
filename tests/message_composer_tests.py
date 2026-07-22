@@ -478,9 +478,10 @@ class TestMessageComposerFormGetCoaccounts:
     def test_raises_when_account_cannot_send_to_coaccounts(self, session: Smartschool):
         form = MessageComposerForm.create(session=session)
         form.can_send_to_coaccounts = False  # simulate an account without the capability
+        student = MessageSearchUser(user_id=111, value="Robin Doe", ss_id=222)
 
         with pytest.raises(SmartSchoolCoAccountsUnavailableError, match="cannot message co-accounts"):
-            form.get_coaccounts(MessageSearchUser(user_id=111, value="Robin Doe", ss_id=222))
+            form.get_coaccounts(student)
 
 
 class TestMessageComposerFormAddAllCoaccounts:
@@ -519,9 +520,10 @@ class TestMessageComposerFormAddAllCoaccounts:
     def test_add_all_coaccounts_raises_when_account_lacks_capability(self, session: Smartschool):
         form = MessageComposerForm.create(session=session)
         form.can_send_to_coaccounts = False
+        student = MessageSearchUser(user_id=111, value="Robin Doe", ss_id=222)
 
         with pytest.raises(SmartSchoolCoAccountsUnavailableError):
-            form.add_all_coaccounts(MessageSearchUser(user_id=111, value="Robin Doe", ss_id=222))
+            form.add_all_coaccounts(student)
 
 
 class TestMessageComposerFormAddAttachment:
