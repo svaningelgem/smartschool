@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from urllib.parse import parse_qs
 
 import pytest
 
@@ -94,6 +95,11 @@ _COACCOUNT_SEARCH_MIXED_XML = """<results>
 </user>
 </users>
 </results>"""
+
+
+def _sent_forms(requests_mock: Mocker, url_part: str) -> list[dict[str, str]]:
+    """Form payload of every recorded request whose URL contains ``url_part``, oldest first."""
+    return [{k: v[0] for k, v in parse_qs(r.text).items()} for r in requests_mock.request_history if url_part in r.url]
 
 
 class TestRecipientType:
@@ -291,13 +297,12 @@ class TestMessageComposerFormSearchUsers:
         with pytest.raises(ValueError, match="uniqueUsc is missing"):
             form.search_users("John")
 
-    def test_search_users_defaults_to_main_accounts(self, session: Smartschool, mocker):
+    def test_search_users_defaults_to_main_accounts(self, session: Smartschool, requests_mock: Mocker):
         form = MessageComposerForm.create(session=session)
-        spy = mocker.spy(session, "post")
 
         form.search_users("John")
 
-        data = spy.call_args.kwargs["data"]
+        data = _sent_forms(requests_mock, "file=searchUsers")[-1]
         assert data["type"] == "0"
         assert data["parentNodeId"] == "insertSearchFieldContainer_0_0"
 
@@ -360,16 +365,15 @@ class TestMessageComposerFormAddRecipient:
         with pytest.raises(ValueError, match="uniqueUsc is missing"):
             form.add_recipient(mock_user)
 
-    def test_add_coaccount_is_routed_to_the_coaccount_field_automatically(self, session: Smartschool, mocker):
+    def test_add_coaccount_is_routed_to_the_coaccount_field_automatically(self, session: Smartschool, requests_mock: Mocker):
         form = MessageComposerForm.create(session=session)
-        spy = mocker.spy(session, "post")
 
         # A parent: shares the student's userID/ssID, distinguished by user_lt. The caller
         # picks the plain TO field; the co-account container (1) is chosen automatically.
         parent = MessageSearchUser(user_id=111, value="Robin Doe", ss_id=222, user_lt=2, coaccountname="Co-account 2")
         form.add_recipient(parent, RecipientType.TO)
 
-        data = spy.call_args.kwargs["data"]
+        data = _sent_forms(requests_mock, "addUserToSelected")[-1]
         assert data["id"] == "111"
         assert data["ssid"] == "222"
         assert data["typeId"] == "users"
@@ -377,68 +381,62 @@ class TestMessageComposerFormAddRecipient:
         assert data["parentNodeId"] == "insertSearchFieldContainer_1_0"
         assert data["userlt"] == "2"
 
-    def test_add_coaccount_as_cc_uses_the_coaccount_cc_container(self, session: Smartschool, mocker):
+    def test_add_coaccount_as_cc_uses_the_coaccount_cc_container(self, session: Smartschool, requests_mock: Mocker):
         form = MessageComposerForm.create(session=session)
-        spy = mocker.spy(session, "post")
 
         parent = MessageSearchUser(user_id=111, value="Robin Doe", ss_id=222, user_lt=1)
         form.add_recipient(parent, RecipientType.CC)
 
-        data = spy.call_args.kwargs["data"]
+        data = _sent_forms(requests_mock, "addUserToSelected")[-1]
         assert data["type"] == "4"
         assert data["parentNodeId"] == "insertSearchFieldContainer_4_0"
 
-    def test_add_main_account_stays_in_the_main_field(self, session: Smartschool, mocker):
+    def test_add_main_account_stays_in_the_main_field(self, session: Smartschool, requests_mock: Mocker):
         form = MessageComposerForm.create(session=session)
-        spy = mocker.spy(session, "post")
 
         student = MessageSearchUser(user_id=111, value="Robin Doe", ss_id=222)  # user_lt defaults to 0
         form.add_recipient(student, RecipientType.TO)
 
-        data = spy.call_args.kwargs["data"]
+        data = _sent_forms(requests_mock, "addUserToSelected")[-1]
         assert data["type"] == "0"
         assert data["parentNodeId"] == "insertSearchFieldContainer_0_0"
         assert data["userlt"] == "0"
 
-    def test_add_recipient_defaults_user_lt_to_the_recipient(self, session: Smartschool, mocker):
+    def test_add_recipient_defaults_user_lt_to_the_recipient(self, session: Smartschool, requests_mock: Mocker):
         form = MessageComposerForm.create(session=session)
-        spy = mocker.spy(session, "post")
 
         parent = MessageSearchUser(user_id=111, value="Robin Doe", ss_id=222, user_lt=1)
         form.add_recipient(parent, RecipientType.TO)
 
-        assert spy.call_args.kwargs["data"]["userlt"] == "1"
+        assert _sent_forms(requests_mock, "addUserToSelected")[-1]["userlt"] == "1"
 
-    def test_add_recipient_explicit_user_lt_overrides_recipient(self, session: Smartschool, mocker):
+    def test_add_recipient_explicit_user_lt_overrides_recipient(self, session: Smartschool, requests_mock: Mocker):
         form = MessageComposerForm.create(session=session)
-        spy = mocker.spy(session, "post")
 
         parent = MessageSearchUser(user_id=111, value="Robin Doe", ss_id=222, user_lt=1)
         form.add_recipient(parent, RecipientType.TO, user_lt=2)
 
-        assert spy.call_args.kwargs["data"]["userlt"] == "2"
+        assert _sent_forms(requests_mock, "addUserToSelected")[-1]["userlt"] == "2"
 
-    def test_add_group_recipient_uses_user_lt_zero(self, session: Smartschool, mocker):
+    def test_add_group_recipient_uses_user_lt_zero(self, session: Smartschool, requests_mock: Mocker):
         form = MessageComposerForm.create(session=session)
-        spy = mocker.spy(session, "post")
 
         form.add_recipient(MessageSearchGroup(group_id=2, value="Class A", ss_id=222))
 
-        data = spy.call_args.kwargs["data"]
+        data = _sent_forms(requests_mock, "addUserToSelected")[-1]
         assert data["typeId"] == "groups"
         assert data["userlt"] == "0"
 
-    def test_add_recipient_raises_on_coaccount_without_capability(self, session: Smartschool, mocker):
+    def test_add_recipient_raises_on_coaccount_without_capability(self, session: Smartschool, requests_mock: Mocker):
         form = MessageComposerForm.create(session=session)
         form.can_send_to_coaccounts = False
-        spy = mocker.spy(session, "post")
         parent = MessageSearchUser(user_id=111, value="Robin Doe", ss_id=222, user_lt=1)
 
         with pytest.raises(SmartSchoolCoAccountsUnavailableError):
             form.add_recipient(parent)
 
         # It fails before any request is sent (no half-done state).
-        assert not [c for c in spy.call_args_list if "addUserToSelected" in c.args[0]]
+        assert _sent_forms(requests_mock, "addUserToSelected") == []
 
     def test_add_main_recipient_still_works_without_coaccount_capability(self, session: Smartschool):
         # A non-co-account (user_lt 0) add must NOT be blocked by the co-account guard.
@@ -464,13 +462,12 @@ class TestMessageComposerFormGetCoaccounts:
             (111, 2, "Co-account 2"),
         ]
 
-    def test_searches_the_coaccount_field(self, session: Smartschool, mocker):
+    def test_searches_the_coaccount_field(self, session: Smartschool, requests_mock: Mocker):
         form = MessageComposerForm.create(session=session)
-        spy = mocker.spy(session, "post")
 
         form.get_coaccounts(MessageSearchUser(user_id=111, value="Robin Doe", ss_id=222))
 
-        assert spy.call_args.kwargs["data"]["type"] == "1"  # co-account search container
+        assert _sent_forms(requests_mock, "file=searchUsers")[-1]["type"] == "1"  # co-account search container
 
     def test_returns_empty_when_no_coaccounts(self, session: Smartschool, requests_mock: Mocker):
         form = MessageComposerForm.create(session=session)
@@ -489,20 +486,19 @@ class TestMessageComposerFormGetCoaccounts:
 class TestMessageComposerFormAddAllCoaccounts:
     """Test MessageComposerForm.add_all_coaccounts() convenience."""
 
-    def test_adds_every_coaccount_of_the_student(self, session: Smartschool, requests_mock: Mocker, mocker):
+    def test_adds_every_coaccount_of_the_student(self, session: Smartschool, requests_mock: Mocker):
         form = MessageComposerForm.create(session=session)
         # search_users and add_recipient both POST to .../searchUsers, so one mock serves both;
         # add_recipient ignores the body (only needs 200).
         requests_mock.post("https://site/?module=Messages&file=searchUsers", text=_COACCOUNT_SEARCH_XML)
         student = MessageSearchUser(user_id=111, value="Robin Doe", ss_id=222)
-        spy = mocker.spy(session, "post")
 
         added = form.add_all_coaccounts(student)
 
         assert [(c.user_id, c.user_lt) for c in added] == [(111, 1), (111, 2)]
-        add_calls = [c for c in spy.call_args_list if "addUserToSelected" in c.args[0]]
-        assert [c.kwargs["data"]["userlt"] for c in add_calls] == ["1", "2"]
-        assert all(c.kwargs["data"]["type"] == "1" for c in add_calls)  # co-account To container
+        add_forms = _sent_forms(requests_mock, "addUserToSelected")
+        assert [d["userlt"] for d in add_forms] == ["1", "2"]
+        assert all(d["type"] == "1" for d in add_forms)  # co-account To container
 
     def test_adds_coaccounts_for_multiple_users(self, session: Smartschool, requests_mock: Mocker):
         form = MessageComposerForm.create(session=session)
