@@ -1,15 +1,15 @@
 from __future__ import annotations
 
-import json
 import mimetypes
-import re
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING
 from xml.etree import ElementTree as ET
 
-from ._common import bs4_html
+from logprise import logger
+
+from ._common import bs4_html, parse_smsc_vars
 from ._exceptions import SmartSchoolAttachmentUploadError, SmartSchoolCoAccountsUnavailableError
 from ._messages import BoxType
 from ._objects import MessageSearchGroup, MessageSearchUser
@@ -40,13 +40,18 @@ class RecipientType(Enum):
     BCC = "3"
 
     @property
+    def coaccount_container(self) -> str:
+        """The container index of this field's mirrored co-account block."""
+        return {RecipientType.TO: "1", RecipientType.CC: "4", RecipientType.BCC: "5"}[self]
+
+    @property
     def parent_node_id(self) -> str:
-        return f"insertSearchFieldContainer_{self.value}_0"
+        return _node_id(self.value)
 
 
-# The compose form mirrors each To/Cc/Bcc field into a second block for co-accounts (parents),
-# with these container indices.
-_COACCOUNT_FIELD = {RecipientType.TO: "1", RecipientType.CC: "4", RecipientType.BCC: "5"}
+def _node_id(container: str) -> str:
+    """The DOM id of a search-field container."""
+    return f"insertSearchFieldContainer_{container}_0"
 
 
 @dataclass
@@ -103,9 +108,12 @@ class MessageComposerForm(SessionMixin):
         soup = bs4_html(resp)
         self.hidden_fields = {inp["name"]: inp.get("value", "") for inp in soup.select("input[type=hidden][name]")}
         # The compose page always renders the co-account recipient block, so its presence is not
-        # a capability signal. The real (staff/school-gated) flag lives in the embedded SMSC.vars
-        # config object, which we parse as JSON.
-        self.can_send_to_coaccounts = bool(self._compose_vars(resp.text).get("canSendToCoAccounts"))
+        # a capability signal. The real (staff/school-gated) flag lives in the embedded SMSC vars
+        # config object.
+        smsc_vars = parse_smsc_vars(resp.text)
+        if not smsc_vars:
+            logger.warning("No SMSC vars config found in the compose page; assuming co-accounts are unavailable.")
+        self.can_send_to_coaccounts = bool(smsc_vars.get("canSendToCoAccounts"))
 
         self.payload = {
             "module": "Messages",
@@ -132,17 +140,6 @@ class MessageComposerForm(SessionMixin):
             "message": "",
             "bcc": "0",
         }
-
-    @staticmethod
-    def _compose_vars(html: str) -> dict:
-        """Return the ``SMSC.vars`` config object embedded in the compose page (``{}`` if absent/unparseable)."""
-        match = re.search(r"SMSC\s*,\s*\{\s*vars\s*:\s*", html)
-        if not match:
-            return {}
-        try:
-            return json.JSONDecoder().raw_decode(html, match.end())[0]
-        except json.JSONDecodeError:
-            return {}
 
     def set_field(self, key: str, value: str | int) -> None:
         self.payload[key] = str(value)
@@ -178,7 +175,7 @@ class MessageComposerForm(SessionMixin):
         # picked result is placed later by add_recipient() using its own ids -- so there's no
         # field to thread through here, only the coaccount flag.
         search_type = "1" if coaccount else "0"
-        parent_node_id = f"insertSearchFieldContainer_{search_type}_0"
+        parent_node_id = _node_id(search_type)
         response = self.session.post(
             "/?module=Messages&file=searchUsers",
             data={
@@ -251,20 +248,21 @@ class MessageComposerForm(SessionMixin):
         if isinstance(recipient, MessageSearchUser):
             recipient_id = recipient.user_id
             type_id = "users"
+            default_lt = recipient.user_lt
         else:
             recipient_id = recipient.group_id
             type_id = "groups"
+            default_lt = 0  # groups have no co-accounts
 
         if user_lt is None:
-            user_lt = getattr(recipient, "user_lt", 0)
+            user_lt = default_lt
 
         if user_lt > 0:  # a co-account -> mirrored co-account container of the chosen field
             self._ensure_coaccounts_available()
-            container = _COACCOUNT_FIELD[recipient_type]
-            parent_node_id = f"insertSearchFieldContainer_{container}_0"
+            container = recipient_type.coaccount_container
         else:
             container = recipient_type.value
-            parent_node_id = recipient_type.parent_node_id
+        parent_node_id = _node_id(container)
 
         response = self.session.post(
             "/?module=Messages&file=searchUsers&function=addUserToSelected",
