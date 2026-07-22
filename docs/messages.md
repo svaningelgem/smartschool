@@ -86,12 +86,12 @@ if groups:
 if users:
     form.add_all_coaccounts(users[0])
 
-# ...or add them yourself. Search co-accounts: the parents come back as extra users
-# sharing the student's userID/ssID, with user_lt 1, 2, ... add_recipient routes a
-# co-account to the co-account field automatically, so you still just pick TO/CC/BCC.
-parents, _ = form.search_users("John", coaccount=True)
-for parent in parents:
-    form.add_recipient(parent, RecipientType.TO)
+# ...or add them yourself. get_coaccounts() returns just this student's co-accounts;
+# add_recipient routes a co-account to the co-account field automatically, so you still
+# only pick TO/CC/BCC.
+if users:
+    for parent in form.get_coaccounts(users[0]):
+        form.add_recipient(parent, RecipientType.TO)
 
 # Add attachments
 form.add_attachment("path/to/document.pdf")

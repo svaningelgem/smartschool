@@ -422,6 +422,37 @@ class TestMessageComposerFormAddRecipient:
         assert data["userlt"] == "0"
 
 
+class TestMessageComposerFormGetCoaccounts:
+    """Test MessageComposerForm.get_coaccounts()."""
+
+    def test_returns_only_the_users_own_coaccounts(self, session: Smartschool, requests_mock: Mocker):
+        form = MessageComposerForm.create(session=session)
+        requests_mock.post("https://site/?module=Messages&file=searchUsers", text=_COACCOUNT_SEARCH_MIXED_XML)
+        student = MessageSearchUser(user_id=111, value="Robin Doe", ss_id=222)
+
+        coaccounts = form.get_coaccounts(student)
+
+        # The student's own account (userLT 0) and a namesake (userID 999) are excluded.
+        assert [(c.user_id, c.user_lt, c.coaccountname) for c in coaccounts] == [
+            (111, 1, "Co-account 1"),
+            (111, 2, "Co-account 2"),
+        ]
+
+    def test_searches_the_coaccount_field(self, session: Smartschool, mocker):
+        form = MessageComposerForm.create(session=session)
+        spy = mocker.spy(session, "post")
+
+        form.get_coaccounts(MessageSearchUser(user_id=111, value="Robin Doe", ss_id=222))
+
+        assert spy.call_args.kwargs["data"]["type"] == "1"  # co-account search container
+
+    def test_returns_empty_when_no_coaccounts(self, session: Smartschool, requests_mock: Mocker):
+        form = MessageComposerForm.create(session=session)
+        requests_mock.post("https://site/?module=Messages&file=searchUsers", text="<results><users /></results>")
+
+        assert form.get_coaccounts(MessageSearchUser(user_id=111, value="Robin Doe", ss_id=222)) == []
+
+
 class TestMessageComposerFormAddAllCoaccounts:
     """Test MessageComposerForm.add_all_coaccounts() convenience."""
 
@@ -439,23 +470,6 @@ class TestMessageComposerFormAddAllCoaccounts:
         add_calls = [c for c in spy.call_args_list if "addUserToSelected" in c.args[0]]
         assert [c.kwargs["data"]["userlt"] for c in add_calls] == ["1", "2"]
         assert all(c.kwargs["data"]["type"] == "1" for c in add_calls)  # co-account To container
-
-    def test_keeps_only_the_students_own_coaccounts(self, session: Smartschool, requests_mock: Mocker):
-        form = MessageComposerForm.create(session=session)
-        requests_mock.post("https://site/?module=Messages&file=searchUsers", text=_COACCOUNT_SEARCH_MIXED_XML)
-        student = MessageSearchUser(user_id=111, value="Robin Doe", ss_id=222)
-
-        added = form.add_all_coaccounts(student)
-
-        # The student's own account (userLT 0) and the namesake (userID 999) are excluded.
-        assert [(c.user_id, c.user_lt) for c in added] == [(111, 1), (111, 2)]
-
-    def test_returns_empty_when_no_coaccounts(self, session: Smartschool, requests_mock: Mocker):
-        form = MessageComposerForm.create(session=session)
-        requests_mock.post("https://site/?module=Messages&file=searchUsers", text="<results><users /></results>")
-        student = MessageSearchUser(user_id=111, value="Robin Doe", ss_id=222)
-
-        assert form.add_all_coaccounts(student) == []
 
 
 class TestMessageComposerFormAddAttachment:

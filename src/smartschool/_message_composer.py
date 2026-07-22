@@ -256,6 +256,18 @@ class MessageComposerForm(SessionMixin):
         )
         response.raise_for_status()
 
+    def get_coaccounts(self, user: MessageSearchUser) -> list[MessageSearchUser]:
+        """
+        Return the co-accounts (typically the parents) of ``user``.
+
+        Co-accounts are discovered through a name search, which can also surface namesakes and
+        the account itself, so this narrows the results to the ones that actually belong to
+        ``user`` (same ``user_id``/``ss_id``, ``user_lt`` >= 1). Add them with
+        :meth:`add_recipient` - they are routed to the co-account field automatically.
+        """
+        found, _ = self.search_users(user.value, coaccount=True)
+        return [c for c in found if c.user_id == user.user_id and c.ss_id == user.ss_id and c.user_lt > 0]
+
     def add_all_coaccounts(
         self,
         user: MessageSearchUser,
@@ -264,12 +276,10 @@ class MessageComposerForm(SessionMixin):
         """
         Add every co-account (typically the parents) of ``user`` as recipients.
 
-        Searches the co-accounts for ``user`` and adds each one belonging to them, returning the
-        co-accounts added (empty if the account has none). ``recipient_type`` picks the field
-        (To/Cc/Bcc); the co-account routing is handled automatically.
+        Returns the co-accounts added (empty if the account has none). ``recipient_type`` picks
+        the field (To/Cc/Bcc); the co-account routing is handled automatically.
         """
-        found, _ = self.search_users(user.value, coaccount=True)
-        coaccounts = [c for c in found if c.user_id == user.user_id and c.ss_id == user.ss_id and c.user_lt > 0]
+        coaccounts = self.get_coaccounts(user)
         for coaccount in coaccounts:
             self.add_recipient(coaccount, recipient_type)
         return coaccounts
