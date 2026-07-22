@@ -19,6 +19,9 @@ class SmartSchoolException(Exception):
 
     message: str
 
+    def __str__(self) -> str:
+        return self.message
+
 
 class SmartSchoolAuthenticationError(SmartSchoolException):
     """Indicates an error during the authentication process."""
@@ -32,14 +35,11 @@ class SmartSchoolAttachmentUploadError(SmartSchoolException):
     """Indicates an error while uploading a message attachment."""
 
 
+@dataclass
 class SmartSchoolCoAccountsUnavailableError(SmartSchoolException):
     """Raised when co-accounts (parents) are used on an account that lacks that capability."""
 
-    def __init__(self, message: str = "This account cannot message co-accounts"):
-        super().__init__(message)
-
-    def __str__(self) -> str:
-        return self.message
+    message: str = "This account cannot message co-accounts"
 
 
 @dataclass
