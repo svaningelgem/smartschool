@@ -167,9 +167,10 @@ def parse_smsc_vars(text: str) -> dict:
         with contextlib.suppress(json.JSONDecodeError):
             return json.JSONDecoder().raw_decode(text, match.end())[0]
 
-    # [^']* keeps the scan linear (S8786): a JS single-quoted string cannot contain a raw
-    # quote, so this matches exactly the string literal without backtracking.
-    if match := re.search(r"JSON\s*\.\s*parse\s*\(\s*'([^']*)'\s*\)\s*\)\s*;?\s*$", text, flags=re.IGNORECASE):
+    # Linear-scan pattern (S8786): [^']* cannot trade with the closing quote (a JS
+    # single-quoted string cannot contain a raw quote), and (?:;\s*)? keeps the trailing
+    # whitespace runs separated so no two quantifiers compete for the same characters.
+    if match := re.search(r"JSON\s*\.\s*parse\s*\(\s*'([^']*)'\s*\)\s*\)\s*(?:;\s*)?$", text, flags=re.IGNORECASE):
         unescaped = re.sub(r"\\u([0-9a-fA-F]{4})", lambda m: chr(int(m.group(1), 16)), match.group(1))
         # dict() raises on any non-mapping shape (data not subscriptable, "vars" absent or not
         # a mapping), collapsing all malformed payloads into the {} fallback below.
