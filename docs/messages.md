@@ -82,8 +82,9 @@ if users:
 if groups:
     form.add_recipient(groups[0], RecipientType.CC)
 
-# Also message a student's co-accounts (parents) — one call adds all of them:
-if users:
+# Messaging co-accounts (parents) is a staff/school-gated feature; check first:
+if form.can_send_to_coaccounts and users:
+    # one call adds every co-account of the student (or add_all_coaccounts(*users) for many):
     form.add_all_coaccounts(users[0])
 
 # ...or add them yourself. get_coaccounts() returns just this student's co-accounts;

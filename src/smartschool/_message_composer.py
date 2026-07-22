@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import mimetypes
+import re
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
@@ -74,6 +75,9 @@ class MessageComposerForm(SessionMixin):
     msg_id: str = "undefined"
     payload: dict[str, str] = field(default_factory=dict)
     hidden_fields: dict[str, str] = field(default_factory=dict)
+    # Whether this account may message co-accounts (parents); set from the compose page by
+    # refresh(). Co-account calls only work when this is True. See :meth:`add_all_coaccounts`.
+    can_send_to_coaccounts: bool = False
 
     @classmethod
     def create(
@@ -97,6 +101,9 @@ class MessageComposerForm(SessionMixin):
 
         soup = bs4_html(resp)
         self.hidden_fields = {inp["name"]: inp.get("value", "") for inp in soup.select("input[type=hidden][name]")}
+        # The compose page embeds this flag; the co-account recipient block is always rendered,
+        # so this is the real capability signal (staff/school-gated), not the block's presence.
+        self.can_send_to_coaccounts = bool(re.search(r'"canSendToCoAccounts"\s*:\s*true', resp.text))
 
         self.payload = {
             "module": "Messages",

@@ -175,6 +175,23 @@ class TestMessageComposerFormRefresh:
         assert "file=composeMessage" in call_url
         assert "msgID=789" in call_url
 
+    def test_refresh_detects_coaccount_support(self, session: Smartschool):
+        # The compose fixture embeds "canSendToCoAccounts":true (a staff/school-gated account).
+        form = MessageComposerForm.create(session=session)
+
+        assert form.can_send_to_coaccounts is True
+
+    def test_refresh_reports_no_coaccount_support_when_flag_is_false(self, session: Smartschool, requests_mock: Mocker):
+        form = MessageComposerForm(session=session)
+        requests_mock.get(
+            "https://site/?module=Messages&file=composeMessage&boxType=inbox&composeType=0&msgID=undefined",
+            text='<html><script>var cfg={"canSendToCoAccounts":false};</script></html>',
+        )
+
+        form.refresh()
+
+        assert form.can_send_to_coaccounts is False
+
 
 class TestMessageComposerFormSetters:
     """Test MessageComposerForm setter methods."""
