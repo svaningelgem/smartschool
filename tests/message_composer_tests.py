@@ -170,17 +170,14 @@ class TestMessageComposerFormRefresh:
         assert form.payload["copyToLVS"] == "dontCopyToLVS"
         assert form.payload["bcc"] == "0"
 
-    def test_refresh_uses_correct_url(self, session: Smartschool, mocker):
-        spy = mocker.spy(session, "get")
-
+    def test_refresh_uses_correct_url(self, session: Smartschool, requests_mock: Mocker):
         form = MessageComposerForm(session=session, msg_id="789")
         form.refresh()
 
-        spy.assert_called_once()
-        call_url = spy.call_args[0][0]
-        assert "module=Messages" in call_url
-        assert "file=composeMessage" in call_url
-        assert "msgID=789" in call_url
+        refresh_urls = [r.url for r in requests_mock.request_history if "file=composeMessage" in r.url]
+        assert len(refresh_urls) == 1
+        assert "module=Messages" in refresh_urls[0]
+        assert "msgID=789" in refresh_urls[0]
 
     def test_refresh_detects_coaccount_support(self, session: Smartschool):
         # The compose fixture embeds SMSC.vars with "canSendToCoAccounts":true (staff/school-gated).
@@ -344,15 +341,13 @@ class TestMessageComposerFormAddRecipient:
         mock_group = MessageSearchGroup(group_id=2, value="Class A", ss_id=123)
         form.add_recipient(mock_group, RecipientType.TO)
 
-    def test_add_recipient_with_user_lt(self, session: Smartschool, mocker):
+    def test_add_recipient_with_user_lt(self, session: Smartschool, requests_mock: Mocker):
         form = MessageComposerForm.create(session=session)
-        spy = mocker.spy(session, "post")
 
         mock_user = MessageSearchUser(user_id=1, value="Test User", ss_id=123)
         form.add_recipient(mock_user, RecipientType.TO, user_lt=42)
 
-        # Verify the request was made
-        spy.assert_called()
+        assert _sent_forms(requests_mock, "addUserToSelected")[-1]["userlt"] == "42"
 
     def test_add_recipient_raises_error_when_unique_usc_missing(self, session: Smartschool):
         form = MessageComposerForm(session=session)
@@ -632,25 +627,26 @@ class TestMessageComposerFormSend:
         assert response is not None
         assert response.status_code in (200, 302, 400, 500)  # Accept various responses
 
-    def test_send_uses_post_request(self, session: Smartschool, mocker):
+    def test_send_uses_post_request(self, session: Smartschool, requests_mock: Mocker):
         form = MessageComposerForm.create(session=session)
-        spy = mocker.spy(session, "post")
 
         form.send()
 
-        spy.assert_called_once()
+        posts = [r for r in requests_mock.request_history if r.method == "POST"]
+        assert len(posts) == 1
+        assert "file=composeMessage" in posts[0].url
 
-    def test_send_includes_all_payload_fields(self, session: Smartschool, mocker):
+    def test_send_includes_all_payload_fields(self, session: Smartschool, requests_mock: Mocker):
         form = MessageComposerForm.create(session=session)
         form.set_subject("Test Subject")
         form.set_message_html("<p>Test</p>")
 
-        spy = mocker.spy(session, "post")
         form.send()
 
-        # Verify that fields parameter was passed
-        call_args = spy.call_args
-        assert call_args is not None
+        # The multipart body carries every payload field's value.
+        body = requests_mock.request_history[-1].text or ""
+        assert "Test Subject" in body
+        assert "<p>Test</p>" in body
 
 
 class TestMessageComposerFormIntegration:
