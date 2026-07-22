@@ -47,14 +47,6 @@ class RecipientType(Enum):
 _COACCOUNT_FIELD = {RecipientType.TO: "1", RecipientType.CC: "4", RecipientType.BCC: "5"}
 
 
-def _field_ids(recipient_type: RecipientType, *, coaccount: bool) -> tuple[str, str]:
-    """Return the ``(type, parentNodeId)`` request fields for a recipient field."""
-    if coaccount:
-        container = _COACCOUNT_FIELD[recipient_type]
-        return container, f"insertSearchFieldContainer_{container}_0"
-    return recipient_type.value, recipient_type.parent_node_id
-
-
 @dataclass
 class MessageComposerForm(SessionMixin):
     """
@@ -246,13 +238,19 @@ class MessageComposerForm(SessionMixin):
         if user_lt is None:
             user_lt = getattr(recipient, "user_lt", 0)
 
-        add_type, parent_node_id = _field_ids(recipient_type, coaccount=user_lt > 0)
+        if user_lt > 0:  # a co-account -> mirrored co-account container of the chosen field
+            container = _COACCOUNT_FIELD[recipient_type]
+            parent_node_id = f"insertSearchFieldContainer_{container}_0"
+        else:
+            container = recipient_type.value
+            parent_node_id = recipient_type.parent_node_id
+
         response = self.session.post(
             "/?module=Messages&file=searchUsers&function=addUserToSelected",
             data={
                 "id": str(recipient_id),
                 "typeId": type_id,
-                "type": add_type,
+                "type": container,
                 "parentNodeId": parent_node_id,
                 "ssid": str(ssid),
                 "userlt": str(user_lt),
