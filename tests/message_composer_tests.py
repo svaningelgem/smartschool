@@ -54,6 +54,46 @@ _COACCOUNT_SEARCH_XML = """<results>
 </users>
 </results>"""
 
+# Same search but noisier: Robin Doe's own account (userLT 0) and a namesake's co-account
+# (a different userID) are also returned. add_all_coaccounts must keep only the student's
+# own co-accounts (matching userID/ssID, userLT >= 1).
+_COACCOUNT_SEARCH_MIXED_XML = """<results>
+<type>1</type>
+<ssID>222</ssID>
+<parentNodeId>insertSearchFieldContainer_1_0</parentNodeId>
+<groups />
+<users>
+<user>
+<userID>111</userID>
+<value>Robin Doe</value>
+<ssID>222</ssID>
+<userLT>0</userLT>
+<coaccountname />
+</user>
+<user>
+<userID>111</userID>
+<value>Robin Doe</value>
+<ssID>222</ssID>
+<userLT>1</userLT>
+<coaccountname>Co-account 1</coaccountname>
+</user>
+<user>
+<userID>111</userID>
+<value>Robin Doe</value>
+<ssID>222</ssID>
+<userLT>2</userLT>
+<coaccountname>Co-account 2</coaccountname>
+</user>
+<user>
+<userID>999</userID>
+<value>Robin Roe</value>
+<ssID>222</ssID>
+<userLT>1</userLT>
+<coaccountname>Co-account 1</coaccountname>
+</user>
+</users>
+</results>"""
+
 
 class TestRecipientType:
     """Test RecipientType enum."""
@@ -69,6 +109,14 @@ class TestRecipientType:
         assert RecipientType.COACCOUNT_TO.parent_node_id == "insertSearchFieldContainer_1_0"
         assert RecipientType.COACCOUNT_CC.parent_node_id == "insertSearchFieldContainer_4_0"
         assert RecipientType.COACCOUNT_BCC.parent_node_id == "insertSearchFieldContainer_5_0"
+
+    def test_is_coaccount(self):
+        assert RecipientType.COACCOUNT_TO.is_coaccount
+        assert RecipientType.COACCOUNT_CC.is_coaccount
+        assert RecipientType.COACCOUNT_BCC.is_coaccount
+        assert not RecipientType.TO.is_coaccount
+        assert not RecipientType.CC.is_coaccount
+        assert not RecipientType.BCC.is_coaccount
 
 
 class TestMessageComposerFormCreate:
@@ -363,6 +411,49 @@ class TestMessageComposerFormAddRecipient:
         data = spy.call_args.kwargs["data"]
         assert data["typeId"] == "groups"
         assert data["userlt"] == "0"
+
+
+class TestMessageComposerFormAddAllCoaccounts:
+    """Test MessageComposerForm.add_all_coaccounts() convenience."""
+
+    def test_adds_every_coaccount_of_the_student(self, session: Smartschool, requests_mock: Mocker, mocker):
+        form = MessageComposerForm.create(session=session)
+        # search_users and add_recipient both POST to .../searchUsers, so one mock serves both;
+        # add_recipient ignores the body (only needs 200).
+        requests_mock.post("https://site/?module=Messages&file=searchUsers", text=_COACCOUNT_SEARCH_XML)
+        student = MessageSearchUser(user_id=111, value="Robin Doe", ss_id=222)
+        spy = mocker.spy(session, "post")
+
+        added = form.add_all_coaccounts(student)
+
+        assert [(c.user_id, c.user_lt) for c in added] == [(111, 1), (111, 2)]
+        add_calls = [c for c in spy.call_args_list if "addUserToSelected" in c.args[0]]
+        assert [c.kwargs["data"]["userlt"] for c in add_calls] == ["1", "2"]
+        assert all(c.kwargs["data"]["type"] == "1" for c in add_calls)  # co-account To container
+
+    def test_keeps_only_the_students_own_coaccounts(self, session: Smartschool, requests_mock: Mocker):
+        form = MessageComposerForm.create(session=session)
+        requests_mock.post("https://site/?module=Messages&file=searchUsers", text=_COACCOUNT_SEARCH_MIXED_XML)
+        student = MessageSearchUser(user_id=111, value="Robin Doe", ss_id=222)
+
+        added = form.add_all_coaccounts(student)
+
+        # The student's own account (userLT 0) and the namesake (userID 999) are excluded.
+        assert [(c.user_id, c.user_lt) for c in added] == [(111, 1), (111, 2)]
+
+    def test_returns_empty_when_no_coaccounts(self, session: Smartschool, requests_mock: Mocker):
+        form = MessageComposerForm.create(session=session)
+        requests_mock.post("https://site/?module=Messages&file=searchUsers", text="<results><users /></results>")
+        student = MessageSearchUser(user_id=111, value="Robin Doe", ss_id=222)
+
+        assert form.add_all_coaccounts(student) == []
+
+    def test_rejects_a_non_coaccount_recipient_type(self, session: Smartschool):
+        form = MessageComposerForm.create(session=session)
+        student = MessageSearchUser(user_id=111, value="Robin Doe", ss_id=222)
+
+        with pytest.raises(ValueError, match="COACCOUNT"):
+            form.add_all_coaccounts(student, RecipientType.TO)
 
 
 class TestMessageComposerFormAddAttachment:

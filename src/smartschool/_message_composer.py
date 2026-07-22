@@ -44,6 +44,10 @@ class RecipientType(Enum):
     def parent_node_id(self) -> str:
         return f"insertSearchFieldContainer_{self.value}_0"
 
+    @property
+    def is_coaccount(self) -> bool:
+        return self in (RecipientType.COACCOUNT_TO, RecipientType.COACCOUNT_CC, RecipientType.COACCOUNT_BCC)
+
 
 @dataclass
 class MessageComposerForm(SessionMixin):
@@ -59,10 +63,7 @@ class MessageComposerForm(SessionMixin):
     >>> form.set_message_html("<p>My message</p>")
     >>> users, groups = form.search_users("John")
     >>> form.add_recipient(users[0], RecipientType.TO)
-    >>> # also message that student's co-accounts (parents):
-    >>> parents, _ = form.search_users("John", RecipientType.COACCOUNT_TO)
-    >>> for parent in parents:
-    ...     form.add_recipient(parent, RecipientType.COACCOUNT_TO)
+    >>> form.add_all_coaccounts(users[0])  # also message that student's co-accounts (parents)
     >>> form.add_attachment("README.md")
     >>> response = form.send()
     >>> print(response.status_code)
@@ -237,6 +238,27 @@ class MessageComposerForm(SessionMixin):
             },
         )
         response.raise_for_status()
+
+    def add_all_coaccounts(
+        self,
+        user: MessageSearchUser,
+        recipient_type: RecipientType = RecipientType.COACCOUNT_TO,
+    ) -> list[MessageSearchUser]:
+        """
+        Add every co-account (typically the parents) of ``user`` as recipients.
+
+        Searches the co-account slot for ``user`` and adds each co-account belonging to them,
+        returning the co-accounts added (empty if the account has none). ``recipient_type``
+        must be one of the ``COACCOUNT_*`` slots (defaults to the co-account To field).
+        """
+        if not recipient_type.is_coaccount:
+            raise ValueError(f"add_all_coaccounts needs a COACCOUNT_* recipient type, got {recipient_type.name}.")
+
+        found, _ = self.search_users(user.value, recipient_type)
+        coaccounts = [c for c in found if c.user_id == user.user_id and c.ss_id == user.ss_id and c.user_lt > 0]
+        for coaccount in coaccounts:
+            self.add_recipient(coaccount, recipient_type)
+        return coaccounts
 
     def add_attachment(self, file_path: str | Path) -> None:
         upload_dir = self.payload.get("randomDir", "")

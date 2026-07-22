@@ -82,8 +82,12 @@ if users:
 if groups:
     form.add_recipient(groups[0], RecipientType.CC)
 
-# Also message a student's co-accounts (parents). Search the co-account slot: the parents
-# come back as extra users sharing the student's userID/ssID, with user_lt 1, 2, ...
+# Also message a student's co-accounts (parents) — one call adds all of them:
+if users:
+    form.add_all_coaccounts(users[0])
+
+# ...or add them yourself. Search the co-account slot: the parents come back as extra
+# users sharing the student's userID/ssID, with user_lt 1, 2, ...
 parents, _ = form.search_users("John", RecipientType.COACCOUNT_TO)
 for parent in parents:
     form.add_recipient(parent, RecipientType.COACCOUNT_TO)
