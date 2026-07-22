@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 from xml.etree import ElementTree as ET
 
 from ._common import bs4_html
-from ._exceptions import SmartSchoolAttachmentUploadError
+from ._exceptions import SmartSchoolAttachmentUploadError, SmartSchoolCoAccountsUnavailableError
 from ._messages import BoxType
 from ._objects import MessageSearchGroup, MessageSearchUser
 from ._session import SessionMixin
@@ -246,6 +246,7 @@ class MessageComposerForm(SessionMixin):
             user_lt = getattr(recipient, "user_lt", 0)
 
         if user_lt > 0:  # a co-account -> mirrored co-account container of the chosen field
+            self._ensure_coaccounts_available()
             container = _COACCOUNT_FIELD[recipient_type]
             parent_node_id = f"insertSearchFieldContainer_{container}_0"
         else:
@@ -274,9 +275,20 @@ class MessageComposerForm(SessionMixin):
         narrows the co-account search to the ones that actually belong to ``user`` (same
         ``user_id``/``ss_id``). Add them with :meth:`add_recipient` - they are routed to the
         co-account field automatically.
+
+        Raises :class:`SmartSchoolCoAccountsUnavailableError` if this account cannot message
+        co-accounts (check :attr:`can_send_to_coaccounts` to avoid it). Failing up front matters:
+        a non-capable account's search comes back empty, so a later guard would never fire and
+        the message would silently go out without the parents.
         """
+        self._ensure_coaccounts_available()
         found, _ = self._search_recipients(user.value, coaccount=True)
         return [c for c in found if c.user_id == user.user_id and c.ss_id == user.ss_id]
+
+    def _ensure_coaccounts_available(self) -> None:
+        """Guard every co-account path: raise if this account cannot message co-accounts."""
+        if not self.can_send_to_coaccounts:
+            raise SmartSchoolCoAccountsUnavailableError("This account cannot message co-accounts (canSendToCoAccounts is false).")
 
     def add_all_coaccounts(
         self,

@@ -1,6 +1,7 @@
 __all__ = [
     "SmartSchoolAttachmentUploadError",
     "SmartSchoolAuthenticationError",
+    "SmartSchoolCoAccountsUnavailableError",
     "SmartSchoolDownloadError",
     "SmartSchoolException",
     "SmartSchoolJsonError",
@@ -29,6 +30,10 @@ class SmartSchoolParsingError(SmartSchoolException):
 
 class SmartSchoolAttachmentUploadError(SmartSchoolException):
     """Indicates an error while uploading a message attachment."""
+
+
+class SmartSchoolCoAccountsUnavailableError(SmartSchoolException):
+    """Raised when co-accounts (parents) are used on an account that lacks that capability."""
 
 
 @dataclass

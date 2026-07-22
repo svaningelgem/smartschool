@@ -11,6 +11,7 @@ from smartschool import (
     MessageSearchUser,
     RecipientType,
     SmartSchoolAttachmentUploadError,
+    SmartSchoolCoAccountsUnavailableError,
 )
 
 if TYPE_CHECKING:
@@ -412,6 +413,25 @@ class TestMessageComposerFormAddRecipient:
         assert data["typeId"] == "groups"
         assert data["userlt"] == "0"
 
+    def test_add_recipient_raises_on_coaccount_without_capability(self, session: Smartschool, mocker):
+        form = MessageComposerForm.create(session=session)
+        form.can_send_to_coaccounts = False
+        spy = mocker.spy(session, "post")
+        parent = MessageSearchUser(user_id=111, value="Robin Doe", ss_id=222, user_lt=1)
+
+        with pytest.raises(SmartSchoolCoAccountsUnavailableError):
+            form.add_recipient(parent)
+
+        # It fails before any request is sent (no half-done state).
+        assert not [c for c in spy.call_args_list if "addUserToSelected" in c.args[0]]
+
+    def test_add_main_recipient_still_works_without_coaccount_capability(self, session: Smartschool):
+        # A non-co-account (user_lt 0) add must NOT be blocked by the co-account guard.
+        form = MessageComposerForm.create(session=session)
+        form.can_send_to_coaccounts = False
+
+        form.add_recipient(MessageSearchUser(user_id=111, value="Robin Doe", ss_id=222))
+
 
 class TestMessageComposerFormGetCoaccounts:
     """Test MessageComposerForm.get_coaccounts()."""
@@ -442,6 +462,13 @@ class TestMessageComposerFormGetCoaccounts:
         requests_mock.post("https://site/?module=Messages&file=searchUsers", text="<results><users /></results>")
 
         assert form.get_coaccounts(MessageSearchUser(user_id=111, value="Robin Doe", ss_id=222)) == []
+
+    def test_raises_when_account_cannot_send_to_coaccounts(self, session: Smartschool):
+        form = MessageComposerForm.create(session=session)
+        form.can_send_to_coaccounts = False  # simulate an account without the capability
+
+        with pytest.raises(SmartSchoolCoAccountsUnavailableError, match="cannot message co-accounts"):
+            form.get_coaccounts(MessageSearchUser(user_id=111, value="Robin Doe", ss_id=222))
 
 
 class TestMessageComposerFormAddAllCoaccounts:
@@ -477,6 +504,13 @@ class TestMessageComposerFormAddAllCoaccounts:
         form = MessageComposerForm.create(session=session)
 
         assert form.add_all_coaccounts() == []
+
+    def test_add_all_coaccounts_raises_when_account_lacks_capability(self, session: Smartschool):
+        form = MessageComposerForm.create(session=session)
+        form.can_send_to_coaccounts = False
+
+        with pytest.raises(SmartSchoolCoAccountsUnavailableError):
+            form.add_all_coaccounts(MessageSearchUser(user_id=111, value="Robin Doe", ss_id=222))
 
 
 class TestMessageComposerFormAddAttachment:
