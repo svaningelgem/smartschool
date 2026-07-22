@@ -25,11 +25,20 @@ __all__ = [
 
 
 class RecipientType(Enum):
-    """Recipient type for message composition (TO, CC, BCC)."""
+    """
+    Recipient slot in the compose form.
+
+    The form has two blocks: one for the accounts themselves (``TO``/``CC``/``BCC``) and one
+    for their co-accounts / parents (``COACCOUNT_TO``/``COACCOUNT_CC``/``COACCOUNT_BCC``). The
+    value is the search-field container index Smartschool assigns to each slot.
+    """
 
     TO = "0"
     CC = "2"
     BCC = "3"
+    COACCOUNT_TO = "1"
+    COACCOUNT_CC = "4"
+    COACCOUNT_BCC = "5"
 
     @property
     def parent_node_id(self) -> str:
@@ -50,6 +59,10 @@ class MessageComposerForm(SessionMixin):
     >>> form.set_message_html("<p>My message</p>")
     >>> users, groups = form.search_users("John")
     >>> form.add_recipient(users[0], RecipientType.TO)
+    >>> # also message that student's co-accounts (parents):
+    >>> parents, _ = form.search_users("John", RecipientType.COACCOUNT_TO)
+    >>> for parent in parents:
+    ...     form.add_recipient(parent, RecipientType.COACCOUNT_TO)
     >>> form.add_attachment("README.md")
     >>> response = form.send()
     >>> print(response.status_code)
@@ -121,7 +134,17 @@ class MessageComposerForm(SessionMixin):
     def set_message_html(self, message_html: str) -> None:
         self.set_field("message", message_html)
 
-    def search_users(self, search_text: str) -> tuple[list[MessageSearchUser], list[MessageSearchGroup]]:
+    def search_users(
+        self,
+        search_text: str,
+        recipient_type: RecipientType = RecipientType.TO,
+    ) -> tuple[list[MessageSearchUser], list[MessageSearchGroup]]:
+        """
+        Search recipients for the given slot.
+
+        Search a ``COACCOUNT_*`` slot to find a student's co-accounts (parents): they come
+        back as extra users sharing the student's ``user_id``/``ss_id`` with ``user_lt`` >= 1.
+        """
         unique_usc = self.payload.get("uniqueUsc", "")
         if not unique_usc:
             raise ValueError("uniqueUsc is missing. Call refresh() or create() before searching users.")
@@ -130,8 +153,8 @@ class MessageComposerForm(SessionMixin):
             "/?module=Messages&file=searchUsers",
             data={
                 "val": search_text,
-                "type": "0",
-                "parentNodeId": "insertSearchFieldContainer_0_0",
+                "type": recipient_type.value,
+                "parentNodeId": recipient_type.parent_node_id,
                 "xml": "<results></results>",
                 "uniqueUsc": unique_usc,
             },
@@ -150,6 +173,7 @@ class MessageComposerForm(SessionMixin):
                         userID=int(user.findtext("userID", default="0")),
                         value=user.findtext("value", default=""),
                         ssID=int(user.findtext("ssID", default="0")),
+                        userLT=int(user.findtext("userLT", default="0")),
                         coaccountname=user.findtext("coaccountname") or None,
                         classname=user.findtext("classname") or None,
                         schoolname=user.findtext("schoolname") or None,
@@ -176,8 +200,15 @@ class MessageComposerForm(SessionMixin):
         self,
         recipient: MessageSearchUser | MessageSearchGroup,
         recipient_type: RecipientType = RecipientType.TO,
-        user_lt: int = 0,
+        user_lt: int | None = None,
     ) -> None:
+        """
+        Add a recipient to the given slot.
+
+        ``user_lt`` defaults to the recipient's own ``user_lt`` (0 for a main account or a
+        group, 1+ for a co-account), so a co-account returned by :meth:`search_users` is added
+        correctly without passing it explicitly. Pass it to override.
+        """
         unique_usc = self.payload.get("uniqueUsc", "")
         if not unique_usc:
             raise ValueError("uniqueUsc is missing. Call refresh() or create() before adding recipients.")
@@ -189,6 +220,9 @@ class MessageComposerForm(SessionMixin):
         else:
             recipient_id = recipient.group_id
             type_id = "groups"
+
+        if user_lt is None:
+            user_lt = getattr(recipient, "user_lt", 0)
 
         response = self.session.post(
             "/?module=Messages&file=searchUsers&function=addUserToSelected",

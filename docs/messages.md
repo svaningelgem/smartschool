@@ -82,6 +82,12 @@ if users:
 if groups:
     form.add_recipient(groups[0], RecipientType.CC)
 
+# Also message a student's co-accounts (parents). Search the co-account slot: the parents
+# come back as extra users sharing the student's userID/ssID, with user_lt 1, 2, ...
+parents, _ = form.search_users("John", RecipientType.COACCOUNT_TO)
+for parent in parents:
+    form.add_recipient(parent, RecipientType.COACCOUNT_TO)
+
 # Add attachments
 form.add_attachment("path/to/document.pdf")
 form.add_attachment("path/to/image.png")
@@ -100,6 +106,11 @@ from smartschool import RecipientType
 RecipientType.TO    # To field
 RecipientType.CC    # Carbon copy
 RecipientType.BCC   # Blind carbon copy
+
+# Same three fields, but for the recipients' co-accounts (parents):
+RecipientType.COACCOUNT_TO
+RecipientType.COACCOUNT_CC
+RecipientType.COACCOUNT_BCC
 ```
 
 ### Searching Recipients
@@ -108,7 +119,7 @@ RecipientType.BCC   # Blind carbon copy
 # Search for recipients (users and groups)
 users, groups = form.search_users("search term")
 
-# Users have properties: userID, value (display name), ssID, coaccountname, classname, schoolname, picture
+# Users have properties: user_id, value (display name), ss_id, user_lt (0 = main account, 1+ = co-account), coaccountname, classname, schoolname, picture
 for user in users:
     print(f"User: {user.value}")
 
