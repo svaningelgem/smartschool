@@ -1,3 +1,7 @@
+## 0.10.0 (2026-07-24)
+- feat(messages): support sending to co-accounts (parents) (#171)
+
+
 ## 0.9.1 (2026-07-14)
 - fix: handle empty inbox, image graphics, empty body and lazy login (#165) (#166)
 
