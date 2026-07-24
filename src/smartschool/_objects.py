@@ -178,7 +178,7 @@ class Course:
     graphic: CourseGraphic
     teachers: list[Teacher]
     skore_class_id: int
-    parent_course_id: None | int
+    parent_course_id: int | None
     skore_work_year: SkoreWorkYear
     class_: SchoolClass = Field(validation_alias=AliasChoices("class", "class_"))
 
