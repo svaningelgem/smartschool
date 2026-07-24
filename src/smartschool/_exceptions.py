@@ -1,6 +1,7 @@
 __all__ = [
     "SmartSchoolAttachmentUploadError",
     "SmartSchoolAuthenticationError",
+    "SmartSchoolCoAccountsUnavailableError",
     "SmartSchoolDownloadError",
     "SmartSchoolException",
     "SmartSchoolJsonError",
@@ -18,6 +19,9 @@ class SmartSchoolException(Exception):
 
     message: str
 
+    def __str__(self) -> str:
+        return self.message
+
 
 class SmartSchoolAuthenticationError(SmartSchoolException):
     """Indicates an error during the authentication process."""
@@ -29,6 +33,13 @@ class SmartSchoolParsingError(SmartSchoolException):
 
 class SmartSchoolAttachmentUploadError(SmartSchoolException):
     """Indicates an error while uploading a message attachment."""
+
+
+@dataclass
+class SmartSchoolCoAccountsUnavailableError(SmartSchoolException):
+    """Raised when co-accounts (parents) are used on an account that lacks that capability."""
+
+    message: str = "This account cannot message co-accounts"
 
 
 @dataclass

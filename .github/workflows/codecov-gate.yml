@@ -3,21 +3,24 @@ name: Codecov gate
 # Posts a ``codecov-reported`` commit status that:
 #   - flips to *pending* (yellow) when a PR is opened or pushed to,
 #   - flips to *success* (green) once both ``codecov/project`` and
-#     ``codecov/patch`` check-runs have attached to the head commit.
+#     ``codecov/patch`` have reported on the head commit.
 #
 # It does NOT inspect whether the Codecov contexts themselves passed -
-# the codecov/* check-runs already surface that. The gate's only job is to
+# the codecov/* contexts already surface that. The gate's only job is to
 # prevent merging before Codecov has had a chance to weigh in. Add
 # ``codecov-reported`` to the required-status list in branch protection to
 # make the gate enforcing.
 #
-# Codecov reports via the Checks API, so the listener uses ``on: check_run``
-# (the legacy ``on: status`` would never fire). The gate itself stays a
-# *commit status* so it lines up with the other status-style required checks.
+# Codecov may report via commit *statuses* or via the *Checks API* depending on
+# its configuration (this repo currently uses statuses). To be robust to either,
+# the listener triggers on both ``status`` and ``check_run`` and treats a Codecov
+# context as "reported" if it shows up in either API. (An earlier ``on: check_run``
+# only listener never fired here, leaving the gate stuck on pending.)
 
 on:
   pull_request:
     types: [opened, synchronize, reopened]
+  status: {}
   check_run:
     types: [completed]
 
@@ -33,7 +36,7 @@ jobs:
     # test/coverage run (poetry.lock / pyproject.toml / *.py / the tests
     # workflow itself), pytest won't run and Codecov won't post - short-circuit
     # the gate to ``success`` so the PR isn't blocked forever. Otherwise post
-    # ``pending`` and wait for ``finalize``. No-op on check_run events.
+    # ``pending`` and wait for ``finalize``. No-op on status/check_run events.
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
@@ -61,29 +64,42 @@ jobs:
             -f description="$desc"
 
   finalize:
-    # Re-fires on every check_run completion for the SHA. We only act when one
-    # of the two Codecov contexts is the trigger. Codecov posts via the Checks
-    # API (not legacy commit statuses), so ``on: status`` would never fire.
+    # Re-fires on every Codecov report, whether it arrives as a commit status or
+    # a check-run. A ``status`` event carries the context/state directly; a
+    # ``check_run: completed`` event carries the check name. Our own
+    # ``codecov-reported`` posts also raise a status event, but the context
+    # filter below ignores them, so there is no feedback loop.
     if: |
-      github.event_name == 'check_run'
-      && (github.event.check_run.name == 'codecov/project' || github.event.check_run.name == 'codecov/patch')
+      (github.event_name == 'status'
+        && (github.event.context == 'codecov/project' || github.event.context == 'codecov/patch')
+        && github.event.state != 'pending')
+      || (github.event_name == 'check_run'
+        && (github.event.check_run.name == 'codecov/project' || github.event.check_run.name == 'codecov/patch'))
     runs-on: ubuntu-latest
     steps:
-      - name: Flip codecov-reported to success when both contexts have attached
+      - name: Flip codecov-reported to success when both contexts have reported
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
-          SHA: ${{ github.event.check_run.head_sha }}
+          # status event -> github.event.sha; check_run event -> the check's head_sha.
+          SHA: ${{ github.event.check_run.head_sha || github.event.sha }}
         run: |
           set -euo pipefail
-          json="$(gh api "/repos/${REPO}/commits/${SHA}/check-runs")"
-          have_project=$(echo "$json" | jq '[.check_runs[] | select(.name=="codecov/project")] | length')
-          have_patch=$(echo "$json"   | jq '[.check_runs[] | select(.name=="codecov/patch")]   | length')
-          if [ "$have_project" -gt 0 ] && [ "$have_patch" -gt 0 ]; then
+          statuses="$(gh api "/repos/${REPO}/commits/${SHA}/status")"
+          checks="$(gh api "/repos/${REPO}/commits/${SHA}/check-runs")"
+          # A Codecov context counts as reported if it has a final (non-pending)
+          # result in EITHER API - so the gate works whichever way Codecov posts.
+          reported() {
+            local name="$1" in_status in_check
+            in_status=$(echo "$statuses" | jq --arg n "$name" '[.statuses[]  | select(.context==$n and .state!="pending")]      | length')
+            in_check=$(echo "$checks"    | jq --arg n "$name" '[.check_runs[] | select(.name==$n and .conclusion!=null)]        | length')
+            [ "$in_status" -gt 0 ] || [ "$in_check" -gt 0 ]
+          }
+          if reported "codecov/project" && reported "codecov/patch"; then
             gh api -X POST "/repos/${REPO}/statuses/${SHA}" \
               -f state=success \
               -f context=codecov-reported \
               -f description="codecov has reported"
           else
-            echo "Only one codecov context attached so far - staying pending."
+            echo "Both codecov contexts have not reported yet - staying pending."
           fi

@@ -445,6 +445,9 @@ class MessageSearchUser:
     user_id: Annotated[int, Field(validation_alias="userID")]
     value: String
     ss_id: Annotated[int, Field(validation_alias="ssID")]
+    # 0 = the account itself; 1, 2, ... = its co-accounts (parents). Co-accounts reuse the
+    # account's user_id/ss_id and are told apart by this index.
+    user_lt: Annotated[int, Field(validation_alias="userLT")] = 0
     coaccountname: String | None = None
     classname: String | None = None
     schoolname: String | None = None

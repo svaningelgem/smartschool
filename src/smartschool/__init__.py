@@ -21,6 +21,7 @@ from ._credentials import AppCredentials, Credentials, EnvCredentials, PathCrede
 from ._exceptions import (
     SmartSchoolAttachmentUploadError,
     SmartSchoolAuthenticationError,
+    SmartSchoolCoAccountsUnavailableError,
     SmartSchoolDownloadError,
     SmartSchoolException,
     SmartSchoolJsonError,
@@ -182,6 +183,7 @@ __all__ = [
     "SkoreWorkYear",
     "SmartSchoolAttachmentUploadError",
     "SmartSchoolAuthenticationError",
+    "SmartSchoolCoAccountsUnavailableError",
     "SmartSchoolDownloadError",
     "SmartSchoolException",
     "SmartSchoolJsonError",

@@ -82,6 +82,18 @@ if users:
 if groups:
     form.add_recipient(groups[0], RecipientType.CC)
 
+# Messaging co-accounts (parents) is a staff/school-gated feature; check first:
+if form.can_send_to_coaccounts and users:
+    # one call adds every co-account of the student (or add_all_coaccounts(*users) for many):
+    form.add_all_coaccounts(users[0])
+
+# ...or add them yourself. get_coaccounts() returns just this student's co-accounts;
+# add_recipient routes a co-account to the co-account field automatically, so you still
+# only pick TO/CC/BCC.
+if users:
+    for parent in form.get_coaccounts(users[0]):
+        form.add_recipient(parent, RecipientType.TO)
+
 # Add attachments
 form.add_attachment("path/to/document.pdf")
 form.add_attachment("path/to/image.png")
@@ -100,6 +112,9 @@ from smartschool import RecipientType
 RecipientType.TO    # To field
 RecipientType.CC    # Carbon copy
 RecipientType.BCC   # Blind carbon copy
+
+# Co-accounts (parents) use the same three fields — a recipient with user_lt > 0 is routed
+# to the co-account block automatically, so there's no separate co-account recipient type.
 ```
 
 ### Searching Recipients
@@ -108,7 +123,10 @@ RecipientType.BCC   # Blind carbon copy
 # Search for recipients (users and groups)
 users, groups = form.search_users("search term")
 
-# Users have properties: userID, value (display name), ssID, coaccountname, classname, schoolname, picture
+# Get a specific user's co-accounts (parents)
+coaccounts = form.get_coaccounts(users[0])
+
+# Users have properties: user_id, value (display name), ss_id, user_lt (0 = main account, 1+ = co-account), coaccountname, classname, schoolname, picture
 for user in users:
     print(f"User: {user.value}")
 

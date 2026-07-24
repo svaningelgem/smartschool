@@ -35,6 +35,7 @@ __all__ = [
     "natural_sort",
     "parse_mime_type",
     "parse_size",
+    "parse_smsc_vars",
     "save",
     "send_email",
     "xml_to_dict",
@@ -150,6 +151,34 @@ def bs4_html(html: str | bytes | Response) -> BeautifulSoup:
         return BeautifulSoup(html, features="lxml")
 
     return BeautifulSoup(html, features="html.parser")
+
+
+def parse_smsc_vars(text: str) -> dict:
+    """
+    Extract the ``SMSC`` ``vars`` config object embedded in a Smartschool page or script.
+
+    Smartschool serializes it in two forms, both handled here:
+    - ``$.extend(true, SMSC, { vars : {...} })`` - a raw object literal;
+    - ``$.extend(..., JSON.parse('...'))`` - JS-string-escaped JSON wrapping a ``"vars"`` key.
+
+    Returns ``{}`` when the config is absent or unparseable.
+    """
+    if match := re.search(r"SMSC\s*,\s*\{\s*vars\s*:\s*", text):
+        with contextlib.suppress(json.JSONDecodeError):
+            return json.JSONDecoder().raw_decode(text, match.end())[0]
+
+    # Linear-scan pattern (S8786): [^']* cannot trade with the closing quote (a JS
+    # single-quoted string cannot contain a raw quote), and (?:;\s*)? keeps the trailing
+    # whitespace runs separated so no two quantifiers compete for the same characters.
+    if match := re.search(r"JSON\s*\.\s*parse\s*\(\s*'([^']*)'\s*\)\s*\)\s*(?:;\s*)?$", text, flags=re.IGNORECASE):
+        unescaped = re.sub(r"\\u([0-9a-fA-F]{4})", lambda m: chr(int(m.group(1), 16)), match.group(1))
+        # dict() raises on any non-mapping shape (data not subscriptable, "vars" absent or not
+        # a mapping), collapsing all malformed payloads into the {} fallback below.
+        with contextlib.suppress(json.JSONDecodeError, TypeError, KeyError):
+            data = json.loads(unescaped.replace("\\\\", "\\"))
+            return dict(data["vars"])
+
+    return {}
 
 
 def _resolve_select_value(select_tag) -> tuple[list[str], str | list[str] | None]:

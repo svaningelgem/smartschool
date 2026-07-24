@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import contextlib
 import json
-import re
 from dataclasses import dataclass, field
 from functools import cached_property
 from http.cookiejar import LoadError, LWPCookieJar
@@ -14,7 +13,7 @@ import yaml
 from logprise import logger
 from requests import Session
 
-from ._common import bs4_html, fill_form
+from ._common import bs4_html, fill_form, parse_smsc_vars
 from ._dev_tracing import DevTracingMixin
 from ._exceptions import SmartSchoolAuthenticationError, SmartSchoolDownloadError, SmartSchoolJsonError
 
@@ -270,12 +269,10 @@ class Smartschool(Session, DevTracingMixin):
             if script.get("src") or "extend" not in script.text:
                 continue
 
-            if match := re.search(r"JSON\s*\.\s*parse\s*\(\s*'(.*)'\s*\)\s*\)\s*;?\s*$", script.text, flags=re.IGNORECASE):
-                result = re.sub(r"\\u([0-9a-fA-F]{4})", lambda m: chr(int(m.group(1), 16)), match.group(1))
-                data = json.loads(result.replace("\\\\", "\\"))
-                with contextlib.suppress(KeyError, TypeError, IndexError):
-                    self.authenticated_user = data["vars"]["authenticatedUser"]
-                    return
+            smsc_vars = parse_smsc_vars(script.text)
+            if "authenticatedUser" in smsc_vars:
+                self.authenticated_user = smsc_vars["authenticatedUser"]
+                return
 
     @cached_property
     def _url(self) -> str:
