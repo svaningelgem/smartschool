@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 
@@ -9,7 +9,7 @@ from smartschool import Course, CourseGraphic, DateRange, PersonDescription, Sch
 def create_course():
     def _create(num_teachers: int = 2):
         gr = CourseGraphic(type="icon", value="")
-        dr = DateRange(start=datetime.now(tz=timezone.utc), end=datetime.now(tz=timezone.utc))
+        dr = DateRange(start=datetime.now(tz=UTC), end=datetime.now(tz=UTC))
         swy = SkoreWorkYear(0, dr)
         cl = SchoolClass("0", 0, 0, "", "", "")
 

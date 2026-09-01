@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 from requests import Response
@@ -8,7 +8,7 @@ from smartschool import FileItem, Smartschool
 
 @pytest.fixture
 def file_item(session: Smartschool) -> FileItem:
-    return FileItem(session, None, 0, "test.pdf", "pdf", "123 kb", datetime.now(tz=timezone.utc), "dllink", "viewlink")
+    return FileItem(session, None, 0, "test.pdf", "pdf", "123 kb", datetime.now(tz=UTC), "dllink", "viewlink")
 
 
 @pytest.mark.parametrize(

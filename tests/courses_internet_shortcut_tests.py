@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 
@@ -7,17 +7,17 @@ from smartschool import InternetShortcut, Smartschool, SmartSchoolException
 
 @pytest.fixture
 def shortcut(session: Smartschool) -> InternetShortcut:
-    return InternetShortcut(session, None, 0, "test", "html", "123 kb", datetime.now(tz=timezone.utc), "dllink", "viewlink", link="https://example.com")
+    return InternetShortcut(session, None, 0, "test", "html", "123 kb", datetime.now(tz=UTC), "dllink", "viewlink", link="https://example.com")
 
 
 def test_post_init_raises_exception_when_no_link(session: Smartschool):
     with pytest.raises(SmartSchoolException, match="No link found in internet shortcut"):
-        InternetShortcut(session, None, 0, "test", "html", "123 kb", datetime.now(tz=timezone.utc), "dllink", "viewlink", link="")
+        InternetShortcut(session, None, 0, "test", "html", "123 kb", datetime.now(tz=UTC), "dllink", "viewlink", link="")
 
 
 def test_post_init_raises_exception_when_link_is_none(session: Smartschool):
     with pytest.raises(SmartSchoolException, match="No link found in internet shortcut"):
-        InternetShortcut(session, None, 0, "test", "html", "123 kb", datetime.now(tz=timezone.utc), "dllink", "viewlink", link=None)
+        InternetShortcut(session, None, 0, "test", "html", "123 kb", datetime.now(tz=UTC), "dllink", "viewlink", link=None)
 
 
 def test_post_init_succeeds_with_valid_link(shortcut: InternetShortcut):
