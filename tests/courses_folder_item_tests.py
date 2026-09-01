@@ -2,6 +2,7 @@ import pytest
 from requests import RequestException
 
 from smartschool import CourseCondensed, FolderItem, Smartschool, SmartSchoolException, SmartSchoolParsingError
+from smartschool._common import bs4_html
 
 
 @pytest.fixture
@@ -72,3 +73,19 @@ def test_parse_folder_row_exception(folder, mocker):
 
     with pytest.raises(SmartSchoolParsingError, match="No browse URL found"):
         folder._parse_folder_row(mock_row)
+
+
+def test_get_mime_from_row_image_missing_block(folder):
+    """A row without the image block raises instead of AttributeError on None."""
+    row = bs4_html("<tr id='docID_12'><td>no block here</td></tr>").select_one("tr")
+
+    with pytest.raises(SmartSchoolParsingError, match=r"div\.smsc_cm_body_row_block"):
+        folder._get_mime_from_row_image(row)
+
+
+def test_parse_document_row_missing_mime_block(folder):
+    """A row without the mime block raises instead of AttributeError on None."""
+    row = bs4_html("<tr id='docID_12'><td><a href='x'>file.pdf</a></td></tr>").select_one("tr")
+
+    with pytest.raises(SmartSchoolParsingError, match=r"div\.smsc_cm_body_row_block_mime"):
+        folder._parse_document_row(row)

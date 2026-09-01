@@ -33,6 +33,12 @@ if TYPE_CHECKING:
 __all__ = ["CourseCondensed", "CourseList", "Courses", "DocumentOrFolderItem", "FileItem", "FolderItem", "InternetShortcut", "TopNavCourses"]
 
 
+def _select_one_or_raise(row: Tag, selector: str) -> Tag:
+    if (found := row.select_one(selector)) is None:
+        raise SmartSchoolParsingError(f"No element matching {selector!r} in row")
+    return found
+
+
 @dataclass
 class CourseCondensed(objects.CourseCondensed, SessionMixin):
     def __str__(self):
@@ -284,7 +290,7 @@ class FolderItem(SessionMixin):
             raise SmartSchoolException(f"Failed to fetch folder HTML: {e}") from e
 
     def _get_mime_from_row_image(self, row: Tag) -> str | None:
-        for entry in row.select_one("div.smsc_cm_body_row_block").get("style").split(";"):
+        for entry in _select_one_or_raise(row, "div.smsc_cm_body_row_block").get("style").split(";"):
             if not entry.strip():
                 continue
             first, second = entry.split(":", 1)
@@ -296,7 +302,7 @@ class FolderItem(SessionMixin):
     def _parse_document_row(self, row: Tag) -> FileItem:
         """Parse a single table row into a file item."""
         id_ = int(row.get("id")[6:])
-        mime_block = row.select_one("div.smsc_cm_body_row_block_mime").get_text(strip=True, separator="\n")
+        mime_block = _select_one_or_raise(row, "div.smsc_cm_body_row_block_mime").get_text(strip=True, separator="\n")
         _, size_kb, last_modified = mime_block.split(" - ")
         mime_style = self._get_mime_from_row_image(row)
 
