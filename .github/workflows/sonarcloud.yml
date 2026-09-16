@@ -7,7 +7,7 @@ on:
       - '**/*.py'
       - '**/*.pyi'
       - 'pyproject.toml'
-      - 'poetry.lock'
+      - 'uv.lock'
       - 'sonar-project.properties'
       - '.github/workflows/sonarcloud.yml'
   pull_request:
@@ -43,25 +43,16 @@ jobs:
         with:
           fetch-depth: 0  # full history for accurate new-code / blame data
 
-      - uses: actions/setup-python@v7
+      - uses: astral-sh/setup-uv@v7
         if: steps.guard.outputs.enabled == 'true'
-        with:
-          python-version: "3.11"
-
-      - name: Install Poetry
-        if: steps.guard.outputs.enabled == 'true'
-        uses: snok/install-poetry@v1
-        with:
-          virtualenvs-create: true
-          virtualenvs-in-project: true
 
       - name: Install dependencies
         if: steps.guard.outputs.enabled == 'true'
-        run: poetry install --no-interaction
+        run: uv sync --locked
 
       - name: Run tests with coverage
         if: steps.guard.outputs.enabled == 'true'
-        run: poetry run pytest --cov=${{ github.event.repository.name }} --cov-branch --cov-report=xml
+        run: uv run --no-sync pytest --cov=${{ github.event.repository.name }} --cov-branch --cov-report=xml
 
       - name: SonarQube Scan
         if: steps.guard.outputs.enabled == 'true'

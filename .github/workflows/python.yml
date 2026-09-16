@@ -1,0 +1,51 @@
+name: Python
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  python:
+    uses: svaningelgem/ci-workflows/.github/workflows/python.yml@v1
+    with:
+      python-versions: '["3.11", "3.12"]'
+      pytest-args: --cov=smartschool --cov-fail-under=100 --cov-branch --cov-report=xml --cov-report=term
+    secrets:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  generate-stubs:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+          ref: ${{ github.head_ref }}
+
+      - uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.11"
+
+      - name: Generate stubs
+        run: |
+          uv sync --locked
+          uv run --no-sync ./restub
+
+      - name: Commit and push changes
+        run: |
+          if git diff --quiet src/smartschool; then
+            exit 0
+          fi
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add src/smartschool
+          git commit -m "Auto-update stub files"
+          git push

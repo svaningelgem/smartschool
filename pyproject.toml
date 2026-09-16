@@ -1,53 +1,66 @@
-[tool.poetry]
+[project]
 name = "smartschool"
 version = "0.7.0"
 description = "Unofficial API interface to the smartschool system."
-authors = ["Steven Van Ingelgem <steven@vaningelgem.be>"]
+authors = [{ name = "Steven Van Ingelgem", email = "steven@vaningelgem.be" }]
+requires-python = ">=3.10,<4"
 readme = "README.md"
-homepage = "https://github.com/svaningelgem/smartschool"
 license = "GPL-3.0"
-packages = [{include = "smartschool", from = "src"}]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+]
+dependencies = [
+    "bs4",
+    "requests",
+    "pyyaml",
+    "pydantic",
+    "logprise",
+]
 
-[tool.poetry.urls]
+[project.optional-dependencies]
+mfa = ["pyotp>=2.9.0,<3"]
+
+[project.urls]
+Homepage = "https://github.com/svaningelgem/smartschool"
 "Source Code" = "https://github.com/svaningelgem/smartschool"
-"Changelog" = "https://github.com/svaningelgem/smartschool/blob/master/CHANGELOG.md"
-"License" = "https://github.com/svaningelgem/smartschool/blob/master/LICENSE"
+Changelog = "https://github.com/svaningelgem/smartschool/blob/master/CHANGELOG.md"
+License = "https://github.com/svaningelgem/smartschool/blob/master/LICENSE"
 
-[tool.poetry.scripts]
-smartschool_report_on_results = {reference = "scripts/smartschool_report_on_results", type = "file"}
-smartschool_report_on_future_tasks = {reference = "scripts/smartschool_report_on_future_tasks", type = "file"}
-smartschool_report_on_planned_tasks = {reference = "scripts/smartschool_report_on_planned_tasks", type = "file"}
-smartschool_browse_docs = {reference = "scripts/smartschool_browse_docs", type = "file"}
-smartschool_download_all_documents = {reference = "scripts/smartschool_download_all_documents", type = "file"}
+[dependency-groups]
+dev = [
+    "pytest-mock",
+    "pytest-cov",
+    "requests-mock",
+    "ruff",
+    "time_machine",
+    "commitizen",
+]
 
-[tool.poetry.dependencies]
-python = "^3.10"
-bs4 = "*"
-requests = "*"
-pyyaml = "*"
-pydantic = "*"
-logprise = "*"
-pyotp = { version = "^2.9.0", optional = true }
+[tool.uv]
+default-groups = "all"
 
-[tool.poetry.extras]
-mfa = ["pyotp"]
+[tool.hatch.build.targets.sdist]
+include = ["src/smartschool"]
 
-[tool.poetry.group.dev.dependencies]
-pytest-mock = "*"
-pytest-cov = "*"
-requests-mock = "*"
-ruff = "*"
-time_machine = "*"
-commitizen = "*"
+[tool.hatch.build.targets.wheel]
+include = ["src/smartschool"]
+
+[tool.hatch.build.targets.wheel.sources]
+"src/smartschool" = "smartschool"
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 
 [tool.commitizen]
 name = "cz_conventional_commits"
-version_provider = "poetry"
+version_provider = "uv"
 tag_format = "$version"
 template = ".github/changelog/changelog.md.j2"   # flat "- fix: ..." format; release notes use release_notes.md.j2 via --template
 
