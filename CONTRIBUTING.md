@@ -5,16 +5,16 @@ the conventions the CI enforces, and how the package is structured.
 
 ## Getting started
 
-The project uses [Poetry](https://python-poetry.org/) and targets Python 3.10+.
+The project uses [uv](https://docs.astral.sh/uv/) and targets Python 3.10+.
 
 ```bash
 git clone https://github.com/svaningelgem/smartschool
 cd smartschool
-poetry install
+uv sync
 ```
 
-Run everything below either inside `poetry run …` or after activating the
-virtualenv (`poetry shell`).
+Run everything below either inside `uv run …` or after activating the
+virtualenv (`source .venv/bin/activate`).
 
 ## Coding guidelines
 

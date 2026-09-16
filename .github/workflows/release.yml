@@ -28,22 +28,13 @@ jobs:
           # rule; enforce_admins is off, so an admin token pushes directly.
           token: ${{ secrets.RELEASE_PAT }}
 
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
-        with:
-          virtualenvs-create: true
-          virtualenvs-in-project: true
-
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v7
+      - name: Set up uv and Python ${{ matrix.python-version }}
+        uses: astral-sh/setup-uv@v7
         with:
           python-version: ${{ matrix.python-version }}
-          cache: 'poetry'
 
       - name: Install dependencies
-        run: |
-          poetry install --no-interaction
-          pip install -U ruff mypy
+        run: uv sync --locked
 
       - name: Set version from tag
         run: |
@@ -52,19 +43,19 @@ jobs:
           VERSION=${VERSION#V}              # Remove 'V' prefix if present
           echo "Setting version to $VERSION"
           echo "VERSION=$VERSION" >> "$GITHUB_ENV"
-          poetry version $VERSION
+          uv version $VERSION
 
       - name: Run ruff format check
         if: always()
-        run: poetry run ruff format --check --diff .
+        run: uv run --no-sync ruff format --check --diff .
 
       - name: Run ruff lint check
         if: always()
-        run: poetry run ruff check --diff .
+        run: uv run --no-sync ruff check --diff .
 
       - name: Run tests with coverage
         if: always()
-        run: poetry run pytest --cov=${{ github.event.repository.name }} --cov-report=xml
+        run: uv run --no-sync pytest --cov=${{ github.event.repository.name }} --cov-report=xml
 
       - name: Upload coverage report
         uses: codecov/codecov-action@v7
@@ -74,10 +65,10 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Generate changelog
-        run: poetry run cz changelog --incremental   # chore/docs/ci/deps excluded by default; only feat/fix/refactor/perf/BREAKING
+        run: uv run --no-sync cz changelog --incremental   # chore/docs/ci/deps excluded by default; only feat/fix/refactor/perf/BREAKING
 
       - name: Build packages
-        run: poetry build
+        run: uv build
 
       - name: Publish package distributions to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
@@ -86,7 +77,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          poetry run cz changelog "$VERSION" --dry-run --template .github/changelog/release_notes.md.j2 > release-notes.md
+          uv run --no-sync cz changelog "$VERSION" --dry-run --template .github/changelog/release_notes.md.j2 > release-notes.md
           # Only the installable distributions; the *.publish.attestation files the
           # PyPI publish step drops into dist/ live on PyPI, not the GitHub release.
           gh release create "$VERSION" dist/*.whl dist/*.tar.gz --title "$VERSION" --notes-file release-notes.md

@@ -10,8 +10,8 @@ Releases are **fully tag-driven** by `.github/workflows/release.yml` ("Publish t
 The only manual step is pushing a **lightweight** tag in the bare `X.Y.Z` form (no `v`
 prefix — `tag_format = "$version"`) on **master HEAD**.
 
-The workflow then runs `poetry version <tag>` (CI-only), ruff + tests + coverage,
-`cz changelog`, `poetry build`, publishes to PyPI via trusted publishing, creates the
+The workflow then runs `uv version <tag>` (CI-only), ruff + tests + coverage,
+`cz changelog`, `uv build`, publishes to PyPI via trusted publishing, creates the
 GitHub Release itself (`gh release create`, notes from
 `.github/changelog/release_notes.md.j2`), attaches the wheel + sdist, and commits the
 regenerated `CHANGELOG.md` back to master.

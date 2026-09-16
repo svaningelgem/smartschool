@@ -66,15 +66,14 @@ Detailed usage guides with examples:
 ```bash
 git clone https://github.com/svaningelgem/smartschool.git
 cd smartschool
-pip install poetry
-poetry install
+uv sync
 
 # Run tests
-poetry run pytest
+uv run pytest
 
 # Linting & formatting
-poetry run ruff check .
-poetry run ruff format .
+uv run ruff check .
+uv run ruff format .
 ```
 
 ## Requirements
@@ -90,9 +89,9 @@ GNU General Public License v3.0
 ## Contributing
 
 Contributions welcome! See **[CONTRIBUTING.md](CONTRIBUTING.md)** for the full guide (local setup, conventions, project layout). In short, please ensure:
-- Tests pass: `poetry run pytest`
-- Code is formatted: `poetry run ruff format .`
-- Linting passes: `poetry run ruff check .`
+- Tests pass: `uv run pytest`
+- Code is formatted: `uv run ruff format .`
+- Linting passes: `uv run ruff check .`
 - Type stubs are updated: `./restub`
 
 ## Support

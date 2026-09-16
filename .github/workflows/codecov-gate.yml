@@ -33,7 +33,7 @@ permissions:
 jobs:
   init:
     # Mark the PR head SHA. If the PR changes no path that triggers the
-    # test/coverage run (poetry.lock / pyproject.toml / *.py / the tests
+    # test/coverage run (uv.lock / pyproject.toml / *.py / the tests
     # workflow itself), pytest won't run and Codecov won't post - short-circuit
     # the gate to ``success`` so the PR isn't blocked forever. Otherwise post
     # ``pending`` and wait for ``finalize``. No-op on status/check_run events.
@@ -49,8 +49,8 @@ jobs:
         run: |
           set -euo pipefail
           files="$(gh api --paginate "/repos/${REPO}/pulls/${PR}/files" --jq '.[].filename')"
-          # Mirror the paths that make tests.yml run pytest + upload coverage.
-          if echo "$files" | grep -qE '(\.py$|\.pyi$|^poetry\.lock$|^pyproject\.toml$|^\.github/workflows/tests\.yml$)'; then
+          # Mirror the paths that make python.yml run pytest + upload coverage.
+          if echo "$files" | grep -qE '(\.py$|\.pyi$|^uv\.lock$|^pyproject\.toml$|^\.github/workflows/python\.yml$)'; then
             state=pending
             desc="waiting for codecov to report"
           else
