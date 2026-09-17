@@ -1,14 +1,14 @@
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 import pytest
 from requests import Response
 
-from smartschool import FileItem, Smartschool
+from smartschool import FileItem, FolderItem
 
 
-@pytest.fixture
-def file_item(session: Smartschool) -> FileItem:
-    return FileItem(session, None, 0, "test.pdf", "pdf", "123 kb", datetime.now(tz=UTC), "dllink", "viewlink")
+@pytest.fixture(name="file_item")
+def fixture_file_item(folder: FolderItem) -> FileItem:
+    return FileItem(folder.session, folder, 0, "test.pdf", "pdf", "123 kb", datetime.now(tz=timezone.utc), "dllink", "viewlink")
 
 
 @pytest.mark.parametrize(
@@ -45,11 +45,11 @@ def file_item(session: Smartschool) -> FileItem:
         ("unknown_type", ".unknown_type"),
     ],
 )
-def test_suffix_returns_correct_extensions_for_mime_types(mime_type: str, expected_suffix: str):
+def test_suffix_returns_correct_extensions_for_mime_types(folder: FolderItem, mime_type: str, expected_suffix: str):
     """Test that _suffix returns appropriate file extensions for various mime types."""
-    file_item = FileItem(session=None, parent=None, id=1, name="test", mime_type=mime_type, size_kb=100, last_modified="2023-01-01T00:00:00Z")
+    file_item = FileItem(session=folder.session, parent=folder, id=1, name="test", mime_type=mime_type, size_kb=100, last_modified="2023-01-01T00:00:00Z")
 
-    assert file_item._suffix == expected_suffix
+    assert file_item._suffix == expected_suffix  # pylint: disable=protected-access  # ty: ignore[unresolved-attribute]  # private, so not in the stub
 
 
 def _mock_get(file_item: FileItem, mocker, *, content: bytes = b"file content", headers: dict | None = None):
@@ -63,7 +63,7 @@ def _mock_get(file_item: FileItem, mocker, *, content: bytes = b"file content", 
 def test_real_download_returns_bytes_when_no_target(file_item: FileItem, mocker):
     mock_get = _mock_get(file_item, mocker)
 
-    result = file_item._real_download(None)
+    result = file_item._real_download(None)  # pylint: disable=protected-access  # white-box test
 
     mock_get.assert_called_once_with(file_item.download_url)
     assert result == b"file content"
@@ -73,7 +73,7 @@ def test_real_download_writes_to_target_and_returns_path(file_item: FileItem, mo
     target = tmp_path / "test.pdf"
     _mock_get(file_item, mocker)
 
-    result = file_item._real_download(target)
+    result = file_item._real_download(target)  # pylint: disable=protected-access  # white-box test
 
     assert result == target
     assert target.read_bytes() == b"file content"
@@ -83,7 +83,7 @@ def test_real_download_logs_filename_suffix_mismatch(file_item: FileItem, mocker
     _mock_get(file_item, mocker, headers={"Content-Disposition": 'attachment; filename="test.txt"'})
     mock_logger = mocker.patch("smartschool._courses.logger")
 
-    file_item._real_download(None)
+    file_item._real_download(None)  # pylint: disable=protected-access  # white-box test
 
     mock_logger.warning.assert_called_once_with("Expected suffix {}, got {}", ".pdf", ".txt")
 
@@ -92,7 +92,7 @@ def test_real_download_no_warning_when_suffix_matches(file_item: FileItem, mocke
     _mock_get(file_item, mocker, headers={"Content-Disposition": 'attachment; filename="test.pdf"'})
     mock_logger = mocker.patch("smartschool._courses.logger")
 
-    file_item._real_download(None)
+    file_item._real_download(None)  # pylint: disable=protected-access  # white-box test
 
     mock_logger.warning.assert_not_called()
 
@@ -100,24 +100,24 @@ def test_real_download_no_warning_when_suffix_matches(file_item: FileItem, mocke
 def test_real_download_no_content_disposition_header(file_item: FileItem, mocker):
     _mock_get(file_item, mocker)
 
-    assert file_item._real_download(None) == b"file content"
+    assert file_item._real_download(None) == b"file content"  # pylint: disable=protected-access  # white-box test
 
 
 def test_real_download_content_disposition_without_filename(file_item: FileItem, mocker):
     _mock_get(file_item, mocker, headers={"Content-Disposition": "attachment"})
 
-    assert file_item._real_download(None) == b"file content"
+    assert file_item._real_download(None) == b"file content"  # pylint: disable=protected-access  # white-box test
 
 
 def test_real_download_skips_fixture_capture_unless_dev_tracing(file_item: FileItem, mocker):
     _mock_get(file_item, mocker)
     save = mocker.patch("smartschool._courses.save_test_response")
 
-    file_item._real_download(None)
+    file_item._real_download(None)  # pylint: disable=protected-access  # white-box test
     save.assert_not_called()
 
     file_item.session.dev_tracing = True
-    file_item._real_download(None)
+    file_item._real_download(None)  # pylint: disable=protected-access  # white-box test
     save.assert_called_once()
 
 

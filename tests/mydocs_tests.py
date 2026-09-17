@@ -11,8 +11,8 @@ if TYPE_CHECKING:
     from smartschool import Smartschool
 
 
-@pytest.fixture
-def mydocs(session: Smartschool) -> MyDocs:
+@pytest.fixture(name="mydocs")
+def fixture_mydocs(session: Smartschool) -> MyDocs:
     return MyDocs(session=session)
 
 
@@ -61,7 +61,7 @@ def test_empty_folder(mydocs: MyDocs):
     examens = mydocs.items[1]
     assert isinstance(examens, MyDocsFolder)
     assert examens.items == []
-    assert list(examens) == []
+    assert not list(examens)
 
 
 def test_file_properties(mydocs: MyDocs):
@@ -82,20 +82,26 @@ def test_is_dir_is_file(mydocs: MyDocs):
 
 
 def test_file_download_bytes(mydocs: MyDocs):
-    content = mydocs.items[2].download()
+    file = mydocs.items[2]
+    assert isinstance(file, MyDocsFile)
+    content = file.download()
     assert isinstance(content, bytes)
     assert b"test file content" in content
 
 
 def test_file_download_to_file(mydocs: MyDocs, tmp_path):
     target = tmp_path / "downloaded.docx"
-    result = mydocs.items[2].download(target, overwrite=True)
+    file = mydocs.items[2]
+    assert isinstance(file, MyDocsFile)
+    result = file.download(target, overwrite=True)
     assert result.exists()
     assert b"test file content" in result.read_bytes()
 
 
 def test_file_download_to_dir(mydocs: MyDocs, tmp_path):
-    result = mydocs.items[2].download_to_dir(tmp_path)
+    file = mydocs.items[2]
+    assert isinstance(file, MyDocsFile)
+    result = file.download_to_dir(tmp_path)
     assert result.exists()
     assert result.name == "welkom.docx"
 
@@ -119,6 +125,7 @@ def test_upload(mydocs: MyDocs, tmp_path):
     to_upload.write_text("the quick brown fox")
 
     documenten = mydocs.items[0]
+    assert isinstance(documenten, MyDocsFolder)
     uploaded = documenten.upload(to_upload)
 
     assert isinstance(uploaded, MyDocsFile)
@@ -150,6 +157,7 @@ def test_is_favourite_populated(mydocs: MyDocs):
 
 def test_rename(mydocs: MyDocs, requests_mock):
     file = mydocs.items[2]
+    assert isinstance(file, MyDocsFile)
     requests_mock.post(
         f"/mydoc/api/v1/files/{file.id}/rename",
         json={"id": file.id, "name": "renamed.docx", "parentId": "", "isFavourite": False},
@@ -168,6 +176,7 @@ def test_rename(mydocs: MyDocs, requests_mock):
 def test_move(mydocs: MyDocs, requests_mock):
     file = mydocs.items[2]
     target = mydocs.items[0]
+    assert isinstance(target, MyDocsFolder)
     requests_mock.post(
         f"/mydoc/api/v1/files/{file.id}/move",
         json={"id": file.id, "name": "welkom.docx", "parentId": target.id, "isFavourite": False},
@@ -181,6 +190,7 @@ def test_move(mydocs: MyDocs, requests_mock):
 def test_copy(mydocs: MyDocs, requests_mock):
     file = mydocs.items[2]
     target = mydocs.items[0]
+    assert isinstance(target, MyDocsFolder)
     requests_mock.post(
         f"/mydoc/api/v1/files/{file.id}/copy",
         json={
@@ -225,6 +235,7 @@ def test_restore(mydocs: MyDocs, requests_mock):
 def test_restore_into_other_folder(mydocs: MyDocs, requests_mock):
     file = mydocs.items[2]
     target = mydocs.items[0]
+    assert isinstance(target, MyDocsFolder)
     requests_mock.post(
         f"/mydoc/api/v1/files/{file.id}/restore",
         json={"id": file.id, "name": "welkom.docx", "parentId": target.id, "isFavourite": False},
@@ -238,6 +249,7 @@ def test_restore_into_other_folder(mydocs: MyDocs, requests_mock):
 def test_folder_copy_returns_folder(mydocs: MyDocs, requests_mock):
     folder = mydocs.items[0]
     target = mydocs.items[1]
+    assert isinstance(target, MyDocsFolder)
     requests_mock.post(
         f"/mydoc/api/v1/folders/{folder.id}/copy",
         json={"id": "f0000000-0000-4000-8000-0000000000ff", "name": "Documenten", "color": "yellow", "parentId": target.id, "isFavourite": False},

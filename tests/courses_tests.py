@@ -23,6 +23,7 @@ def test_course_list_normal_flow(session: Smartschool):
 
     assert len(sut) == 4
     assert sut[0].name == "Aardrijkskunde"
+    assert sut[0].course_cluster is not None
     assert sut[0].course_cluster.name == "Aardrijkskunde"
     assert sut[1].name == "Wiskunde"
     assert sut[2].name == "Maatschappij & welzijn"

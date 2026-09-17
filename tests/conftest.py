@@ -11,11 +11,11 @@ import pytest
 from loguru import logger
 from requests_mock import ANY
 
-from smartschool import EnvCredentials, Smartschool
+from smartschool import AppCredentials, CourseCondensed, EnvCredentials, FolderItem, Smartschool
 
 
-@pytest.fixture
-def session(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Generator[Smartschool, None, None]:
+@pytest.fixture(name="session")
+def fixture_session(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Generator[Smartschool, None, None]:
     """Create a Smartschool session with mocked environment and cache."""
     original_dir = Path.cwd()
 
@@ -55,19 +55,24 @@ def session_no_creds(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Generat
 
 
 @pytest.fixture
-def mock_credentials():
-    """Create mock credentials for testing."""
+def mock_credentials() -> AppCredentials:
+    """Create credentials for testing."""
+    return AppCredentials(username="test_user", password="test_pass", main_url="test.smartschool.be", mfa="123456")
 
-    class MockCreds:
-        username = "test_user"
-        password = "test_pass"
-        main_url = "test.smartschool.be"
-        mfa = "123456"
 
-        def validate(self):
-            """Empty validation method for testing."""
-
-    return MockCreds()
+@pytest.fixture
+def folder(session: Smartschool) -> FolderItem:
+    return FolderItem(
+        session=session,
+        parent=None,
+        course=CourseCondensed(
+            session=session,
+            name="Course",
+            teacher="Teacher",
+            url="url",
+        ),
+        name="Name",
+    )
 
 
 @pytest.fixture
@@ -97,16 +102,13 @@ def _get_compose_fixture(base_path: Path, test_name: str, req) -> Path | None:
     module = query.get("module", [""])[0].lower()
     file = query.get("file", [""])[0].lower()
 
-    if module != "messages":
-        return None
-
     compose_path = base_path / "composemessage"
 
-    if file == "composemessage":
+    if module == "messages" and file == "composemessage":
         specific = compose_path / f"{test_name}.html"
         return specific if specific.exists() else compose_path / "new-message.html"
 
-    if file == "searchusers":
+    if module == "messages" and file == "searchusers":
         specific = compose_path / f"{test_name}.xml"
         if specific.exists():
             return specific
@@ -128,11 +130,10 @@ def _get_fixture_filename(base_dir: Path, test_name: str, req) -> Path:
     """Map a mocked request to the fixture file that should serve it."""
     default_path = base_dir / req.method.lower()
 
-    try:
-        xml = parse_qs(req.body)["command"][0]
-        subsystem = re.search("<subsystem>(.*?)</subsystem>", xml).group(1)
-        action = re.search("<action>(.*?)</action>", xml).group(1)
-    except (AttributeError, KeyError):
+    xml = parse_qs(req.body).get("command", [""])[0]
+    subsystem = re.search("<subsystem>(.*?)</subsystem>", xml)
+    action = re.search("<action>(.*?)</action>", xml)
+    if subsystem is None or action is None:
         compose_fixture = _get_compose_fixture(default_path, test_name, req)
         if compose_fixture is not None:
             return compose_fixture
@@ -144,8 +145,8 @@ def _get_fixture_filename(base_dir: Path, test_name: str, req) -> Path:
         specific_filename = default_path / req.path.strip("/").lower() / partial_hash / f"{test_name}.json"
         default_filename = specific_filename.parent.with_suffix(".json")
     else:
-        specific_filename = default_path / subsystem / f"{test_name}.xml"
-        default_filename = specific_filename.with_stem(action)
+        specific_filename = default_path / subsystem.group(1) / f"{test_name}.xml"
+        default_filename = specific_filename.with_stem(action.group(1))
 
     if specific_filename.exists():
         return specific_filename
@@ -212,8 +213,8 @@ def _setup_requests_mocker(request, requests_mock) -> None:
     requests_mock.get("/dashboard", text="<html><body>Dashboard</body></html>")
 
 
-@pytest.fixture
-def tmp_path(tmp_path) -> Generator[Any, Any, None]:
+@pytest.fixture(name="tmp_path")
+def fixture_tmp_path(tmp_path) -> Generator[Any, Any, None]:
     """Enhanced tmp_path fixture that changes working directory."""
     original_dir = Path.cwd()
     try:

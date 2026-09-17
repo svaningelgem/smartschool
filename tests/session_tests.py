@@ -36,9 +36,9 @@ class TestSmartschoolInitialization:
         ss = Smartschool(creds=mock_credentials)
 
         assert ss.creds == mock_credentials
-        assert ss._login_attempts == 0
-        assert ss._max_login_attempts == 3
-        assert ss._authenticated_user is None
+        assert ss._login_attempts == 0  # pylint: disable=protected-access  # white-box test
+        assert ss._max_login_attempts == 3  # pylint: disable=protected-access  # white-box test
+        assert ss._authenticated_user is None  # pylint: disable=protected-access  # white-box test
 
     def test_initialization_without_credentials(self, tmp_path, mocker):
         """Should initialize without credentials."""
@@ -46,7 +46,7 @@ class TestSmartschoolInitialization:
         ss = Smartschool()
 
         assert ss.creds is None
-        assert ss._login_attempts == 0
+        assert ss._login_attempts == 0  # pylint: disable=protected-access  # white-box test
 
     def test_cache_path_creation(self, session):
         """Should create a proper cache path structure."""
@@ -64,7 +64,7 @@ class TestSmartschoolInitialization:
 
     def test_url_property(self, session):
         """Should construct URL correctly."""
-        assert session._url == "https://site"
+        assert session._url == "https://site"  # pylint: disable=protected-access  # white-box test
 
 
 class TestSmartschoolAuthentication:
@@ -72,7 +72,7 @@ class TestSmartschoolAuthentication:
 
     def test_authenticated_user_property_without_user(self, session):
         """Should raise ValueError when no authenticated user."""
-        session._authenticated_user = None
+        session._authenticated_user = None  # pylint: disable=protected-access  # white-box test
 
         with pytest.raises(ValueError, match="Could not retrieve authenticated user information"):
             _ = session.authenticated_user
@@ -81,11 +81,11 @@ class TestSmartschoolAuthentication:
         """An already-authenticated session stays authenticated and does not raise."""
         session.ensure_authenticated()
 
-        assert session._authenticated_user is not None
+        assert session._authenticated_user is not None  # pylint: disable=protected-access  # white-box test
 
     def test_ensure_authenticated_raises_when_login_fails(self, session):
         """When the lazy login cannot establish a user, the failure surfaces."""
-        session._authenticated_user = None
+        session._authenticated_user = None  # pylint: disable=protected-access  # white-box test
 
         with pytest.raises(ValueError, match="Could not retrieve authenticated user information"):
             session.ensure_authenticated()
@@ -94,9 +94,9 @@ class TestSmartschoolAuthentication:
         """Should save authenticated user data to file."""
         session.authenticated_user = authenticated_user_data
 
-        assert session._authenticated_user == authenticated_user_data
+        assert session._authenticated_user == authenticated_user_data  # pylint: disable=protected-access  # white-box test
 
-        user_file = session._authenticated_user_file
+        user_file = session._authenticated_user_file  # pylint: disable=protected-access  # white-box test
         assert user_file.exists()
 
         loaded_data = yaml.safe_load(user_file.read_text())
@@ -106,13 +106,13 @@ class TestSmartschoolAuthentication:
         """Should remove user file when set to None."""
         # First set user data
         session.authenticated_user = authenticated_user_data
-        user_file = session._authenticated_user_file
+        user_file = session._authenticated_user_file  # pylint: disable=protected-access  # white-box test
         assert user_file.exists()
 
         # Then set to None
         session.authenticated_user = None
         assert not user_file.exists()
-        assert session._authenticated_user is None
+        assert session._authenticated_user is None  # pylint: disable=protected-access  # white-box test
 
     def test_authenticated_user_file_loading(self, session, authenticated_user_data, tmp_path, mocker):
         """Should load existing user file on initialization."""
@@ -124,7 +124,7 @@ class TestSmartschoolAuthentication:
         # Create new session that should load the file
         mocker.patch.object(Path, "home", return_value=tmp_path)
         new_session = Smartschool(creds=session.creds)
-        assert new_session._authenticated_user == authenticated_user_data
+        assert new_session._authenticated_user == authenticated_user_data  # pylint: disable=protected-access  # white-box test
 
 
 class TestSmartschoolRequests:
@@ -148,13 +148,13 @@ class TestSmartschoolRequests:
 
     def test_successful_request_resets_login_attempts(self, session):
         """Should reset login attempts after successful request."""
-        session._login_attempts = 2
+        session._login_attempts = 2  # pylint: disable=protected-access  # white-box test
 
         # Make request to dashboard (mocked as successful)
         response = session.request("GET", "/dashboard")
 
         assert response.status_code == 200
-        assert session._login_attempts == 0
+        assert session._login_attempts == 0  # pylint: disable=protected-access  # white-box test
 
     def test_json_get_request(self, session, requests_mock):
         """Should handle JSON GET requests properly."""
@@ -201,11 +201,11 @@ class TestAuthenticationFlow:
 
     def test_needs_auth_detection(self, session):
         """Should correctly detect when authentication is needed."""
-        assert session._is_auth_url("https://site/login")
-        assert session._is_auth_url("https://site/account-verification")
-        assert session._is_auth_url("https://site/2fa")
-        assert session._is_auth_url("https://site/2fa/")
-        assert not session._is_auth_url("https://site/dashboard")
+        assert session._is_auth_url("https://site/login")  # pylint: disable=protected-access  # white-box test
+        assert session._is_auth_url("https://site/account-verification")  # pylint: disable=protected-access  # white-box test
+        assert session._is_auth_url("https://site/2fa")  # pylint: disable=protected-access  # white-box test
+        assert session._is_auth_url("https://site/2fa/")  # pylint: disable=protected-access  # white-box test
+        assert not session._is_auth_url("https://site/dashboard")  # pylint: disable=protected-access  # white-box test
 
     def test_login_flow(self, session):
         """Should handle complete login flow successfully."""
@@ -213,7 +213,7 @@ class TestAuthenticationFlow:
         assert response.url.endswith("/dashboard")
 
         # Should eventually reach dashboard after auth
-        assert session._login_attempts == 0  # Reset after successful auth
+        assert session._login_attempts == 0  # pylint: disable=protected-access  # white-box test: reset after successful auth
 
     def test_authenticated_request_fires_single_http_call(self, session: Smartschool, requests_mock):
         """An already-authenticated request must hit the network exactly once."""
@@ -245,7 +245,7 @@ class TestAuthenticationFlow:
 
     def test_max_login_attempts_exceeded(self, session):
         """Should raise error when max login attempts exceeded."""
-        session._login_attempts = 3
+        session._login_attempts = 3  # pylint: disable=protected-access  # white-box test
 
         with pytest.raises(SmartSchoolAuthenticationError, match="Max login attempts"):
             session.request("GET", "/login")
@@ -259,7 +259,7 @@ class TestAuthenticationFlow:
         mock_response = mocker.Mock(spec=requests.Response, url="https://site/2fa")
 
         with pytest.raises(SmartSchoolAuthenticationError, match="2FA verification requires 'pyotp'"):
-            session._handle_auth_redirect(mock_response)
+            session._handle_auth_redirect(mock_response)  # pylint: disable=protected-access  # white-box test
 
     def test_2fa_success(self, session, mocker):
         """Should handle 2FA authentication successfully when pyotp is available."""
@@ -275,7 +275,7 @@ class TestAuthenticationFlow:
         )
 
         # This should complete without error
-        result = session._handle_auth_redirect(mock_response)
+        result = session._handle_auth_redirect(mock_response)  # pylint: disable=protected-access  # white-box test
         assert result.url == "https://site/dashboard"
 
     def test_2fa_not_returning_200(self, session, requests_mock, mocker):
@@ -283,7 +283,7 @@ class TestAuthenticationFlow:
         requests_mock.get("https://site/2fa/api/v1/config", status_code=304)
         mock_response = mocker.Mock(spec=requests.Response, url="https://site/2fa", status_code=302)
         with pytest.raises(SmartSchoolAuthenticationError, match="Could not access 2FA API endpoint"):
-            session._handle_auth_redirect(mock_response)
+            session._handle_auth_redirect(mock_response)  # pylint: disable=protected-access  # white-box test
 
     def test_2fa_unsupported_mechanism(self, session, requests_mock, mocker):
         """Should raise error for unsupported 2FA mechanisms."""
@@ -293,7 +293,7 @@ class TestAuthenticationFlow:
 
         mock_response = mocker.Mock(spec=requests.Response, url="https://site/2fa")
         with pytest.raises(SmartSchoolAuthenticationError, match="Only googleAuthenticator 2FA is supported"):
-            session._handle_auth_redirect(mock_response)
+            session._handle_auth_redirect(mock_response)  # pylint: disable=protected-access  # white-box test
 
 
 class TestSmartschoolProperties:
@@ -318,7 +318,7 @@ class TestSmartschoolProperties:
         """Should return None for authenticated user file without credentials."""
         mocker.patch.object(Path, "home", return_value=tmp_path)
         ss = Smartschool()
-        assert ss._authenticated_user_file is None
+        assert ss._authenticated_user_file is None  # pylint: disable=protected-access  # white-box test
 
 
 class TestErrorHandling:
@@ -349,7 +349,7 @@ class TestErrorHandling:
 def test_no_auth_file(tmp_path, mocker):
     mocker.patch.object(Path, "home", return_value=tmp_path)
     sut = Smartschool()
-    assert sut._authenticated_user_file is None
+    assert sut._authenticated_user_file is None  # pylint: disable=protected-access  # white-box test
     sut.authenticated_user = None
 
 
@@ -368,18 +368,18 @@ def test_parse_login_information_continue_branch(mocker, tmp_path):
 
     mocker.patch("smartschool._session.bs4_html", return_value=mock_html)
 
-    parser._parse_login_information(mock_response)
+    parser._parse_login_information(mock_response)  # pylint: disable=protected-access  # white-box test
 
     # Should not set authenticated_user since all scripts are skipped
-    assert parser._authenticated_user is None
+    assert parser._authenticated_user is None  # pylint: disable=protected-access  # white-box test
 
 
 def test_authenticated_user_returned_when_platform_id_populates_it(session, mocker):
     """authenticated_user lazily hits platform_id; if that login populates the user, it is returned."""
-    session._authenticated_user = None
+    session._authenticated_user = None  # pylint: disable=protected-access  # white-box test
 
     def _populate(*_args, **_kwargs):
-        session._authenticated_user = {"id": "49_populated"}
+        session._authenticated_user = {"id": "49_populated"}  # pylint: disable=protected-access  # white-box test
         return 49
 
     mocker.patch.object(Smartschool, "platform_id", new_callable=mocker.PropertyMock, side_effect=_populate)

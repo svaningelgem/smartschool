@@ -2,11 +2,11 @@ from datetime import datetime
 
 import pytest
 
-from smartschool import CourseCondensed, FolderItem, InternetShortcut, Smartschool, TopNavCourses
+from smartschool import CourseCondensed, FileItem, FolderItem, InternetShortcut, Smartschool, TopNavCourses
 
 
-@pytest.fixture
-def courses(session: Smartschool) -> list[CourseCondensed]:
+@pytest.fixture(name="courses")
+def fixture_courses(session: Smartschool) -> list[CourseCondensed]:
     """Create a session for testing."""
     return list(TopNavCourses(session))
 
@@ -34,6 +34,7 @@ def test_full_workflow(courses: list[CourseCondensed], tmp_path):
     # file without a '.' in the name
     pdf_file = thema_1.items[1]  # "Evaluatieblad persoonlijke interesse in kunst"
 
+    assert isinstance(pdf_file, FileItem)
     assert pdf_file.name == "Evaluatieblad persoonlijke interesse in kunst"
     assert pdf_file.filename == "Evaluatieblad persoonlijke interesse in kunst.pdf"
     assert pdf_file.mime_type == "pdf"
@@ -50,13 +51,17 @@ def test_full_workflow(courses: list[CourseCondensed], tmp_path):
 
     # file with a "." in the name:
     pptx_file = thema_1.items[3]
+    assert isinstance(pptx_file, FileItem)
     assert pptx_file.name == "Persoonlijke kunstinteresse.pptx"
     assert pptx_file.filename == "Persoonlijke kunstinteresse.pptx"
 
 
 def test_shortcut_via_inline_link(courses: list[CourseCondensed], tmp_path):
-    shortcut = courses[4].items[1].items[8]  # chemie / oefeningen en verbetersleutels / shortcut
+    folder = courses[4].items[1]  # chemie / oefeningen en verbetersleutels
+    assert isinstance(folder, FolderItem)
+    shortcut = folder.items[8]
 
+    assert isinstance(shortcut, InternetShortcut)
     assert shortcut.name == "extra oefeningen elektrolyten en ionisatie+dissociatie"
     assert shortcut.filename == "extra oefeningen elektrolyten en ionisatie_dissociatie.url"
     assert shortcut.mime_type == "html"
@@ -69,9 +74,13 @@ def test_shortcut_via_inline_link(courses: list[CourseCondensed], tmp_path):
     assert dl_file.read_text().splitlines() == ["[InternetShortcut]", "URL=http://chemieleerkracht.blackbox.website/index.php/elektrolyten/"]
 
 
-def test_shortcut_via_iframe_src(courses: list[CourseCondensed], tmp_path):
-    shortcut = courses[12].items[2].items[0]  # ICT / OneDrive... / shortcut
+@pytest.mark.usefixtures("tmp_path")
+def test_shortcut_via_iframe_src(courses: list[CourseCondensed]):
+    folder = courses[12].items[2]  # ICT / OneDrive...
+    assert isinstance(folder, FolderItem)
+    shortcut = folder.items[0]
 
+    assert isinstance(shortcut, InternetShortcut)
     assert shortcut.name == "Hoe je gebruik je OneDrive?"
     assert shortcut.filename == "Hoe je gebruik je OneDrive.url"
     assert shortcut.mime_type == "html"
@@ -80,8 +89,11 @@ def test_shortcut_via_iframe_src(courses: list[CourseCondensed], tmp_path):
     assert shortcut.link == "https://www.youtube.com/embed/Zm-g5PpzsEE"
 
 
-def test_shortcut_via_onclick(courses: list[CourseCondensed], tmp_path):
-    shortcut = courses[-1].items[0].items[-1]  # Wiskunde / Binnemans / shortcut
+@pytest.mark.usefixtures("tmp_path")
+def test_shortcut_via_onclick(courses: list[CourseCondensed]):
+    folder = courses[-1].items[0]  # Wiskunde / Binnemans
+    assert isinstance(folder, FolderItem)
+    shortcut = folder.items[-1]
 
     assert isinstance(shortcut, InternetShortcut)
     assert shortcut.name == "Puntensysteem portfolio"

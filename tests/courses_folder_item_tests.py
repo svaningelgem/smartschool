@@ -1,23 +1,8 @@
 import pytest
 from requests import RequestException
 
-from smartschool import CourseCondensed, FolderItem, Smartschool, SmartSchoolException, SmartSchoolParsingError
+from smartschool import SmartSchoolException, SmartSchoolParsingError
 from smartschool._common import bs4_html
-
-
-@pytest.fixture
-def folder(session: Smartschool) -> FolderItem:
-    return FolderItem(
-        session=session,
-        parent=None,
-        course=CourseCondensed(
-            session=session,
-            name="Course",
-            teacher="Teacher",
-            url="url",
-        ),
-        name="Name",
-    )
 
 
 def test_get_folder_html_exception_handling(folder, mocker):
@@ -25,18 +10,18 @@ def test_get_folder_html_exception_handling(folder, mocker):
     mocker.patch.object(folder.session, "get", side_effect=RequestException("Network error"))
 
     with pytest.raises(SmartSchoolException, match="Failed to fetch folder HTML: Network error"):
-        folder._get_folder_html()
+        folder._get_folder_html()  # pylint: disable=protected-access  # white-box test
 
 
 def test_get_folder_html_captures_fixture_only_when_dev_tracing(folder, mocker):
     """Fixture capture is a dev-only side effect, gated behind dev_tracing."""
     save = mocker.patch("smartschool._courses.save_test_response")
 
-    folder._get_folder_html()
+    folder._get_folder_html()  # pylint: disable=protected-access  # white-box test
     save.assert_not_called()
 
     folder.session.dev_tracing = True
-    folder._get_folder_html()
+    folder._get_folder_html()  # pylint: disable=protected-access  # white-box test
     save.assert_called_once()
 
 
@@ -47,7 +32,7 @@ def test_get_mime_from_row_image_return_none(folder, mocker):
     mock_div.get.return_value = "color: red; font-size: 12px"
     mock_row.select_one.return_value = mock_div
 
-    result = folder._get_mime_from_row_image(mock_row)
+    result = folder._get_mime_from_row_image(mock_row)  # pylint: disable=protected-access  # white-box test
 
     assert result is None
 
@@ -59,7 +44,7 @@ def test_get_mime_from_row_image_continue_branch(folder, mocker):
     mock_div.get.return_value = "  ; ; background-image: url(/mime_type_pdf/icon.png)"
     mock_row.select_one.return_value = mock_div
 
-    result = folder._get_mime_from_row_image(mock_row)
+    result = folder._get_mime_from_row_image(mock_row)  # pylint: disable=protected-access  # white-box test
 
     assert result == "pdf"
 
@@ -72,7 +57,7 @@ def test_parse_folder_row_exception(folder, mocker):
     mock_row.select.return_value = [mock_link]
 
     with pytest.raises(SmartSchoolParsingError, match="No browse URL found"):
-        folder._parse_folder_row(mock_row)
+        folder._parse_folder_row(mock_row)  # pylint: disable=protected-access  # white-box test
 
 
 def test_get_mime_from_row_image_missing_block(folder):
@@ -80,7 +65,7 @@ def test_get_mime_from_row_image_missing_block(folder):
     row = bs4_html("<tr id='docID_12'><td>no block here</td></tr>").select_one("tr")
 
     with pytest.raises(SmartSchoolParsingError, match=r"div\.smsc_cm_body_row_block"):
-        folder._get_mime_from_row_image(row)
+        folder._get_mime_from_row_image(row)  # pylint: disable=protected-access  # white-box test
 
 
 def test_parse_document_row_missing_mime_block(folder):
@@ -88,4 +73,4 @@ def test_parse_document_row_missing_mime_block(folder):
     row = bs4_html("<tr id='docID_12'><td><a href='x'>file.pdf</a></td></tr>").select_one("tr")
 
     with pytest.raises(SmartSchoolParsingError, match=r"div\.smsc_cm_body_row_block_mime"):
-        folder._parse_document_row(row)
+        folder._parse_document_row(row)  # pylint: disable=protected-access  # white-box test

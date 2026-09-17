@@ -17,6 +17,7 @@ def test_results_normal_flow(mocker, session: Smartschool):
 
     result = sut[0]
     assert result.name == "Repetitie hoofdstuk 1"
+    assert isinstance(result.graphic, PercentageGraphic)
     assert result.graphic.total_points == 18
     assert result.graphic.achieved_points == pytest.approx(13.5)
     assert result.graphic.percentage == pytest.approx(0.75)
@@ -95,7 +96,7 @@ def test_extended_result_fields(session: Smartschool, requests_mock):
 def test_unknown_graphic_color_raises():
     """Strict enum: unknown colors must fail loudly so we add the member."""
     with pytest.raises(ValidationError):
-        PercentageGraphic(type="percentage", color="periwinkle", value=50, description="5/10")
+        PercentageGraphic(type="percentage", color="periwinkle", value=50, description="5/10")  # ty: ignore[invalid-argument-type]  # invalid on purpose
 
 
 def test_unknown_result_type_raises(session: Smartschool, requests_mock):
