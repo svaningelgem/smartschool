@@ -1,5 +1,8 @@
+import dataclasses
 from datetime import date
 from typing import TYPE_CHECKING
+
+import pytest
 
 from smartschool import FutureTasks, Smartschool
 
@@ -31,3 +34,12 @@ def test_future_tasks_moved_task(session: Smartschool):
     assert x[0].courses[0].items.tasks[0].description == "Toets Heelal"
 
     assert x[0].courses[0].items.tasks[0].end_moment_ts == "318_20231127"
+
+
+def test_future_tasks_is_a_dataclass_with_its_own_init():
+    """The generated `__init__` is what names the class in a wrong-call TypeError."""
+    assert dataclasses.is_dataclass(FutureTasks)
+    assert FutureTasks.__init__.__qualname__ == "FutureTasks.__init__"
+
+    with pytest.raises(TypeError, match=r"FutureTasks.__init__\(\) missing 1 required positional argument: 'session'"):
+        FutureTasks()  # pylint: disable=no-value-for-parameter  # ty: ignore[missing-argument]  # that is the behaviour under test

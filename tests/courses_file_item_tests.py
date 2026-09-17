@@ -162,3 +162,14 @@ def test_download_accepts_string_path(file_item: FileItem, mocker, tmp_path):
     result = file_item.download(str(tmp_path / "out.pdf"))
 
     assert result.read_bytes() == b"file content"
+
+
+def test_real_download_asserts_before_requesting_without_a_download_url(file_item: FileItem, mocker):
+    """A row that carries no download link fails its own assert, naming the file; nothing is requested."""
+    file_item.download_url = None
+    get = mocker.patch.object(file_item.session, "get")
+
+    with pytest.raises(AssertionError, match=r"test\.pdf has no download URL"):
+        file_item._real_download(None)  # pylint: disable=protected-access  # white-box test
+
+    get.assert_not_called()

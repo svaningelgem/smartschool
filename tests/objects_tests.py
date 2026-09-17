@@ -1,8 +1,9 @@
 from datetime import datetime, timezone
 
 import pytest
+from pydantic import ValidationError
 
-from smartschool import Course, CourseGraphic, DateRange, PersonDescription, SchoolClass, SkoreWorkYear, Teacher
+from smartschool import Course, CourseGraphic, DateRange, MessageSearchUser, PersonDescription, SchoolClass, SkoreWorkYear, Teacher
 
 
 @pytest.fixture(name="create_course")
@@ -42,3 +43,25 @@ def test_course_graphic_accepts_image():
     """Issue #165: some schools use image graphics for courses, not only icons."""
     assert CourseGraphic(type="image", value="foo").type == "image"
     assert CourseGraphic(type="icon", value="foo").type == "icon"
+
+
+def test_message_search_user_accepts_both_spellings_and_reports_the_one_used():
+    """The composer builds these by field name, so a validation error points at `user_id`, not `userID`."""
+    by_alias = MessageSearchUser(  # pylint: disable=unexpected-keyword-arg,no-value-for-parameter  # ty: ignore[missing-argument]  # the API aliases
+        userID=1,  # ty: ignore[unknown-argument]
+        value="v",
+        ssID=2,  # ty: ignore[unknown-argument]
+    )
+    assert MessageSearchUser(user_id=1, value="v", ss_id=2) == by_alias
+
+    with pytest.raises(ValidationError) as by_field_name:
+        MessageSearchUser(user_id="nope", value="v", ss_id=2)  # ty: ignore[invalid-argument-type]  # invalid on purpose
+    with pytest.raises(ValidationError) as by_api_alias:
+        MessageSearchUser(  # pylint: disable=unexpected-keyword-arg,no-value-for-parameter  # ty: ignore[missing-argument]  # idem
+            userID="nope",  # ty: ignore[unknown-argument]
+            value="v",
+            ssID=2,  # ty: ignore[unknown-argument]
+        )
+
+    assert [error["loc"] for error in by_field_name.value.errors()] == [("user_id",)]
+    assert [error["loc"] for error in by_api_alias.value.errors()] == [("userID",)]

@@ -1,3 +1,4 @@
+import dataclasses
 import platform
 from datetime import datetime
 from pathlib import Path
@@ -126,3 +127,11 @@ def test_env_credentials_mfa_as_datetime():
     # Verify that MFA is now a string
     assert isinstance(sut.mfa, str)
     assert sut.mfa == "2024-01-15 00:00:00"
+
+
+def test_path_credentials_fields_default_to_empty_strings():
+    """The fields `__post_init__` fills are declared with empty defaults, not `None`."""
+    defaults = {field.name: field.default for field in dataclasses.fields(PathCredentials) if not field.init}
+
+    assert defaults == {"username": "", "password": "", "main_url": "", "mfa": "", "other_info": None}
+    assert PathCredentials.username == ""

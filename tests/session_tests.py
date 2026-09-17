@@ -398,3 +398,15 @@ def test_cookies_saved_when_response_stays_on_auth_url(session, requests_mock):
     resp = session.get("/login")
 
     assert "/login" in resp.url
+
+
+def test_credential_less_session_reports_the_same_error_everywhere(session_no_creds: Smartschool, mocker):
+    """Every path that needs credentials raises the same RuntimeError, not an AttributeError on `None`."""
+    for call in (
+        lambda: repr(session_no_creds),
+        lambda: session_no_creds.create_url("/"),
+        lambda: session_no_creds._do_login(mocker.Mock()),  # pylint: disable=protected-access  # white-box test
+        lambda: session_no_creds._do_login_verification(mocker.Mock()),  # pylint: disable=protected-access  # white-box test
+    ):
+        with pytest.raises(RuntimeError, match=r"Smartschool instance must have valid credentials\."):
+            call()
