@@ -382,6 +382,8 @@ def create_filesystem_safe_filename(filename: str) -> str:
     # Split extension before processing
     path = Path(filename)
     name, ext = path.stem, path.suffix
+    if ext == ".":  # Python 3.14 reports a trailing dot as a suffix
+        name, ext = path.name, ""
 
     # Replace unsafe chars and normalize whitespace
     safe_name = name.replace('"', "'")
