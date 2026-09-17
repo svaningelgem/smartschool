@@ -7,8 +7,8 @@ from pytest_mock import MockType
 from smartschool._dev_tracing import DevTracingMixin
 
 
-@pytest.fixture
-def sut(tmp_path: Path) -> DevTracingMixin:
+@pytest.fixture(name="sut")
+def fixture_sut(tmp_path: Path) -> DevTracingMixin:
     class TracingTestClass(DevTracingMixin):
         cache_path: Path = tmp_path
         dev_tracing: bool = True
@@ -19,8 +19,8 @@ def sut(tmp_path: Path) -> DevTracingMixin:
     return TracingTestClass()
 
 
-@pytest.fixture
-def mock_response(mocker):
+@pytest.fixture(name="mock_response")
+def fixture_mock_response(mocker):
     resp = mocker.MagicMock()
     resp.status_code = 200
     resp.reason = "OK"
@@ -63,14 +63,14 @@ def test_dev_tracing_disabled(tmp_path, mocker):
 
     dummy = DummyDisabled()
     mock_method = mocker.Mock(return_value=mocker.Mock())
-    dummy._make_traced_request(mock_method, "GET", "https://example.com")
+    dummy._make_traced_request(mock_method, "GET", "https://example.com")  # pylint: disable=protected-access  # white-box test
     trace_files = list((tmp_path / "dev_tracing").glob("*.txt"))
     assert len(trace_files) == 0
 
 
 def test_successful_request(sut, mock_response, tmp_path, mocker):
     mock_method = mocker.Mock(return_value=mock_response)
-    sut._make_traced_request(mock_method, "POST", "https://example.com", data={"key": "value"})
+    sut._make_traced_request(mock_method, "POST", "https://example.com", data={"key": "value"})  # pylint: disable=protected-access  # white-box test
 
     trace_dir = tmp_path / "dev_tracing"
     trace_files = list(trace_dir.glob("*.txt"))
@@ -109,7 +109,7 @@ def _get_content_with_exception(mocker, sut: DevTracingMixin, tmp_path: Path, mo
 
     mock_method = mocker.Mock(side_effect=TestExc)
     with pytest.raises(TestExc):
-        sut._make_traced_request(mock_method, "GET", "https://example.com", params={"p": 1})
+        sut._make_traced_request(mock_method, "GET", "https://example.com", params={"p": 1})  # pylint: disable=protected-access  # white-box test
 
     trace_dir = tmp_path / "dev_tracing"
     trace_files = list(trace_dir.glob("*.txt"))
@@ -166,7 +166,7 @@ def test_failed_request_with_bare_bones_response(sut, mock_response, tmp_path, m
 
 def test_failed_request_with_bare_bones_response2(sut, mock_response, tmp_path, mocker):
     mock_response.request.headers = None
-    mock_response.request._cookies = None
+    mock_response.request._cookies = None  # pylint: disable=protected-access  # white-box test
     mock_response.request.body = None
 
     content = _get_content_with_exception(mocker, sut, tmp_path, mock_response)

@@ -11,8 +11,8 @@ if TYPE_CHECKING:
     from smartschool import Smartschool
 
 
-@pytest.fixture
-def intradesk(session: Smartschool) -> Intradesk:
+@pytest.fixture(name="intradesk")
+def fixture_intradesk(session: Smartschool) -> Intradesk:
     return Intradesk(session=session)
 
 
@@ -67,7 +67,7 @@ def test_empty_folder(intradesk: Intradesk):
     examens = intradesk.items[1]
     assert isinstance(examens, IntradeskFolder)
     assert examens.items == []
-    assert list(examens) == []
+    assert not list(examens)
 
 
 def test_file_filename(intradesk: Intradesk):
@@ -86,6 +86,7 @@ def test_file_download_bytes(intradesk: Intradesk):
 
 def test_file_download_to_file(intradesk: Intradesk, tmp_path):
     file = intradesk.items[2]
+    assert isinstance(file, IntradeskFile)
     target = tmp_path / "downloaded.txt"
     result = file.download(target, overwrite=False)
     assert result.exists()
@@ -94,18 +95,20 @@ def test_file_download_to_file(intradesk: Intradesk, tmp_path):
 
 def test_file_download_no_overwrite(intradesk: Intradesk):
     file = intradesk.items[2]
+    assert isinstance(file, IntradeskFile)
     target = Path("downloaded.txt")
-    target.write_text("existing content")
+    target.write_text("existing content", encoding="utf8")
 
     result = file.download(target, overwrite=False)
     assert result == target.resolve()
-    assert target.read_text() == "existing content"
+    assert target.read_text(encoding="utf8") == "existing content"
 
 
 def test_file_download_with_overwrite(intradesk: Intradesk):
     file = intradesk.items[2]
+    assert isinstance(file, IntradeskFile)
     target = Path("downloaded.txt")
-    target.write_text("existing content")
+    target.write_text("existing content", encoding="utf8")
 
     result = file.download(target, overwrite=True)
     assert result.exists()
@@ -114,6 +117,7 @@ def test_file_download_with_overwrite(intradesk: Intradesk):
 
 def test_file_download_to_dir(intradesk: Intradesk, tmp_path):
     file = intradesk.items[2]
+    assert isinstance(file, IntradeskFile)
     result = file.download_to_dir(tmp_path)
     assert result.exists()
     assert result.name == "welkom.docx"
@@ -127,6 +131,7 @@ def test_file_parent_reference(intradesk: Intradesk):
 
 def test_subfolder_file_parent(intradesk: Intradesk):
     documenten = intradesk.items[0]
+    assert isinstance(documenten, IntradeskFolder)
     sub_file = documenten.items[1]
     assert isinstance(sub_file, IntradeskFile)
     assert sub_file.parent is documenten

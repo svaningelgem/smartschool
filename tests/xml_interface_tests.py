@@ -11,6 +11,6 @@ def test_build_alias_map_handles_every_alias_shape():
         choices: str = Field(default="", validation_alias=AliasChoices("primary", AliasPath("nested", 0)))  # str + non-str choice
         plain: str = ""  # no validation_alias and no alias
 
-    amap = _build_alias_map(_Model.__pydantic_fields__)
+    amap = _build_alias_map(_Model.__pydantic_fields__)  # pylint: disable=no-member  # ty: ignore[unresolved-attribute]  # set by the pydantic decorator
 
     assert amap == {"theAlias": "aliased", "primary": "choices"}

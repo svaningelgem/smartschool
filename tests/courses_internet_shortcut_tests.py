@@ -1,23 +1,36 @@
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 import pytest
 
-from smartschool import InternetShortcut, Smartschool, SmartSchoolException
+from smartschool import FolderItem, InternetShortcut, SmartSchoolException
 
 
-@pytest.fixture
-def shortcut(session: Smartschool) -> InternetShortcut:
-    return InternetShortcut(session, None, 0, "test", "html", "123 kb", datetime.now(tz=UTC), "dllink", "viewlink", link="https://example.com")
+@pytest.fixture(name="shortcut")
+def fixture_shortcut(folder: FolderItem) -> InternetShortcut:
+    return InternetShortcut(
+        folder.session, folder, 0, "test", "html", "123 kb", datetime.now(tz=timezone.utc), "dllink", "viewlink", link="https://example.com"
+    )
 
 
-def test_post_init_raises_exception_when_no_link(session: Smartschool):
+def test_post_init_raises_exception_when_no_link(folder: FolderItem):
     with pytest.raises(SmartSchoolException, match="No link found in internet shortcut"):
-        InternetShortcut(session, None, 0, "test", "html", "123 kb", datetime.now(tz=UTC), "dllink", "viewlink", link="")
+        InternetShortcut(folder.session, folder, 0, "test", "html", "123 kb", datetime.now(tz=timezone.utc), "dllink", "viewlink", link="")
 
 
-def test_post_init_raises_exception_when_link_is_none(session: Smartschool):
+def test_post_init_raises_exception_when_link_is_none(folder: FolderItem):
     with pytest.raises(SmartSchoolException, match="No link found in internet shortcut"):
-        InternetShortcut(session, None, 0, "test", "html", "123 kb", datetime.now(tz=UTC), "dllink", "viewlink", link=None)
+        InternetShortcut(
+            folder.session,
+            folder,
+            0,
+            "test",
+            "html",
+            "123 kb",
+            datetime.now(tz=timezone.utc),
+            "dllink",
+            "viewlink",
+            link=None,  # ty: ignore[invalid-argument-type]  # invalid on purpose
+        )
 
 
 def test_post_init_succeeds_with_valid_link(shortcut: InternetShortcut):
@@ -25,7 +38,7 @@ def test_post_init_succeeds_with_valid_link(shortcut: InternetShortcut):
 
 
 def test_real_download_returns_bytes_when_no_target(shortcut: InternetShortcut):
-    result = shortcut._real_download(None)
+    result = shortcut._real_download(None)  # pylint: disable=protected-access  # white-box test
 
     expected = b"[InternetShortcut]\r\nURL=https://example.com"
     assert result == expected
@@ -33,7 +46,7 @@ def test_real_download_returns_bytes_when_no_target(shortcut: InternetShortcut):
 
 def test_real_download_writes_to_target_and_returns_path(shortcut: InternetShortcut, tmp_path):
     target = tmp_path / "test.url"
-    result = shortcut._real_download(target)
+    result = shortcut._real_download(target)  # pylint: disable=protected-access  # white-box test
 
     assert result == target
     content = target.read_bytes()

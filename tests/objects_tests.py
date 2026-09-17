@@ -1,15 +1,15 @@
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 import pytest
 
 from smartschool import Course, CourseGraphic, DateRange, PersonDescription, SchoolClass, SkoreWorkYear, Teacher
 
 
-@pytest.fixture
-def create_course():
+@pytest.fixture(name="create_course")
+def fixture_create_course():
     def _create(num_teachers: int = 2):
         gr = CourseGraphic(type="icon", value="")
-        dr = DateRange(start=datetime.now(tz=UTC), end=datetime.now(tz=UTC))
+        dr = DateRange(start=datetime.now(tz=timezone.utc), end=datetime.now(tz=timezone.utc))
         swy = SkoreWorkYear(0, dr)
         cl = SchoolClass("0", 0, 0, "", "", "")
 

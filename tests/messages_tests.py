@@ -88,7 +88,7 @@ def test_empty_inbox_returns_empty_iterator(session: Smartschool, requests_mock:
     """Issue #165: an empty inbox returns an empty 200 body; iterate to nothing instead of raising ParseError."""
     requests_mock.post(_DISPATCHER_URL, text="")
 
-    assert list(MessageHeaders(session)) == []
+    assert not list(MessageHeaders(session))
 
 
 def test_messages_force_authentication_before_posting(session: Smartschool, mocker: MockerFixture):

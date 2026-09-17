@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from smartschool import AppCredentials, EnvCredentials, PathCredentials, Smartschool
+from smartschool import AppCredentials, EnvCredentials, PathCredentials
 
 
 def _create_credentials_file(tmp_path: Path):
@@ -17,7 +17,8 @@ def _create_credentials_file(tmp_path: Path):
     return file
 
 
-def test_env_credentials(session: Smartschool):
+@pytest.mark.usefixtures("session")
+def test_env_credentials():
     # This information comes from conftest.py:session (included fixture)
 
     sut = EnvCredentials()
@@ -38,7 +39,8 @@ def test_env_credentials_empty(monkeypatch, make_empty):
 
 
 @pytest.mark.parametrize("as_type", [Path, str])
-def test_path_credentials(tmp_path: Path, session: Smartschool, as_type: type):
+@pytest.mark.usefixtures("session")
+def test_path_credentials(tmp_path: Path, as_type: type):
     tmp_credentials = _create_credentials_file(tmp_path)
     sut = PathCredentials(as_type(tmp_credentials))
     sut.validate()
@@ -49,7 +51,8 @@ def test_path_credentials(tmp_path: Path, session: Smartschool, as_type: type):
     assert sut.mfa == "1234-56-78"
 
 
-def test_path_credentials_without_path(monkeypatch, tmp_path: Path, session):
+@pytest.mark.usefixtures("session")
+def test_path_credentials_without_path(monkeypatch, tmp_path: Path):
     monkeypatch.setattr("pathlib.Path.cwd", lambda: tmp_path)
     tmp_path.joinpath(PathCredentials.CREDENTIALS_FILENAME).write_text(yaml.dump(EnvCredentials().as_dict()), encoding="utf8")
 
@@ -78,14 +81,16 @@ def test_path_credentials_file_not_found(tmp_path: Path, mocker):
         "MFA",
     ],
 )
-def test_path_credentials_empty(monkeypatch, make_empty, tmp_path: Path, session: Smartschool):
+@pytest.mark.usefixtures("session")
+def test_path_credentials_empty(monkeypatch, make_empty, tmp_path: Path):
     monkeypatch.setenv(f"SMARTSCHOOL_{make_empty}", "")
 
     with pytest.raises(RuntimeError, match="Please verify and correct these attribute"):
         PathCredentials(_create_credentials_file(tmp_path)).validate()
 
 
-def test_credentials_exporting_as_dict_with_other_info(session: Smartschool):
+@pytest.mark.usefixtures("session")
+def test_credentials_exporting_as_dict_with_other_info():
     sut = EnvCredentials()
     object.__setattr__(sut, "other_info", {"test": "something"})
 
@@ -98,7 +103,8 @@ def test_credentials_exporting_as_dict_with_other_info(session: Smartschool):
     }
 
 
-def test_credentials_exporting_as_dict_without_other_info(session: Smartschool):
+@pytest.mark.usefixtures("session")
+def test_credentials_exporting_as_dict_without_other_info():
     sut = EnvCredentials()
 
     assert sut.as_dict() == {
@@ -109,9 +115,10 @@ def test_credentials_exporting_as_dict_without_other_info(session: Smartschool):
     }
 
 
-def test_env_credentials_mfa_as_datetime(monkeypatch, session: Smartschool):
+@pytest.mark.usefixtures("session")
+def test_env_credentials_mfa_as_datetime():
     """Test that MFA is properly converted to string when entered as a datetime object."""
-    sut = AppCredentials("username", "password", "main_url", datetime(2024, 1, 15))
+    sut = AppCredentials("username", "password", "main_url", datetime(2024, 1, 15))  # ty: ignore[invalid-argument-type]  # YAML may load a birthday as a date
 
     # Validate should convert datetime to string without raising an error
     sut.validate()

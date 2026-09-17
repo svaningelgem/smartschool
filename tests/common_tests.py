@@ -5,7 +5,6 @@ from datetime import date, datetime, time, timedelta, timezone
 from pathlib import Path, WindowsPath
 
 import pytest
-import pytest_mock
 import time_machine
 from bs4 import BeautifulSoup, FeatureNotFound
 from logprise import logger
@@ -13,6 +12,7 @@ from requests import Response
 
 from smartschool import (
     IsSaved,
+    PersonDescription,
     Results,
     Smartschool,
     SmartSchoolParsingError,
@@ -63,7 +63,7 @@ def test_xml_to_dict():
     }
 
 
-def test_save(session: Smartschool, tmp_path: Path) -> None:
+def test_save(session: Smartschool) -> None:
     assert save(session, type_="todo", course_name="test", id_="123", data="Test") == IsSaved.NEW
     assert save(session, type_="todo", course_name="test", id_="123", data="Test") == IsSaved.SAME
     assert save(session, type_="todo", course_name="test", id_="123", data="Test2") == "Test"  # Returns the old data
@@ -73,13 +73,13 @@ def test_save(session: Smartschool, tmp_path: Path) -> None:
     assert save(session, type_="todo", course_name="test", id_="456", data={"Test": 789}) == {"Test": 456}
 
 
-def test_save_as_pydantic_dataclass(session: Smartschool, tmp_path: Path) -> None:
+def test_save_as_pydantic_dataclass(session: Smartschool) -> None:
     sut = Student(
         id="a",
         picture_hash="b",
         picture_url="c",
-        description={"startingWithFirstName": "d", "startingWithLastName": "e"},
-        name={"startingWithFirstName": "f", "startingWithLastName": "g"},
+        description=PersonDescription(starting_with_first_name="d", starting_with_last_name="e"),
+        name=PersonDescription(starting_with_first_name="f", starting_with_last_name="g"),
         sort="h",
     )
     original = deepcopy(sut)
@@ -91,7 +91,7 @@ def test_save_as_pydantic_dataclass(session: Smartschool, tmp_path: Path) -> Non
     assert save(session, type_="todo", course_name="test", id_="123", data=sut) == original
 
 
-def test_save_session_aware_result(session: Smartschool, mocker, tmp_path: Path) -> None:
+def test_save_session_aware_result(session: Smartschool, mocker) -> None:
     """
     A session-aware Result is a std-dataclass subclass of a pydantic dataclass.
 
@@ -121,7 +121,7 @@ def test_send_email(mocker):
 
     server.assert_any_call("localhost")
 
-    sendmail_call = server().__enter__().sendmail
+    sendmail_call = server.return_value.__enter__.return_value.sendmail
     assert sendmail_call.call_args.kwargs["from_addr"] == "me@myself.ai"
     assert sendmail_call.call_args.kwargs["to_addrs"] == ["me@myself.ai"]
     assert sendmail_call.call_args.kwargs["msg"].startswith("Content-Type: multipart/alternative; boundary")
@@ -172,7 +172,7 @@ def test_bs4_html_falls_back_to_html_parser_when_lxml_unavailable(mocker):
     assert isinstance(sut, BeautifulSoup)
 
 
-def test_fill_form(mocker: pytest_mock.MockerFixture):
+def test_fill_form():
     # Create sample HTML content with a form
     html_content = """
     <form>
@@ -192,7 +192,7 @@ def test_fill_form(mocker: pytest_mock.MockerFixture):
     assert result == {"username": "test_user", "password": "default_pass", "email": "test@example.com"}
 
 
-def test_fill_form_not_used_value(mocker: pytest_mock.MockerFixture):
+def test_fill_form_not_used_value():
     # Create sample HTML content with a form
     html_content = """
     <form>
@@ -597,18 +597,23 @@ def test_resolve_aliases_with_pydantic_class():
     assert result["id"] == "1"
 
 
+def _sorts_before(first: str, second: str) -> bool:
+    """natural_sort ranks ``first`` strictly before ``second``."""
+    return sorted([second, first], key=natural_sort) == [first, second]
+
+
 def test_sorts_numbers_naturally():
     """Natural sort should handle numeric sequences correctly."""
-    assert natural_sort("file1.txt") < natural_sort("file2.txt")
-    assert natural_sort("file2.txt") < natural_sort("file10.txt")
-    assert natural_sort("file10.txt") < natural_sort("file20.txt")
+    assert _sorts_before("file1.txt", "file2.txt")
+    assert _sorts_before("file2.txt", "file10.txt")
+    assert _sorts_before("file10.txt", "file20.txt")
 
 
 def test_sorts_mixed_alphanumeric():
     """Should handle mixed text and numbers."""
-    assert natural_sort("abc1def") < natural_sort("abc2def")
-    assert natural_sort("abc2def") < natural_sort("abc10def")
-    assert natural_sort("version1.2.3") < natural_sort("version1.10.1")
+    assert _sorts_before("abc1def", "abc2def")
+    assert _sorts_before("abc2def", "abc10def")
+    assert _sorts_before("version1.2.3", "version1.10.1")
 
 
 def test_case_insensitive_by_default():
@@ -622,7 +627,7 @@ def test_case_sensitive_when_disabled():
     result_lower = natural_sort("apple", case_insensitive=False)
     result_upper = natural_sort("Apple", case_insensitive=False)
     assert result_lower != result_upper
-    assert result_upper < result_lower  # uppercase sorts before lowercase
+    assert sorted([result_lower, result_upper]) == [result_upper, result_lower]  # uppercase sorts before lowercase
 
 
 def test_returns_tuple_with_correct_types():
@@ -634,25 +639,25 @@ def test_returns_tuple_with_correct_types():
 
 def test_handles_leading_numbers():
     """Should handle strings starting with numbers."""
-    assert natural_sort("1file") < natural_sort("2file")
-    assert natural_sort("10file") > natural_sort("2file")
+    assert _sorts_before("1file", "2file")
+    assert _sorts_before("2file", "10file")
 
 
 def test_handles_trailing_numbers():
     """Should handle strings ending with numbers."""
-    assert natural_sort("file1") < natural_sort("file2")
-    assert natural_sort("file2") < natural_sort("file10")
+    assert _sorts_before("file1", "file2")
+    assert _sorts_before("file2", "file10")
 
 
 def test_handles_only_numbers():
     """Should handle strings that are only numbers."""
-    assert natural_sort("1") < natural_sort("2")
-    assert natural_sort("2") < natural_sort("10")
+    assert _sorts_before("1", "2")
+    assert _sorts_before("2", "10")
 
 
 def test_handles_only_text():
     """Should handle strings with no numbers."""
-    assert natural_sort("apple") < natural_sort("banana")
+    assert _sorts_before("apple", "banana")
     assert natural_sort("abc") == ("abc",)
 
 

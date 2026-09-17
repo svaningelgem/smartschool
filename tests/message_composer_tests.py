@@ -102,13 +102,10 @@ def _sent_forms(requests_mock: Mocker, url_part: str) -> list[dict[str, str]]:
     return [{k: v[0] for k, v in parse_qs(r.text).items()} for r in requests_mock.request_history if url_part in r.url]
 
 
-class TestRecipientType:
-    """Test RecipientType enum."""
-
-    def test_recipient_type_to_parent_node_id(self):
-        assert RecipientType.TO.parent_node_id == "insertSearchFieldContainer_0_0"
-        assert RecipientType.CC.parent_node_id == "insertSearchFieldContainer_2_0"
-        assert RecipientType.BCC.parent_node_id == "insertSearchFieldContainer_3_0"
+def test_recipient_type_to_parent_node_id():
+    assert RecipientType.TO.parent_node_id == "insertSearchFieldContainer_0_0"
+    assert RecipientType.CC.parent_node_id == "insertSearchFieldContainer_2_0"
+    assert RecipientType.BCC.parent_node_id == "insertSearchFieldContainer_3_0"
 
 
 class TestMessageComposerFormCreate:
@@ -284,8 +281,7 @@ class TestMessageComposerFormSearchUsers:
 
         users, groups = form.search_users("nobody")
 
-        assert users == []
-        assert groups == []
+        assert (users, groups) == ([], [])
 
     def test_search_users_raises_error_when_unique_usc_missing(self, session: Smartschool):
         form = MessageComposerForm(session=session)
@@ -510,7 +506,7 @@ class TestMessageComposerFormAddAllCoaccounts:
     def test_add_all_coaccounts_with_no_users_is_a_noop(self, session: Smartschool):
         form = MessageComposerForm.create(session=session)
 
-        assert form.add_all_coaccounts() == []
+        assert len(form.add_all_coaccounts()) == 0
 
     def test_add_all_coaccounts_raises_when_account_lacks_capability(self, session: Smartschool):
         form = MessageComposerForm.create(session=session)

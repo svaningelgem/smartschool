@@ -6,7 +6,7 @@ import importlib
 from pathlib import Path
 
 import smartschool
-from dev import generate_stubs
+from dev import generate_stubs  # pylint: disable=import-error  # dev/ is a namespace package on pytest's pythonpath
 
 
 def test_pyi_set_matches_warranting_modules():
@@ -23,7 +23,7 @@ def test_pyi_set_matches_warranting_modules():
         if python_file.stem == "__init__":
             continue
         module = importlib.import_module(f"smartschool.{python_file.stem}")
-        if generate_stubs._warrants_stub(module):
+        if generate_stubs._warrants_stub(module):  # pylint: disable=protected-access  # white-box test
             warranting.add(python_file.stem)
 
     on_disk = {pyi.stem for pyi in package_dir.glob("*.pyi")}
