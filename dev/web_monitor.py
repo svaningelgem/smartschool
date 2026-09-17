@@ -37,6 +37,7 @@ dom.json and screenshot.png. As a library:
 from __future__ import annotations
 
 import argparse
+import contextlib
 import json
 import os
 import re
@@ -44,10 +45,15 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import yaml
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import sync_playwright  # pylint: disable=import-error  # ty: ignore[unresolved-import]  # deliberately not a project dependency
+
+try:
+    import pyotp  # ty: ignore[unresolved-import]  # optional `mfa` extra
+except ImportError:
+    pyotp = None
 
 if TYPE_CHECKING:
-    from playwright.sync_api import Page
+    from playwright.sync_api import Browser, BrowserContext, Page, Playwright  # ty: ignore[unresolved-import]
 
 # Hosts/extensions that are never the API we are looking for.
 _BORING = re.compile(r"(static\d*\.smart-school\.net|sentry|/build/|\.(css|js|mjs|woff2?|ttf|png|jpe?g|gif|svg|ico|map))(\?|$)", re.I)
@@ -78,8 +84,13 @@ def _safe_output_dir(out_dir: Path | str) -> Path:
     return resolved
 
 
-class SmartschoolMonitor:
+class SmartschoolMonitor:  # pylint: disable=too-many-instance-attributes  # login settings plus the live browser handles
     """Playwright session that logs in once and records traffic per visited path."""
+
+    page: Page
+    _pw: Playwright
+    _browser: Browser
+    _ctx: BrowserContext
 
     def __init__(self, *, out_dir: Path | str = "dev/_captures", headless: bool = True, fresh: bool = False) -> None:
         creds = _load_credentials()
@@ -118,8 +129,6 @@ class SmartschoolMonitor:
 
     @staticmethod
     def _suppress():
-        import contextlib
-
         return contextlib.suppress(Exception)
 
     # ----- traffic capture -----
@@ -134,7 +143,7 @@ class SmartschoolMonitor:
                 key = f"{resp.request.method} {resp.url}"
                 try:
                     self._bodies[key] = resp.text()[:50000]
-                except Exception as e:  # body already consumed / binary
+                except Exception as e:  # pylint: disable=broad-exception-caught  # body already consumed / binary
                     self._bodies[key] = f"<no body: {e}>"
 
         ctx.on("request", on_request)
@@ -185,7 +194,8 @@ class SmartschoolMonitor:
     def _do_2fa(self, page: Page) -> None:
         if not self.totp_secret:
             raise RuntimeError("Account requires 2FA but no 'totp' secret in credentials.yml")
-        import pyotp
+        if pyotp is None:
+            raise RuntimeError("Account requires 2FA: pip install pyotp")
 
         page.fill("input[type='text'], input[type='tel']", pyotp.TOTP(self.totp_secret).now())
         page.click("button[type='submit'], input[type='submit']")

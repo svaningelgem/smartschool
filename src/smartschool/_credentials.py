@@ -48,16 +48,17 @@ class PathCredentials(Credentials):
     CREDENTIALS_FILENAME: ClassVar[str] = "credentials.yml"
     filename: str | Path = ""
 
-    username: str = field(init=False, default=None)
-    password: str = field(init=False, default=None)
-    main_url: str = field(init=False, default=None)
-    mfa: str = field(init=False, default=None)
-    other_info: dict = field(init=False, default=None)
+    username: str = field(init=False, default="")
+    password: str = field(init=False, default="")
+    main_url: str = field(init=False, default="")
+    mfa: str = field(init=False, default="")
+    other_info: dict | None = field(init=False, default=None)
 
     def __post_init__(self):
-        object.__setattr__(self, "filename", self._find_credentials_file())
+        credentials_file = self._find_credentials_file()
+        object.__setattr__(self, "filename", credentials_file)
 
-        cred_file: dict = yaml.safe_load(self.filename.read_text(encoding="utf8"))
+        cred_file: dict = yaml.safe_load(credentials_file.read_text(encoding="utf8"))
         for attr in required_fields:
             object.__setattr__(self, attr, cred_file.pop(attr, ""))
 

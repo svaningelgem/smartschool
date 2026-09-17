@@ -99,6 +99,7 @@ from ._results import Result, Results
 from ._session import Smartschool
 from ._student_support import StudentSupportLinks
 
+# pylint: disable=duplicate-code  # the re-export list restates each module's __all__
 __all__ = [
     "AdjustMessageLabel",
     "AgendaHour",

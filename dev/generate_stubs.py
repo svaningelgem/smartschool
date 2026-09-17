@@ -12,19 +12,21 @@ import inspect
 import re
 import subprocess
 import sys
+import types
 from collections import defaultdict
 from collections.abc import Sequence
 from dataclasses import dataclass, field
+from functools import cached_property
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, get_type_hints
 
-import pydantic.fields
 from logprise import logger
 from pydantic.dataclasses import is_pydantic_dataclass
+from pydantic.fields import FieldInfo as PydanticFieldInfo
 from pydantic_core import PydanticUndefined
 
 if TYPE_CHECKING:
-    import types
+    from collections.abc import Callable
 
 
 @dataclass
@@ -40,6 +42,7 @@ class MethodInfo:
     name: str
     params: list[FieldInfo] = field(default_factory=list)
     return_annotation: Any = None
+    decorator: str = ""
 
 
 @dataclass
@@ -50,7 +53,7 @@ class ClassInfo:
     attributes: list[FieldInfo] = field(default_factory=list)
     method_names: dict[str, list[ast.FunctionDef]] = field(default_factory=lambda: defaultdict(list))
     methods: list[MethodInfo | str] = field(default_factory=list)
-    is_enum: bool = False
+    enum_members: list[enum.Enum] = field(default_factory=list)
 
 
 def _format_import(annotation: type, current_module: types.ModuleType) -> str:
@@ -86,7 +89,7 @@ def format_type_annotation(annotation: Any, imports_needed: set, current_module:
     if annotation is None or annotation == inspect.Parameter.empty or annotation == inspect.Signature.empty:
         return ""
 
-    if annotation is type(None):
+    if annotation is types.NoneType:
         return "None"
 
     if inspect.isclass(annotation):
@@ -174,7 +177,7 @@ def parse_class_ast_info(file_path: Path) -> tuple[dict[str, ClassInfo], list[st
     """Parse AST to get class structure info as written in source."""
     try:
         tree = ast.parse(file_path.read_bytes())
-    except Exception as e:
+    except (OSError, SyntaxError, ValueError) as e:
         logger.error(f"Failed to parse AST: {e}")
         return {}, []
 
@@ -187,6 +190,15 @@ def parse_class_ast_info(file_path: Path) -> tuple[dict[str, ClassInfo], list[st
             class_info[node.name] = _parse_class_def(node)
 
     return class_info, imports
+
+
+def _parse_type_aliases(file_path: Path) -> list[str]:
+    """Module-level ``Name: TypeAlias = ...`` statements, as written in source."""
+    return [
+        ast.unparse(node)
+        for node in ast.parse(file_path.read_bytes()).body
+        if isinstance(node, ast.AnnAssign) and isinstance(node.annotation, ast.Name) and node.annotation.id == "TypeAlias"
+    ]
 
 
 def load_module_from_file(file_path: Path):
@@ -223,11 +235,11 @@ def load_module_from_file(file_path: Path):
         module = importlib.util.module_from_spec(spec)
         sys.modules[full_module_name] = module
         spec.loader.exec_module(module)
-    except Exception:
+    except Exception:  # pylint: disable=broad-exception-caught  # executing an arbitrary module can raise anything
         logger.exception(f"Failed to load module {full_module_name}")
         return None
-    else:
-        return module
+
+    return module
 
 
 _pydantic_replacements = {
@@ -254,13 +266,13 @@ def _ruff_line_length(default: int = 160) -> int:
 LINE_LENGTH = _ruff_line_length()
 
 
-def _extract_method_info(real_class: type, method_name: str) -> MethodInfo:
-    sig = inspect.signature(getattr(real_class, method_name))
+def _extract_method_info(real_class: type, method_name: str, function: Callable, decorator: str = "") -> MethodInfo:
+    sig = inspect.signature(function)
 
     # Resolve string annotations (forward references) via class-level type hints
     try:
         class_hints = get_type_hints(real_class, include_extras=False)
-    except Exception:
+    except Exception:  # pylint: disable=broad-exception-caught  # best effort: evaluating annotations can raise anything
         class_hints = {}
 
     method_params = []
@@ -269,13 +281,12 @@ def _extract_method_info(real_class: type, method_name: str) -> MethodInfo:
         # If annotation is a string (forward reference), resolve it from class hints
         if isinstance(annotation, str) and name in class_hints:
             annotation = class_hints[name]
-        if annotation in _pydantic_replacements:
-            annotation = _pydantic_replacements[annotation]
+        annotation = _pydantic_replacements.get(annotation, annotation)
 
         default = param.default
         if default == inspect.Parameter.empty:
             default = _MISSING
-        elif isinstance(default, pydantic.fields.FieldInfo):
+        elif isinstance(default, PydanticFieldInfo):
             if default.default is PydanticUndefined:
                 default = _MISSING
             else:
@@ -290,7 +301,7 @@ def _extract_method_info(real_class: type, method_name: str) -> MethodInfo:
         )
         method_params.append(field_info)
 
-    return MethodInfo(name=method_name, params=method_params, return_annotation=sig.return_annotation)
+    return MethodInfo(name=method_name, params=method_params, return_annotation=sig.return_annotation, decorator=decorator)
 
 
 def _collect_annotations(real_class: type) -> dict[str, Any]:
@@ -300,7 +311,7 @@ def _collect_annotations(real_class: type) -> dict[str, Any]:
     # Type hints are the single source of truth (and include pydantic fields).
     try:
         all_annotations.update(get_type_hints(real_class))
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-exception-caught  # best effort: evaluating annotations can raise anything
         logger.exception(f"Could not get type hints: {e}")
 
     # Also check pydantic model_fields to get any that might be missing.
@@ -311,20 +322,33 @@ def _collect_annotations(real_class: type) -> dict[str, Any]:
     return {name: annotation for name, annotation in all_annotations.items() if not name.startswith("_")}
 
 
-def _collect_methods(class_info: ClassInfo) -> None:
-    """Append __init__ and the public methods of a class to its ClassInfo."""
-    real_class = class_info.real_class
+def _property_getter(real_class: type, name: str) -> tuple[Callable, str] | None:
+    """The getter and stub decorator of a (cached) property, or None for anything else."""
+    member = inspect.getattr_static(real_class, name, None)
+    if isinstance(member, property) and member.fget:
+        return member.fget, "@property"
+    if isinstance(member, cached_property):
+        return member.func, "@cached_property"
+    return None
 
+
+def _collect_methods(class_info: ClassInfo, real_class: type) -> None:
+    """Append __init__ and the public methods and properties of a class to its ClassInfo."""
     if real_class.__init__ is not object.__init__:
-        class_info.methods.append(_extract_method_info(real_class, "__init__"))
+        class_info.methods.append(_extract_method_info(real_class, "__init__", real_class.__init__))
 
+    attribute_names = {attribute.name for attribute in class_info.attributes}
     for method_name, ast_methods in class_info.method_names.items():
         if method_name in ("__init__", "__post_init__"):
             continue
-        if not callable(getattr(real_class, method_name, None)):
+        if getter := _property_getter(real_class, method_name):
+            if method_name not in attribute_names:  # a field shadowed by a lazy property stays a plain attribute
+                class_info.methods.append(_extract_method_info(real_class, method_name, *getter))
+            continue
+        if not callable(method := getattr(real_class, method_name, None)):
             continue
         if len(ast_methods) == 1:
-            class_info.methods.append(_extract_method_info(real_class, method_name))
+            class_info.methods.append(_extract_method_info(real_class, method_name, method))
             continue
         # Overloaded method: pass each signature through verbatim from the AST.
         for overloaded_method in ast_methods:
@@ -335,14 +359,16 @@ def _collect_methods(class_info: ClassInfo) -> None:
 def extract_class_data(class_info: ClassInfo) -> ClassInfo:
     """Extract all class data into unified structure."""
     real_class = class_info.real_class
+    if real_class is None:
+        return class_info
 
     # Enums carry members, not a synthesized __init__; emit the members instead.
-    if isinstance(real_class, type) and issubclass(real_class, enum.Enum):
-        class_info.is_enum = True
+    if issubclass(real_class, enum.Enum):
+        class_info.enum_members = list(real_class)
         return class_info
 
     class_info.attributes.extend(FieldInfo(name=name, type_annotation=annotation) for name, annotation in _collect_annotations(real_class).items())
-    _collect_methods(class_info)
+    _collect_methods(class_info, real_class)
     return class_info
 
 
@@ -352,8 +378,8 @@ def generate_stub_from_class_info(class_info: ClassInfo, imports_needed: set, cu
     inheritance = f"({formatted_bases})" if formatted_bases else ""
 
     body = ""
-    if class_info.is_enum:
-        for member in class_info.real_class:
+    if class_info.enum_members:
+        for member in class_info.enum_members:
             body += f"    {member.name} = {member.value!r}\n"
     else:
         for attr in class_info.attributes:
@@ -411,14 +437,15 @@ def _generate_method_stub(method: MethodInfo | str, imports_needed: set[str], cu
     return_annotation = _render_annotation(method.return_annotation, imports_needed, current_module)
     return_type = f" -> {return_annotation}" if return_annotation else ""
 
+    decorator = f"    {method.decorator}\n" if method.decorator else ""
     signature = f"    def {method.name}({', '.join(params)}){return_type}: ..."
     real_params = [p for p in method.params if p.name != "self"]
     if len(real_params) <= 3 and len(signature) <= LINE_LENGTH:
-        return signature + "\n"
+        return decorator + signature + "\n"
     # Explode one parameter per line — there are more than 3 real parameters, or
     # the one-line form is too long. The trailing comma makes ruff break it out
     # rather than hugging everything onto a single over-long line.
-    return f"    def {method.name}({', '.join(params)},){return_type}: ...\n"
+    return f"{decorator}    def {method.name}({', '.join(params)},){return_type}: ...\n"
 
 
 def _is_type_checking_block(node: ast.AST) -> bool:
@@ -433,7 +460,7 @@ def _is_type_checking_block(node: ast.AST) -> bool:
     )
 
 
-def _bind_typechecking_import(module: types.ModuleType, stmt: ast.stmt) -> None:
+def _bind_typechecking_import(module: types.ModuleType, stmt: ast.AST) -> None:
     """Bind the names of one ``if TYPE_CHECKING:`` import into ``module`` at runtime."""
     if isinstance(stmt, ast.ImportFrom):
         # Resolve relative imports (level > 0) against the module's package.
@@ -522,6 +549,7 @@ def generate_stub_file(python_file: Path) -> str:
     stub_content += "\n".join(imports) + "\n"
     stub_content += "\n".join(imports_needed) + "\n"
     stub_content += "\n".join(class_stubs) + "\n"
+    stub_content += "\n".join(_parse_type_aliases(python_file)) + "\n"
 
     return stub_content
 
@@ -619,6 +647,6 @@ def main():
 if __name__ == "__main__":
     try:
         main()
-    except Exception:
+    except Exception:  # pylint: disable=broad-exception-caught  # CLI entry point: log whatever failed
         logger.exception("Error generating stub")
-        exit(1)
+        sys.exit(1)

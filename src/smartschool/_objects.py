@@ -1,17 +1,26 @@
 from __future__ import annotations
 
+import sys
 from datetime import date, datetime
-from enum import StrEnum
 from functools import cached_property
 from typing import Annotated, Literal
 
-from pydantic import AliasChoices, BeforeValidator, ConfigDict, StringConstraints, constr
+from pydantic import AliasChoices, BeforeValidator, ConfigDict, StringConstraints
 from pydantic.alias_generators import to_camel
 from pydantic.dataclasses import Field, dataclass
 
 from ._common import as_float, convert_to_date, convert_to_datetime
 
-String = constr(strip_whitespace=True)
+if sys.version_info >= (3, 11):
+    from enum import StrEnum
+else:  # pragma: no cover
+    from enum import Enum
+
+    class StrEnum(str, Enum):
+        __str__ = str.__str__
+
+
+String = Annotated[str, StringConstraints(strip_whitespace=True)]
 # `(?i)` inline flag = case-insensitive; pydantic-v2 StringConstraints over the legacy
 # constr(pattern=...) form (which static analysers using v1 stubs misread).
 UUID = Annotated[str, StringConstraints(pattern=r"(?i)^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")]
@@ -172,7 +181,7 @@ class Student(_User): ...
 
 
 @dataclass(config=_config)
-class Course:
+class Course:  # pylint: disable=too-many-instance-attributes  # mirrors the API payload
     id: int
     name: String
     graphic: CourseGraphic
@@ -197,7 +206,7 @@ class Feedback:
 
 
 @dataclass(config=_config)
-class FeedbackFull:
+class FeedbackFull:  # pylint: disable=too-many-instance-attributes  # mirrors the API payload
     attachments: list[String]
     changed_at: DateTime
     created_at: DateTime
@@ -209,7 +218,7 @@ class FeedbackFull:
 
 
 @dataclass(config=_config)
-class Result:
+class Result:  # pylint: disable=too-many-instance-attributes  # mirrors the API payload
     identifier: String
     type: ResultType
     name: String
@@ -253,7 +262,7 @@ class CourseCondensed:
 
 
 @dataclass(config=_config)
-class FutureTaskOneTask:
+class FutureTaskOneTask:  # pylint: disable=too-many-instance-attributes  # mirrors the API payload
     label: String
     description: String
     icon: String
@@ -304,7 +313,7 @@ class AgendaHour:
 
 
 @dataclass(config=_config)
-class AgendaLesson:
+class AgendaLesson:  # pylint: disable=too-many-instance-attributes  # mirrors the API payload
     moment_id: Annotated[String, Field(validation_alias="momentID")]
     lesson_id: Annotated[String, Field(validation_alias="lessonID")]
     hour_id: Annotated[String, Field(validation_alias="hourID")]
@@ -336,7 +345,7 @@ class AgendaLesson:
 
 
 @dataclass(config=_config)
-class AgendaMomentInfoAssignment:
+class AgendaMomentInfoAssignment:  # pylint: disable=too-many-instance-attributes  # mirrors the API payload
     start_assignment: String
     start: String
     end: String
@@ -370,7 +379,7 @@ class StudentSupportLink:
 
 
 @dataclass(config=_config)
-class ShortMessage:
+class ShortMessage:  # pylint: disable=too-many-instance-attributes  # mirrors the API payload
     id: int
     from_image: Url
     subject: String
@@ -390,7 +399,7 @@ class ShortMessage:
 
 
 @dataclass(config=_config)
-class FullMessage:
+class FullMessage:  # pylint: disable=too-many-instance-attributes  # mirrors the API payload
     id: int
     to: String | None
     subject: String
@@ -441,7 +450,7 @@ class MessageDeletionStatus:
 
 
 @dataclass(config=_config)
-class MessageSearchUser:
+class MessageSearchUser:  # pylint: disable=too-many-instance-attributes  # mirrors the API payload
     user_id: Annotated[int, Field(validation_alias="userID")]
     value: String
     ss_id: Annotated[int, Field(validation_alias="ssID")]
@@ -490,7 +499,7 @@ class PlannedElementParticipants:
 
 
 @dataclass(config=_config)
-class UserSeeProperties:
+class UserSeeProperties:  # pylint: disable=too-many-instance-attributes  # mirrors the API payload
     id: bool
     platform_id: bool
     period: bool
@@ -506,7 +515,7 @@ class UserSeeProperties:
 
 
 @dataclass(config=_config)
-class UserCapabilities:
+class UserCapabilities:  # pylint: disable=too-many-instance-attributes  # mirrors the API payload
     can_user_trash: bool
     can_user_restore_from_trash: bool
     can_user_delete: bool
@@ -546,7 +555,7 @@ class PlannedElementCourse:
 
 
 @dataclass(config=_config)
-class PlannedElementLocation:
+class PlannedElementLocation:  # pylint: disable=too-many-instance-attributes  # mirrors the API payload
     id: UUID
     platform_id: int
     platform_name: String
@@ -573,7 +582,7 @@ class PlannedElementAssignmentType:
 
 
 @dataclass(config=_config)
-class PlannedElement:
+class PlannedElement:  # pylint: disable=too-many-instance-attributes  # mirrors the API payload
     id: UUID
     platform_id: int
     period: PlannedElementPeriod

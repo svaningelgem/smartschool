@@ -36,10 +36,10 @@ class DevTracingMixin(abc.ABC):
         except BaseException as e:
             self._save_trace(method, url, kwargs, error=e)
             raise
-        else:
-            return response
 
-    def _save_trace(self, method: str, url: str, kwargs: dict, response: Response = None, error: BaseException | None = None) -> None:
+        return response
+
+    def _save_trace(self, method: str, url: str, kwargs: dict, response: Response | None = None, error: BaseException | None = None) -> None:
         """Save detailed request trace to a file in human-readable format."""
         if not self.dev_tracing:
             return
@@ -110,8 +110,8 @@ class DevTracingMixin(abc.ABC):
         f.write(traceback.format_exc())
         f.write("-" * 40 + "\n")
 
-        if hasattr(error, "response") and error.response is not None:
-            self._write_response_details(f, error.response, "ERROR RESPONSE")
+        if (error_response := getattr(error, "response", None)) is not None:
+            self._write_response_details(f, error_response, "ERROR RESPONSE")
 
     def _write_footer(self, f) -> None:
         """Write the trace footer."""
@@ -172,9 +172,9 @@ class DevTracingMixin(abc.ABC):
             for key, value in req.headers.items():
                 f.write(f"    {key}: {value}\n")
 
-        if hasattr(req, "_cookies") and req._cookies:
+        if cookies := getattr(req, "_cookies", None):
             f.write("  Request Cookies:\n")
-            for cookie in req._cookies:
+            for cookie in cookies:
                 f.write(f"    {cookie.name}={cookie.value}\n")
 
         if hasattr(req, "body") and req.body:

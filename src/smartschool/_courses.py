@@ -33,10 +33,48 @@ if TYPE_CHECKING:
 __all__ = ["CourseCondensed", "CourseList", "Courses", "DocumentOrFolderItem", "FileItem", "FolderItem", "InternetShortcut", "TopNavCourses"]
 
 
+_SUFFIX_BY_MIME_TYPE = {
+    "docx": ".docx",
+    "word": ".docx",
+    "doc": ".doc",
+    "xlsx": ".xlsx",
+    "excel": ".xlsx",
+    "xls": ".xlsx",
+    "odt": ".odt",
+    "pdf": ".pdf",
+    "powerpointpresentatie": ".pptx",
+    "pptx": ".pptx",
+    "ppt": ".ppt",
+    "video": ".mp4",
+    "m4v": ".mp4",
+    "mp4": ".mp4",
+    "wmv": ".wmv",
+    "audio": ".mp3",
+    "mp3": ".mp3",
+    "zip": ".zip",
+    "rar": ".rar",
+    "7z": ".7z",
+    "text": ".txt",
+    "txt": ".txt",
+    "jpg": ".jpg",
+    "jpeg": ".jpg",
+    "png": ".png",
+    "html": ".html",
+    "ascii": ".txt",
+    "potx": ".potx",
+}
+
+
 def _select_one_or_raise(row: Tag, selector: str) -> Tag:
     if (found := row.select_one(selector)) is None:
         raise SmartSchoolParsingError(f"No element matching {selector!r} in row")
     return found
+
+
+def _str_attribute(tag: Tag, name: str) -> str:
+    if isinstance(value := tag.get(name), str):
+        return value
+    raise AssertionError(f"Expected a {name!r} attribute on <{tag.name}>")
 
 
 @dataclass
@@ -134,14 +172,14 @@ class CourseList(SessionMixin):
 
 
 @dataclass
-class FileItem(DownloadableFile, SessionMixin):
+class FileItem(DownloadableFile, SessionMixin):  # pylint: disable=too-many-instance-attributes  # mirrors a document row
     """Represents a file within a course document folder."""
 
     parent: FolderItem = field(repr=False)
     id: int
     name: str
     mime_type: str
-    size_kb: float | str
+    size_kb: float | str | None
     last_modified: datetime | str
     download_url: str | None = None
     view_url: str | None = None
@@ -153,45 +191,8 @@ class FileItem(DownloadableFile, SessionMixin):
 
     @cached_property
     def _suffix(self) -> str:
-        match self.mime_type:
-            case "docx" | "word":
-                return ".docx"
-            case "doc":
-                return ".doc"
-            case "xlsx" | "excel" | "xls":
-                return ".xlsx"
-            case "odt":
-                return ".odt"
-            case "pdf":
-                return ".pdf"
-            case "powerpointpresentatie" | "pptx":
-                return ".pptx"
-            case "ppt":
-                return ".ppt"
-            case "video" | "m4v" | "mp4":
-                return ".mp4"
-            case "wmv":
-                return ".wmv"
-            case "audio" | "mp3":
-                return ".mp3"
-            case "zip":
-                return ".zip"
-            case "rar":
-                return ".rar"
-            case "7z":
-                return ".7z"
-            case "text" | "txt":
-                return ".txt"
-            case "jpg" | "jpeg":
-                return ".jpg"
-            case "png":
-                return ".png"
-            case "html":
-                return ".html"
-            case "ascii":
-                return ".txt"
-            case "potx":
-                return ".potx"
+        if suffix := _SUFFIX_BY_MIME_TYPE.get(self.mime_type):
+            return suffix
 
         logger.warning("Unknown mime type: {}", self.mime_type)
         return f".{self.mime_type}"
@@ -205,6 +206,8 @@ class FileItem(DownloadableFile, SessionMixin):
         return create_filesystem_safe_filename(filename)
 
     def _real_download(self, target: Path | None) -> bytes | Path:
+        if self.download_url is None:
+            raise AssertionError(f"{self.name} has no download URL")
         if target:
             logger.debug("Downloading file: {}", target.name)
         response: Response = self.session.get(self.download_url)
@@ -218,11 +221,7 @@ class FileItem(DownloadableFile, SessionMixin):
         if self.session.dev_tracing:  # ponytail: fixture-capture is a dev-only tool, not a runtime side effect
             save_test_response(response)
 
-        if target:
-            target.write_bytes(response.content)
-            return target
-
-        return response.content
+        return self._write_or_return(response.content, target)
 
 
 @dataclass
@@ -244,11 +243,7 @@ class InternetShortcut(FileItem):
                 f"URL={self.link}",
             ]
         ).encode("utf8")
-        if target:
-            target.write_bytes(content)
-            return target
-
-        return content
+        return self._write_or_return(content, target)
 
     @cached_property
     def filename(self) -> str:
@@ -274,6 +269,7 @@ class FolderItem(SessionMixin):
 
     def _get_folder_html(self) -> BeautifulSoup:
         """Fetch HTML content for a specific folder."""
+        assert self.browse_url is not None  # set in __post_init__
         try:
             response = self.session.get(
                 self.browse_url,
@@ -290,35 +286,36 @@ class FolderItem(SessionMixin):
             raise SmartSchoolException(f"Failed to fetch folder HTML: {e}") from e
 
     def _get_mime_from_row_image(self, row: Tag) -> str | None:
-        for entry in _select_one_or_raise(row, "div.smsc_cm_body_row_block").get("style").split(";"):
+        for entry in _str_attribute(_select_one_or_raise(row, "div.smsc_cm_body_row_block"), "style").split(";"):
             if not entry.strip():
                 continue
             first, second = entry.split(":", 1)
             if first.strip() == "background-image":
-                return re.search("/mime_[^_]+_([^/_]+)", second).group(1)
+                if (match := re.search("/mime_[^_]+_([^/_]+)", second)) is None:
+                    raise AssertionError(f"No mime type in {second!r}")
+                return match.group(1)
 
         return None
 
     def _parse_document_row(self, row: Tag) -> FileItem:
         """Parse a single table row into a file item."""
-        id_ = int(row.get("id")[6:])
+        id_ = int(_str_attribute(row, "id")[6:])
         mime_block = _select_one_or_raise(row, "div.smsc_cm_body_row_block_mime").get_text(strip=True, separator="\n")
         _, size_kb, last_modified = mime_block.split(" - ")
-        mime_style = self._get_mime_from_row_image(row)
+        if (mime_style := self._get_mime_from_row_image(row)) is None:
+            raise AssertionError("No mime type in the row image")
 
         link_texts = [link_text for r in row.select("a") if (link_text := r.get_text(strip=True, separator="\n"))]
         if len(link_texts) == 0:
             raise AssertionError("Expected exactly one link text, got None")
 
-        filename = link_texts[0]
-
         inline_links = row.select("div.smsc_cm_body_row_block_inline a,div.smsc_cm_body_row_block_inline iframe")
         if inline_links:
             inline_link = inline_links[0]
             if inline_link.name == "iframe":
-                final_link = inline_link["src"]
+                final_link = _str_attribute(inline_link, "src")
             elif inline_link.name == "a":
-                final_link = inline_link["href"]
+                final_link = _str_attribute(inline_link, "href")
             else:
                 raise AssertionError(f"Unknown inline link type: {inline_link.name}")
 
@@ -350,7 +347,7 @@ class FolderItem(SessionMixin):
             session=self.session,
             parent=self,
             id=id_,
-            name=filename,
+            name=link_texts[0],
             mime_type=mime_style,
             size_kb=size_kb,
             last_modified=last_modified,
@@ -395,7 +392,7 @@ class FolderItem(SessionMixin):
         for link in row.select("a"):
             classes = link.get("class") or []
             if "smsc_cm_link" in classes:
-                browse_url = link["href"]
+                browse_url = _str_attribute(link, "href")
                 name = link.get_text(strip=True, separator="\n")
                 return FolderItem(
                     session=self.session,
@@ -409,7 +406,8 @@ class FolderItem(SessionMixin):
 
     def _parse_row(self, row: Tag) -> DocumentOrFolderItem | None:
         """Parse a single table row into a file or folder item."""
-        if row.get("id") and row.get("id").lower().startswith("docid_"):
+        row_id = row.get("id")
+        if isinstance(row_id, str) and row_id.lower().startswith("docid_"):
             return self._parse_document_row(row)
         return self._parse_folder_row(row)
 

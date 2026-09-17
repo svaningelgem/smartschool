@@ -106,7 +106,7 @@ class MessageComposerForm(SessionMixin):
         resp.raise_for_status()
 
         soup = bs4_html(resp)
-        self.hidden_fields = {inp["name"]: inp.get("value", "") for inp in soup.select("input[type=hidden][name]")}
+        self.hidden_fields = {str(inp["name"]): str(inp.get("value", "")) for inp in soup.select("input[type=hidden][name]")}
         # The compose page always renders the co-account recipient block, so its presence is not
         # a capability signal. The real (staff/school-gated) flag lives in the embedded SMSC vars
         # config object.
@@ -197,10 +197,10 @@ class MessageComposerForm(SessionMixin):
             for user in users_element.findall("user"):
                 users.append(
                     MessageSearchUser(
-                        userID=int(user.findtext("userID", default="0")),
+                        user_id=int(user.findtext("userID", default="0")),
                         value=user.findtext("value", default=""),
-                        ssID=int(user.findtext("ssID", default="0")),
-                        userLT=int(user.findtext("userLT", default="0")),
+                        ss_id=int(user.findtext("ssID", default="0")),
+                        user_lt=int(user.findtext("userLT", default="0")),
                         coaccountname=user.findtext("coaccountname") or None,
                         classname=user.findtext("classname") or None,
                         schoolname=user.findtext("schoolname") or None,
@@ -213,10 +213,10 @@ class MessageComposerForm(SessionMixin):
             for group in groups_element.findall("group"):
                 groups.append(
                     MessageSearchGroup(
-                        groupID=int(group.findtext("groupID", default="0")),
+                        group_id=int(group.findtext("groupID", default="0")),
                         value=group.findtext("value", default=""),
                         icon=group.findtext("icon") or None,
-                        ssID=int(group.findtext("ssID", default="0")),
+                        ss_id=int(group.findtext("ssID", default="0")),
                         description=group.findtext("description") or None,
                     ),
                 )

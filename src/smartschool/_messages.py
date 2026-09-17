@@ -60,7 +60,7 @@ class MessageLabel(Enum):
     BLUE_FLAG = 4
 
 
-class _MessagesPoster:
+class _MessagesPoster:  # pylint: disable=too-few-public-methods  # mixin pinning the endpoint
     _url = "/?module=Messages&file=dispatcher"
 
 
@@ -101,7 +101,7 @@ class MessageHeaders(_MessagesPoster, SmartschoolXmlNoCache):
             "sortField": self.sort_by.value,
             "sortKey": self.sort_order.value,
             "poll": "false" if not self.already_seen_message_ids else "true",
-            "poll_ids": ",".join(str(x) for x in self.already_seen_message_ids),
+            "poll_ids": ",".join(str(x) for x in self.already_seen_message_ids or ()),
             "layout": "new",
         }
 
@@ -115,7 +115,7 @@ class MessageHeaders(_MessagesPoster, SmartschoolXmlNoCache):
 
 
 # Cannot have `@dataclass`
-class _FetchOneMessage(_MessagesPoster, SmartschoolXML, ABC):
+class _FetchOneMessage(_MessagesPoster, SmartschoolXML, ABC):  # pylint: disable=too-few-public-methods  # query object: iterate or get()
     def __init__(self, session: Smartschool, msg_id: int, box_type: BoxType = BoxType.INBOX):
         super().__init__(session=session)
 
@@ -141,7 +141,7 @@ class _FetchOneMessage(_MessagesPoster, SmartschoolXML, ABC):
         self.cache[(self.msg_id, self.box_type)] = obj
 
 
-class Message(_FetchOneMessage):
+class Message(_FetchOneMessage):  # pylint: disable=too-few-public-methods  # query object: iterate or get()
     """
     Interface to fetch one message based on its MessageID.
 
@@ -186,7 +186,7 @@ class Attachment(SessionMixin, objects.Attachment):
         return resp.content
 
 
-class Attachments(_FetchOneMessage):
+class Attachments(_FetchOneMessage):  # pylint: disable=too-few-public-methods  # query object: iterate or get()
     """
     Interface to fetch one message based on its MessageID.
 
@@ -214,7 +214,7 @@ class Attachments(_FetchOneMessage):
         return Attachment
 
 
-class MarkMessageUnread(_FetchOneMessage):
+class MarkMessageUnread(_FetchOneMessage):  # pylint: disable=too-few-public-methods  # query object: iterate or get()
     @property
     def _action(self) -> str:
         return "mark message unread"
@@ -238,7 +238,7 @@ class MarkMessageUnread(_FetchOneMessage):
 
 
 # Cannot have `@dataclass`
-class AdjustMessageLabel(_FetchOneMessage):
+class AdjustMessageLabel(_FetchOneMessage):  # pylint: disable=too-few-public-methods  # query object: iterate or get()
     def __init__(self, session: Smartschool, msg_id: int, box_type: BoxType = BoxType.INBOX, label: MessageLabel = MessageLabel.NO_FLAG):
         super().__init__(session, msg_id, box_type)
         self.label = label
@@ -301,7 +301,7 @@ class MessageMoveToArchive(SessionMixin):
 
 
 # Cannot have `@dataclass`
-class MessageMoveToTrash(_MessagesPoster, SmartschoolXmlNoCache):
+class MessageMoveToTrash(_MessagesPoster, SmartschoolXmlNoCache):  # pylint: disable=too-few-public-methods  # query object: iterate or get()
     def __init__(self, session: Smartschool, msg_id: int):
         super().__init__(session=session)
 

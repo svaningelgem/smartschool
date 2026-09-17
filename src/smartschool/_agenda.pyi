@@ -76,6 +76,8 @@ class AgendaLesson(SessionMixin, objects.AgendaLesson):
         some_subjects_empty: str | None,
         session: Smartschool,
     ): ...
+    @property
+    def hour_details(self) -> objects.AgendaHour: ...
 
 class SmartschoolLessons(AgendaPoster):
     session: Smartschool

@@ -23,7 +23,7 @@ if TYPE_CHECKING:
     from ._credentials import Credentials
 
 try:
-    import pyotp
+    import pyotp  # ty: ignore[unresolved-import]  # optional `mfa` extra
 except ImportError:
     pyotp = None
 
@@ -51,12 +51,12 @@ class Smartschool(Session, DevTracingMixin):
             self._authenticated_user = yaml.safe_load(self._authenticated_user_file.read_text(encoding="utf8"))
 
     @property
-    def authenticated_user(self) -> dict | None:
+    def authenticated_user(self) -> dict:
         if self._authenticated_user is None:
             # This will trigger a simple webcall that triggers a login when needed, setting the authenticated_user
             _ = self.platform_id
-            if self._authenticated_user is None:
-                raise ValueError("Could not retrieve authenticated user information")
+        if self._authenticated_user is None:
+            raise ValueError("Could not retrieve authenticated user information")
 
         return self._authenticated_user
 
@@ -139,7 +139,7 @@ class Smartschool(Session, DevTracingMixin):
         with contextlib.suppress(FileNotFoundError, LoadError):
             cookie_jar.load(ignore_discard=True)
 
-        self.cookies = cookie_jar
+        self.cookies = cookie_jar  # ty: ignore[invalid-assignment]  # requests accepts any CookieJar
 
     def create_url(self, url: str) -> str:
         return urljoin(self._url, url)
@@ -151,10 +151,14 @@ class Smartschool(Session, DevTracingMixin):
 
         return bool(auth_segments & path_segments)
 
-    def request(self, method, url, **kwargs) -> Response:
-        """Override Session.request to handle auth and cookies transparently."""
+    def _require_credentials(self) -> Credentials:
         if self.creds is None:
             raise RuntimeError("Smartschool instance must have valid credentials.")
+        return self.creds
+
+    def request(self, method, url, **kwargs) -> Response:  # pylint: disable=arguments-differ  # ty: ignore[invalid-method-override]  # options go by keyword
+        """Override Session.request to handle auth and cookies transparently."""
+        self._require_credentials()
 
         # Convert relative URLs to absolute
         full_url = self.create_url(url) if not url.startswith("http") else url
@@ -179,7 +183,7 @@ class Smartschool(Session, DevTracingMixin):
             self._reset_login_attempts()
 
         # Save cookies
-        self.cookies.save(ignore_discard=True)
+        self.cookies.save(ignore_discard=True)  # ty: ignore[unresolved-attribute]  # the LWPCookieJar set in _initialize_session
 
         return response
 
@@ -215,25 +219,27 @@ class Smartschool(Session, DevTracingMixin):
 
     def _do_login(self, response: Response) -> Response:
         """Handle login form submission."""
-        logger.info("Logging in with {}", self.creds.username)
+        creds = self._require_credentials()
+        logger.info("Logging in with {}", creds.username)
         data = fill_form(
             response,
             'form[name="login_form"]',
             {
-                "username": self.creds.username,
-                "password": self.creds.password,
+                "username": creds.username,
+                "password": creds.password,
             },
         )
         return self._make_traced_request(super().request, "POST", response.url, data=data, allow_redirects=True)
 
     def _do_login_verification(self, response: Response) -> Response:
         """Handle account verification (birthday)."""
-        logger.info("Account verification for {}", self.creds.username)
+        creds = self._require_credentials()
+        logger.info("Account verification for {}", creds.username)
         data = fill_form(
             response,
             'form[name="account_verification_form"]',
             {
-                "security_question_answer": self.creds.mfa,
+                "security_question_answer": creds.mfa,
             },
         )
         return self._make_traced_request(super().request, "POST", response.url, data=data, allow_redirects=True)
@@ -243,7 +249,8 @@ class Smartschool(Session, DevTracingMixin):
         if pyotp is None:
             raise SmartSchoolAuthenticationError("2FA verification requires 'pyotp' package. Install with: pip install pyotp")
 
-        logger.info("2FA verification for {}", self.creds.username)
+        creds = self._require_credentials()
+        logger.info("2FA verification for {}", creds.username)
 
         # Check 2FA config
         config_resp = self._make_traced_request(super().request, "GET", self.create_url("/2fa/api/v1/config"), allow_redirects=True)
@@ -257,7 +264,7 @@ class Smartschool(Session, DevTracingMixin):
             raise SmartSchoolAuthenticationError("Only googleAuthenticator 2FA is supported")
 
         # Generate TOTP code and submit
-        totp = pyotp.TOTP(self.creds.mfa)
+        totp = pyotp.TOTP(creds.mfa)
         data = f'{{"google2fa":"{totp.now()}"}}'
 
         return self._make_traced_request(super().request, "POST", self.create_url("/2fa/api/v1/google-authenticator"), data=data, allow_redirects=True)
@@ -276,10 +283,10 @@ class Smartschool(Session, DevTracingMixin):
 
     @cached_property
     def _url(self) -> str:
-        return "https://" + self.creds.main_url
+        return "https://" + self._require_credentials().main_url
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(for: {self.creds.username})"
+        return f"{self.__class__.__name__}(for: {self._require_credentials().username})"
 
 
 @dataclass
