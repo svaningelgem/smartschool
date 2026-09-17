@@ -66,6 +66,7 @@ template = ".github/changelog/changelog.md.j2"   # flat "- fix: ..." format; rel
 
 
 [tool.coverage.run]
+source = ["smartschool"]
 branch = true
 
 [tool.coverage.report]
