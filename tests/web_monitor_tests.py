@@ -32,18 +32,20 @@ def _load_monitor(mocker: MockerFixture, tmp_path: Path, **credentials: str) -> 
 
 def test_2fa_without_a_totp_secret_is_refused(tmp_path: Path, mocker: MockerFixture):
     _, monitor = _load_monitor(mocker, tmp_path)
+    page = mocker.Mock()
 
     with pytest.raises(RuntimeError, match=r"no 'totp' secret in credentials\.yml"):
-        monitor._do_2fa(mocker.Mock())  # pylint: disable=protected-access  # white-box test
+        monitor._do_2fa(page)  # pylint: disable=protected-access  # white-box test
 
 
 def test_2fa_without_pyotp_is_refused(tmp_path: Path, mocker: MockerFixture):
     """An optional extra that is not installed is reported, not raised as an ImportError."""
     module, monitor = _load_monitor(mocker, tmp_path, totp="BASE32SECRET")
     mocker.patch.object(module, "pyotp", None)
+    page = mocker.Mock()
 
     with pytest.raises(RuntimeError, match="pip install pyotp"):
-        monitor._do_2fa(mocker.Mock())  # pylint: disable=protected-access  # white-box test
+        monitor._do_2fa(page)  # pylint: disable=protected-access  # white-box test
 
 
 def test_2fa_submits_the_current_totp_code(tmp_path: Path, mocker: MockerFixture):
