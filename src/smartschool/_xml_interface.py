@@ -33,8 +33,8 @@ def _build_alias_map(fields: dict) -> dict[str, str]:
 def _resolve_aliases(cls: type, data: dict) -> dict:
     """Map camelCase API keys to snake_case field names using pydantic field info."""
     for parent in cls.__mro__:
-        if hasattr(parent, "__pydantic_fields__"):
-            alias_map = _build_alias_map(parent.__pydantic_fields__)
+        if (fields := getattr(parent, "__pydantic_fields__", None)) is not None:
+            alias_map = _build_alias_map(fields)
             return {alias_map.get(k, k): v for k, v in data.items()}
 
     return data
@@ -178,9 +178,10 @@ class SmartschoolXmlWeeklyCache(SmartschoolXML, ABC):
         self.cache[self._cache_key] = obj
 
 
+@dataclass
 class SmartschoolXmlNoCache(SmartschoolXML, ABC):
     def _get_from_cache(self) -> object:
         raise KeyError
 
-    def _store_into_cache(self, _: object) -> None:
+    def _store_into_cache(self, obj: object) -> None:
         return

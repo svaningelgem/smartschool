@@ -174,3 +174,14 @@ strict = true
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*.py" = ["D100", "D103", "B018", "FBT001"]
+
+[tool.pylint.main]
+# pylint resolves a .pyi stub to its .py module, linting it twice and flagging it as a duplicate of itself.
+ignore-patterns = ['^\.#', '.*\.pyi$']
+
+[tool.pylint.format]
+max-line-length = 160
+
+[tool.pylint."messages control"]
+# Same as the ruff ignores D100-D105 and D107.
+disable = ["missing-module-docstring", "missing-class-docstring", "missing-function-docstring"]

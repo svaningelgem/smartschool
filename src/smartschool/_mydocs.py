@@ -65,7 +65,7 @@ class _MyDocsItem:
         """Copy this item into ``target`` and return the new copy."""
         data = self._post("copy", json={"parentId": target.id})
         target.refresh()
-        return target._make_item(data)
+        return target._make_item(data)  # pylint: disable=protected-access  # module-internal factory
 
     def trash(self) -> None:
         """Move this item to the recycle bin (reversible with :meth:`restore`)."""
@@ -123,12 +123,7 @@ class MyDocsFile(_MyDocsItem, DownloadableFile, SessionMixin):
         # The download endpoint 302-redirects to a (short-lived) presigned URL; requests follows it.
         response = self.session.get(f"/mydoc/api/v1/files/{self.id}/revisions/{self.revision_id}/download")
         response.raise_for_status()
-
-        if target:
-            target.write_bytes(response.content)
-            return target
-
-        return response.content
+        return self._write_or_return(response.content, target)
 
     def delete(self) -> None:
         """Permanently delete this file (use :meth:`trash` for a reversible delete)."""

@@ -29,12 +29,7 @@ class IntradeskFile(DownloadableFile, SessionMixin):
     def _real_download(self, target: Path | None) -> bytes | Path:
         response = self.session.get(f"/intradesk/api/v1/{self.session.platform_id}/files/{self.id}/download")
         response.raise_for_status()
-
-        if target:
-            target.write_bytes(response.content)
-            return target
-
-        return response.content
+        return self._write_or_return(response.content, target)
 
 
 @dataclass

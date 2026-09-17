@@ -33,6 +33,7 @@ class PlannedElements(SessionMixin, Iterable[PlannedElement]):
             self.till_date = self.from_date + timedelta(days=34, seconds=-1)
 
     def __iter__(self) -> Iterator[PlannedElement]:
+        assert self.till_date is not None  # set in __post_init__
         data = self.session.json(
             f"/planner/api/v1/planned-elements/user/{self.session.authenticated_user['id']}",
             data={"from": self.from_date.isoformat(), "to": self.till_date.isoformat(), "types": "planned-assignments,planned-to-dos"},

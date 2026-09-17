@@ -3,6 +3,8 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 from datetime import datetime
+from functools import cached_property
+from typing import TypeAlias
 
 from . import _objects as objects
 from ._common import DownloadableFile
@@ -29,6 +31,8 @@ class CourseCondensed(objects.CourseCondensed, SessionMixin):
         icon: str = "",
     ): ...
     def __str__(self): ...
+    @property
+    def items(self) -> list[DocumentOrFolderItem]: ...
 
 class TopNavCourses(SessionMixin):
     session: Smartschool
@@ -51,7 +55,7 @@ class FileItem(DownloadableFile, SessionMixin):
     id: int
     name: str
     mime_type: str
-    size_kb: float | str
+    size_kb: float | str | None
     last_modified: datetime | str
     download_url: str | None
     view_url: str | None
@@ -62,11 +66,13 @@ class FileItem(DownloadableFile, SessionMixin):
         id: int,
         name: str,
         mime_type: str,
-        size_kb: float | str,
+        size_kb: float | str | None,
         last_modified: datetime | str,
         download_url: str | None = None,
         view_url: str | None = None,
     ): ...
+    @cached_property
+    def filename(self) -> str: ...
 
 class InternetShortcut(FileItem):
     session: Smartschool
@@ -74,7 +80,7 @@ class InternetShortcut(FileItem):
     id: int
     name: str
     mime_type: str
-    size_kb: float | str
+    size_kb: float | str | None
     last_modified: datetime | str
     download_url: str | None
     view_url: str | None
@@ -86,12 +92,14 @@ class InternetShortcut(FileItem):
         id: int,
         name: str,
         mime_type: str,
-        size_kb: float | str,
+        size_kb: float | str | None,
         last_modified: datetime | str,
         download_url: str | None = None,
         view_url: str | None = None,
         link: str = "",
     ): ...
+    @cached_property
+    def filename(self) -> str: ...
 
 class FolderItem(SessionMixin):
     session: Smartschool
@@ -107,3 +115,7 @@ class FolderItem(SessionMixin):
         name: str,
         browse_url: str | None = None,
     ): ...
+    @cached_property
+    def items(self) -> list[DocumentOrFolderItem]: ...
+
+DocumentOrFolderItem: TypeAlias = FileItem | FolderItem | InternetShortcut

@@ -18,7 +18,7 @@ from urllib.parse import parse_qs, quote_plus, urlparse
 
 from bs4 import BeautifulSoup, FeatureNotFound
 from logprise import logger
-from pydantic import RootModel
+from pydantic import TypeAdapter
 from pydantic.dataclasses import is_pydantic_dataclass
 from requests import Response
 
@@ -47,6 +47,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
     from ._objects import String
+    from ._session import Smartschool
 
 
 class IsSaved(Enum):
@@ -54,15 +55,15 @@ class IsSaved(Enum):
     SAME = auto()
 
 
-def save(
-    session: "Smartschool",  # noqa: UP037, F821
+def save(  # pylint: disable=too-many-arguments,too-many-positional-arguments  # public API, called positionally
+    session: Smartschool,
     type_: Literal["agenda", "punten", "todo"],
     course_name: str,
     id_: str,
     data: dict | str | Any,
     is_eq: Callable = operator.eq,
     extension: str = "json",
-) -> IsSaved | dict | str:
+) -> IsSaved | dict | str | Any:
     save_as = session.cache_path / f"_{type_}/{course_name}/{id_}.{extension}"
 
     save_as.parent.mkdir(exist_ok=True, parents=True)
@@ -74,19 +75,19 @@ def save(
         # dataclass: is_pydantic_dataclass() is False for it, but a pydantic base sits in its MRO.
         # Project onto that base via __dict__ so we serialize only the wire fields - dropping the
         # `session` field, and without triggering lazy attributes such as Result.details.
-        pydantic_base = next((cls for cls in type(data).__mro__ if is_pydantic_dataclass(cls)), None)
+        pydantic_base: Any = next((cls for cls in type(data).__mro__ if is_pydantic_dataclass(cls)), None)
         if pydantic_base is not None:
             data = pydantic_base(**{name: data.__dict__.get(name) for name in pydantic_base.__pydantic_fields__})
             data_was_object = True
 
-    if data_was_dict:
+    if isinstance(data, dict):
         to_write = json.dumps(data, indent=4)
     elif data_was_object:
         # Backward-compat: emit camelCase aliases so newly-written cache files stay byte-compatible
         # with those written before the Result rework. DEPRECATED: this `by_alias=True` is a
         # compatibility shim - drop it (letting saves use snake_case field names) in a future major
         # version, once pre-existing caches are no longer in use.
-        to_write = RootModel[data.__class__](data).model_dump_json(indent=4, by_alias=True)
+        to_write = TypeAdapter(data.__class__).dump_json(data, indent=4, by_alias=True).decode()
     else:
         to_write = data
 
@@ -97,8 +98,8 @@ def save(
     old_data = save_as.read_text(encoding="utf8")
     if data_was_dict or data_was_object:
         old_data = json.loads(old_data)
-    if data_was_object:
-        old_data = data.__class__(**old_data)
+        if data_was_object:
+            old_data = data.__class__(**old_data)
 
     if is_eq(data, old_data):
         return IsSaved.SAME
@@ -217,7 +218,7 @@ def get_all_values_from_form(html: BeautifulSoup, form_selector: str):
         if "name" not in attrs:
             continue
 
-        form_element = {"name": attrs.get("name"), "value": attrs.get("value", "")}
+        form_element: dict[str, Any] = {"name": attrs.get("name"), "value": attrs.get("value", "")}
         if input_tag.name.lower() == "select":
             form_element["values"], form_element["value"] = _resolve_select_value(input_tag)
 
@@ -295,10 +296,10 @@ def convert_to_datetime(x: str | String | date | datetime | None) -> datetime:
 
     for fmt in possible_formats:
         with contextlib.suppress(ValueError):
-            x = datetime.strptime(x, fmt)
-            if x.tzinfo is None:
-                return x.astimezone()
-            return x
+            parsed = datetime.strptime(x, fmt)
+            if parsed.tzinfo is None:
+                return parsed.astimezone()
+            return parsed
 
     raise SmartSchoolParsingError(f"Cannot convert '{x}' to `datetime`")
 
@@ -317,7 +318,7 @@ def convert_to_date(x: str | String | date | datetime | None) -> date:
     raise SmartSchoolParsingError(f"Cannot convert '{x}' to `date`")
 
 
-def parse_size(size_str: str | float) -> float | None:
+def parse_size(size_str: str | float | None) -> float | None:
     """Parse size string to KB value with support for binary units."""
     if isinstance(size_str, (int, float)):
         return size_str
@@ -358,7 +359,7 @@ def parse_mime_type(file_type_string: str) -> str:
     prev = None
     while current != prev:
         prev = current
-        for extra in {"file", "bestand", "document", "fichier"}:
+        for extra in ("file", "bestand", "document", "fichier"):
             current = current.removesuffix(extra).strip()
 
     return current
@@ -426,59 +427,67 @@ class DownloadableFile(ABC):
     def download_to_dir(self, target_directory: Path, *, overwrite: bool = False) -> Path:
         return self.download(target_directory / self.filename, overwrite=overwrite)
 
+    @property
+    @abstractmethod
+    def filename(self) -> str:
+        """The filesystem-safe name `download_to_dir` stores the file under."""
+
     @abstractmethod
     def _real_download(self, target: Path | None) -> bytes | Path:
         """Fetch the file: write to `target` and return it, or return raw bytes when `target` is None."""
+
+    @staticmethod
+    def _write_or_return(content: bytes, target: Path | None) -> bytes | Path:
+        if target:
+            target.write_bytes(content)
+            return target
+
+        return content
+
+
+_EXTENSION_BY_CONTENT_TYPE = {
+    "application/json": ".json",
+    "text/html": ".html",
+    "text/xml": ".xml",
+    "application/xml": ".xml",
+    "text/plain": ".txt",
+    "application/pdf": ".pdf",
+    "image/jpeg": ".jpg",
+    "image/png": ".png",
+    "application/zip": ".zip",
+    "application/octet-stream": ".bin",
+    "application/force-download": ".bin",
+}
 
 
 def save_test_response(response: Response) -> None:  # pragma: no cover
     """Save response content to test data directory."""
     request = response.request
-    test_dir = Path(__file__).parent.parent.parent / "tests/requests" / request.method.lower()
+    test_dir = Path(__file__).parent.parent.parent / "tests/requests" / str(request.method).lower()
 
-    parsed_url = urlparse(request.url)
+    parsed_url = urlparse(str(request.url))
+    path_parts = [p.lower() for p in parsed_url.path.split("/") if p]
 
-    if hasattr(request, "body") and request.body:
-        try:
-            xml = parse_qs(request.body)["command"][0]
-            subsystem = re.search(r"<subsystem>(.*?)</subsystem>", xml).group(1)
-            action = re.search(r"<action>(.*?)</action>", xml).group(1)
-            file_path = test_dir / subsystem / f"{action}.xml"
-        except (AttributeError, KeyError):
-            path_parts = [p.lower() for p in parsed_url.path.split("/") if p]
+    if request.body:
+        commands = parse_qs(request.body) if isinstance(request.body, str) else {}
+        xml = commands.get("command", [""])[0]
+        subsystem = re.search(r"<subsystem>(.*?)</subsystem>", xml)
+        action = re.search(r"<action>(.*?)</action>", xml)
+        if subsystem and action:
+            file_path = test_dir / subsystem.group(1) / f"{action.group(1)}.xml"
+        else:
             query_part = quote_plus(parsed_url.query) if parsed_url.query else ""
             file_path = test_dir / Path(*path_parts) / query_part / "response"
     else:
-        path_parts = [p.lower() for p in parsed_url.path.split("/") if p]
         file_path = test_dir / Path(*path_parts) / "response"
 
     # Check Content-Disposition header for filename
-    content_disposition = response.headers.get("content-disposition", "")
-    filename_match = re.search(r'filename[*]?=["\']?([^"\';\s]+)', content_disposition)
-
-    if filename_match:
-        original_filename = filename_match.group(1)
-        extension = Path(original_filename).suffix
-        file_path = file_path.with_suffix(extension)
+    if filename_match := re.search(r'filename[*]?=["\']?([^"\';\s]+)', response.headers.get("content-disposition", "")):
+        extension = Path(filename_match.group(1)).suffix
     else:
         content_type = response.headers.get("content-type", "").split(";")[0].strip()
-
-        extension_map = {
-            "application/json": ".json",
-            "text/html": ".html",
-            "text/xml": ".xml",
-            "application/xml": ".xml",
-            "text/plain": ".txt",
-            "application/pdf": ".pdf",
-            "image/jpeg": ".jpg",
-            "image/png": ".png",
-            "application/zip": ".zip",
-            "application/octet-stream": ".bin",
-            "application/force-download": ".bin",
-        }
-
-        extension = extension_map.get(content_type, ".bin")
-        file_path = file_path.with_suffix(extension)
+        extension = _EXTENSION_BY_CONTENT_TYPE.get(content_type, ".bin")
+    file_path = file_path.with_suffix(extension)
 
     file_path.parent.mkdir(parents=True, exist_ok=True)
     file_path.write_bytes(response.content)
