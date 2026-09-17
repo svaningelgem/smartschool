@@ -11,15 +11,36 @@ concurrency:
 
 permissions:
   contents: read
+  pull-requests: write  # patch-coverage PR comment
 
 jobs:
   python:
     uses: svaningelgem/ci-workflows/.github/workflows/python.yml@v1
     with:
       python-versions: '["3.11", "3.12"]'
-      pytest-args: --cov=smartschool --cov-fail-under=100 --cov-branch --cov-report=xml --cov-report=term
+      total-coverage: 100
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  sonarcloud:
+    name: Analyze
+    needs: python
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0  # full history for accurate new-code / blame data
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: merged-coverage
+
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v8
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: https://sonarcloud.io
 
   generate-stubs:
     runs-on: ubuntu-latest
