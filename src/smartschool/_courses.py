@@ -269,8 +269,8 @@ class FolderItem(SessionMixin):
 
     def _get_folder_html(self) -> BeautifulSoup:
         """Fetch HTML content for a specific folder."""
+        assert self.browse_url is not None  # set in __post_init__
         try:
-            assert self.browse_url is not None  # set in __post_init__
             response = self.session.get(
                 self.browse_url,
                 headers={

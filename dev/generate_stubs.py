@@ -322,6 +322,16 @@ def _collect_annotations(real_class: type) -> dict[str, Any]:
     return {name: annotation for name, annotation in all_annotations.items() if not name.startswith("_")}
 
 
+def _property_getter(real_class: type, name: str) -> tuple[Callable, str] | None:
+    """The getter and stub decorator of a (cached) property, or None for anything else."""
+    member = inspect.getattr_static(real_class, name, None)
+    if isinstance(member, property) and member.fget:
+        return member.fget, "@property"
+    if isinstance(member, cached_property):
+        return member.func, "@cached_property"
+    return None
+
+
 def _collect_methods(class_info: ClassInfo, real_class: type) -> None:
     """Append __init__ and the public methods and properties of a class to its ClassInfo."""
     if real_class.__init__ is not object.__init__:
@@ -331,12 +341,9 @@ def _collect_methods(class_info: ClassInfo, real_class: type) -> None:
     for method_name, ast_methods in class_info.method_names.items():
         if method_name in ("__init__", "__post_init__"):
             continue
-        member = inspect.getattr_static(real_class, method_name, None)
-        if isinstance(member, property) and member.fget and method_name not in attribute_names:
-            class_info.methods.append(_extract_method_info(real_class, method_name, member.fget, "@property"))
-            continue
-        if isinstance(member, cached_property) and method_name not in attribute_names:
-            class_info.methods.append(_extract_method_info(real_class, method_name, member.func, "@cached_property"))
+        if getter := _property_getter(real_class, method_name):
+            if method_name not in attribute_names:  # a field shadowed by a lazy property stays a plain attribute
+                class_info.methods.append(_extract_method_info(real_class, method_name, *getter))
             continue
         if not callable(method := getattr(real_class, method_name, None)):
             continue
