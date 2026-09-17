@@ -56,6 +56,8 @@ auto-commits them, so run it after changing public signatures in a stubbed modul
 
 - Lint job runs `ruff check --no-fix .` and `ruff format --diff .` with the *latest*
   ruff, not the pinned one — a new rule can fail CI on untouched files.
-- Tests run on Python 3.11 to 3.14 even though `pyproject.toml` declares `>=3.10`.
+- Tests run on Python 3.10 to 3.14, the range `pyproject.toml` declares. `pylint` and `ty`
+  run on the first entry of `python-versions`, so both see 3.10, which is what keeps the
+  3.10 `StrEnum` fallback in `_objects.py` honest.
 - SonarCloud gates on new-code Reliability/Security; `sonar-project.properties` documents
   why each exclusion exists — read the comments there before adding one.
