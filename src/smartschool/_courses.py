@@ -4,7 +4,7 @@ import re
 from dataclasses import dataclass, field
 from functools import cached_property
 from pathlib import Path
-from typing import TYPE_CHECKING, TypeAlias
+from typing import TYPE_CHECKING, TypeAlias, cast
 
 from logprise import logger
 
@@ -69,12 +69,6 @@ def _select_one_or_raise(row: Tag, selector: str) -> Tag:
     if (found := row.select_one(selector)) is None:
         raise SmartSchoolParsingError(f"No element matching {selector!r} in row")
     return found
-
-
-def _str_attribute(tag: Tag, name: str) -> str:
-    if isinstance(value := tag.get(name), str):
-        return value
-    raise AssertionError(f"Expected a {name!r} attribute on <{tag.name}>")
 
 
 @dataclass
@@ -206,11 +200,9 @@ class FileItem(DownloadableFile, SessionMixin):  # pylint: disable=too-many-inst
         return create_filesystem_safe_filename(filename)
 
     def _real_download(self, target: Path | None) -> bytes | Path:
-        if self.download_url is None:
-            raise AssertionError(f"{self.name} has no download URL")
         if target:
             logger.debug("Downloading file: {}", target.name)
-        response: Response = self.session.get(self.download_url)
+        response: Response = self.session.get(cast("str", self.download_url))
         response.raise_for_status()
 
         if match := re.search(r'filename="([^"]+)"', response.headers.get("Content-Disposition") or ""):
@@ -269,10 +261,9 @@ class FolderItem(SessionMixin):
 
     def _get_folder_html(self) -> BeautifulSoup:
         """Fetch HTML content for a specific folder."""
-        assert self.browse_url is not None  # set in __post_init__
         try:
             response = self.session.get(
-                self.browse_url,
+                cast("str", self.browse_url),
                 headers={
                     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
                     "Referer": self.session.create_url("/"),
@@ -286,24 +277,21 @@ class FolderItem(SessionMixin):
             raise SmartSchoolException(f"Failed to fetch folder HTML: {e}") from e
 
     def _get_mime_from_row_image(self, row: Tag) -> str | None:
-        for entry in _str_attribute(_select_one_or_raise(row, "div.smsc_cm_body_row_block"), "style").split(";"):
+        for entry in cast("str", _select_one_or_raise(row, "div.smsc_cm_body_row_block").get("style")).split(";"):
             if not entry.strip():
                 continue
             first, second = entry.split(":", 1)
             if first.strip() == "background-image":
-                if (match := re.search("/mime_[^_]+_([^/_]+)", second)) is None:
-                    raise AssertionError(f"No mime type in {second!r}")
-                return match.group(1)
+                return cast("re.Match[str]", re.search("/mime_[^_]+_([^/_]+)", second)).group(1)
 
         return None
 
     def _parse_document_row(self, row: Tag) -> FileItem:
         """Parse a single table row into a file item."""
-        id_ = int(_str_attribute(row, "id")[6:])
+        id_ = int(cast("str", row.get("id"))[6:])
         mime_block = _select_one_or_raise(row, "div.smsc_cm_body_row_block_mime").get_text(strip=True, separator="\n")
         _, size_kb, last_modified = mime_block.split(" - ")
-        if (mime_style := self._get_mime_from_row_image(row)) is None:
-            raise AssertionError("No mime type in the row image")
+        mime_style = cast("str", self._get_mime_from_row_image(row))  # a row without one fails in FileItem.__post_init__, as before
 
         link_texts = [link_text for r in row.select("a") if (link_text := r.get_text(strip=True, separator="\n"))]
         if len(link_texts) == 0:
@@ -313,9 +301,9 @@ class FolderItem(SessionMixin):
         if inline_links:
             inline_link = inline_links[0]
             if inline_link.name == "iframe":
-                final_link = _str_attribute(inline_link, "src")
+                final_link = cast("str", inline_link["src"])
             elif inline_link.name == "a":
-                final_link = _str_attribute(inline_link, "href")
+                final_link = cast("str", inline_link["href"])
             else:
                 raise AssertionError(f"Unknown inline link type: {inline_link.name}")
 
@@ -392,7 +380,7 @@ class FolderItem(SessionMixin):
         for link in row.select("a"):
             classes = link.get("class") or []
             if "smsc_cm_link" in classes:
-                browse_url = _str_attribute(link, "href")
+                browse_url = cast("str", link["href"])
                 name = link.get_text(strip=True, separator="\n")
                 return FolderItem(
                     session=self.session,
@@ -406,8 +394,7 @@ class FolderItem(SessionMixin):
 
     def _parse_row(self, row: Tag) -> DocumentOrFolderItem | None:
         """Parse a single table row into a file or folder item."""
-        row_id = row.get("id")
-        if isinstance(row_id, str) and row_id.lower().startswith("docid_"):
+        if row.get("id") and cast("str", row.get("id")).lower().startswith("docid_"):
             return self._parse_document_row(row)
         return self._parse_folder_row(row)
 

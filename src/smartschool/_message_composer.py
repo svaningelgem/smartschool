@@ -106,7 +106,8 @@ class MessageComposerForm(SessionMixin):
         resp.raise_for_status()
 
         soup = bs4_html(resp)
-        self.hidden_fields = {str(inp["name"]): str(inp.get("value", "")) for inp in soup.select("input[type=hidden][name]")}
+        # ty: ignore[invalid-assignment]  # `name` and `value` are single-valued attributes
+        self.hidden_fields = {inp["name"]: inp.get("value", "") for inp in soup.select("input[type=hidden][name]")}
         # The compose page always renders the co-account recipient block, so its presence is not
         # a capability signal. The real (staff/school-gated) flag lives in the embedded SMSC vars
         # config object.
@@ -196,11 +197,11 @@ class MessageComposerForm(SessionMixin):
         if users_element is not None:
             for user in users_element.findall("user"):
                 users.append(
-                    MessageSearchUser(
-                        user_id=int(user.findtext("userID", default="0")),
+                    MessageSearchUser(  # pylint: disable=unexpected-keyword-arg,no-value-for-parameter  # ty: ignore[missing-argument]  # pydantic validation aliases
+                        userID=int(user.findtext("userID", default="0")),  # ty: ignore[unknown-argument]
                         value=user.findtext("value", default=""),
-                        ss_id=int(user.findtext("ssID", default="0")),
-                        user_lt=int(user.findtext("userLT", default="0")),
+                        ssID=int(user.findtext("ssID", default="0")),  # ty: ignore[unknown-argument]
+                        userLT=int(user.findtext("userLT", default="0")),  # ty: ignore[unknown-argument]
                         coaccountname=user.findtext("coaccountname") or None,
                         classname=user.findtext("classname") or None,
                         schoolname=user.findtext("schoolname") or None,
@@ -212,11 +213,11 @@ class MessageComposerForm(SessionMixin):
         if groups_element is not None:
             for group in groups_element.findall("group"):
                 groups.append(
-                    MessageSearchGroup(
-                        group_id=int(group.findtext("groupID", default="0")),
+                    MessageSearchGroup(  # pylint: disable=unexpected-keyword-arg,no-value-for-parameter  # ty: ignore[missing-argument]  # pydantic validation aliases
+                        groupID=int(group.findtext("groupID", default="0")),  # ty: ignore[unknown-argument]
                         value=group.findtext("value", default=""),
                         icon=group.findtext("icon") or None,
-                        ss_id=int(group.findtext("ssID", default="0")),
+                        ssID=int(group.findtext("ssID", default="0")),  # ty: ignore[unknown-argument]
                         description=group.findtext("description") or None,
                     ),
                 )

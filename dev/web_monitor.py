@@ -47,11 +47,6 @@ from typing import TYPE_CHECKING
 import yaml
 from playwright.sync_api import sync_playwright  # pylint: disable=import-error  # ty: ignore[unresolved-import]  # deliberately not a project dependency
 
-try:
-    import pyotp  # ty: ignore[unresolved-import]  # optional `mfa` extra
-except ImportError:
-    pyotp = None
-
 if TYPE_CHECKING:
     from playwright.sync_api import Browser, BrowserContext, Page, Playwright  # ty: ignore[unresolved-import]
 
@@ -87,10 +82,11 @@ def _safe_output_dir(out_dir: Path | str) -> Path:
 class SmartschoolMonitor:  # pylint: disable=too-many-instance-attributes  # login settings plus the live browser handles
     """Playwright session that logs in once and records traffic per visited path."""
 
-    page: Page
-    _pw: Playwright
-    _browser: Browser
-    _ctx: BrowserContext
+    if TYPE_CHECKING:  # set in __enter__; declared here so they are not attributes defined outside __init__
+        page: Page
+        _pw: Playwright
+        _browser: Browser
+        _ctx: BrowserContext
 
     def __init__(self, *, out_dir: Path | str = "dev/_captures", headless: bool = True, fresh: bool = False) -> None:
         creds = _load_credentials()
@@ -194,8 +190,7 @@ class SmartschoolMonitor:  # pylint: disable=too-many-instance-attributes  # log
     def _do_2fa(self, page: Page) -> None:
         if not self.totp_secret:
             raise RuntimeError("Account requires 2FA but no 'totp' secret in credentials.yml")
-        if pyotp is None:
-            raise RuntimeError("Account requires 2FA: pip install pyotp")
+        import pyotp  # pylint: disable=import-outside-toplevel,import-error  # ty: ignore[unresolved-import]  # optional, only for TOTP accounts
 
         page.fill("input[type='text'], input[type='tel']", pyotp.TOTP(self.totp_secret).now())
         page.click("button[type='submit'], input[type='submit']")

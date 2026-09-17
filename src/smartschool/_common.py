@@ -13,12 +13,12 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from enum import Enum, auto
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal, overload
+from typing import TYPE_CHECKING, Any, Literal, cast, overload
 from urllib.parse import parse_qs, quote_plus, urlparse
 
 from bs4 import BeautifulSoup, FeatureNotFound
 from logprise import logger
-from pydantic import TypeAdapter
+from pydantic import RootModel
 from pydantic.dataclasses import is_pydantic_dataclass
 from requests import Response
 
@@ -80,16 +80,16 @@ def save(  # pylint: disable=too-many-arguments,too-many-positional-arguments  #
             data = pydantic_base(**{name: data.__dict__.get(name) for name in pydantic_base.__pydantic_fields__})
             data_was_object = True
 
-    if isinstance(data, dict):
+    if data_was_dict:
         to_write = json.dumps(data, indent=4)
     elif data_was_object:
         # Backward-compat: emit camelCase aliases so newly-written cache files stay byte-compatible
         # with those written before the Result rework. DEPRECATED: this `by_alias=True` is a
         # compatibility shim - drop it (letting saves use snake_case field names) in a future major
         # version, once pre-existing caches are no longer in use.
-        to_write = TypeAdapter(data.__class__).dump_json(data, indent=4, by_alias=True).decode()
+        to_write = RootModel[data.__class__](data).model_dump_json(indent=4, by_alias=True)  # ty: ignore[invalid-type-form]  # parametrized at runtime
     else:
-        to_write = data
+        to_write = cast("str", data)
 
     if not save_as.exists():
         save_as.write_text(to_write, encoding="utf8")
@@ -98,8 +98,8 @@ def save(  # pylint: disable=too-many-arguments,too-many-positional-arguments  #
     old_data = save_as.read_text(encoding="utf8")
     if data_was_dict or data_was_object:
         old_data = json.loads(old_data)
-        if data_was_object:
-            old_data = data.__class__(**old_data)
+    if data_was_object:
+        old_data = data.__class__(**cast("dict", old_data))
 
     if is_eq(data, old_data):
         return IsSaved.SAME
@@ -296,10 +296,10 @@ def convert_to_datetime(x: str | String | date | datetime | None) -> datetime:
 
     for fmt in possible_formats:
         with contextlib.suppress(ValueError):
-            parsed = datetime.strptime(x, fmt)
-            if parsed.tzinfo is None:
-                return parsed.astimezone()
-            return parsed
+            x = datetime.strptime(cast("str", x), fmt)
+            if x.tzinfo is None:
+                return x.astimezone()
+            return x
 
     raise SmartSchoolParsingError(f"Cannot convert '{x}' to `datetime`")
 
@@ -427,10 +427,8 @@ class DownloadableFile(ABC):
     def download_to_dir(self, target_directory: Path, *, overwrite: bool = False) -> Path:
         return self.download(target_directory / self.filename, overwrite=overwrite)
 
-    @property
-    @abstractmethod
-    def filename(self) -> str:
-        """The filesystem-safe name `download_to_dir` stores the file under."""
+    if TYPE_CHECKING:  # `filename` is provided by the subclasses; declaring it here would make it abstract
+        filename: str
 
     @abstractmethod
     def _real_download(self, target: Path | None) -> bytes | Path:
@@ -445,49 +443,52 @@ class DownloadableFile(ABC):
         return content
 
 
-_EXTENSION_BY_CONTENT_TYPE = {
-    "application/json": ".json",
-    "text/html": ".html",
-    "text/xml": ".xml",
-    "application/xml": ".xml",
-    "text/plain": ".txt",
-    "application/pdf": ".pdf",
-    "image/jpeg": ".jpg",
-    "image/png": ".png",
-    "application/zip": ".zip",
-    "application/octet-stream": ".bin",
-    "application/force-download": ".bin",
-}
-
-
 def save_test_response(response: Response) -> None:  # pragma: no cover
     """Save response content to test data directory."""
     request = response.request
-    test_dir = Path(__file__).parent.parent.parent / "tests/requests" / str(request.method).lower()
+    test_dir = Path(__file__).parent.parent.parent / "tests/requests" / cast("str", request.method).lower()
 
-    parsed_url = urlparse(str(request.url))
-    path_parts = [p.lower() for p in parsed_url.path.split("/") if p]
+    parsed_url = urlparse(cast("str", request.url))
 
-    if request.body:
-        commands = parse_qs(request.body) if isinstance(request.body, str) else {}
-        xml = commands.get("command", [""])[0]
-        subsystem = re.search(r"<subsystem>(.*?)</subsystem>", xml)
-        action = re.search(r"<action>(.*?)</action>", xml)
-        if subsystem and action:
-            file_path = test_dir / subsystem.group(1) / f"{action.group(1)}.xml"
-        else:
+    if hasattr(request, "body") and request.body:
+        try:
+            xml = parse_qs(cast("str", request.body))["command"][0]
+            subsystem = cast("re.Match[str]", re.search(r"<subsystem>(.*?)</subsystem>", xml)).group(1)
+            action = cast("re.Match[str]", re.search(r"<action>(.*?)</action>", xml)).group(1)
+            file_path = test_dir / subsystem / f"{action}.xml"
+        except (AttributeError, KeyError):
+            path_parts = [p.lower() for p in parsed_url.path.split("/") if p]
             query_part = quote_plus(parsed_url.query) if parsed_url.query else ""
             file_path = test_dir / Path(*path_parts) / query_part / "response"
     else:
+        path_parts = [p.lower() for p in parsed_url.path.split("/") if p]
         file_path = test_dir / Path(*path_parts) / "response"
 
     # Check Content-Disposition header for filename
-    if filename_match := re.search(r'filename[*]?=["\']?([^"\';\s]+)', response.headers.get("content-disposition", "")):
+    filename_match = re.search(r'filename[*]?=["\']?([^"\';\s]+)', response.headers.get("content-disposition", ""))
+
+    if filename_match:
         extension = Path(filename_match.group(1)).suffix
+        file_path = file_path.with_suffix(extension)
     else:
         content_type = response.headers.get("content-type", "").split(";")[0].strip()
-        extension = _EXTENSION_BY_CONTENT_TYPE.get(content_type, ".bin")
-    file_path = file_path.with_suffix(extension)
+
+        extension_map = {
+            "application/json": ".json",
+            "text/html": ".html",
+            "text/xml": ".xml",
+            "application/xml": ".xml",
+            "text/plain": ".txt",
+            "application/pdf": ".pdf",
+            "image/jpeg": ".jpg",
+            "image/png": ".png",
+            "application/zip": ".zip",
+            "application/octet-stream": ".bin",
+            "application/force-download": ".bin",
+        }
+
+        extension = extension_map.get(content_type, ".bin")
+        file_path = file_path.with_suffix(extension)
 
     file_path.parent.mkdir(parents=True, exist_ok=True)
     file_path.write_bytes(response.content)

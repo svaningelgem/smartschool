@@ -17,8 +17,7 @@ if TYPE_CHECKING:
 __all__ = ["AgendaLesson", "AgendaPoster", "SmartschoolHours", "SmartschoolLessons", "SmartschoolMomentInfos"]
 
 
-@dataclass
-class AgendaPoster(SmartschoolXmlWeeklyCache, ABC):
+class AgendaPoster(SmartschoolXmlWeeklyCache, ABC):  # pylint: disable=too-few-public-methods  # query object: iterate or get()
     """Caches the information on a weekly basis, and posts to the mentioned URL."""
 
     _url: ClassVar[str] = "/?module=Agenda&file=dispatcher"
@@ -31,8 +30,7 @@ class AgendaLesson(SessionMixin, objects.AgendaLesson):
         return SmartschoolHours(self.session).search_by_hour_id(self.hour_id)
 
 
-@dataclass
-class SmartschoolLessons(AgendaPoster):
+class SmartschoolLessons(AgendaPoster):  # pylint: disable=too-few-public-methods  # query object: iterate or get()
     """
     Interface to the retrieval of lessons for a certain date.
 

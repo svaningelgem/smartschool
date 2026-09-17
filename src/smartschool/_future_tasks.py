@@ -1,5 +1,4 @@
 from collections.abc import Iterator
-from dataclasses import dataclass
 
 from ._objects import FutureTaskOneDay
 from ._session import SessionMixin
@@ -7,8 +6,7 @@ from ._session import SessionMixin
 __all__ = ["FutureTasks"]
 
 
-@dataclass
-class FutureTasks(SessionMixin):
+class FutureTasks(SessionMixin):  # pylint: disable=too-few-public-methods  # query object: iterate or get()
     """
     Class that interfaces the retrieval of any task that needs to be made in the near future.
 

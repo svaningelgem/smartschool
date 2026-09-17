@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 from functools import cached_property
 from http.cookiejar import LoadError, LWPCookieJar
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 from urllib.parse import urlencode, urljoin, urlparse
 
 import yaml
@@ -151,14 +151,10 @@ class Smartschool(Session, DevTracingMixin):
 
         return bool(auth_segments & path_segments)
 
-    def _require_credentials(self) -> Credentials:
-        if self.creds is None:
-            raise RuntimeError("Smartschool instance must have valid credentials.")
-        return self.creds
-
     def request(self, method, url, **kwargs) -> Response:  # pylint: disable=arguments-differ  # ty: ignore[invalid-method-override]  # options go by keyword
         """Override Session.request to handle auth and cookies transparently."""
-        self._require_credentials()
+        if self.creds is None:
+            raise RuntimeError("Smartschool instance must have valid credentials.")
 
         # Convert relative URLs to absolute
         full_url = self.create_url(url) if not url.startswith("http") else url
@@ -219,7 +215,7 @@ class Smartschool(Session, DevTracingMixin):
 
     def _do_login(self, response: Response) -> Response:
         """Handle login form submission."""
-        creds = self._require_credentials()
+        creds = cast("Credentials", self.creds)
         logger.info("Logging in with {}", creds.username)
         data = fill_form(
             response,
@@ -233,7 +229,7 @@ class Smartschool(Session, DevTracingMixin):
 
     def _do_login_verification(self, response: Response) -> Response:
         """Handle account verification (birthday)."""
-        creds = self._require_credentials()
+        creds = cast("Credentials", self.creds)
         logger.info("Account verification for {}", creds.username)
         data = fill_form(
             response,
@@ -249,7 +245,7 @@ class Smartschool(Session, DevTracingMixin):
         if pyotp is None:
             raise SmartSchoolAuthenticationError("2FA verification requires 'pyotp' package. Install with: pip install pyotp")
 
-        creds = self._require_credentials()
+        creds = cast("Credentials", self.creds)
         logger.info("2FA verification for {}", creds.username)
 
         # Check 2FA config
@@ -283,10 +279,10 @@ class Smartschool(Session, DevTracingMixin):
 
     @cached_property
     def _url(self) -> str:
-        return "https://" + self._require_credentials().main_url
+        return "https://" + cast("Credentials", self.creds).main_url
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(for: {self._require_credentials().username})"
+        return f"{self.__class__.__name__}(for: {cast('Credentials', self.creds).username})"
 
 
 @dataclass

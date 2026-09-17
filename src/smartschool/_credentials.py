@@ -48,11 +48,11 @@ class PathCredentials(Credentials):
     CREDENTIALS_FILENAME: ClassVar[str] = "credentials.yml"
     filename: str | Path = ""
 
-    username: str = field(init=False, default="")
-    password: str = field(init=False, default="")
-    main_url: str = field(init=False, default="")
-    mfa: str = field(init=False, default="")
-    other_info: dict | None = field(init=False, default=None)
+    username: str = field(init=False, default=None)  # ty: ignore[invalid-assignment]  # __post_init__ always sets it
+    password: str = field(init=False, default=None)  # ty: ignore[invalid-assignment]  # __post_init__ always sets it
+    main_url: str = field(init=False, default=None)  # ty: ignore[invalid-assignment]  # __post_init__ always sets it
+    mfa: str = field(init=False, default=None)  # ty: ignore[invalid-assignment]  # __post_init__ always sets it
+    other_info: dict = field(init=False, default=None)  # ty: ignore[invalid-assignment]  # __post_init__ always sets it
 
     def __post_init__(self):
         credentials_file = self._find_credentials_file()

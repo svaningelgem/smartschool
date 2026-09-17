@@ -177,7 +177,7 @@ def parse_class_ast_info(file_path: Path) -> tuple[dict[str, ClassInfo], list[st
     """Parse AST to get class structure info as written in source."""
     try:
         tree = ast.parse(file_path.read_bytes())
-    except (OSError, SyntaxError, ValueError) as e:
+    except Exception as e:  # pylint: disable=broad-exception-caught  # a malformed source file must not stop the run
         logger.error(f"Failed to parse AST: {e}")
         return {}, []
 

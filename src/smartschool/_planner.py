@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 from zoneinfo import ZoneInfo
 
 from ._objects import ApplicableAssignmentType, PlannedElement
@@ -33,10 +33,9 @@ class PlannedElements(SessionMixin, Iterable[PlannedElement]):
             self.till_date = self.from_date + timedelta(days=34, seconds=-1)
 
     def __iter__(self) -> Iterator[PlannedElement]:
-        assert self.till_date is not None  # set in __post_init__
         data = self.session.json(
             f"/planner/api/v1/planned-elements/user/{self.session.authenticated_user['id']}",
-            data={"from": self.from_date.isoformat(), "to": self.till_date.isoformat(), "types": "planned-assignments,planned-to-dos"},
+            data={"from": self.from_date.isoformat(), "to": cast("date", self.till_date).isoformat(), "types": "planned-assignments,planned-to-dos"},
         )
         for element in data:
             yield PlannedElement(**element)

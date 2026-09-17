@@ -4,7 +4,7 @@ import contextlib
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import date
-from typing import TYPE_CHECKING, TypeVar
+from typing import TYPE_CHECKING, TypeVar, cast
 from xml.etree import ElementTree as ET
 from xml.sax.saxutils import quoteattr
 
@@ -33,8 +33,8 @@ def _build_alias_map(fields: dict) -> dict[str, str]:
 def _resolve_aliases(cls: type, data: dict) -> dict:
     """Map camelCase API keys to snake_case field names using pydantic field info."""
     for parent in cls.__mro__:
-        if (fields := getattr(parent, "__pydantic_fields__", None)) is not None:
-            alias_map = _build_alias_map(fields)
+        if hasattr(parent, "__pydantic_fields__"):
+            alias_map = _build_alias_map(cast("dict", parent.__pydantic_fields__))
             return {alias_map.get(k, k): v for k, v in data.items()}
 
     return data
@@ -178,10 +178,9 @@ class SmartschoolXmlWeeklyCache(SmartschoolXML, ABC):
         self.cache[self._cache_key] = obj
 
 
-@dataclass
-class SmartschoolXmlNoCache(SmartschoolXML, ABC):
+class SmartschoolXmlNoCache(SmartschoolXML, ABC):  # pylint: disable=too-few-public-methods  # query object: iterate or get()
     def _get_from_cache(self) -> object:
         raise KeyError
 
-    def _store_into_cache(self, obj: object) -> None:
+    def _store_into_cache(self, _: object) -> None:  # ty: ignore[invalid-method-override]  # the value is deliberately dropped
         return

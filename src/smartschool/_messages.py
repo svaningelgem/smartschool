@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABC
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 from urllib.parse import urlencode
 
 from . import _objects as objects
@@ -101,7 +101,7 @@ class MessageHeaders(_MessagesPoster, SmartschoolXmlNoCache):
             "sortField": self.sort_by.value,
             "sortKey": self.sort_order.value,
             "poll": "false" if not self.already_seen_message_ids else "true",
-            "poll_ids": ",".join(str(x) for x in self.already_seen_message_ids or ()),
+            "poll_ids": ",".join(str(x) for x in cast("list[int]", self.already_seen_message_ids)),
             "layout": "new",
         }
 

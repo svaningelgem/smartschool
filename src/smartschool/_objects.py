@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import sys
 from datetime import date, datetime
+from enum import StrEnum  # ty: ignore[unresolved-import]  # needs 3.11; requires-python still says 3.10
 from functools import cached_property
 from typing import Annotated, Literal
 
@@ -10,15 +10,6 @@ from pydantic.alias_generators import to_camel
 from pydantic.dataclasses import Field, dataclass
 
 from ._common import as_float, convert_to_date, convert_to_datetime
-
-if sys.version_info >= (3, 11):
-    from enum import StrEnum
-else:  # pragma: no cover
-    from enum import Enum
-
-    class StrEnum(str, Enum):
-        __str__ = str.__str__
-
 
 String = Annotated[str, StringConstraints(strip_whitespace=True)]
 # `(?i)` inline flag = case-insensitive; pydantic-v2 StringConstraints over the legacy

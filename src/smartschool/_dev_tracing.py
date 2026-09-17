@@ -4,7 +4,7 @@ import abc
 import traceback
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -110,8 +110,8 @@ class DevTracingMixin(abc.ABC):
         f.write(traceback.format_exc())
         f.write("-" * 40 + "\n")
 
-        if (error_response := getattr(error, "response", None)) is not None:
-            self._write_response_details(f, error_response, "ERROR RESPONSE")
+        if hasattr(error, "response") and error.response is not None:
+            self._write_response_details(f, cast("Response", error.response), "ERROR RESPONSE")
 
     def _write_footer(self, f) -> None:
         """Write the trace footer."""
@@ -172,9 +172,9 @@ class DevTracingMixin(abc.ABC):
             for key, value in req.headers.items():
                 f.write(f"    {key}: {value}\n")
 
-        if cookies := getattr(req, "_cookies", None):
+        if hasattr(req, "_cookies") and req._cookies:  # pylint: disable=protected-access  # requests keeps the cookie jar of a request private
             f.write("  Request Cookies:\n")
-            for cookie in cookies:
+            for cookie in req._cookies:  # pylint: disable=protected-access  # requests keeps the cookie jar of a request private
                 f.write(f"    {cookie.name}={cookie.value}\n")
 
         if hasattr(req, "body") and req.body:
