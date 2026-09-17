@@ -8,7 +8,7 @@ import pytest
 import time_machine
 from bs4 import BeautifulSoup, FeatureNotFound
 from logprise import logger
-from requests import Response
+from requests import PreparedRequest, Response
 
 from smartschool import (
     IsSaved,
@@ -32,6 +32,7 @@ from smartschool import (
     send_email,
     xml_to_dict,
 )
+from smartschool._common import DownloadableFile, save_test_response
 from smartschool._xml_interface import _resolve_aliases
 
 
@@ -687,3 +688,101 @@ def test_version_numbers():
     sorted_keys = [natural_sort(v) for v in versions]
     expected_order = [natural_sort("v1.2.0"), natural_sort("v1.2.10"), natural_sort("v1.10.0"), natural_sort("v2.0.0")]
     assert sorted(sorted_keys) == expected_order
+
+
+class _FileWithoutName(DownloadableFile):
+    """A downloadable that forgets to provide `filename`."""
+
+    def _real_download(self, target: Path | None) -> bytes | Path:
+        return self._write_or_return(b"content", target)  # pylint: disable=protected-access  # white-box test
+
+
+def test_downloadable_file_requires_a_filename():
+    """`filename` is abstract, so a subclass without one cannot be built at all."""
+    with pytest.raises(TypeError, match=r"abstract method '?filename"):
+        _FileWithoutName()  # pylint: disable=abstract-class-instantiated  # that is the behaviour under test
+
+
+def test_save_writes_camel_case_json_for_a_pydantic_dataclass(session: Smartschool) -> None:
+    """The cache files stay camelCase: the aliases, the 4-space indent and the field order are all part of the format."""
+    student = Student(
+        id="a",
+        picture_hash="b",
+        picture_url="c",
+        description=PersonDescription(starting_with_first_name="d", starting_with_last_name="e"),
+        name=PersonDescription(starting_with_first_name="f", starting_with_last_name="g"),
+        sort="h",
+    )
+
+    assert save(session, type_="todo", course_name="test", id_="123", data=student) == IsSaved.NEW
+
+    assert (session.cache_path / "_todo/test/123.json").read_text(encoding="utf8") == (
+        "{\n"
+        '    "id": "a",\n'
+        '    "pictureHash": "b",\n'
+        '    "pictureUrl": "c",\n'
+        '    "description": {\n'
+        '        "startingWithFirstName": "d",\n'
+        '        "startingWithLastName": "e"\n'
+        "    },\n"
+        '    "name": {\n'
+        '        "startingWithFirstName": "f",\n'
+        '        "startingWithLastName": "g"\n'
+        "    },\n"
+        '    "sort": "h",\n'
+        '    "deleted": false\n'
+        "}"
+    )
+
+
+def _captured(response: Response, capture_root: Path) -> list[str]:
+    """Run the fixture capture with `tests/requests` redirected into `capture_root`, and list what it wrote."""
+    save_test_response(response)
+    return sorted(str(path.relative_to(capture_root / "tests/requests")) for path in (capture_root / "tests").rglob("*") if path.is_file())
+
+
+@pytest.fixture(name="capture_root")
+def fixture_capture_root(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
+    """Point `save_test_response` at a throwaway tree instead of the repository's own `tests/requests`."""
+    monkeypatch.setattr("smartschool._common.__file__", str(tmp_path / "src/smartschool/_common.py"))
+    return tmp_path
+
+
+def _response(method: str | None, url: str | None, *, body=None, headers: dict[str, str] | None = None) -> Response:
+    request = PreparedRequest()
+    request.prepare(method=method or "GET", url=url or "https://site/", data=body)
+    request.method = method
+    request.url = url
+    response = Response()
+    response.request = request
+    response.status_code = 200
+    response.headers.update(headers or {})
+    response._content = b"captured"  # pylint: disable=protected-access  # white-box test
+    return response
+
+
+def test_save_test_response_routes_an_xml_command_by_subsystem_and_action(capture_root: Path):
+    command = "<request><command><subsystem>postboxes</subsystem><action>message list</action></command></request>"
+    response = _response("POST", "https://site/?module=Messages", body={"command": command}, headers={"content-type": "text/xml"})
+
+    assert _captured(response, capture_root) == ["post/postboxes/message list.xml"]
+
+
+def test_save_test_response_falls_back_to_the_url_for_a_binary_body(capture_root: Path):
+    """A binary upload body is not form-encoded, so the path comes from the URL and the extension from the content type."""
+    response = _response("POST", "https://site/Upload/Index", body=b"\xff\xfebinary", headers={"content-type": "application/json"})
+
+    assert _captured(response, capture_root) == ["post/upload/index/response.json"]
+
+
+def test_save_test_response_uses_the_filename_from_the_content_disposition(capture_root: Path):
+    response = _response("GET", "https://site/doc/download", headers={"content-disposition": 'attachment; filename="report.docx"'})
+
+    assert _captured(response, capture_root) == ["get/doc/download/response.docx"]
+
+
+def test_save_test_response_survives_a_request_without_a_method_or_url(capture_root: Path):
+    """Both are stringified, so an unsent request lands under `none` instead of raising."""
+    response = _response(None, None, headers={"content-type": "application/pdf"})
+
+    assert _captured(response, capture_root) == ["none/none/response.pdf"]

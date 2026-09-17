@@ -110,3 +110,11 @@ def test_message_with_empty_body_coerced_to_empty_string(session: Smartschool, r
     sut = Message(session, 123).get()
 
     assert sut.body == ""
+
+
+def test_message_headers_without_seen_ids_does_not_poll(session: Smartschool):
+    """`None` is accepted (unlike an empty poll list, it is not an error) and polls for nothing."""
+    params = MessageHeaders(session, already_seen_message_ids=None)._params  # pylint: disable=protected-access  # white-box test
+
+    assert params["poll"] == "false"
+    assert params["poll_ids"] == ""
