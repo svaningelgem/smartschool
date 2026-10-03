@@ -86,7 +86,10 @@ A clear error is raised when no such item exists, or when the keychain backend c
 
 > **Headless Linux and WSL** have no keychain backend, so reading from the keyring fails there. Either run a Secret
 > Service (for example GNOME Keyring) or install a file-based backend such as
-> [`keyrings.alt`](https://pypi.org/project/keyrings.alt/) (note that it does not encrypt as strongly as a real keychain).
+> [`keyrings.alt`](https://pypi.org/project/keyrings.alt/). Be aware that `keyrings.alt` on its own does **not encrypt**
+> the password: it stores it base64-encoded in `~/.local/share/python_keyring/keyring_pass.cfg` (readable only by your
+> user), which protects it no better than a `password:` line in `credentials.yml`. Install `pycryptodomex` as well to
+> get its encrypted keyring instead, which asks for a master password to unlock it.
 
 ## Direct Credentials
 
