@@ -16,18 +16,27 @@ if TYPE_CHECKING:
     from pytest_mock import MockerFixture
 
 
-def _load_monitor(mocker: MockerFixture, tmp_path: Path, **credentials: str) -> tuple[ModuleType, Any]:
+def _load_monitor(mocker: MockerFixture, tmp_path: Path, **credentials: Any) -> tuple[ModuleType, Any]:
     """Import the tool with playwright stubbed out and build a monitor from a throwaway credentials file."""
     playwright = mocker.MagicMock()
     mocker.patch.dict(sys.modules, {"playwright": playwright, "playwright.sync_api": playwright.sync_api})
 
-    (tmp_path / "credentials.yml").write_text(
-        yaml.dump({"main_url": "site", "username": "bumba", "password": "delu", "mfa": "1234-56-78", **credentials}),
-        encoding="utf8",
-    )
+    data = {"main_url": "site", "username": "bumba", "password": "delu", "mfa": "1234-56-78", **credentials}
+    (tmp_path / "credentials.yml").write_text(yaml.dump({key: value for key, value in data.items() if value is not None}), encoding="utf8")
 
     module = importlib.import_module("dev.web_monitor")
     return module, module.SmartschoolMonitor(out_dir="captures")
+
+
+def test_password_can_come_from_the_keychain(tmp_path: Path, mocker: MockerFixture):
+    """`credentials.yml` without a `password` and with `keyring: true` must not raise a KeyError."""
+    mocker.patch("smartschool._credentials.keyring").get_password.return_value = "keyring-secret"
+
+    _, monitor = _load_monitor(mocker, tmp_path, password=None, keyring=True)
+
+    assert monitor.password == "keyring-secret"
+    assert monitor.username == "bumba"
+    assert monitor.base == "https://site"
 
 
 def test_2fa_without_a_totp_secret_is_refused(tmp_path: Path, mocker: MockerFixture):

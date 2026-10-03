@@ -30,6 +30,7 @@ from ._courses import TopNavCourses as TopNavCourses
 from ._credentials import AppCredentials as AppCredentials
 from ._credentials import Credentials as Credentials
 from ._credentials import EnvCredentials as EnvCredentials
+from ._credentials import KeyringCredentials as KeyringCredentials
 from ._credentials import PathCredentials as PathCredentials
 from ._exceptions import SmartSchoolAttachmentUploadError as SmartSchoolAttachmentUploadError
 from ._exceptions import SmartSchoolAuthenticationError as SmartSchoolAuthenticationError
@@ -158,6 +159,7 @@ __all__ = [
     "IntradeskFolder",
     "IntradeskItem",
     "IsSaved",
+    "KeyringCredentials",
     "MarkMessageUnread",
     "Message",
     "MessageChanged",

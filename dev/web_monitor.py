@@ -44,8 +44,9 @@ import re
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-import yaml
 from playwright.sync_api import sync_playwright  # pylint: disable=import-error  # ty: ignore[unresolved-import]  # deliberately not a project dependency
+
+from smartschool import PathCredentials
 
 try:
     import pyotp  # ty: ignore[unresolved-import]  # optional `mfa` extra
@@ -66,13 +67,15 @@ def _is_api(url: str, content_type: str) -> bool:
 
 
 def _load_credentials(path: str = "credentials.yml") -> dict:
-    """Find credentials.yml walking up from cwd, like the library does."""
-    here = Path.cwd()
-    for folder in [here, *here.parents]:
-        candidate = folder / path
-        if candidate.exists():
-            return yaml.safe_load(candidate.read_text(encoding="utf8"))
-    raise FileNotFoundError(f"Could not locate {path} from {here}")
+    """Find credentials.yml walking up from cwd, like the library does (incl. a password kept in the OS keychain)."""
+    creds = PathCredentials(path)
+    return {
+        **(creds.other_info or {}),
+        "username": creds.username,
+        "password": creds.password,
+        "main_url": creds.main_url,
+        "mfa": creds.mfa,
+    }
 
 
 def _safe_output_dir(out_dir: Path | str) -> Path:

@@ -24,6 +24,7 @@ dependencies = [
 
 [project.optional-dependencies]
 mfa = ["pyotp>=2.9.0,<3"]
+keyring = ["keyring>=24,<26"]
 
 [project.urls]
 Homepage = "https://github.com/svaningelgem/smartschool"
@@ -40,6 +41,7 @@ dev = [
     "time_machine",
     "commitizen",
     "mypy>=2.4.0",
+    "keyring>=24,<26",
 ]
 
 [tool.uv]

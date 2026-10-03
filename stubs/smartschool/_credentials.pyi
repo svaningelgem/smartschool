@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import ClassVar
 
-__all__ = ["AppCredentials", "Credentials", "EnvCredentials", "PathCredentials"]
+__all__ = ["AppCredentials", "Credentials", "EnvCredentials", "KeyringCredentials", "PathCredentials"]
 
 class Credentials:
     username: str
@@ -29,6 +29,16 @@ class PathCredentials(Credentials):
 
 @dataclass(frozen=True)
 class EnvCredentials(Credentials):
+    def __post_init__(self) -> None: ...
+
+@dataclass(frozen=True, kw_only=True)
+class KeyringCredentials(Credentials):
+    username: str = ""
+    main_url: str = ""
+    mfa: str = ""
+    service: str = "smartschool"
+    password: str = field(init=False)
+
     def __post_init__(self) -> None: ...
 
 @dataclass(frozen=True)

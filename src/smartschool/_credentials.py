@@ -7,9 +7,52 @@ from typing import ClassVar, Final
 
 import yaml
 
+try:  # optional `keyring` extra
+    import keyring
+    import keyring.errors
+except ImportError:
+    keyring = None
+
 required_fields: Final[list[str]] = ["username", "password", "main_url", "mfa"]
 
-__all__ = ["AppCredentials", "Credentials", "EnvCredentials", "PathCredentials"]
+DEFAULT_KEYRING_SERVICE: Final[str] = "smartschool"
+
+__all__ = ["AppCredentials", "Credentials", "EnvCredentials", "KeyringCredentials", "PathCredentials"]
+
+
+def _password_from_keyring(service: str, username: str) -> str:
+    """Fetch the password of `username` from the OS keychain (macOS Keychain, Windows Credential Manager, Secret Service, ...)."""
+    if keyring is None:
+        raise RuntimeError("Reading the password from the keyring requires the 'keyring' package. Install with: pip install \"smartschool[keyring]\"")
+
+    try:
+        password = keyring.get_password(service, username)
+    except keyring.errors.KeyringError as err:
+        raise RuntimeError(
+            f"The keyring backend could not be used ({err}). On a headless Linux box or WSL there is no keychain: "
+            "run a Secret Service (e.g. GNOME Keyring) or install a file-based backend such as 'keyrings.alt'."
+        ) from err
+    except ImportError as err:
+        raise RuntimeError(
+            f"The keyring backend named in PYTHON_KEYRING_BACKEND or keyringrc.cfg can't be loaded ({err}). "
+            "Fix the name, or remove the setting and let keyring pick one."
+        ) from err
+    except Exception as err:  # pylint: disable=broad-exception-caught  # each backend raises its own errors
+        raise RuntimeError(f"The keyring failed with an unexpected {type(err).__name__}: {err}") from err
+
+    if not password:
+        backend = keyring.get_keyring()
+        if type(backend).__module__ == "keyring.backends.null":  # stores nothing, so `keyring set` can't help
+            raise RuntimeError(
+                f"The keyring is switched off ({backend}), so it holds no password for '{username}'. "
+                "Unset PYTHON_KEYRING_BACKEND or choose a real backend in keyringrc.cfg."
+            )
+        raise RuntimeError(
+            f"No password found in the keyring ({backend}) for service '{service}' and account '{username}'. "
+            f"Store it with: python -m keyring set {service} {username}"
+        )
+
+    return password
 
 
 class Credentials:
@@ -49,20 +92,30 @@ class PathCredentials(Credentials):
     filename: str | Path = ""
 
     username: str = field(init=False, default="")
-    password: str = field(init=False, default="")
+    password: str = field(init=False, default="", repr=False)
     main_url: str = field(init=False, default="")
-    mfa: str = field(init=False, default="")
-    other_info: dict | None = field(init=False, default=None)
+    mfa: str = field(init=False, default="", repr=False)
+    other_info: dict | None = field(init=False, default=None, repr=False)
 
     def __post_init__(self):
         credentials_file = self._find_credentials_file()
         object.__setattr__(self, "filename", credentials_file)
 
         cred_file: dict = yaml.safe_load(credentials_file.read_text(encoding="utf8"))
+
+        # Opt-in: `keyring: true` (or `keyring: <service name>`) reads the password from the OS keychain, but only when there is no `password` key at all.
+        keyring_setting = cred_file.pop("keyring", None)
+        read_password_from_keyring = bool(keyring_setting) and "password" not in cred_file
+
         for attr in required_fields:
             object.__setattr__(self, attr, cred_file.pop(attr, ""))
 
         object.__setattr__(self, "other_info", cred_file)
+
+        username = str(self.username or "").strip()
+        if read_password_from_keyring and username:
+            service = keyring_setting.strip() if isinstance(keyring_setting, str) else DEFAULT_KEYRING_SERVICE
+            object.__setattr__(self, "password", _password_from_keyring(service, username))
 
     def _find_credentials_file(self) -> Path:
         to_investigate = self.filename
@@ -106,9 +159,29 @@ class EnvCredentials(Credentials):
             object.__setattr__(self, attr, os.getenv(f"SMARTSCHOOL_{attr.upper()}", ""))
 
 
+@dataclass(frozen=True, kw_only=True)
+class KeyringCredentials(Credentials):
+    """
+    Credentials whose password lives in the OS keychain instead of a file or environment variable.
+
+    Store the password once with: `python -m keyring set smartschool <username>`
+    """
+
+    username: str
+    main_url: str
+    mfa: str = field(default="", repr=False)
+    service: str = DEFAULT_KEYRING_SERVICE
+    password: str = field(init=False, default="", repr=False)
+
+    def __post_init__(self):
+        username = str(self.username or "").strip()
+        if username:  # An empty username is reported by validate()
+            object.__setattr__(self, "password", _password_from_keyring(self.service.strip(), username))
+
+
 @dataclass(frozen=True)
 class AppCredentials(Credentials):
-    username: str
-    password: str
-    main_url: str
-    mfa: str
+    username: str = ""
+    password: str = field(default="", repr=False)
+    main_url: str = ""
+    mfa: str = field(default="", repr=False)
