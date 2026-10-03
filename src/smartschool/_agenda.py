@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, ClassVar
 from . import _objects as objects
 from ._common import convert_to_datetime
 from ._session import SessionMixin
-from ._xml_interface import SmartschoolXmlWeeklyCache
+from ._xml_interface import SmartschoolXmlWeeklyCache, _ItemT_co
 
 if TYPE_CHECKING:
     from ._session import Smartschool
@@ -18,7 +18,7 @@ __all__ = ["AgendaLesson", "AgendaPoster", "SmartschoolHours", "SmartschoolLesso
 
 
 @dataclass
-class AgendaPoster(SmartschoolXmlWeeklyCache, ABC):
+class AgendaPoster(SmartschoolXmlWeeklyCache[_ItemT_co], ABC):
     """Caches the information on a weekly basis, and posts to the mentioned URL."""
 
     _url: ClassVar[str] = "/?module=Agenda&file=dispatcher"
@@ -32,7 +32,7 @@ class AgendaLesson(SessionMixin, objects.AgendaLesson):
 
 
 @dataclass
-class SmartschoolLessons(AgendaPoster):
+class SmartschoolLessons(AgendaPoster[AgendaLesson]):
     """
     Interface to the retrieval of lessons for a certain date.
 
@@ -105,7 +105,7 @@ class SmartschoolLessons(AgendaPoster):
         }
 
 
-class SmartschoolHours(AgendaPoster):
+class SmartschoolHours(AgendaPoster[objects.AgendaHour]):
     """
     Interface to the retrieval of periods (called Hours in smartschool).
 
@@ -146,7 +146,7 @@ class SmartschoolHours(AgendaPoster):
         raise ValueError(f"Couldn't find {hour_id}")
 
 
-class SmartschoolMomentInfos(AgendaPoster):  # pylint: disable=too-few-public-methods  # query object: iterate or get()
+class SmartschoolMomentInfos(AgendaPoster[objects.AgendaMomentInfo]):  # pylint: disable=too-few-public-methods  # query object: iterate or get()
     """
     Interface to the retrieval of one particular moment (a book-symbol in smartschool).
 

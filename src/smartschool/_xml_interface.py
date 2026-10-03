@@ -4,7 +4,7 @@ import contextlib
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import date
-from typing import TYPE_CHECKING, TypeVar
+from typing import TYPE_CHECKING, Generic, TypeVar
 from xml.etree import ElementTree as ET
 from xml.sax.saxutils import quoteattr
 
@@ -44,11 +44,14 @@ if TYPE_CHECKING:
     from collections.abc import Iterator
     from datetime import datetime
 
-_T = TypeVar("_T")
+    from _typeshed import DataclassInstance
+
+# The record a query yields: each query class binds it to the type its `_object_to_instantiate` builds.
+_ItemT_co = TypeVar("_ItemT_co", bound="DataclassInstance", covariant=True)
 
 
 @dataclass
-class SmartschoolXML(ABC, SessionMixin):
+class SmartschoolXML(ABC, SessionMixin, Generic[_ItemT_co]):
     cache: dict = field(default_factory=dict)
 
     def _construct_command(self) -> str:
@@ -63,10 +66,10 @@ class SmartschoolXML(ABC, SessionMixin):
         txt += "</params></command></request>"
         return txt
 
-    def __iter__(self) -> Iterator[_T]:
+    def __iter__(self) -> Iterator[_ItemT_co]:
         yield from self._xml()
 
-    def get(self) -> _T:
+    def get(self) -> _ItemT_co:
         """
         Retrieve only the first entry.
 
@@ -154,7 +157,7 @@ class SmartschoolXML(ABC, SessionMixin):
 
     @property
     @abstractmethod
-    def _object_to_instantiate(self) -> type[_T]:
+    def _object_to_instantiate(self) -> type[_ItemT_co]:
         """Returns the object to instantiate."""
 
     def _post_process_element(self, element: dict) -> None:
@@ -162,7 +165,7 @@ class SmartschoolXML(ABC, SessionMixin):
 
 
 @dataclass
-class SmartschoolXmlWeeklyCache(SmartschoolXML, ABC):
+class SmartschoolXmlWeeklyCache(SmartschoolXML[_ItemT_co], ABC):
     timestamp_to_use: datetime | date | None = None
 
     @property
@@ -179,7 +182,7 @@ class SmartschoolXmlWeeklyCache(SmartschoolXML, ABC):
 
 
 @dataclass
-class SmartschoolXmlNoCache(SmartschoolXML, ABC):
+class SmartschoolXmlNoCache(SmartschoolXML[_ItemT_co], ABC):
     def _get_from_cache(self) -> object:
         raise KeyError
 
