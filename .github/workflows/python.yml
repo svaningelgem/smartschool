@@ -18,6 +18,8 @@ jobs:
     uses: svaningelgem/ci-workflows/.github/workflows/python.yml@v1
     with:
       python-versions: '["3.10", "3.11", "3.12", "3.13", "3.14"]'
+      windows: true
+      macos: true
       pylint: true
       ty: true
       total-coverage: 100
