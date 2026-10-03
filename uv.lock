@@ -1169,7 +1169,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "bs4" },
-    { name = "keyring", marker = "extra == 'keyring'", specifier = ">=24" },
+    { name = "keyring", marker = "extra == 'keyring'", specifier = ">=24,<26" },
     { name = "logprise" },
     { name = "pydantic" },
     { name = "pyotp", marker = "extra == 'mfa'", specifier = ">=2.9.0,<3" },
