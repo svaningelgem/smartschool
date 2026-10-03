@@ -8,7 +8,7 @@ from typing import ClassVar, Final
 import yaml
 
 try:
-    import keyring  # ty: ignore[unresolved-import]  # optional `keyring` extra
+    import keyring.errors  # ty: ignore[unresolved-import]  # optional `keyring` extra
 except ImportError:
     keyring = None
 
@@ -146,7 +146,7 @@ class EnvCredentials(Credentials):
             object.__setattr__(self, attr, os.getenv(f"SMARTSCHOOL_{attr.upper()}", ""))
 
 
-@dataclass(frozen=True, kw_only=True)
+@dataclass(frozen=True)
 class KeyringCredentials(Credentials):
     """
     Credentials whose password lives in the OS keychain instead of a file or environment variable.

@@ -58,7 +58,7 @@ python -m keyring set smartschool your_username
 ```
 
 Then use `KeyringCredentials`, which looks the password up under service name `smartschool` and
-account `your_username` (override the service name with `service="..."`). All arguments are keyword-only:
+account `your_username` (override the service name with `service="..."`).:
 
 ```python
 from smartschool import Smartschool, KeyringCredentials

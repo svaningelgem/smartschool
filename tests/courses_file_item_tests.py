@@ -49,7 +49,7 @@ def test_suffix_returns_correct_extensions_for_mime_types(folder: FolderItem, mi
     """Test that _suffix returns appropriate file extensions for various mime types."""
     file_item = FileItem(session=folder.session, parent=folder, id=1, name="test", mime_type=mime_type, size_kb=100, last_modified="2023-01-01T00:00:00Z")
 
-    assert file_item._suffix == expected_suffix  # pylint: disable=protected-access  # ty: ignore[unresolved-attribute]  # private, so not in the stub
+    assert file_item._suffix == expected_suffix  # pylint: disable=protected-access  # white-box test
 
 
 def _mock_get(file_item: FileItem, mocker, *, content: bytes = b"file content", headers: dict | None = None):
