@@ -26,6 +26,7 @@ class GraphicColor(StrEnum):
     YELLOW = "yellow"
     STEEL = "steel"
     GRASS = "grass"
+    BLUE = "blue"
 
 class ResultType(StrEnum):
     NORMAL = "normal"
