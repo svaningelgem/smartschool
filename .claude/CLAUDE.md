@@ -65,3 +65,7 @@ wheel with ty, pyright and mypy.
   3.10 `StrEnum` fallback in `_objects.py` honest.
 - SonarCloud gates on new-code Reliability/Security; `sonar-project.properties` documents
   why each exclusion exists — read the comments there before adding one.
+- Fork PRs run without secrets. The Codecov gate passes them straight away (`python /
+  coverage` still enforces coverage), and SonarCloud doesn't analyse them, so merge a
+  green fork PR as admin past the required SonarCloud check. A first-time contributor's
+  runs also wait for approval in the Actions tab after every push.

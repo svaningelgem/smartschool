@@ -16,9 +16,13 @@ name: Codecov gate
 # the listener triggers on both ``status`` and ``check_run`` and treats a Codecov
 # context as "reported" if it shows up in either API. (An earlier ``on: check_run``
 # only listener never fired here, leaving the gate stuck on pending.)
+#
+# ``init`` runs on ``pull_request_target`` because a fork PR's ``pull_request`` run
+# only gets a read-only token, which can't post a status. That is safe here: the job
+# never checks out or runs the PR's code, it only lists the PR's files.
 
 on:
-  pull_request:
+  pull_request_target:
     types: [opened, synchronize, reopened]
   status: {}
   check_run:
@@ -37,7 +41,7 @@ jobs:
     # workflow itself), pytest won't run and Codecov won't post - short-circuit
     # the gate to ``success`` so the PR isn't blocked forever. Otherwise post
     # ``pending`` and wait for ``finalize``. No-op on status/check_run events.
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request_target'
     runs-on: ubuntu-latest
     steps:
       - name: Decide initial state from the PR's changed paths
@@ -46,11 +50,16 @@ jobs:
           REPO: ${{ github.repository }}
           PR: ${{ github.event.pull_request.number }}
           SHA: ${{ github.event.pull_request.head.sha }}
+          FORK: ${{ github.event.pull_request.head.repo.fork }}
         run: |
           set -euo pipefail
           files="$(gh api --paginate "/repos/${REPO}/pulls/${PR}/files" --jq '.[].filename')"
+          if [ "$FORK" = "true" ]; then
+            # A fork's run gets no CODECOV_TOKEN, so Codecov never reports; python / coverage still enforces coverage.
+            state=success
+            desc="fork PR: codecov can't upload without the token; python / coverage enforces coverage"
           # Mirror the paths that make python.yml run pytest + upload coverage.
-          if echo "$files" | grep -qE '(\.py$|\.pyi$|^uv\.lock$|^pyproject\.toml$|^\.github/workflows/python\.yml$)'; then
+          elif echo "$files" | grep -qE '(\.py$|\.pyi$|^uv\.lock$|^pyproject\.toml$|^\.github/workflows/python\.yml$)'; then
             state=pending
             desc="waiting for codecov to report"
           else
