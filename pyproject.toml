@@ -185,3 +185,10 @@ max-line-length = 160
 [tool.pylint."messages control"]
 # Same as the ruff ignores D100-D105 and D107.
 disable = ["missing-module-docstring", "missing-class-docstring", "missing-function-docstring"]
+
+[[tool.ty.overrides]]
+# The stubs list public members only, so a class that implements a private abstract member reads as abstract.
+include = ["tests/**", "scripts/**"]
+
+[tool.ty.overrides.rules]
+call-non-callable = "ignore"

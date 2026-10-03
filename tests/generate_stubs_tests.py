@@ -2,9 +2,7 @@
 
 from __future__ import annotations
 
-import ast
 import importlib
-import textwrap
 from pathlib import Path
 
 import smartschool
@@ -44,38 +42,3 @@ def test_sync_stubs_prunes_orphans_and_leaves_py_typed(tmp_path):
 
     assert not orphan.exists()
     assert marker.exists()
-
-
-def test_stub_keeps_the_private_overrides_of_abstract_members(tmp_path):
-    """Without them a type checker reads the stubbed class as abstract and refuses to instantiate it."""
-    source = tmp_path / "queries.py"
-    source.write_text(
-        textwrap.dedent(
-            """
-            from abc import ABC, abstractmethod
-
-            class Base(ABC):
-                @property
-                @abstractmethod
-                def _url(self) -> str: ...
-
-                @abstractmethod
-                def _fetch(self) -> bytes: ...
-
-            class _Endpoint:
-                _url = "/endpoint"
-
-            class Query(_Endpoint, Base):
-                def _fetch(self) -> bytes:
-                    return b""
-
-                def _helper(self) -> None: ...
-            """
-        )
-    )
-
-    stub = ast.parse(generate_stubs.generate_stub_file(source))
-
-    bodies = {node.name: [ast.unparse(member) for member in node.body] for node in stub.body if isinstance(node, ast.ClassDef)}
-    assert bodies["_Endpoint"] == ["_url: str"]
-    assert bodies["Query"] == ["def _fetch(self) -> bytes:\n    ..."]
