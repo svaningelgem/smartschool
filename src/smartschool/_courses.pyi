@@ -4,6 +4,7 @@ from __future__ import annotations
 from collections.abc import Iterator
 from datetime import datetime
 from functools import cached_property
+from pathlib import Path
 from typing import TypeAlias
 
 from . import _objects as objects
@@ -73,6 +74,7 @@ class FileItem(DownloadableFile, SessionMixin):
     ): ...
     @cached_property
     def filename(self) -> str: ...
+    def _real_download(self, target: Path | None) -> bytes | Path: ...
 
 class InternetShortcut(FileItem):
     session: Smartschool
@@ -100,6 +102,7 @@ class InternetShortcut(FileItem):
     ): ...
     @cached_property
     def filename(self) -> str: ...
+    def _real_download(self, target: Path | None) -> bytes | Path: ...
 
 class FolderItem(SessionMixin):
     session: Smartschool

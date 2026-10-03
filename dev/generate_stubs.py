@@ -356,7 +356,21 @@ def _collect_methods(class_info: ClassInfo, real_class: type) -> None:
             class_info.methods.append(ast.unparse(overloaded_method) + " ...")
 
 
-def extract_class_data(class_info: ClassInfo) -> ClassInfo:
+def _collect_abstract_overrides(class_info: ClassInfo, real_class: type, abstract_names: set[str]) -> None:
+    """Append the hidden members that implement an abstract one; without them a type checker reads the class as abstract."""
+    shown = set(class_info.method_names) | {attribute.name for attribute in class_info.attributes}
+    for name, member in vars(real_class).items():
+        if name not in abstract_names or name in shown or getattr(member, "__isabstractmethod__", False):
+            continue
+        if getter := _property_getter(real_class, name):
+            class_info.methods.append(_extract_method_info(real_class, name, *getter))
+        elif inspect.isfunction(member):
+            class_info.methods.append(_extract_method_info(real_class, name, member))
+        else:
+            class_info.attributes.append(FieldInfo(name=name, type_annotation=type(member)))
+
+
+def extract_class_data(class_info: ClassInfo, abstract_names: set[str]) -> ClassInfo:
     """Extract all class data into unified structure."""
     real_class = class_info.real_class
     if real_class is None:
@@ -369,6 +383,7 @@ def extract_class_data(class_info: ClassInfo) -> ClassInfo:
 
     class_info.attributes.extend(FieldInfo(name=name, type_annotation=annotation) for name, annotation in _collect_annotations(real_class).items())
     _collect_methods(class_info, real_class)
+    _collect_abstract_overrides(class_info, real_class, abstract_names)
     return class_info
 
 
@@ -533,18 +548,20 @@ def generate_stub_file(python_file: Path) -> str:
 
     imports_needed = set(imports)
 
+    # Names any base declares abstract, wherever in the module they get implemented (a mixin included).
+    abstract_names = {
+        name for cls in classes.values() if cls.real_class for base in cls.real_class.__mro__ for name in getattr(base, "__abstractmethods__", ())
+    }
+
     # Extract data for all classes
     for cls in classes.values():
-        extract_class_data(cls)
+        extract_class_data(cls, abstract_names)
 
     # Generate stub content
     stub_content = "# Auto-generated stub file\n"
 
     # Generate stubs and collect imports
-    class_stubs = []
-    for class_info in classes.values():
-        stub = generate_stub_from_class_info(class_info, imports_needed, module)
-        class_stubs.append(stub)
+    class_stubs = [generate_stub_from_class_info(class_info, imports_needed, module) for class_info in classes.values()]
 
     stub_content += "\n".join(imports) + "\n"
     stub_content += "\n".join(imports_needed) + "\n"
