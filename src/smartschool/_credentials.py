@@ -8,7 +8,7 @@ from typing import ClassVar, Final
 import yaml
 
 try:
-    import keyring.errors  # ty: ignore[unresolved-import]  # optional `keyring` extra
+    import keyring  # ty: ignore[unresolved-import]  # optional `keyring` extra
 except ImportError:
     keyring = None
 
