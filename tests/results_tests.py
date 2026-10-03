@@ -93,6 +93,17 @@ def test_extended_result_fields(session: Smartschool, requests_mock):
     assert icon.graphic.value == "bullet_square_green"
 
 
+def test_blue_graphic_color(session: Smartschool, requests_mock):
+    """Issue #202: Smartschool colours the highest scores blue."""
+    payload = _minimal_result_payload()
+    payload["graphic"]["color"] = "blue"
+    requests_mock.get("https://site/results/api/v1/evaluations/?pageNumber=1&itemsOnPage=50", json=[payload])
+
+    sut = list(Results(session))
+
+    assert sut[0].graphic.color is GraphicColor.BLUE
+
+
 def test_unknown_graphic_color_raises():
     """Strict enum: unknown colors must fail loudly so we add the member."""
     with pytest.raises(ValidationError):
