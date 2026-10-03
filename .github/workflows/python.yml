@@ -29,7 +29,8 @@ jobs:
   sonarcloud:
     name: Analyze
     needs: python
-    if: ${{ !cancelled() }}
+    # A fork PR's run gets no SONAR_TOKEN; merge those as admin past the SonarCloud check.
+    if: ${{ !cancelled() && !github.event.pull_request.head.repo.fork }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
