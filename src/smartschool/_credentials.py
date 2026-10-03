@@ -81,8 +81,8 @@ class PathCredentials(Credentials):
     username: str = field(init=False, default="")
     password: str = field(init=False, default="", repr=False)
     main_url: str = field(init=False, default="")
-    mfa: str = field(init=False, default="")
-    other_info: dict | None = field(init=False, default=None)
+    mfa: str = field(init=False, default="", repr=False)
+    other_info: dict | None = field(init=False, default=None, repr=False)
 
     def __post_init__(self):
         credentials_file = self._find_credentials_file()
@@ -156,7 +156,7 @@ class KeyringCredentials(Credentials):
 
     username: str
     main_url: str
-    mfa: str
+    mfa: str = field(default="", repr=False)
     service: str = DEFAULT_KEYRING_SERVICE
     password: str = field(init=False, default="", repr=False)
 
@@ -171,4 +171,4 @@ class AppCredentials(Credentials):
     username: str = ""
     password: str = field(default="", repr=False)
     main_url: str = ""
-    mfa: str = ""
+    mfa: str = field(default="", repr=False)

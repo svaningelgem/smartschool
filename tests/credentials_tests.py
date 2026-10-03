@@ -354,3 +354,18 @@ def test_password_is_not_in_repr(tmp_path: Path):
         assert sut.password
         assert sut.password not in repr(sut)
         assert sut.password not in str(sut)
+
+
+@pytest.mark.usefixtures("fake_keyring")
+def test_second_factor_is_not_in_repr(tmp_path: Path):
+    """`mfa` is the TOTP seed of a 2FA account, and extra yml keys (web_monitor's `totp`) can be one too."""
+    seed = "JBSWY3DPEHPK3PXP"
+    credentials = [
+        KeyringCredentials(username="bumba", main_url="site", mfa=seed),
+        PathCredentials(_create_credentials_file_without_password(tmp_path, keyring=True, mfa=seed, totp=seed)),
+        AppCredentials(username="bumba", password="app-secret", main_url="site", mfa=seed),
+    ]
+
+    for sut in credentials:
+        assert seed not in repr(sut)
+        assert seed not in str(sut)
