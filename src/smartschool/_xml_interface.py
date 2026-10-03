@@ -4,7 +4,7 @@ import contextlib
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import date
-from typing import TYPE_CHECKING, TypeVar
+from typing import TYPE_CHECKING, Generic, TypeVar
 from xml.etree import ElementTree as ET
 from xml.sax.saxutils import quoteattr
 
@@ -48,7 +48,7 @@ _T = TypeVar("_T")
 
 
 @dataclass
-class SmartschoolXML(ABC, SessionMixin):
+class SmartschoolXML(ABC, SessionMixin, Generic[_T]):
     cache: dict = field(default_factory=dict)
 
     def _construct_command(self) -> str:
@@ -162,7 +162,7 @@ class SmartschoolXML(ABC, SessionMixin):
 
 
 @dataclass
-class SmartschoolXmlWeeklyCache(SmartschoolXML, ABC):
+class SmartschoolXmlWeeklyCache(SmartschoolXML[_T], ABC):
     timestamp_to_use: datetime | date | None = None
 
     @property
@@ -179,7 +179,7 @@ class SmartschoolXmlWeeklyCache(SmartschoolXML, ABC):
 
 
 @dataclass
-class SmartschoolXmlNoCache(SmartschoolXML, ABC):
+class SmartschoolXmlNoCache(SmartschoolXML[_T], ABC):
     def _get_from_cache(self) -> object:
         raise KeyError
 

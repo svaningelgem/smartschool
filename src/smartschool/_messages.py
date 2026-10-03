@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABC
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, TypeVar
 from urllib.parse import urlencode
 
 from . import _objects as objects
@@ -14,6 +14,8 @@ if TYPE_CHECKING:
     from collections.abc import Iterator
 
     from ._session import Smartschool
+
+_T = TypeVar("_T")
 
 __all__ = [
     "AdjustMessageLabel",
@@ -65,7 +67,7 @@ class _MessagesPoster:  # pylint: disable=too-few-public-methods  # mixin pinnin
 
 
 @dataclass
-class MessageHeaders(_MessagesPoster, SmartschoolXmlNoCache):
+class MessageHeaders(_MessagesPoster, SmartschoolXmlNoCache[objects.ShortMessage]):
     """
     Interfaces the mailbox principle in Smartschool.
 
@@ -115,7 +117,7 @@ class MessageHeaders(_MessagesPoster, SmartschoolXmlNoCache):
 
 
 # Cannot have `@dataclass`
-class _FetchOneMessage(_MessagesPoster, SmartschoolXML, ABC):  # pylint: disable=too-few-public-methods  # query object: iterate or get()
+class _FetchOneMessage(_MessagesPoster, SmartschoolXML[_T], ABC):  # pylint: disable=too-few-public-methods  # query object: iterate or get()
     def __init__(self, session: Smartschool, msg_id: int, box_type: BoxType = BoxType.INBOX):
         super().__init__(session=session)
 
@@ -141,7 +143,7 @@ class _FetchOneMessage(_MessagesPoster, SmartschoolXML, ABC):  # pylint: disable
         self.cache[(self.msg_id, self.box_type)] = obj
 
 
-class Message(_FetchOneMessage):  # pylint: disable=too-few-public-methods  # query object: iterate or get()
+class Message(_FetchOneMessage[objects.FullMessage]):  # pylint: disable=too-few-public-methods  # query object: iterate or get()
     """
     Interface to fetch one message based on its MessageID.
 
@@ -186,7 +188,7 @@ class Attachment(SessionMixin, objects.Attachment):
         return resp.content
 
 
-class Attachments(_FetchOneMessage):  # pylint: disable=too-few-public-methods  # query object: iterate or get()
+class Attachments(_FetchOneMessage[Attachment]):  # pylint: disable=too-few-public-methods  # query object: iterate or get()
     """
     Interface to fetch one message based on its MessageID.
 
@@ -214,7 +216,7 @@ class Attachments(_FetchOneMessage):  # pylint: disable=too-few-public-methods  
         return Attachment
 
 
-class MarkMessageUnread(_FetchOneMessage):  # pylint: disable=too-few-public-methods  # query object: iterate or get()
+class MarkMessageUnread(_FetchOneMessage[objects.MessageChanged]):  # pylint: disable=too-few-public-methods  # query object: iterate or get()
     @property
     def _action(self) -> str:
         return "mark message unread"
@@ -238,7 +240,7 @@ class MarkMessageUnread(_FetchOneMessage):  # pylint: disable=too-few-public-met
 
 
 # Cannot have `@dataclass`
-class AdjustMessageLabel(_FetchOneMessage):  # pylint: disable=too-few-public-methods  # query object: iterate or get()
+class AdjustMessageLabel(_FetchOneMessage[objects.MessageChanged]):  # pylint: disable=too-few-public-methods  # query object: iterate or get()
     def __init__(self, session: Smartschool, msg_id: int, box_type: BoxType = BoxType.INBOX, label: MessageLabel = MessageLabel.NO_FLAG):
         super().__init__(session, msg_id, box_type)
         self.label = label
@@ -301,7 +303,7 @@ class MessageMoveToArchive(SessionMixin):
 
 
 # Cannot have `@dataclass`
-class MessageMoveToTrash(_MessagesPoster, SmartschoolXmlNoCache):  # pylint: disable=too-few-public-methods  # query object: iterate or get()
+class MessageMoveToTrash(_MessagesPoster, SmartschoolXmlNoCache[objects.MessageDeletionStatus]):  # pylint: disable=too-few-public-methods  # query object: iterate or get()
     def __init__(self, session: Smartschool, msg_id: int):
         super().__init__(session=session)
 

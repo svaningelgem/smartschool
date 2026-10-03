@@ -4,7 +4,7 @@ from abc import ABC
 from collections.abc import Iterator
 from dataclasses import dataclass
 from datetime import date, datetime
-from typing import TypeVar
+from typing import Generic, TypeVar
 
 from ._common import xml_to_dict as xml_to_dict
 from ._session import SessionMixin as SessionMixin
@@ -12,15 +12,15 @@ from ._session import SessionMixin as SessionMixin
 _T = TypeVar("_T")
 
 @dataclass
-class SmartschoolXML(ABC, SessionMixin, metaclass=abc.ABCMeta):
+class SmartschoolXML(ABC, SessionMixin, Generic[_T], metaclass=abc.ABCMeta):
     cache: dict = ...
 
     def __iter__(self) -> Iterator[_T]: ...
     def get(self) -> _T: ...
 
 @dataclass
-class SmartschoolXmlWeeklyCache(SmartschoolXML, ABC, metaclass=abc.ABCMeta):
+class SmartschoolXmlWeeklyCache(SmartschoolXML[_T], ABC, metaclass=abc.ABCMeta):
     timestamp_to_use: datetime | date | None = None
 
 @dataclass
-class SmartschoolXmlNoCache(SmartschoolXML, ABC, metaclass=abc.ABCMeta): ...
+class SmartschoolXmlNoCache(SmartschoolXML[_T], ABC, metaclass=abc.ABCMeta): ...

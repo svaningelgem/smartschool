@@ -2,15 +2,17 @@
 import abc
 from abc import ABC
 from dataclasses import dataclass
+from typing import TypeVar
 
 from . import _objects as objects
 from ._session import SessionMixin, Smartschool
 from ._xml_interface import SmartschoolXmlWeeklyCache
 
 __all__ = ["AgendaLesson", "AgendaPoster", "SmartschoolHours", "SmartschoolLessons", "SmartschoolMomentInfos"]
+_T = TypeVar("_T")
 
 @dataclass
-class AgendaPoster(SmartschoolXmlWeeklyCache, ABC, metaclass=abc.ABCMeta): ...
+class AgendaPoster(SmartschoolXmlWeeklyCache[_T], ABC, metaclass=abc.ABCMeta): ...
 
 @dataclass
 class AgendaLesson(SessionMixin, objects.AgendaLesson):
@@ -18,10 +20,10 @@ class AgendaLesson(SessionMixin, objects.AgendaLesson):
     def hour_details(self) -> objects.AgendaHour: ...
 
 @dataclass
-class SmartschoolLessons(AgendaPoster): ...
+class SmartschoolLessons(AgendaPoster[AgendaLesson]): ...
 
-class SmartschoolHours(AgendaPoster):
+class SmartschoolHours(AgendaPoster[objects.AgendaHour]):
     def search_by_hour_id(self, hour_id: str): ...
 
-class SmartschoolMomentInfos(AgendaPoster):
+class SmartschoolMomentInfos(AgendaPoster[objects.AgendaMomentInfo]):
     def __init__(self, session: Smartschool, moment_id: str) -> None: ...

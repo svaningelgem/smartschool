@@ -4,6 +4,7 @@ from abc import ABC
 from collections.abc import Iterator
 from dataclasses import dataclass
 from enum import Enum
+from typing import TypeVar
 
 from _typeshed import Incomplete
 
@@ -25,6 +26,7 @@ __all__ = [
     "SortField",
     "SortOrder",
 ]
+_T = TypeVar("_T")
 
 class SortField(Enum):
     DATE = "date"
@@ -54,28 +56,28 @@ class MessageLabel(Enum):
 class _MessagesPoster: ...
 
 @dataclass
-class MessageHeaders(_MessagesPoster, SmartschoolXmlNoCache):
+class MessageHeaders(_MessagesPoster, SmartschoolXmlNoCache[objects.ShortMessage]):
     box_type: BoxType = ...
     sort_by: SortField = ...
     sort_order: SortOrder = ...
     already_seen_message_ids: list[int] | None = ...
 
-class _FetchOneMessage(_MessagesPoster, SmartschoolXML, ABC, metaclass=abc.ABCMeta):
+class _FetchOneMessage(_MessagesPoster, SmartschoolXML[_T], ABC, metaclass=abc.ABCMeta):
     msg_id: Incomplete
     box_type: Incomplete
 
     def __init__(self, session: Smartschool, msg_id: int, box_type: BoxType = ...) -> None: ...
 
-class Message(_FetchOneMessage): ...
+class Message(_FetchOneMessage[objects.FullMessage]): ...
 
 @dataclass
 class Attachment(SessionMixin, objects.Attachment):
     def download(self) -> bytes: ...
 
-class Attachments(_FetchOneMessage): ...
-class MarkMessageUnread(_FetchOneMessage): ...
+class Attachments(_FetchOneMessage[Attachment]): ...
+class MarkMessageUnread(_FetchOneMessage[objects.MessageChanged]): ...
 
-class AdjustMessageLabel(_FetchOneMessage):
+class AdjustMessageLabel(_FetchOneMessage[objects.MessageChanged]):
     label: Incomplete
 
     def __init__(self, session: Smartschool, msg_id: int, box_type: BoxType = ..., label: MessageLabel = ...) -> None: ...
@@ -88,7 +90,7 @@ class MessageMoveToArchive(SessionMixin):
     def get(self) -> objects.MessageChanged: ...
     def __iter__(self) -> Iterator[objects.MessageChanged]: ...
 
-class MessageMoveToTrash(_MessagesPoster, SmartschoolXmlNoCache):
+class MessageMoveToTrash(_MessagesPoster, SmartschoolXmlNoCache[objects.MessageDeletionStatus]):
     msg_id: Incomplete
 
     def __init__(self, session: Smartschool, msg_id: int) -> None: ...
