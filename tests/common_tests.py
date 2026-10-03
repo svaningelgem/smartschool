@@ -544,7 +544,7 @@ def test_create_filesystem_safe_path_windows():
 def test_create_filesystem_safe_path():
     """Test filesystem-safe path creation."""
     # Absolute paths must stay absolute: the root anchor is preserved, not sanitized away.
-    assert create_filesystem_safe_path(Path(r"/Users/bad*name/doc$.txt")) == Path("/Users/bad_name/doc.txt")
+    assert create_filesystem_safe_path(Path(r"/Users/bad*name/doc$.txt")) == Path("/Users/bad_name/doc.txt").resolve()
 
     # Regular paths should sanitize filenames
     assert create_filesystem_safe_path(Path("folder/bad@file#name.txt")).as_posix().endswith("/folder/bad_file_name.txt")
@@ -730,7 +730,7 @@ def test_save_writes_camel_case_json_for_a_pydantic_dataclass(session: Smartscho
 def _captured(response: Response, capture_root: Path) -> list[str]:
     """Run the fixture capture with `tests/requests` redirected into `capture_root`, and list what it wrote."""
     save_test_response(response)
-    return sorted(str(path.relative_to(capture_root / "tests/requests")) for path in (capture_root / "tests").rglob("*") if path.is_file())
+    return sorted(path.relative_to(capture_root / "tests/requests").as_posix() for path in (capture_root / "tests").rglob("*") if path.is_file())
 
 
 @pytest.fixture(name="capture_root")
