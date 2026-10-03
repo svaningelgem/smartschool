@@ -32,6 +32,13 @@ def _password_from_keyring(service: str, username: str) -> str:
             f"The keyring backend could not be used ({err}). On a headless Linux box or WSL there is no keychain: "
             "run a Secret Service (e.g. GNOME Keyring) or install a file-based backend such as 'keyrings.alt'."
         ) from err
+    except ImportError as err:
+        raise RuntimeError(
+            f"The keyring backend named in PYTHON_KEYRING_BACKEND or keyringrc.cfg can't be loaded ({err}). "
+            "Fix the name, or remove the setting and let keyring pick one."
+        ) from err
+    except Exception as err:  # pylint: disable=broad-exception-caught  # each backend raises its own errors
+        raise RuntimeError(f"The keyring failed with an unexpected {type(err).__name__}: {err}") from err
 
     if not password:
         backend = keyring.get_keyring()

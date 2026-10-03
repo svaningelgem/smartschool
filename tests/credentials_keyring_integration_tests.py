@@ -70,6 +70,16 @@ def test_a_backend_that_cannot_be_used_is_wrapped(tmp_path: Path, mocker: Mocker
     assert isinstance(raised.value.__cause__, keyring.errors.KeyringError)
 
 
+def test_a_misspelled_backend_name_is_pointed_out(tmp_path: Path, mocker: MockerFixture):
+    mocker.patch.dict("os.environ", {"PYTHON_KEYRING_BACKEND": "keyring.backends.typo.Keyring"})
+    mocker.patch("keyring.core._keyring_backend", None)  # so keyring loads the backend from that setting
+
+    with pytest.raises(RuntimeError, match=r"PYTHON_KEYRING_BACKEND or keyringrc\.cfg.*keyring\.backends\.typo") as raised:
+        PathCredentials(_credentials_file(tmp_path, keyring=True))
+
+    assert isinstance(raised.value.__cause__, ImportError)
+
+
 def test_a_switched_off_keyring_says_so_instead_of_asking_to_store_the_password(tmp_path: Path, mocker: MockerFixture):
     """The null backend stores nothing, so `python -m keyring set` can never help."""
     mocker.patch("keyring.core._keyring_backend", null.Keyring())

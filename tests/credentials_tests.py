@@ -245,6 +245,17 @@ def test_keyring_credentials_backend_error_is_wrapped(fake_keyring):
         KeyringCredentials(username="bumba", main_url="site", mfa="1234-56-78")
 
 
+def test_an_unexpected_backend_error_keeps_its_message(fake_keyring, mocker):
+    """A backend can raise anything (Windows over SSH: 1312, no logon session); say so instead of guessing a cause."""
+    failure = OSError("A specified logon session does not exist")
+    mocker.patch.object(fake_keyring, "get_password", side_effect=failure)
+
+    with pytest.raises(RuntimeError, match=r"^The keyring failed with an unexpected OSError: A specified logon session does not exist$") as raised:
+        KeyringCredentials(username="bumba", main_url="site", mfa="1234-56-78")
+
+    assert raised.value.__cause__ is failure
+
+
 def test_the_module_imports_without_the_keyring_package(mocker):
     """`keyring` is an optional extra: without it the module still loads, with `keyring` set to None."""
     mocker.patch.dict(sys.modules, {"keyring": None, "keyring.errors": None})  # importing either now raises ImportError
