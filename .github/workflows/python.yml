@@ -44,34 +44,34 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: https://sonarcloud.io
 
-  generate-stubs:
+  stubs:
+    name: Stubs up to date
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v7
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          fetch-depth: 0
-          ref: ${{ github.head_ref }}
 
       - uses: astral-sh/setup-uv@v7
-        with:
-          python-version: "3.11"
 
-      - name: Generate stubs
+      - name: Regenerate the stubs
         run: |
           uv sync --locked
           uv run --no-sync ./restub
 
-      - name: Commit and push changes
+      - name: Fail when they changed
         run: |
-          if git diff --quiet src/smartschool; then
-            exit 0
+          if [ -n "$(git status --porcelain -- stubs)" ]; then
+            git status --short -- stubs
+            echo "::error::stubs/ is out of date: run ./restub and commit the result."
+            exit 1
           fi
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add src/smartschool
-          git commit -m "Auto-update stub files"
-          git push
+
+  public-api:
+    name: Public API stubs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: astral-sh/setup-uv@v7
+
+      - name: Type-check public usage against the built wheel
+        run: dev/check_public_api.sh

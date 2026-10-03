@@ -48,9 +48,12 @@ Captures hold real account data (response bodies, screenshots, DOM dumps), which
 
 ## Stubs
 
-`./restub` regenerates the `.pyi` files (`dev/generate_stubs.py`). CI regenerates and
-auto-commits them, so run it after changing public signatures in a stubbed module
-(`_agenda`, `_courses`, `_messages`, `_reports`, `_results`).
+`stubs/smartschool/` holds a public-only `.pyi` for every module: mypy's stubgen plus the
+passes in `dev/generate_stubs.py`. Hatch copies them into the wheel next to the sources, so
+users' IDEs see only the public API while this repo's ty and pylint check the full source
+(both skip `stubs/`). Run `./restub` after changing anything public; CI fails when `stubs/`
+is out of date. `dev/check_public_api.sh` type-checks `tests/public_api/` against the built
+wheel with ty, pyright and mypy.
 
 ## CI notes
 

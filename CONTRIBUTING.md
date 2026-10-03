@@ -86,16 +86,17 @@ rules (and the 160-char line length) live in `pyproject.toml`.
 
 ## Type stubs
 
-A few modules ship hand-checked-but-generated `.pyi` stubs (the ones mixing
-pydantic dataclasses with the session mixin). If you change a class that has a
-stub, regenerate them:
+The wheel ships a generated `.pyi` stub for every module, listing only the public
+API, so users' IDEs don't offer private members. They live in `stubs/smartschool/`,
+outside `src/`, so this repo still type-checks the full source. After changing
+anything public, regenerate them and commit the result:
 
 ```bash
 ./restub
 ```
 
-CI will also auto-commit regenerated stubs, but regenerating locally keeps the
-diff clean.
+CI fails when `stubs/` is out of date. `dev/check_public_api.sh` type-checks
+`tests/public_api/` against the built wheel with ty, pyright and mypy.
 
 ## Project layout & the public API
 
