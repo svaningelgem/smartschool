@@ -22,8 +22,6 @@ __all__ = ["AppCredentials", "Credentials", "EnvCredentials", "KeyringCredential
 
 def _password_from_keyring(service: str, username: str) -> str:
     """Fetch the password of `username` from the OS keychain (macOS Keychain, Windows Credential Manager, Secret Service, ...)."""
-    service, username = str(service).strip(), str(username).strip()
-
     if keyring is None:
         raise RuntimeError("Reading the password from the keyring requires the 'keyring' package. Install with: pip install \"smartschool[keyring]\"")
 
@@ -109,7 +107,7 @@ class PathCredentials(Credentials):
 
         username = str(self.username or "").strip()
         if read_password_from_keyring and username:
-            service = keyring_setting if isinstance(keyring_setting, str) else DEFAULT_KEYRING_SERVICE
+            service = keyring_setting.strip() if isinstance(keyring_setting, str) else DEFAULT_KEYRING_SERVICE
             object.__setattr__(self, "password", _password_from_keyring(service, username))
 
     def _find_credentials_file(self) -> Path:
@@ -171,7 +169,7 @@ class KeyringCredentials(Credentials):
     def __post_init__(self):
         username = str(self.username or "").strip()
         if username:  # An empty username is reported by validate()
-            object.__setattr__(self, "password", _password_from_keyring(self.service, username))
+            object.__setattr__(self, "password", _password_from_keyring(self.service.strip(), username))
 
 
 @dataclass(frozen=True)

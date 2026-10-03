@@ -251,6 +251,30 @@ def test_keyring_credentials_empty_username_is_caught_by_validate():
 
 
 @pytest.mark.usefixtures("fake_keyring")
+def test_keyring_credentials_blank_username_is_caught_by_validate():
+    sut = KeyringCredentials(username="   ", main_url="site", mfa="1234-56-78")
+
+    assert sut.password == ""
+    with pytest.raises(RuntimeError, match=r"Please verify and correct these attributes: \['username', 'password'\]"):
+        sut.validate()
+
+
+@pytest.mark.usefixtures("fake_keyring")
+def test_path_credentials_blank_username_does_not_query_keyring(tmp_path: Path):
+    sut = PathCredentials(_create_credentials_file_without_password(tmp_path, keyring=True, username="   "))
+
+    assert sut.password == ""
+    with pytest.raises(RuntimeError, match=r"Please verify and correct these attributes: \['username', 'password'\]"):
+        sut.validate()
+
+
+@pytest.mark.usefixtures("fake_keyring")
+def test_keyring_service_is_stripped(tmp_path: Path):
+    assert KeyringCredentials(username="bumba", main_url="site", mfa="1234-56-78", service=" my-service ").password == "other-secret"
+    assert PathCredentials(_create_credentials_file_without_password(tmp_path, keyring=" my-service ")).password == "other-secret"
+
+
+@pytest.mark.usefixtures("fake_keyring")
 def test_path_credentials_keyring_opt_in(tmp_path: Path):
     sut = PathCredentials(_create_credentials_file_without_password(tmp_path, keyring=True))
     sut.validate()
