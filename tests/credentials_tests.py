@@ -203,6 +203,13 @@ def test_keyring_credentials_custom_service():
 
 
 @pytest.mark.usefixtures("fake_keyring")
+def test_keyring_credentials_are_keyword_only():
+    """Positional use would silently shift the password into `main_url`, like in `AppCredentials`."""
+    with pytest.raises(TypeError):
+        KeyringCredentials("bumba", "s3cret", "site", "1234-56-78")  # ty: ignore[missing-argument, too-many-positional-arguments]  # pylint: disable=too-many-function-args,missing-kwoa
+
+
+@pytest.mark.usefixtures("fake_keyring")
 def test_keyring_credentials_strips_the_username():
     sut = KeyringCredentials(username=" bumba ", main_url="site", mfa="1234-56-78")
 

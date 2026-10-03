@@ -152,7 +152,7 @@ class EnvCredentials(Credentials):
             object.__setattr__(self, attr, os.getenv(f"SMARTSCHOOL_{attr.upper()}", ""))
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class KeyringCredentials(Credentials):
     """
     Credentials whose password lives in the OS keychain instead of a file or environment variable.

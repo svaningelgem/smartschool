@@ -31,7 +31,7 @@ class PathCredentials(Credentials):
 class EnvCredentials(Credentials):
     def __post_init__(self) -> None: ...
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class KeyringCredentials(Credentials):
     username: str = ""
     main_url: str = ""
