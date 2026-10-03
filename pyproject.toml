@@ -40,19 +40,24 @@ dev = [
     "ruff",
     "time_machine",
     "commitizen",
+    "mypy>=2.4.0",
 ]
 
 [tool.uv]
 default-groups = "all"
 
 [tool.hatch.build.targets.sdist]
-include = ["src/smartschool"]
+include = ["src/smartschool", "stubs/smartschool"]
 
 [tool.hatch.build.targets.wheel]
 include = ["src/smartschool"]
 
 [tool.hatch.build.targets.wheel.sources]
 "src/smartschool" = "smartschool"
+
+# The public stubs live outside src/ so this repo type-checks the full source; users get them next to it.
+[tool.hatch.build.targets.wheel.force-include]
+"stubs/smartschool" = "smartschool"
 
 [build-system]
 requires = ["hatchling"]
@@ -177,7 +182,7 @@ strict = true
 "tests/**/*.py" = ["D100", "D103", "B018", "FBT001"]
 
 [tool.pylint.main]
-# pylint resolves a .pyi stub to its .py module, linting it twice and flagging it as a duplicate of itself.
+# The generated stubs are checked by dev/check_public_api.sh, against the built wheel.
 ignore-patterns = ['^\.#', '.*\.pyi$']
 
 [tool.pylint.format]
@@ -186,3 +191,7 @@ max-line-length = 160
 [tool.pylint."messages control"]
 # Same as the ruff ignores D100-D105 and D107.
 disable = ["missing-module-docstring", "missing-class-docstring", "missing-function-docstring"]
+
+[tool.ty.src]
+# The generated stubs are checked by dev/check_public_api.sh, against the built wheel.
+exclude = ["stubs"]
