@@ -23,7 +23,6 @@ from pathlib import Path
 
 from logprise import logger
 from mypy import stubgen
-from pydantic.dataclasses import is_pydantic_dataclass
 from pydantic.fields import FieldInfo
 from pydantic_core import PydanticUndefined
 
@@ -51,19 +50,31 @@ def _imported_names(stub: ast.Module) -> set[str]:
     return {alias.asname or alias.name for node in stub.body if isinstance(node, (ast.Import, ast.ImportFrom)) for alias in node.names}
 
 
-def _restore_typing_only_imports(stub: ast.Module, module: types.ModuleType) -> None:
-    """Stubgen drops an ``if TYPE_CHECKING:`` import that only a string (a TypeVar bound) uses; a stub is type-checking only."""
-    source = ast.parse(Path(typing.cast("str", module.__file__)).read_bytes())
+def _restore_source_imports(stub: ast.Module, source: ast.Module) -> None:
+    """
+    Add the source's imports the stub lacks, ``if TYPE_CHECKING:`` ones included; ruff then drops the unused ones.
+
+    Stubgen leaves out an import that only a string (a TypeVar bound) or a decorator it doesn't know uses.
+    """
+    type_checking = [node.body for node in source.body if isinstance(node, ast.If) and ast.unparse(node.test) in ("TYPE_CHECKING", "typing.TYPE_CHECKING")]
+    statements = [
+        node
+        for node in [*source.body, *(statement for block in type_checking for statement in block)]
+        if isinstance(node, (ast.Import, ast.ImportFrom)) and getattr(node, "module", None) != "__future__"
+    ]
     imported = _imported_names(stub)
-    for node in source.body:
-        if not (isinstance(node, ast.If) and ast.unparse(node.test) in ("TYPE_CHECKING", "typing.TYPE_CHECKING")):
-            continue
-        for statement in node.body:
-            if isinstance(statement, (ast.Import, ast.ImportFrom)) and (
-                missing := [alias for alias in statement.names if (alias.asname or alias.name) not in imported]
-            ):
-                statement.names = missing
-                stub.body.insert(0, statement)
+    for statement in reversed(statements):
+        if missing := [alias for alias in statement.names if (alias.asname or alias.name) not in imported]:
+            statement.names = missing
+            stub.body.insert(0, statement)
+
+
+def _restore_class_decorators(stub: ast.Module, source: ast.Module) -> None:
+    """Give every class its source decorators; stubgen keeps only those it knows, dropping pydantic's ``@dataclass`` for one."""
+    decorators = {node.name: node.decorator_list for node in source.body if isinstance(node, ast.ClassDef)}
+    for node in stub.body:
+        if isinstance(node, ast.ClassDef) and node.name in decorators:
+            node.decorator_list = decorators[node.name]
 
 
 def _strip_private_members(stub: ast.Module, module: types.ModuleType) -> None:
@@ -76,19 +87,6 @@ def _strip_private_members(stub: ast.Module, module: types.ModuleType) -> None:
         if dataclasses.is_dataclass(runtime) and (hidden := private & {f.name for f in dataclasses.fields(runtime) if f.init}):
             raise ValueError(f"{node.name} takes private __init__ arguments {sorted(hidden)}, which a public stub can't hide")
         node.body = [member for member in node.body if _bound_name(member) not in private] or [ast.Expr(ast.Constant(...))]
-
-
-def _restore_pydantic_dataclasses(stub: ast.Module, module: types.ModuleType) -> None:
-    """Stubgen drops ``@pydantic.dataclasses.dataclass``, which leaves the models without their ``__init__``."""
-    models = [
-        node
-        for node in stub.body
-        if isinstance(node, ast.ClassDef) and isinstance(runtime := getattr(module, node.name, None), type) and is_pydantic_dataclass(runtime)
-    ]
-    for node in models:
-        node.decorator_list = [ast.Name("dataclass")]
-    if models:
-        stub.body.insert(0, ast.ImportFrom("pydantic.dataclasses", [ast.alias("dataclass")], 0))
 
 
 def _type_source(annotation: object, module: types.ModuleType, imports: set[str]) -> str:
@@ -180,9 +178,10 @@ def _drop_unreferenced_privates(stub: ast.Module) -> None:
 def publicize(stub_source: str, module: types.ModuleType) -> str:
     """Rewrite one stubgen stub into the stub users see."""
     stub = ast.parse(stub_source)
-    _restore_typing_only_imports(stub, module)
+    source = ast.parse(Path(typing.cast("str", module.__file__)).read_bytes())
+    _restore_source_imports(stub, source)
+    _restore_class_decorators(stub, source)
     _strip_private_members(stub, module)
-    _restore_pydantic_dataclasses(stub, module)
     _resolve_annotated_aliases(stub, module)
     stub = _UnwrapAnnotated().visit(stub)
     _settle_dataclass_fields(stub, module)

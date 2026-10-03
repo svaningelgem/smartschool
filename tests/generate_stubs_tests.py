@@ -126,12 +126,16 @@ def test_stub_keeps_a_typing_only_import_that_a_string_bound_refers_to(tmp_path:
     assert "from decimal import Decimal" in [ast.unparse(node) for node in stub.body]
 
 
-def test_stub_keeps_a_keyword_only_dataclass_keyword_only(tmp_path: Path):
+def test_stub_keeps_the_source_class_decorators(tmp_path: Path):
+    """Stubgen drops decorators it doesn't know (pydantic's ``@dataclass``), and with them the class's ``__init__``."""
     stub = _stub_of(
         tmp_path,
         """
-        from dataclasses import dataclass
+        from typing import final
 
+        from pydantic.dataclasses import dataclass
+
+        @final
         @dataclass(frozen=True, kw_only=True)
         class Account:
             name: str
@@ -140,8 +144,9 @@ def test_stub_keeps_a_keyword_only_dataclass_keyword_only(tmp_path: Path):
     )
 
     account = next(node for node in stub.body if isinstance(node, ast.ClassDef))
-    assert [ast.unparse(decorator) for decorator in account.decorator_list] == ["dataclass(frozen=True, kw_only=True)"]
+    assert [ast.unparse(decorator) for decorator in account.decorator_list] == ["final", "dataclass(frozen=True, kw_only=True)"]
     assert [ast.unparse(member) for member in account.body] == ["name: str", "region: str = 'eu'"]
+    assert "from pydantic.dataclasses import dataclass" in [ast.unparse(node) for node in stub.body]
 
 
 def test_stub_refuses_to_hide_a_private_init_argument(tmp_path: Path):

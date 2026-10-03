@@ -4,6 +4,7 @@ from enum import Enum
 from functools import cached_property as cached_property
 from typing import Literal
 
+from _typeshed import Incomplete
 from pydantic.dataclasses import dataclass
 
 from ._common import as_float as as_float
@@ -18,6 +19,7 @@ UUID = str
 Url = String
 Date = date
 DateTime = datetime
+_config: Incomplete
 
 class GraphicColor(StrEnum):
     GREEN = "green"
@@ -32,12 +34,12 @@ class ResultType(StrEnum):
     NORMAL = "normal"
     PROJECT_WITH_RUBRICS = "project-with-rubrics"
 
-@dataclass
+@dataclass(config=_config)
 class CourseGraphic:
     type: Literal["icon", "image"]
     value: String
 
-@dataclass
+@dataclass(config=_config)
 class PercentageGraphic:
     type: Literal["percentage"]
     color: GraphicColor
@@ -51,14 +53,14 @@ class PercentageGraphic:
     @property
     def percentage(self) -> float: ...
 
-@dataclass
+@dataclass(config=_config)
 class TextGraphic:
     type: Literal["text"]
     color: GraphicColor
     value: String
     description: String
 
-@dataclass
+@dataclass(config=_config)
 class IconGraphic:
     type: Literal["icon"]
     color: String | None = None
@@ -67,12 +69,12 @@ class IconGraphic:
 
 ResultGraphic = PercentageGraphic | TextGraphic | IconGraphic
 
-@dataclass
+@dataclass(config=_config)
 class PersonDescription:
     starting_with_first_name: String = ""
     starting_with_last_name: String = ""
 
-@dataclass
+@dataclass(config=_config)
 class _User:
     id: String
     picture_hash: String
@@ -82,7 +84,7 @@ class _User:
     sort: String
     deleted: bool = False
 
-@dataclass
+@dataclass(config=_config)
 class _Group:
     identifier: String
     id: String
@@ -92,17 +94,17 @@ class _Group:
     icon: String
     sort: String
 
-@dataclass
+@dataclass(config=_config)
 class DateRange:
     start: DateTime
     end: DateTime
 
-@dataclass
+@dataclass(config=_config)
 class SkoreWorkYear:
     id: int
     date_range: DateRange
 
-@dataclass
+@dataclass(config=_config)
 class SchoolClass:
     identifier: String
     id: int
@@ -111,7 +113,7 @@ class SchoolClass:
     type: String
     icon: String
 
-@dataclass
+@dataclass(config=_config)
 class Period:
     id: int
     name: String
@@ -120,19 +122,19 @@ class Period:
     is_active: bool
     class_: SchoolClass
 
-@dataclass
+@dataclass(config=_config)
 class Component:
     id: int
     name: String
     abbreviation: String
 
-@dataclass
+@dataclass(config=_config)
 class Teacher(_User): ...
 
-@dataclass
+@dataclass(config=_config)
 class Student(_User): ...
 
-@dataclass
+@dataclass(config=_config)
 class Course:
     id: int
     name: String
@@ -145,12 +147,12 @@ class Course:
 
     def __str__(self) -> str: ...
 
-@dataclass
+@dataclass(config=_config)
 class Feedback:
     text: String
     user: Teacher
 
-@dataclass
+@dataclass(config=_config)
 class FeedbackFull:
     attachments: list[String]
     changed_at: DateTime
@@ -161,7 +163,7 @@ class FeedbackFull:
     teacher: Teacher
     text: String
 
-@dataclass
+@dataclass(config=_config)
 class Result:
     identifier: String
     type: ResultType
@@ -180,7 +182,7 @@ class Result:
     deleted: bool = False
     details: ResultDetails | None = None
 
-@dataclass
+@dataclass(config=_config)
 class ResultDetails:
     central_tendencies: list[String]
     teachers: list[Teacher]
@@ -188,7 +190,7 @@ class ResultDetails:
     user_changed: Teacher
     class_: SchoolClass
 
-@dataclass
+@dataclass(config=_config)
 class CourseCondensed:
     name: String
     teacher: String
@@ -198,7 +200,7 @@ class CourseCondensed:
     descr: String = ""
     icon: String = ""
 
-@dataclass
+@dataclass(config=_config)
 class FutureTaskOneTask:
     label: String
     description: String
@@ -218,12 +220,12 @@ class FutureTaskOneTask:
     date: Date
     hour_id: String
 
-@dataclass
+@dataclass(config=_config)
 class FutureTaskOneItem:
     tasks: list[FutureTaskOneTask]
     materials: list[String]
 
-@dataclass
+@dataclass(config=_config)
 class FutureTaskOneCourse:
     lesson_id: String
     hour_id: String
@@ -231,20 +233,20 @@ class FutureTaskOneCourse:
     course_title: String
     items: FutureTaskOneItem
 
-@dataclass
+@dataclass(config=_config)
 class FutureTaskOneDay:
     date: Date
     pretty_date: String
     courses: list[FutureTaskOneCourse]
 
-@dataclass
+@dataclass(config=_config)
 class AgendaHour:
     hour_id: String
     start: String
     end: String
     title: String
 
-@dataclass
+@dataclass(config=_config)
 class AgendaLesson:
     moment_id: String
     lesson_id: String
@@ -275,7 +277,7 @@ class AgendaLesson:
     freeday_icon: String
     some_subjects_empty: String | None
 
-@dataclass
+@dataclass(config=_config)
 class AgendaMomentInfoAssignment:
     start_assignment: String
     start: String
@@ -288,7 +290,7 @@ class AgendaMomentInfoAssignment:
     assignment_info: String
     assignment_deadline: String
 
-@dataclass
+@dataclass(config=_config)
 class AgendaMomentInfo:
     class_name: String
     subject: String
@@ -296,7 +298,7 @@ class AgendaMomentInfo:
     moment_id: String
     assignments: list[AgendaMomentInfoAssignment]
 
-@dataclass
+@dataclass(config=_config)
 class StudentSupportLink:
     id: String
     name: String
@@ -306,7 +308,7 @@ class StudentSupportLink:
     clean_link: String
     is_visible: bool
 
-@dataclass
+@dataclass(config=_config)
 class ShortMessage:
     id: int
     from_image: Url
@@ -325,7 +327,7 @@ class ShortMessage:
     from_: String
     colored_flag: int = 0
 
-@dataclass
+@dataclass(config=_config)
 class FullMessage:
     id: int
     to: String | None
@@ -351,7 +353,7 @@ class FullMessage:
     from_: String
     colored_flag: int = 0
 
-@dataclass
+@dataclass(config=_config)
 class Attachment:
     file_id: int
     name: String
@@ -361,18 +363,18 @@ class Attachment:
     wopi_allowed: bool
     order: int
 
-@dataclass
+@dataclass(config=_config)
 class MessageChanged:
     id: int
     new: int
 
-@dataclass
+@dataclass(config=_config)
 class MessageDeletionStatus:
     msg_id: int
     box_type: String
     is_deleted: bool
 
-@dataclass
+@dataclass(config=_config)
 class MessageSearchUser:
     user_id: int
     value: String
@@ -383,7 +385,7 @@ class MessageSearchUser:
     schoolname: String | None = None
     picture: Url | None = None
 
-@dataclass
+@dataclass(config=_config)
 class MessageSearchGroup:
     group_id: int
     value: String
@@ -391,29 +393,29 @@ class MessageSearchGroup:
     icon: String | None = None
     description: String | None = None
 
-@dataclass
+@dataclass(config=_config)
 class PlannedElementPeriod:
     date_time_from: datetime
     date_time_to: datetime
     whole_day: bool
     deadline: bool
 
-@dataclass
+@dataclass(config=_config)
 class PlannedElementOrganisers:
     users: list[_User]
 
-@dataclass
+@dataclass(config=_config)
 class GroupFilters:
     filters: list
     additional_users: list[_User]
 
-@dataclass
+@dataclass(config=_config)
 class PlannedElementParticipants:
     groups: list[_Group]
     users: list[_User]
     group_filters: GroupFilters
 
-@dataclass
+@dataclass(config=_config)
 class UserSeeProperties:
     id: bool
     platform_id: bool
@@ -427,7 +429,7 @@ class UserSeeProperties:
     courses: bool = False
     locations: bool = False
 
-@dataclass
+@dataclass(config=_config)
 class UserCapabilities:
     can_user_trash: bool
     can_user_restore_from_trash: bool
@@ -448,12 +450,12 @@ class UserCapabilities:
     can_user_see_video_call: bool = False
     can_user_manage_video_call: bool = False
 
-@dataclass
+@dataclass(config=_config)
 class PlannedElementCourseCluster:
     id: int
     name: String
 
-@dataclass
+@dataclass(config=_config)
 class PlannedElementCourse:
     id: UUID
     platform_id: int
@@ -463,7 +465,7 @@ class PlannedElementCourse:
     course_cluster: PlannedElementCourseCluster | None
     is_visible: bool
 
-@dataclass
+@dataclass(config=_config)
 class PlannedElementLocation:
     id: UUID
     platform_id: int
@@ -474,12 +476,12 @@ class PlannedElementLocation:
     type: String
     selectable: bool
 
-@dataclass
+@dataclass(config=_config)
 class PlannedElementJoinIds:
     from_: String
     to: String
 
-@dataclass
+@dataclass(config=_config)
 class PlannedElementAssignmentType:
     id: UUID
     name: String
@@ -487,7 +489,7 @@ class PlannedElementAssignmentType:
     is_visible: bool
     weight: int
 
-@dataclass
+@dataclass(config=_config)
 class PlannedElement:
     id: UUID
     platform_id: int
@@ -509,7 +511,7 @@ class PlannedElement:
     resolved_status: String = ""
     online_session: String | None = None
 
-@dataclass
+@dataclass(config=_config)
 class ApplicableAssignmentType:
     id: UUID
     platform_id: int
@@ -518,7 +520,7 @@ class ApplicableAssignmentType:
     is_visible: bool
     weight: float
 
-@dataclass
+@dataclass(config=_config)
 class Report:
     id: int
     name: String
