@@ -1,3 +1,13 @@
+## 0.11.0 (2026-10-03)
+- feat(credentials): read the password from the OS keychain (optional keyring extra) (#201)
+- fix: keep the source's class decorators in the generated stubs (#209)
+- fix: type the items the XML query classes yield (#207)
+- fix: accept 'blue' as a result graphic color (#203)
+- fix: ship public-only stubs for every module (#206)
+- fix: guard BeautifulSoup select_one results in document row parsing (#187)
+- refactor: fix pylint and ty findings in the library code (#195)
+
+
 ## 0.10.0 (2026-07-24)
 - feat(messages): support sending to co-accounts (parents) (#171)
 
