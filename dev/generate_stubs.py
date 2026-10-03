@@ -51,6 +51,21 @@ def _imported_names(stub: ast.Module) -> set[str]:
     return {alias.asname or alias.name for node in stub.body if isinstance(node, (ast.Import, ast.ImportFrom)) for alias in node.names}
 
 
+def _restore_typing_only_imports(stub: ast.Module, module: types.ModuleType) -> None:
+    """Stubgen drops an ``if TYPE_CHECKING:`` import that only a string (a TypeVar bound) uses; a stub is type-checking only."""
+    source = ast.parse(Path(typing.cast("str", module.__file__)).read_bytes())
+    imported = _imported_names(stub)
+    for node in source.body:
+        if not (isinstance(node, ast.If) and ast.unparse(node.test) in ("TYPE_CHECKING", "typing.TYPE_CHECKING")):
+            continue
+        for statement in node.body:
+            if isinstance(statement, (ast.Import, ast.ImportFrom)) and (
+                missing := [alias for alias in statement.names if (alias.asname or alias.name) not in imported]
+            ):
+                statement.names = missing
+                stub.body.insert(0, statement)
+
+
 def _strip_private_members(stub: ast.Module, module: types.ModuleType) -> None:
     """Drop private attributes and methods from every class; dunders stay."""
     for node in stub.body:
@@ -156,6 +171,7 @@ def _drop_unreferenced_privates(stub: ast.Module) -> None:
 def publicize(stub_source: str, module: types.ModuleType) -> str:
     """Rewrite one stubgen stub into the stub users see."""
     stub = ast.parse(stub_source)
+    _restore_typing_only_imports(stub, module)
     _strip_private_members(stub, module)
     _restore_pydantic_dataclasses(stub, module)
     _resolve_annotated_aliases(stub, module)
