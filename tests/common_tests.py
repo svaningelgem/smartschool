@@ -700,7 +700,7 @@ class _FileWithoutName(DownloadableFile):
 def test_downloadable_file_requires_a_filename():
     """`filename` is abstract, so a subclass without one cannot be built at all."""
     with pytest.raises(TypeError, match=r"abstract method '?filename"):
-        _FileWithoutName()  # pylint: disable=abstract-class-instantiated  # that is the behaviour under test
+        _FileWithoutName()  # ty: ignore[call-non-callable]  # pylint: disable=abstract-class-instantiated  # that is the behaviour under test
 
 
 def test_save_writes_camel_case_json_for_a_pydantic_dataclass(session: Smartschool) -> None:
