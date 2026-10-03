@@ -2,17 +2,15 @@
 import abc
 from abc import ABC
 from dataclasses import dataclass
-from typing import TypeVar
 
 from . import _objects as objects
 from ._session import SessionMixin, Smartschool
-from ._xml_interface import SmartschoolXmlWeeklyCache
+from ._xml_interface import SmartschoolXmlWeeklyCache, _ItemT_co
 
 __all__ = ["AgendaLesson", "AgendaPoster", "SmartschoolHours", "SmartschoolLessons", "SmartschoolMomentInfos"]
-_T = TypeVar("_T")
 
 @dataclass
-class AgendaPoster(SmartschoolXmlWeeklyCache[_T], ABC, metaclass=abc.ABCMeta): ...
+class AgendaPoster(SmartschoolXmlWeeklyCache[_ItemT_co], ABC, metaclass=abc.ABCMeta): ...
 
 @dataclass
 class AgendaLesson(SessionMixin, objects.AgendaLesson):

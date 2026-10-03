@@ -6,21 +6,23 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from typing import Generic, TypeVar
 
+from _typeshed import DataclassInstance
+
 from ._common import xml_to_dict as xml_to_dict
 from ._session import SessionMixin as SessionMixin
 
-_T = TypeVar("_T")
+_ItemT_co = TypeVar("_ItemT_co", bound="DataclassInstance", covariant=True)
 
 @dataclass
-class SmartschoolXML(ABC, SessionMixin, Generic[_T], metaclass=abc.ABCMeta):
+class SmartschoolXML(ABC, SessionMixin, Generic[_ItemT_co], metaclass=abc.ABCMeta):
     cache: dict = ...
 
-    def __iter__(self) -> Iterator[_T]: ...
-    def get(self) -> _T: ...
+    def __iter__(self) -> Iterator[_ItemT_co]: ...
+    def get(self) -> _ItemT_co: ...
 
 @dataclass
-class SmartschoolXmlWeeklyCache(SmartschoolXML[_T], ABC, metaclass=abc.ABCMeta):
+class SmartschoolXmlWeeklyCache(SmartschoolXML[_ItemT_co], ABC, metaclass=abc.ABCMeta):
     timestamp_to_use: datetime | date | None = None
 
 @dataclass
-class SmartschoolXmlNoCache(SmartschoolXML[_T], ABC, metaclass=abc.ABCMeta): ...
+class SmartschoolXmlNoCache(SmartschoolXML[_ItemT_co], ABC, metaclass=abc.ABCMeta): ...

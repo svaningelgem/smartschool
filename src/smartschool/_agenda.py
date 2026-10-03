@@ -3,24 +3,22 @@ from __future__ import annotations
 import time
 from abc import ABC
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, ClassVar, TypeVar
+from typing import TYPE_CHECKING, ClassVar
 
 from . import _objects as objects
 from ._common import convert_to_datetime
 from ._session import SessionMixin
-from ._xml_interface import SmartschoolXmlWeeklyCache
+from ._xml_interface import SmartschoolXmlWeeklyCache, _ItemT_co
 
 if TYPE_CHECKING:
     from ._session import Smartschool
 
 
-_T = TypeVar("_T")
-
 __all__ = ["AgendaLesson", "AgendaPoster", "SmartschoolHours", "SmartschoolLessons", "SmartschoolMomentInfos"]
 
 
 @dataclass
-class AgendaPoster(SmartschoolXmlWeeklyCache[_T], ABC):
+class AgendaPoster(SmartschoolXmlWeeklyCache[_ItemT_co], ABC):
     """Caches the information on a weekly basis, and posts to the mentioned URL."""
 
     _url: ClassVar[str] = "/?module=Agenda&file=dispatcher"

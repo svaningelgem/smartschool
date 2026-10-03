@@ -3,19 +3,17 @@ from __future__ import annotations
 from abc import ABC
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import TYPE_CHECKING, TypeVar
+from typing import TYPE_CHECKING
 from urllib.parse import urlencode
 
 from . import _objects as objects
 from ._session import SessionMixin
-from ._xml_interface import SmartschoolXML, SmartschoolXmlNoCache
+from ._xml_interface import SmartschoolXML, SmartschoolXmlNoCache, _ItemT_co
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
 
     from ._session import Smartschool
-
-_T = TypeVar("_T")
 
 __all__ = [
     "AdjustMessageLabel",
@@ -117,7 +115,7 @@ class MessageHeaders(_MessagesPoster, SmartschoolXmlNoCache[objects.ShortMessage
 
 
 # Cannot have `@dataclass`
-class _FetchOneMessage(_MessagesPoster, SmartschoolXML[_T], ABC):  # pylint: disable=too-few-public-methods  # query object: iterate or get()
+class _FetchOneMessage(_MessagesPoster, SmartschoolXML[_ItemT_co], ABC):  # pylint: disable=too-few-public-methods  # query object: iterate or get()
     def __init__(self, session: Smartschool, msg_id: int, box_type: BoxType = BoxType.INBOX):
         super().__init__(session=session)
 

@@ -4,13 +4,12 @@ from abc import ABC
 from collections.abc import Iterator
 from dataclasses import dataclass
 from enum import Enum
-from typing import TypeVar
 
 from _typeshed import Incomplete
 
 from . import _objects as objects
 from ._session import SessionMixin, Smartschool
-from ._xml_interface import SmartschoolXML, SmartschoolXmlNoCache
+from ._xml_interface import SmartschoolXML, SmartschoolXmlNoCache, _ItemT_co
 
 __all__ = [
     "AdjustMessageLabel",
@@ -26,7 +25,6 @@ __all__ = [
     "SortField",
     "SortOrder",
 ]
-_T = TypeVar("_T")
 
 class SortField(Enum):
     DATE = "date"
@@ -62,7 +60,7 @@ class MessageHeaders(_MessagesPoster, SmartschoolXmlNoCache[objects.ShortMessage
     sort_order: SortOrder = ...
     already_seen_message_ids: list[int] | None = ...
 
-class _FetchOneMessage(_MessagesPoster, SmartschoolXML[_T], ABC, metaclass=abc.ABCMeta):
+class _FetchOneMessage(_MessagesPoster, SmartschoolXML[_ItemT_co], ABC, metaclass=abc.ABCMeta):
     msg_id: Incomplete
     box_type: Incomplete
 
