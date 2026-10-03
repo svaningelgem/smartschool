@@ -41,6 +41,7 @@ dev = [
     "time_machine",
     "commitizen",
     "mypy>=2.4.0",
+    "keyring>=24,<26",
 ]
 
 [tool.uv]

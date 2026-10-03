@@ -7,8 +7,9 @@ from typing import ClassVar, Final
 
 import yaml
 
-try:
-    import keyring  # ty: ignore[unresolved-import]  # optional `keyring` extra
+try:  # optional `keyring` extra
+    import keyring
+    import keyring.errors
 except ImportError:
     keyring = None
 
@@ -35,8 +36,15 @@ def _password_from_keyring(service: str, username: str) -> str:
         ) from err
 
     if not password:
+        backend = keyring.get_keyring()
+        if type(backend).__module__ == "keyring.backends.null":  # stores nothing, so `keyring set` can't help
+            raise RuntimeError(
+                f"The keyring is switched off ({backend}), so it holds no password for '{username}'. "
+                "Unset PYTHON_KEYRING_BACKEND or choose a real backend in keyringrc.cfg."
+            )
         raise RuntimeError(
-            f"No password found in the keyring for service '{service}' and account '{username}'. Store it with: python -m keyring set {service} {username}"
+            f"No password found in the keyring ({backend}) for service '{service}' and account '{username}'. "
+            f"Store it with: python -m keyring set {service} {username}"
         )
 
     return password

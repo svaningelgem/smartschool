@@ -46,6 +46,9 @@ class _FakeKeyring:
             raise _FakeKeyringError("No recommended backend was available")
         return self.secrets.get((service, username))
 
+    def get_keyring(self) -> str:
+        return "fake backend"
+
 
 @pytest.fixture(name="fake_keyring")
 def _fake_keyring(monkeypatch):
@@ -212,7 +215,10 @@ def test_keyring_credentials_password_not_stored(fake_keyring, stored):
 
     with pytest.raises(
         RuntimeError,
-        match=r"No password found in the keyring for service 'smartschool' and account 'bumba'\. Store it with: python -m keyring set smartschool bumba$",
+        match=(
+            r"No password found in the keyring \(fake backend\) for service 'smartschool' and account 'bumba'\. "
+            r"Store it with: python -m keyring set smartschool bumba$"
+        ),
     ):
         KeyringCredentials(username="bumba", main_url="site", mfa="1234-56-78")
 

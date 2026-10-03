@@ -1442,6 +1442,7 @@ mfa = [
 [package.dev-dependencies]
 dev = [
     { name = "commitizen" },
+    { name = "keyring" },
     { name = "mypy" },
     { name = "pytest-cov" },
     { name = "pytest-mock" },
@@ -1465,6 +1466,7 @@ provides-extras = ["mfa", "keyring"]
 [package.metadata.requires-dev]
 dev = [
     { name = "commitizen" },
+    { name = "keyring", specifier = ">=24,<26" },
     { name = "mypy", specifier = ">=2.4.0" },
     { name = "pytest-cov" },
     { name = "pytest-mock" },
