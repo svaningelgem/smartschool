@@ -126,6 +126,24 @@ def test_stub_keeps_a_typing_only_import_that_a_string_bound_refers_to(tmp_path:
     assert "from decimal import Decimal" in [ast.unparse(node) for node in stub.body]
 
 
+def test_stub_keeps_a_keyword_only_dataclass_keyword_only(tmp_path: Path):
+    stub = _stub_of(
+        tmp_path,
+        """
+        from dataclasses import dataclass
+
+        @dataclass(frozen=True, kw_only=True)
+        class Account:
+            name: str
+            region: str = "eu"
+        """,
+    )
+
+    account = next(node for node in stub.body if isinstance(node, ast.ClassDef))
+    assert [ast.unparse(decorator) for decorator in account.decorator_list] == ["dataclass(frozen=True, kw_only=True)"]
+    assert [ast.unparse(member) for member in account.body] == ["name: str", "region: str = 'eu'"]
+
+
 def test_stub_refuses_to_hide_a_private_init_argument(tmp_path: Path):
     """Hiding it would shift the positional arguments of the generated __init__."""
     with pytest.raises(ValueError, match=r"Account takes private __init__ arguments \['_token'\]"):

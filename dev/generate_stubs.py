@@ -133,12 +133,21 @@ def _stub_default(field_: dataclasses.Field) -> ast.expr | None:
     return ast.Constant(...) if has_factory else None
 
 
+def _declares_kw_only(node: ast.ClassDef) -> bool:
+    """Whether the class's ``@dataclass(...)`` says ``kw_only=True``; the stub keeps that decorator as written."""
+    return any(
+        isinstance(decorator, ast.Call)
+        and any(keyword.arg == "kw_only" and isinstance(keyword.value, ast.Constant) and keyword.value.value is True for keyword in decorator.keywords)
+        for decorator in node.decorator_list
+    )
+
+
 def _settle_fields(node: ast.ClassDef, fields: tuple[dataclasses.Field, ...]) -> bool:
     """Set each field's value from the runtime field; True when one became ``field(init=False)``."""
     by_name = {field_.name: field_ for field_ in fields}
     members = [(member, field_) for member in node.body if isinstance(member, ast.AnnAssign) and (field_ := by_name.get(_bound_name(member)))]
-    if keyword_only := [field_.name for _, field_ in members if field_.kw_only is True]:
-        raise ValueError(f"{node.name} has keyword-only fields {keyword_only}, which the stub can't express yet")
+    if not _declares_kw_only(node) and (keyword_only := [field_.name for _, field_ in members if field_.kw_only is True]):
+        raise ValueError(f"{node.name} has keyword-only fields {keyword_only}; the stub only expresses a class-wide @dataclass(kw_only=True)")
     for member, field_ in members:
         member.value = _stub_default(field_) if field_.init else ast.parse("field(init=False)", mode="eval").body
     return any(not field_.init for _, field_ in members)
