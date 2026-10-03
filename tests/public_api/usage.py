@@ -5,7 +5,18 @@ from pathlib import Path
 
 from typing_extensions import assert_type
 
-from smartschool import AgendaLesson, Component, MessageHeaders, Results, Smartschool, SmartschoolHours, SmartschoolLessons, create_filesystem_safe_path
+from smartschool import (
+    AgendaHour,
+    AgendaLesson,
+    Component,
+    MessageHeaders,
+    Results,
+    ShortMessage,
+    Smartschool,
+    SmartschoolHours,
+    SmartschoolLessons,
+    create_filesystem_safe_path,
+)
 
 
 def query_classes_can_be_instantiated(session: Smartschool) -> None:
@@ -21,6 +32,11 @@ def models_keep_their_constructor_and_field_types(lesson: AgendaLesson) -> None:
 
 
 def iteration_yields_typed_items(session: Smartschool) -> None:
+    for lesson in SmartschoolLessons(session):
+        assert_type(lesson, AgendaLesson)
+    for header in MessageHeaders(session):
+        assert_type(header, ShortMessage)
+    assert_type(SmartschoolHours(session).get(), AgendaHour)
     for result in Results(session):
         assert_type(result.name, str)
         assert_type(result.date, datetime)

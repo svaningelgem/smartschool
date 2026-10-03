@@ -93,6 +93,29 @@ def test_extended_result_fields(session: Smartschool, requests_mock):
     assert icon.graphic.value == "bullet_square_green"
 
 
+@pytest.mark.parametrize("color", list(GraphicColor))
+def test_graphic_color(session: Smartschool, requests_mock, color: GraphicColor):
+    """Every known colour parses (issue #202: blue was missing)."""
+    payload = _minimal_result_payload()
+    payload["graphic"]["color"] = color.value
+    requests_mock.get("https://site/results/api/v1/evaluations/?pageNumber=1&itemsOnPage=50", json=[payload])
+
+    sut = list(Results(session))
+
+    assert sut[0].graphic.color is color
+
+
+@pytest.mark.parametrize("color", ["purple", "Blue", "BLUE", " blue", "", "lpd_steel", None])
+def test_unlisted_graphic_color_fails_the_listing(session: Smartschool, requests_mock, color: str | None):
+    """Strict enum: no case folding, no stripping, and icon-only colours don't count."""
+    payload = _minimal_result_payload()
+    payload["graphic"]["color"] = color
+    requests_mock.get("https://site/results/api/v1/evaluations/?pageNumber=1&itemsOnPage=50", json=[payload])
+
+    with pytest.raises(ValidationError, match=r"graphic\.percentage\.color"):
+        list(Results(session))
+
+
 def test_unknown_graphic_color_raises():
     """Strict enum: unknown colors must fail loudly so we add the member."""
     with pytest.raises(ValidationError):

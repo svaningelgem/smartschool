@@ -107,6 +107,25 @@ def test_stub_keeps_pydantic_models_constructible(tmp_path: Path):
     assert [ast.unparse(member) for member in teacher.body] == ["name: Name", "nickname: Name = ''"]
 
 
+def test_stub_keeps_a_typing_only_import_that_a_string_bound_refers_to(tmp_path: Path):
+    stub = _stub_of(
+        tmp_path,
+        """
+        from typing import TYPE_CHECKING, Generic, TypeVar
+
+        if TYPE_CHECKING:
+            from decimal import Decimal
+
+        _AmountT = TypeVar("_AmountT", bound="Decimal")
+
+        class Ledger(Generic[_AmountT]):
+            def total(self) -> _AmountT: ...
+        """,
+    )
+
+    assert "from decimal import Decimal" in [ast.unparse(node) for node in stub.body]
+
+
 def test_stub_refuses_to_hide_a_private_init_argument(tmp_path: Path):
     """Hiding it would shift the positional arguments of the generated __init__."""
     with pytest.raises(ValueError, match=r"Account takes private __init__ arguments \['_token'\]"):
