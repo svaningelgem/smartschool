@@ -21,10 +21,19 @@ __all__ = ["AppCredentials", "Credentials", "EnvCredentials", "KeyringCredential
 
 def _password_from_keyring(service: str, username: str) -> str:
     """Fetch the password of `username` from the OS keychain (macOS Keychain, Windows Credential Manager, Secret Service, ...)."""
-    if keyring is None:
-        raise RuntimeError("Reading the password from the keyring requires the 'keyring' package. Install with: pip install smartschool[keyring]")
+    service, username = str(service).strip(), str(username).strip()
 
-    password = keyring.get_password(service, username)
+    if keyring is None:
+        raise RuntimeError("Reading the password from the keyring requires the 'keyring' package. Install with: pip install \"smartschool[keyring]\"")
+
+    try:
+        password = keyring.get_password(service, username)
+    except keyring.errors.KeyringError as err:
+        raise RuntimeError(
+            f"The keyring backend could not be used ({err}). On a headless Linux box or WSL there is no keychain: "
+            "run a Secret Service (e.g. GNOME Keyring) or install a file-based backend such as 'keyrings.alt'."
+        ) from err
+
     if not password:
         raise RuntimeError(
             f"No password found in the keyring for service '{service}' and account '{username}'. Store it with: python -m keyring set {service} {username}"
@@ -80,14 +89,20 @@ class PathCredentials(Credentials):
         object.__setattr__(self, "filename", credentials_file)
 
         cred_file: dict = yaml.safe_load(credentials_file.read_text(encoding="utf8"))
+
+        # Opt-in: `keyring: true` (or `keyring: <service name>`) reads the password from the OS keychain, but only when there is no `password` key at all.
+        keyring_setting = cred_file.pop("keyring", None)
+        read_password_from_keyring = bool(keyring_setting) and "password" not in cred_file
+
         for attr in required_fields:
             object.__setattr__(self, attr, cred_file.pop(attr, ""))
 
         object.__setattr__(self, "other_info", cred_file)
 
-        # No password in the file: fall back on the OS keychain (only when the optional `keyring` package is installed).
-        if not self.password and self.username and keyring is not None:
-            object.__setattr__(self, "password", _password_from_keyring(DEFAULT_KEYRING_SERVICE, str(self.username)))
+        username = str(self.username or "").strip()
+        if read_password_from_keyring and username:
+            service = keyring_setting if isinstance(keyring_setting, str) else DEFAULT_KEYRING_SERVICE
+            object.__setattr__(self, "password", _password_from_keyring(service, username))
 
     def _find_credentials_file(self) -> Path:
         to_investigate = self.filename
@@ -131,7 +146,7 @@ class EnvCredentials(Credentials):
             object.__setattr__(self, attr, os.getenv(f"SMARTSCHOOL_{attr.upper()}", ""))
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class KeyringCredentials(Credentials):
     """
     Credentials whose password lives in the OS keychain instead of a file or environment variable.
@@ -146,8 +161,9 @@ class KeyringCredentials(Credentials):
     password: str = field(init=False, default="", repr=False)
 
     def __post_init__(self):
-        if self.username:  # An empty username is reported by validate()
-            object.__setattr__(self, "password", _password_from_keyring(self.service, str(self.username)))
+        username = str(self.username or "").strip()
+        if username:  # An empty username is reported by validate()
+            object.__setattr__(self, "password", _password_from_keyring(self.service, username))
 
 
 @dataclass(frozen=True)

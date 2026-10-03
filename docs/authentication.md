@@ -48,7 +48,7 @@ Prefer not to keep your password in plain text? Store it in your operating syste
 using the optional [`keyring`](https://pypi.org/project/keyring/) dependency:
 
 ```bash
-pip install smartschool[keyring]
+pip install "smartschool[keyring]"
 ```
 
 Save the password once (you will be prompted for it, so it never ends up in your shell history):
@@ -58,7 +58,7 @@ python -m keyring set smartschool your_username
 ```
 
 Then use `KeyringCredentials`, which looks the password up under service name `smartschool` and
-account `your_username` (override the service name with `service="..."`):
+account `your_username` (override the service name with `service="..."`). All arguments are keyword-only:
 
 ```python
 from smartschool import Smartschool, KeyringCredentials
@@ -71,10 +71,22 @@ creds = KeyringCredentials(
 session = Smartschool(creds)
 ```
 
-`PathCredentials` falls back on the keychain automatically: leave the `password:` line out of
-`credentials.yml` and, when `keyring` is installed, the password is read from service `smartschool` and
-the `username` from that file. A clear error is raised when no such item exists. Without `keyring`
-installed, a missing password is reported as before.
+To keep using `credentials.yml` (`PathCredentials`), opt in explicitly: leave the `password:` line out and add
+`keyring: true` (or `keyring: your-service-name` to use another service name). The `username` from that file is the account
+that is looked up. Nothing changes without that opt-in, even when the `keyring` package happens to be installed:
+
+```yaml
+username: your_username
+mfa: YYYY-mm-dd
+main_url: your_school.smartschool.be
+keyring: true
+```
+
+A clear error is raised when no such item exists, or when the keychain backend cannot be used.
+
+> **Headless Linux and WSL** have no keychain backend, so reading from the keyring fails there. Either run a Secret
+> Service (for example GNOME Keyring) or install a file-based backend such as
+> [`keyrings.alt`](https://pypi.org/project/keyrings.alt/) (note that it does not encrypt as strongly as a real keychain).
 
 ## Direct Credentials
 
