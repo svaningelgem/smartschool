@@ -152,7 +152,7 @@ class KeyringCredentials(Credentials):
 
 @dataclass(frozen=True)
 class AppCredentials(Credentials):
-    username: str
-    password: str = field(default="", repr=False)  # `default` mirrors the class-level default inherited from Credentials
-    main_url: str
-    mfa: str
+    username: str = ""
+    password: str = field(default="", repr=False)
+    main_url: str = ""
+    mfa: str = ""

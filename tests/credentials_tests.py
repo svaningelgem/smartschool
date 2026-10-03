@@ -24,8 +24,8 @@ def _no_real_keyring(monkeypatch):
     monkeypatch.setattr("smartschool._credentials.keyring", None)
 
 
-@pytest.fixture
-def mock_keyring(mocker):
+@pytest.fixture(name="mock_keyring")
+def _mock_keyring(mocker):
     """Stand-in for the `keyring` module; `get_password` returns the stored secret."""
     mock = mocker.patch("smartschool._credentials.keyring")
     mock.get_password.return_value = "keyring-secret"
@@ -196,7 +196,8 @@ def test_keyring_credentials_empty_username_is_caught_by_validate(mock_keyring):
         sut.validate()
 
 
-def test_keyring_credentials_as_dict(mock_keyring):
+@pytest.mark.usefixtures("mock_keyring")
+def test_keyring_credentials_as_dict():
     sut = KeyringCredentials(username="bumba", main_url="site", mfa="1234-56-78")
 
     assert sut.as_dict() == {"username": "bumba", "password": "keyring-secret", "main_url": "site", "mfa": "1234-56-78"}
@@ -240,7 +241,8 @@ def test_path_credentials_without_username_does_not_query_keyring(tmp_path: Path
         sut.validate()
 
 
-def test_password_is_not_in_repr(tmp_path: Path, mock_keyring):
+@pytest.mark.usefixtures("mock_keyring")
+def test_password_is_not_in_repr(tmp_path: Path):
     credentials = [
         KeyringCredentials(username="bumba", main_url="site", mfa="1234-56-78"),
         PathCredentials(_create_credentials_file_without_password(tmp_path)),
