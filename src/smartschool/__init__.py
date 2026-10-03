@@ -17,7 +17,7 @@ from ._common import (
     xml_to_dict,
 )
 from ._courses import CourseCondensed, CourseList, Courses, DocumentOrFolderItem, FileItem, FolderItem, InternetShortcut, TopNavCourses
-from ._credentials import AppCredentials, Credentials, EnvCredentials, PathCredentials
+from ._credentials import AppCredentials, Credentials, EnvCredentials, KeyringCredentials, PathCredentials
 from ._exceptions import (
     SmartSchoolAttachmentUploadError,
     SmartSchoolAuthenticationError,
@@ -142,6 +142,7 @@ __all__ = [
     "IntradeskFolder",
     "IntradeskItem",
     "IsSaved",
+    "KeyringCredentials",
     "MarkMessageUnread",
     "Message",
     "MessageChanged",

@@ -24,6 +24,7 @@ dependencies = [
 
 [project.optional-dependencies]
 mfa = ["pyotp>=2.9.0,<3"]
+keyring = ["keyring>=24"]
 
 [project.urls]
 Homepage = "https://github.com/svaningelgem/smartschool"

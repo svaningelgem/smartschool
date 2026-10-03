@@ -7,9 +7,30 @@ from typing import ClassVar, Final
 
 import yaml
 
+try:
+    import keyring  # ty: ignore[unresolved-import]  # optional `keyring` extra
+except ImportError:
+    keyring = None
+
 required_fields: Final[list[str]] = ["username", "password", "main_url", "mfa"]
 
-__all__ = ["AppCredentials", "Credentials", "EnvCredentials", "PathCredentials"]
+DEFAULT_KEYRING_SERVICE: Final[str] = "smartschool"
+
+__all__ = ["AppCredentials", "Credentials", "EnvCredentials", "KeyringCredentials", "PathCredentials"]
+
+
+def _password_from_keyring(service: str, username: str) -> str:
+    """Fetch the password of `username` from the OS keychain (macOS Keychain, Windows Credential Manager, Secret Service, ...)."""
+    if keyring is None:
+        raise RuntimeError("Reading the password from the keyring requires the 'keyring' package. Install with: pip install smartschool[keyring]")
+
+    password = keyring.get_password(service, username)
+    if not password:
+        raise RuntimeError(
+            f"No password found in the keyring for service '{service}' and account '{username}'. Store it with: python -m keyring set {service} {username}"
+        )
+
+    return password
 
 
 class Credentials:
@@ -49,7 +70,7 @@ class PathCredentials(Credentials):
     filename: str | Path = ""
 
     username: str = field(init=False, default="")
-    password: str = field(init=False, default="")
+    password: str = field(init=False, default="", repr=False)
     main_url: str = field(init=False, default="")
     mfa: str = field(init=False, default="")
     other_info: dict | None = field(init=False, default=None)
@@ -63,6 +84,10 @@ class PathCredentials(Credentials):
             object.__setattr__(self, attr, cred_file.pop(attr, ""))
 
         object.__setattr__(self, "other_info", cred_file)
+
+        # No password in the file: fall back on the OS keychain (only when the optional `keyring` package is installed).
+        if not self.password and self.username and keyring is not None:
+            object.__setattr__(self, "password", _password_from_keyring(DEFAULT_KEYRING_SERVICE, str(self.username)))
 
     def _find_credentials_file(self) -> Path:
         to_investigate = self.filename
@@ -107,8 +132,27 @@ class EnvCredentials(Credentials):
 
 
 @dataclass(frozen=True)
+class KeyringCredentials(Credentials):
+    """
+    Credentials whose password lives in the OS keychain instead of a file or environment variable.
+
+    Store the password once with: `python -m keyring set smartschool <username>`
+    """
+
+    username: str
+    main_url: str
+    mfa: str
+    service: str = DEFAULT_KEYRING_SERVICE
+    password: str = field(init=False, default="", repr=False)
+
+    def __post_init__(self):
+        if self.username:  # An empty username is reported by validate()
+            object.__setattr__(self, "password", _password_from_keyring(self.service, str(self.username)))
+
+
+@dataclass(frozen=True)
 class AppCredentials(Credentials):
     username: str
-    password: str
+    password: str = field(default="", repr=False)  # `default` mirrors the class-level default inherited from Credentials
     main_url: str
     mfa: str

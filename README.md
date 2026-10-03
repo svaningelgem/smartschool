@@ -80,7 +80,7 @@ uv run ruff format .
 
 - **Python**: 3.10+
 - **Core Dependencies**: requests, beautifulsoup4, pydantic, pyyaml, logprise
-- **Optional**: `pip install smartschool[mfa]` for Google Authenticator 2FA support
+- **Optional**: `pip install smartschool[mfa]` for Google Authenticator 2FA support, `pip install smartschool[keyring]` to read your password from the OS keychain instead of `credentials.yml` (see [Authentication](docs/authentication.md))
 
 ## License
 
