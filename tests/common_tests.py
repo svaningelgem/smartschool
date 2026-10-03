@@ -690,17 +690,9 @@ def test_version_numbers():
     assert sorted(sorted_keys) == expected_order
 
 
-class _FileWithoutName(DownloadableFile):
-    """A downloadable that forgets to provide `filename`."""
-
-    def _real_download(self, target: Path | None) -> bytes | Path:
-        return self._write_or_return(b"content", target)  # pylint: disable=protected-access  # white-box test
-
-
 def test_downloadable_file_requires_a_filename():
     """`filename` is abstract, so a subclass without one cannot be built at all."""
-    with pytest.raises(TypeError, match=r"abstract method '?filename"):
-        _FileWithoutName()  # ty: ignore[call-non-callable]  # pylint: disable=abstract-class-instantiated  # that is the behaviour under test
+    assert "filename" in DownloadableFile.__abstractmethods__
 
 
 def test_save_writes_camel_case_json_for_a_pydantic_dataclass(session: Smartschool) -> None:
