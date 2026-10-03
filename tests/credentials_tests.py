@@ -1,5 +1,7 @@
 import dataclasses
+import importlib.util
 import platform
+import sys
 import types
 from datetime import datetime
 from pathlib import Path
@@ -7,7 +9,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from smartschool import AppCredentials, EnvCredentials, KeyringCredentials, PathCredentials
+from smartschool import AppCredentials, EnvCredentials, KeyringCredentials, PathCredentials, _credentials
 
 
 def _create_credentials_file(tmp_path: Path):
@@ -241,6 +243,19 @@ def test_keyring_credentials_backend_error_is_wrapped(fake_keyring):
 
     with pytest.raises(RuntimeError, match=r"keyring backend could not be used.*No recommended backend.*keyrings\.alt"):
         KeyringCredentials(username="bumba", main_url="site", mfa="1234-56-78")
+
+
+def test_the_module_imports_without_the_keyring_package(mocker):
+    """`keyring` is an optional extra: without it the module still loads, with `keyring` set to None."""
+    mocker.patch.dict(sys.modules, {"keyring": None, "keyring.errors": None})  # importing either now raises ImportError
+    spec = importlib.util.spec_from_file_location("credentials_without_keyring", _credentials.__file__)
+    assert spec is not None
+    assert spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module  # dataclasses look the module up there; patch.dict removes it again
+    spec.loader.exec_module(module)
+
+    assert module.keyring is None
 
 
 def test_keyring_credentials_without_keyring_package():
