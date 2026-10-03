@@ -131,12 +131,11 @@ def _settle_fields(node: ast.ClassDef, fields: tuple[dataclasses.Field, ...]) ->
 
 def _settle_dataclass_fields(stub: ast.Module, module: types.ModuleType) -> None:
     """A field's value shapes the synthesized ``__init__``; take it from the runtime field, as stubgen drops or garbles some."""
-    settled = [
-        _settle_fields(node, dataclasses.fields(runtime))
-        for node in stub.body
-        if isinstance(node, ast.ClassDef) and isinstance(runtime := getattr(module, node.name, None), type) and dataclasses.is_dataclass(runtime)
-    ]
-    if any(settled) and "field" not in _imported_names(stub):
+    uses_field = False
+    for node in stub.body:
+        if isinstance(node, ast.ClassDef) and isinstance(runtime := getattr(module, node.name, None), type) and dataclasses.is_dataclass(runtime):
+            uses_field |= _settle_fields(node, dataclasses.fields(runtime))
+    if uses_field and "field" not in _imported_names(stub):
         stub.body.insert(0, ast.ImportFrom("dataclasses", [ast.alias("field")], 0))
 
 
