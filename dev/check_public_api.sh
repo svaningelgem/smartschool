@@ -21,8 +21,8 @@ checkers=(
 for checker in "${checkers[@]}"; do
     $checker usage.py
     if $checker private_access.py >private.log 2>&1 || ! grep -q -E 'attribute .?_xpath' private.log; then
-        cat private.log
-        echo "::error::$checker does not reject the private member in private_access.py"
+        cat private.log >&2
+        echo "::error::$checker does not reject the private member in private_access.py" >&2
         exit 1
     fi
 done

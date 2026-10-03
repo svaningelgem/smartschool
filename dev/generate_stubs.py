@@ -118,24 +118,25 @@ def _stub_default(field_: dataclasses.Field) -> ast.expr | None:
     return ast.Constant(...) if has_factory else None
 
 
+def _settle_fields(node: ast.ClassDef, fields: tuple[dataclasses.Field, ...]) -> bool:
+    """Set each field's value from the runtime field; True when one became ``field(init=False)``."""
+    by_name = {field_.name: field_ for field_ in fields}
+    members = [(member, field_) for member in node.body if isinstance(member, ast.AnnAssign) and (field_ := by_name.get(_bound_name(member)))]
+    if keyword_only := [field_.name for _, field_ in members if field_.kw_only is True]:
+        raise ValueError(f"{node.name} has keyword-only fields {keyword_only}, which the stub can't express yet")
+    for member, field_ in members:
+        member.value = _stub_default(field_) if field_.init else ast.parse("field(init=False)", mode="eval").body
+    return any(not field_.init for _, field_ in members)
+
+
 def _settle_dataclass_fields(stub: ast.Module, module: types.ModuleType) -> None:
     """A field's value shapes the synthesized ``__init__``; take it from the runtime field, as stubgen drops or garbles some."""
-    uses_field = False
-    for node in stub.body:
-        if not (isinstance(node, ast.ClassDef) and isinstance(runtime := getattr(module, node.name, None), type) and dataclasses.is_dataclass(runtime)):
-            continue
-        fields = {field_.name: field_ for field_ in dataclasses.fields(runtime)}
-        for member in node.body:
-            if not (isinstance(member, ast.AnnAssign) and (field_ := fields.get(_bound_name(member)))):
-                continue
-            if field_.kw_only is True:
-                raise ValueError(f"{node.name}.{field_.name} is keyword-only, which the stub can't express yet")
-            if field_.init:
-                member.value = _stub_default(field_)
-            else:
-                member.value = ast.parse("field(init=False)", mode="eval").body
-                uses_field = True
-    if uses_field and "field" not in _imported_names(stub):
+    settled = [
+        _settle_fields(node, dataclasses.fields(runtime))
+        for node in stub.body
+        if isinstance(node, ast.ClassDef) and isinstance(runtime := getattr(module, node.name, None), type) and dataclasses.is_dataclass(runtime)
+    ]
+    if any(settled) and "field" not in _imported_names(stub):
         stub.body.insert(0, ast.ImportFrom("dataclasses", [ast.alias("field")], 0))
 
 
