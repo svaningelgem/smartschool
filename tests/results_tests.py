@@ -105,21 +105,28 @@ def test_graphic_color(session: Smartschool, requests_mock, color: GraphicColor)
     assert sut[0].graphic.color is color
 
 
-@pytest.mark.parametrize("color", ["purple", "Blue", "BLUE", " blue", "", "lpd_steel", None])
-def test_unlisted_graphic_color_fails_the_listing(session: Smartschool, requests_mock, color: str | None):
-    """Strict enum: no case folding, no stripping, and icon-only colours don't count."""
+@pytest.mark.parametrize("color", ["aqua", "orange"])
+def test_issue_210_colors_are_known(color: str):
+    assert GraphicColor(color) in set(GraphicColor)
+
+
+@pytest.mark.parametrize("color", ["periwinkle", "Blue", " blue", "", "lpd_steel"])
+def test_unlisted_graphic_color_does_not_fail_the_listing(session: Smartschool, requests_mock, color: str):
+    """The colour is cosmetic: an unknown one is kept as-is instead of breaking ``Results``."""
     payload = _minimal_result_payload()
     payload["graphic"]["color"] = color
     requests_mock.get("https://site/results/api/v1/evaluations/?pageNumber=1&itemsOnPage=50", json=[payload])
 
-    with pytest.raises(ValidationError, match=r"graphic\.percentage\.color"):
-        list(Results(session))
+    sut = list(Results(session))
+
+    assert isinstance(sut[0].graphic.color, GraphicColor)
+    assert sut[0].graphic.color == color
+    assert sut[0].graphic.color not in set(GraphicColor)
 
 
-def test_unknown_graphic_color_raises():
-    """Strict enum: unknown colors must fail loudly so we add the member."""
+def test_missing_graphic_color_raises():
     with pytest.raises(ValidationError):
-        PercentageGraphic(type="percentage", color="periwinkle", value=50, description="5/10")  # ty: ignore[invalid-argument-type]  # invalid on purpose
+        PercentageGraphic(type="percentage", color=None, value=50, description="5/10")  # ty: ignore[invalid-argument-type]  # invalid on purpose
 
 
 def test_unknown_result_type_raises(session: Smartschool, requests_mock):
