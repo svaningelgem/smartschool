@@ -5,6 +5,7 @@ from datetime import date, datetime
 from functools import cached_property
 from typing import Annotated, Literal
 
+from logprise import logger
 from pydantic import AliasChoices, BeforeValidator, ConfigDict, StringConstraints
 from pydantic.alias_generators import to_camel
 from pydantic.dataclasses import Field, dataclass
@@ -36,17 +37,56 @@ class GraphicColor(StrEnum):
     """
     Colors emitted by Smartschool for ``PercentageGraphic`` / ``TextGraphic``.
 
-    Validation is strict: an unknown value raises so the missing member
-    surfaces immediately and can be added here.
+    The members are Smartschool's colour palette (the ``--c-<name>--*`` CSS
+    variables of the results app). An unknown colour is purely cosmetic, so it
+    becomes an ad-hoc member with a warning instead of failing validation.
     """
 
-    GREEN = "green"
-    RED = "red"
-    OLIVE = "olive"
-    YELLOW = "yellow"
-    STEEL = "steel"
-    GRASS = "grass"
+    AQUA = "aqua"
+    BEACH = "beach"
+    BLACK = "black"
     BLUE = "blue"
+    BROWN = "brown"
+    CANDY = "candy"
+    DOLPHIN = "dolphin"
+    DYNAMITE = "dynamite"
+    EMERALD = "emerald"
+    GRASS = "grass"
+    GREEN = "green"
+    HAZELNUT = "hazelnut"
+    HEAVEN = "heaven"
+    JAZZ = "jazz"
+    JEANS = "jeans"
+    KIWI = "kiwi"
+    LAVENDER = "lavender"
+    LEMON = "lemon"
+    MINT = "mint"
+    MOSS = "moss"
+    NIGHT = "night"
+    OCEAN = "ocean"
+    OLIVE = "olive"
+    ORANGE = "orange"
+    PINK = "pink"
+    PURPLE = "purple"
+    RED = "red"
+    SAGE = "sage"
+    SALMON = "salmon"
+    SILVER = "silver"
+    STEEL = "steel"
+    TANGERINE = "tangerine"
+    VIOLET = "violet"
+    WATERMELON = "watermelon"
+    YELLOW = "yellow"
+
+    @classmethod
+    def _missing_(cls, value: object) -> GraphicColor | None:
+        if not isinstance(value, str):
+            return None
+        logger.warning("Unknown graphic color {!r}, please report it", value)
+        member = str.__new__(cls, value)
+        member._name_ = value.upper()
+        member._value_ = value
+        return member
 
 
 class ResultType(StrEnum):
