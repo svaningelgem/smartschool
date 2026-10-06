@@ -1,3 +1,7 @@
+## 0.11.1 (2026-10-05)
+- fix: accept every Smartschool palette colour and tolerate unknown ones (#211)
+
+
 ## 0.11.0 (2026-10-03)
 - feat(credentials): read the password from the OS keychain (optional keyring extra) (#201)
 - fix: keep the source's class decorators in the generated stubs (#209)
