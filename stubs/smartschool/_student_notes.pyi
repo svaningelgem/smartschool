@@ -12,10 +12,8 @@ from ._xml_interface import SmartschoolXmlNoCache, _ItemT_co
 
 __all__ = ["StudentAbsences", "StudentNoteDetail", "StudentNoteDetails", "StudentNotes"]
 
-class _StudentNotesPoster: ...
-
 @dataclass(kw_only=True)
-class _PupilOverview(_StudentNotesPoster, SmartschoolXmlNoCache[_ItemT_co], ABC, metaclass=abc.ABCMeta):
+class _PupilOverview(SmartschoolXmlNoCache[_ItemT_co], ABC, metaclass=abc.ABCMeta):
     user_id: str = ""
     group_id: int = 0
     since: date | None = None
@@ -43,5 +41,5 @@ class StudentNoteDetail(objects.StudentNoteDetail):
     def fields(self) -> dict[str, str]: ...
 
 @dataclass(kw_only=True)
-class StudentNoteDetails(_StudentNotesPoster, SmartschoolXmlNoCache[StudentNoteDetail]):
+class StudentNoteDetails(SmartschoolXmlNoCache[StudentNoteDetail]):
     item_id: int

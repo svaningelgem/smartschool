@@ -4,7 +4,7 @@ import json
 from abc import ABC
 from dataclasses import dataclass
 from datetime import date, timedelta
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from logprise import logger
 from pydantic.dataclasses import dataclass as pydantic_dataclass
@@ -21,18 +21,16 @@ if TYPE_CHECKING:
 
 __all__ = ["StudentAbsences", "StudentNoteDetail", "StudentNoteDetails", "StudentNotes"]
 
+_DISPATCHER = "/?module=LVS&file=dispatcher"
 # Smartschool wants a date range; this one reaches back before any pupil's file starts.
 _EARLIEST = date(2000, 1, 1)
 
 
-class _StudentNotesPoster:  # pylint: disable=too-few-public-methods  # mixin pinning the endpoint
-    _url = "/?module=LVS&file=dispatcher"
-
-
 @dataclass(kw_only=True)
-class _PupilOverview(_StudentNotesPoster, SmartschoolXmlNoCache[_ItemT_co], ABC):
+class _PupilOverview(SmartschoolXmlNoCache[_ItemT_co], ABC):
     """`getUserData` returns the notes and the absences of a pupil in one answer: both views share its request."""
 
+    _url: ClassVar[str] = _DISPATCHER
     user_id: str = ""
     """The full Smartschool user id (`<platform>_<id>_<role>`, e.g. `49_10880_2`), sent as is. Empty: the logged-in user."""
     group_id: int = 0
@@ -174,7 +172,7 @@ class StudentNoteDetail(objects.StudentNoteDetail):
 
 
 @dataclass(kw_only=True)
-class StudentNoteDetails(_StudentNotesPoster, SmartschoolXmlNoCache[StudentNoteDetail]):
+class StudentNoteDetails(SmartschoolXmlNoCache[StudentNoteDetail]):
     """
     The content of one `StudentNote`: it yields a single `StudentNoteDetail`.
 
@@ -188,6 +186,7 @@ class StudentNoteDetails(_StudentNotesPoster, SmartschoolXmlNoCache[StudentNoteD
 
     """
 
+    _url: ClassVar[str] = _DISPATCHER
     item_id: int
 
     @property
