@@ -1,3 +1,11 @@
+## 0.12.0 (2026-10-14)
+- feat: read the pupil-follow-up (LVS) notes and absences (#212)
+- fix: raise SmartSchoolRequestError on an XML error answer instead of returning nothing (#217)
+- fix: make the Credentials base a frozen dataclass so ty accepts its subclasses (#214)
+- refactor: pin the XML query constants as ClassVars instead of properties (#213)
+- refactor: limit the package exports to the public API (#215)
+
+
 ## 0.11.1 (2026-10-05)
 - fix: accept every Smartschool palette colour and tolerate unknown ones (#211)
 
