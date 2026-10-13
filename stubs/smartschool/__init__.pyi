@@ -13,6 +13,7 @@ from ._common import create_filesystem_safe_filename as create_filesystem_safe_f
 from ._common import create_filesystem_safe_path as create_filesystem_safe_path
 from ._common import fill_form as fill_form
 from ._common import get_all_values_from_form as get_all_values_from_form
+from ._common import html_to_text as html_to_text
 from ._common import natural_sort as natural_sort
 from ._common import parse_mime_type as parse_mime_type
 from ._common import parse_size as parse_size
@@ -84,6 +85,7 @@ from ._objects import MessageChanged as MessageChanged
 from ._objects import MessageDeletionStatus as MessageDeletionStatus
 from ._objects import MessageSearchGroup as MessageSearchGroup
 from ._objects import MessageSearchUser as MessageSearchUser
+from ._objects import PartOfDay as PartOfDay
 from ._objects import PercentageGraphic as PercentageGraphic
 from ._objects import Period as Period
 from ._objects import PersonDescription as PersonDescription
@@ -102,6 +104,11 @@ from ._objects import SchoolClass as SchoolClass
 from ._objects import ShortMessage as ShortMessage
 from ._objects import SkoreWorkYear as SkoreWorkYear
 from ._objects import Student as Student
+from ._objects import StudentAbsence as StudentAbsence
+from ._objects import StudentNote as StudentNote
+from ._objects import StudentNoteAttachment as StudentNoteAttachment
+from ._objects import StudentNoteParam as StudentNoteParam
+from ._objects import StudentNoteParamType as StudentNoteParamType
 from ._objects import StudentSupportLink as StudentSupportLink
 from ._objects import Teacher as Teacher
 from ._objects import TextGraphic as TextGraphic
@@ -115,6 +122,10 @@ from ._reports import Reports as Reports
 from ._results import Result as Result
 from ._results import Results as Results
 from ._session import Smartschool as Smartschool
+from ._student_notes import StudentAbsences as StudentAbsences
+from ._student_notes import StudentNoteDetail as StudentNoteDetail
+from ._student_notes import StudentNoteDetails as StudentNoteDetails
+from ._student_notes import StudentNotes as StudentNotes
 from ._student_support import StudentSupportLinks as StudentSupportLinks
 
 __all__ = [
@@ -175,6 +186,7 @@ __all__ = [
     "MyDocsFile",
     "MyDocsFolder",
     "MyDocsItem",
+    "PartOfDay",
     "PathCredentials",
     "PercentageGraphic",
     "Period",
@@ -214,6 +226,15 @@ __all__ = [
     "SortField",
     "SortOrder",
     "Student",
+    "StudentAbsence",
+    "StudentAbsences",
+    "StudentNote",
+    "StudentNoteAttachment",
+    "StudentNoteDetail",
+    "StudentNoteDetails",
+    "StudentNoteParam",
+    "StudentNoteParamType",
+    "StudentNotes",
     "StudentSupportLink",
     "StudentSupportLinks",
     "Teacher",
@@ -229,6 +250,7 @@ __all__ = [
     "create_filesystem_safe_path",
     "fill_form",
     "get_all_values_from_form",
+    "html_to_text",
     "natural_sort",
     "parse_mime_type",
     "parse_size",

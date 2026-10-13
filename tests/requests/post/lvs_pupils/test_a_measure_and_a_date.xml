@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- synthetic: invented teacher, texts and dates; not a recording of a real Smartschool answer -->
+<server>
+    <response>
+        <status>ok</status>
+        <actions>
+            <action>
+                <subsystem>lvs_pupils</subsystem>
+                <command>renderPupilNoteParams</command>
+                <data>
+                    <items>
+                        <item>
+                            <paramID>711</paramID>
+                            <paramType>7</paramType>
+                            <title>Datum</title>
+                            <value>1736931600</value>
+                            <optionvalue/>
+                            <sortorder>1</sortorder>
+                        </item>
+                        <item>
+                            <paramID>712</paramID>
+                            <paramType>1</paramType>
+                            <title>Leerkracht</title>
+                            <value>Proef Peter</value>
+                            <optionvalue/>
+                            <sortorder>2</sortorder>
+                        </item>
+                        <item>
+                            <paramID>713</paramID>
+                            <paramType>4</paramType>
+                            <title>Ordemaatregel</title>
+                            <value>3</value>
+                            <optionvalue>2de keer: schriftelijke mededeling</optionvalue>
+                            <sortorder>3</sortorder>
+                        </item>
+                        <item>
+                            <paramID>704</paramID>
+                            <paramType>6</paramType>
+                            <title>Bijlagen</title>
+                            <value>files</value>
+                            <optionvalue>[]</optionvalue>
+                            <sortorder>4</sortorder>
+                        </item>
+                    </items>
+                </data>
+            </action>
+        </actions>
+    </response>
+</server>

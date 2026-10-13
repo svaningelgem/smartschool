@@ -15,6 +15,7 @@ from enum import Enum, auto
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal, overload
 from urllib.parse import parse_qs, quote_plus, urlparse
+from zoneinfo import ZoneInfo
 
 from bs4 import BeautifulSoup, FeatureNotFound
 from logprise import logger
@@ -32,6 +33,7 @@ __all__ = [
     "create_filesystem_safe_path",
     "fill_form",
     "get_all_values_from_form",
+    "html_to_text",
     "natural_sort",
     "parse_mime_type",
     "parse_size",
@@ -152,6 +154,25 @@ def bs4_html(html: str | bytes | Response) -> BeautifulSoup:
         return BeautifulSoup(html, features="lxml")
 
     return BeautifulSoup(html, features="html.parser")
+
+
+# Every other tag (p, div, section, hr, dd, li, td, br, ...) is a block that starts and ends a line.
+_INLINE_TAGS = {
+    "a", "abbr", "b", "bdi", "bdo", "cite", "code", "data", "del", "dfn", "em", "font", "i", "img", "ins", "kbd", "label", "mark", "q", "s", "samp", "small",
+    "span", "strike", "strong", "sub", "sup", "time", "tt", "u", "var", "wbr", "big",
+}  # fmt: skip
+_BREAK = "\x00"
+
+
+def html_to_text(html: str) -> str:
+    """Plain text of an HTML fragment: inline text stays together, blocks and `<br>` become lines (BeautifulSoup already skips script/style)."""
+    soup = bs4_html(html.replace(_BREAK, ""))  # the separator must not come from the input
+    for tag in soup.find_all(lambda t: t.name not in _INLINE_TAGS):
+        tag.insert_before(_BREAK)
+        tag.insert_after(_BREAK)
+
+    text = re.sub(r"\s+", " ", soup.get_text())
+    return "\n".join(line for part in text.split(_BREAK) if (line := part.strip()))
 
 
 def parse_smsc_vars(text: str) -> dict:
@@ -276,7 +297,10 @@ def xml_to_dict(element, *, depth: int = 0):
     return result
 
 
-def convert_to_datetime(x: str | String | date | datetime | None) -> datetime:
+_BRUSSELS = ZoneInfo("Europe/Brussels")
+
+
+def convert_to_datetime(x: str | String | float | date | datetime | None) -> datetime:
     if x is None:
         return datetime.now().astimezone()
 
@@ -294,28 +318,28 @@ def convert_to_datetime(x: str | String | date | datetime | None) -> datetime:
         "%Y-%m-%d",
     ]
 
-    for fmt in possible_formats:
-        with contextlib.suppress(ValueError):
-            parsed = datetime.strptime(x, fmt)
-            if parsed.tzinfo is None:
-                return parsed.astimezone()
-            return parsed
+    if isinstance(x, str):
+        for fmt in possible_formats:
+            with contextlib.suppress(ValueError):
+                parsed = datetime.strptime(x, fmt)
+                if parsed.tzinfo is None:
+                    return parsed.astimezone()
+                return parsed
+
+    # Epoch seconds (the LVS module sends these): an instant, shown in Smartschool's own timezone.
+    with contextlib.suppress(TypeError, ValueError, OverflowError, OSError):
+        return datetime.fromtimestamp(float(x), tz=_BRUSSELS)
 
     raise SmartSchoolParsingError(f"Cannot convert '{x}' to `datetime`")
 
 
-def convert_to_date(x: str | String | date | datetime | None) -> date:
-    if x is None:
-        return date.today()
-    if isinstance(x, datetime):
+def convert_to_date(x: str | String | float | date | datetime | None) -> date:
+    if isinstance(x, datetime):  # a naive one keeps its own day
         return x.date()
-    if isinstance(x, date):
-        return x
-
-    with contextlib.suppress(ValueError):
-        return datetime.strptime(x, "%Y-%m-%d").date()
-
-    raise SmartSchoolParsingError(f"Cannot convert '{x}' to `date`")
+    try:
+        return convert_to_datetime(x).date()
+    except SmartSchoolParsingError as exc:
+        raise SmartSchoolParsingError(f"Cannot convert '{x}' to `date`") from exc
 
 
 def parse_size(size_str: str | float | None) -> float | None:

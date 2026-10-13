@@ -9,6 +9,7 @@ from ._common import (
     create_filesystem_safe_path,
     fill_form,
     get_all_values_from_form,
+    html_to_text,
     natural_sort,
     parse_mime_type,
     parse_size,
@@ -68,6 +69,7 @@ from ._objects import (
     MessageDeletionStatus,
     MessageSearchGroup,
     MessageSearchUser,
+    PartOfDay,
     PercentageGraphic,
     Period,
     PersonDescription,
@@ -86,6 +88,11 @@ from ._objects import (
     ShortMessage,
     SkoreWorkYear,
     Student,
+    StudentAbsence,
+    StudentNote,
+    StudentNoteAttachment,
+    StudentNoteParam,
+    StudentNoteParamType,
     StudentSupportLink,
     Teacher,
     TextGraphic,
@@ -97,6 +104,7 @@ from ._planner import ApplicableAssignmentTypes, PlannedElements
 from ._reports import Report, Reports
 from ._results import Result, Results
 from ._session import Smartschool
+from ._student_notes import StudentAbsences, StudentNoteDetail, StudentNoteDetails, StudentNotes
 from ._student_support import StudentSupportLinks
 
 # pylint: disable=duplicate-code  # the re-export list restates each module's __all__
@@ -158,6 +166,7 @@ __all__ = [
     "MyDocsFile",
     "MyDocsFolder",
     "MyDocsItem",
+    "PartOfDay",
     "PathCredentials",
     "PercentageGraphic",
     "Period",
@@ -197,6 +206,15 @@ __all__ = [
     "SortField",
     "SortOrder",
     "Student",
+    "StudentAbsence",
+    "StudentAbsences",
+    "StudentNote",
+    "StudentNoteAttachment",
+    "StudentNoteDetail",
+    "StudentNoteDetails",
+    "StudentNoteParam",
+    "StudentNoteParamType",
+    "StudentNotes",
     "StudentSupportLink",
     "StudentSupportLinks",
     "Teacher",
@@ -212,6 +230,7 @@ __all__ = [
     "create_filesystem_safe_path",
     "fill_form",
     "get_all_values_from_form",
+    "html_to_text",
     "natural_sort",
     "parse_mime_type",
     "parse_size",

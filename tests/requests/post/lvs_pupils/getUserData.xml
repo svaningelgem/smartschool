@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- synthetic: invented pupil, teachers, titles and dates; not a recording of a real Smartschool answer -->
+<server>
+    <response>
+        <status>ok</status>
+        <actions>
+            <action>
+                <subsystem>lvs_pupils</subsystem>
+                <command>renderPupilAllNotes</command>
+                <data>
+                    <notes>
+                        <note>
+                            <itemID>5001</itemID>
+                            <groupID>1001</groupID>
+                            <pupilID>9001</pupilID>
+                            <catID>11</catID>
+                            <catName>Mededeling</catName>
+                            <title>Synthetic: uitstap naar het museum</title>
+                            <date>1759389300</date>
+                            <author>Voorbeeld Vera</author>
+                            <authorReverse>Vera Voorbeeld</authorReverse>
+                            <authorSex>f</authorSex>
+                            <viewed>1</viewed>
+                            <private>0</private>
+                            <schoolyear>2025-2026</schoolyear>
+                            <studierichting>Synthetic Richting</studierichting>
+                            <assigned>0</assigned>
+                            <assignees/>
+                            <bulkID>0</bulkID>
+                            <isNew>0</isNew>
+                            <itemGroupID>0</itemGroupID>
+                            <originalCreate>1759389300</originalCreate>
+                            <right>{&quot;follow&quot;:-1,&quot;del&quot;:-1,&quot;edit&quot;:-1}</right>
+                            <histories/>
+                            <items/>
+                        </note>
+                        <note>
+                            <itemID>5002</itemID>
+                            <groupID>1001</groupID>
+                            <pupilID>9001</pupilID>
+                            <catID>12</catID>
+                            <catName>Ordemaatregel</catName>
+                            <title>Synthetic: te laat</title>
+                            <date>1736931600</date>
+                            <author>Proef Peter</author>
+                            <authorReverse>Peter Proef</authorReverse>
+                            <authorSex>f</authorSex>
+                            <viewed>0</viewed>
+                            <private>0</private>
+                            <schoolyear>2025-2026</schoolyear>
+                            <studierichting>Synthetic Richting</studierichting>
+                            <assigned>0</assigned>
+                            <assignees/>
+                            <bulkID>0</bulkID>
+                            <isNew>0</isNew>
+                            <itemGroupID>0</itemGroupID>
+                            <originalCreate>1736931600</originalCreate>
+                            <right>{&quot;follow&quot;:-1,&quot;del&quot;:-1,&quot;edit&quot;:-1}</right>
+                            <histories/>
+                            <items/>
+                        </note>
+                        <note>
+                            <itemID>5003</itemID>
+                            <groupID>1001</groupID>
+                            <pupilID>9001</pupilID>
+                            <catID>13</catID>
+                            <catName>Gedrag &amp; Welzijn (café)</catName>
+                            <title/>
+                            <date>1743328800</date>
+                            <author>Voorbeeld Vera</author>
+                            <authorReverse>Vera Voorbeeld</authorReverse>
+                            <authorSex>f</authorSex>
+                            <viewed>0</viewed>
+                            <private>1</private>
+                            <schoolyear>2025-2026</schoolyear>
+                            <studierichting>Synthetic Richting</studierichting>
+                            <assigned>0</assigned>
+                            <assignees/>
+                            <bulkID>0</bulkID>
+                            <isNew>0</isNew>
+                            <itemGroupID>0</itemGroupID>
+                            <originalCreate>1743328800</originalCreate>
+                            <right>{&quot;follow&quot;:-1,&quot;del&quot;:-1,&quot;edit&quot;:-1}</right>
+                            <histories/>
+                            <items/>
+                        </note>
+                    </notes>
+                    <absents>
+                        <absent>
+                            <absentID>7001</absentID>
+                            <code>Z</code>
+                            <desc>Ziek</desc>
+                            <date>1759701600</date>
+                            <info/>
+                            <color>#aabbcc</color>
+                            <pod>VM</pod>
+                            <schoolyear>2025-2026</schoolyear>
+                        </absent>
+                        <absent>
+                            <absentID>7002</absentID>
+                            <code>B</code>
+                            <desc>Begrafenis</desc>
+                            <date>1759788000</date>
+                            <info>Synthetic info</info>
+                            <color>#aabbcc</color>
+                            <pod>NM</pod>
+                            <schoolyear>2025-2026</schoolyear>
+                        </absent>
+                    </absents>
+                    <dates>{&quot;2025-2026&quot;:[]}</dates>
+                    <skore_rights>
+                        <viewLvsItems>1</viewLvsItems>
+                        <viewAbsents>1</viewAbsents>
+                    </skore_rights>
+                    <evals/>
+                    <messages/>
+                    <smartsignals/>
+                </data>
+            </action>
+        </actions>
+    </response>
+</server>

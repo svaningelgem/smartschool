@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- synthetic: invented teacher, texts and dates; not a recording of a real Smartschool answer -->
+<server>
+    <response>
+        <status>ok</status>
+        <actions>
+            <action>
+                <subsystem>lvs_pupils</subsystem>
+                <command>renderPupilNoteParams</command>
+                <data>
+                    <items>
+                        <item>
+                            <paramID>741</paramID>
+                            <paramType>7</paramType>
+                            <title>Van</title>
+                            <value>1736931600</value>
+                            <optionvalue/>
+                            <sortorder>741</sortorder>
+                        </item>
+                        <item>
+                            <paramID>742</paramID>
+                            <paramType>7</paramType>
+                            <title>Tot</title>
+                            <value>1737000000</value>
+                            <optionvalue/>
+                            <sortorder>742</sortorder>
+                        </item>
+                        <item>
+                            <paramID>743</paramID>
+                            <paramType>2</paramType>
+                            <title>Eerste tekst</title>
+                            <value>&lt;p&gt;eerste&lt;/p&gt;</value>
+                            <optionvalue/>
+                            <sortorder>743</sortorder>
+                        </item>
+                        <item>
+                            <paramID>744</paramID>
+                            <paramType>2</paramType>
+                            <title>Tweede tekst</title>
+                            <value>&lt;p&gt;tweede&lt;/p&gt;</value>
+                            <optionvalue/>
+                            <sortorder>744</sortorder>
+                        </item>
+                        <item>
+                            <paramID>745</paramID>
+                            <paramType>4</paramType>
+                            <title>Keuze</title>
+                            <value>3</value>
+                            <optionvalue>Eerste keuze</optionvalue>
+                            <sortorder>745</sortorder>
+                        </item>
+                        <item>
+                            <paramID>746</paramID>
+                            <paramType>4</paramType>
+                            <title>Tweede keuze</title>
+                            <value>5</value>
+                            <optionvalue>Andere keuze</optionvalue>
+                            <sortorder>746</sortorder>
+                        </item>
+                    </items>
+                </data>
+            </action>
+        </actions>
+    </response>
+</server>

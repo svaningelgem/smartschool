@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import sys
 from datetime import date, datetime
+from enum import IntEnum
 from functools import cached_property
 from typing import Annotated, Literal
 
@@ -21,6 +22,32 @@ else:  # pragma: no cover
         __str__ = str.__str__
 
 
+class MissingStrEnum(StrEnum):
+    """
+    A `StrEnum` that keeps an unknown (school-specific) code as an ad-hoc member, with a warning, instead of failing the record.
+
+    Subclasses say how the warning names the value: `class PartOfDay(MissingStrEnum, label="part of the day")`.
+    (A plain class constant would become an enum member, hence the class keyword.)
+    """
+
+    _label: str
+
+    def __init_subclass__(cls, *, label: str = "value", **kwargs) -> None:
+        super().__init_subclass__(**kwargs)
+        cls._label = label
+
+    @classmethod
+    def _missing_(cls, value: object) -> MissingStrEnum | None:
+        if not isinstance(value, str):
+            return None
+        logger.warning("Unknown {} {!r}, please report it", cls._label, value)
+        member = str.__new__(cls, value)
+        member._name_ = value.upper()
+        member._value_ = value
+        cls._value2member_map_[value] = member  # the next lookup finds it, without a warning
+        return member
+
+
 String = Annotated[str, StringConstraints(strip_whitespace=True)]
 # `(?i)` inline flag = case-insensitive; pydantic-v2 StringConstraints over the legacy
 # constr(pattern=...) form (which static analysers using v1 stubs misread).
@@ -29,11 +56,13 @@ UUID = Annotated[str, StringConstraints(pattern=r"(?i)^[0-9a-f]{8}-[0-9a-f]{4}-[
 Url = String
 Date = Annotated[date, BeforeValidator(convert_to_date)]
 DateTime = Annotated[datetime, BeforeValidator(convert_to_datetime)]
+# An empty XML leaf arrives as None.
+OptionalString = Annotated[String, BeforeValidator(lambda v: v or "")]
 
 _config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
 
-class GraphicColor(StrEnum):
+class GraphicColor(MissingStrEnum, label="graphic color"):
     """
     Colors emitted by Smartschool for ``PercentageGraphic`` / ``TextGraphic``.
 
@@ -77,16 +106,6 @@ class GraphicColor(StrEnum):
     VIOLET = "violet"
     WATERMELON = "watermelon"
     YELLOW = "yellow"
-
-    @classmethod
-    def _missing_(cls, value: object) -> GraphicColor | None:
-        if not isinstance(value, str):
-            return None
-        logger.warning("Unknown graphic color {!r}, please report it", value)
-        member = str.__new__(cls, value)
-        member._name_ = value.upper()
-        member._value_ = value
-        return member
 
 
 class ResultType(StrEnum):
@@ -665,3 +684,95 @@ class Report:
     download_url: Url
     class_: SchoolClass = Field(validation_alias=AliasChoices("class", "class_"))
     schoolyear_label: String = Field()
+
+
+class PartOfDay(MissingStrEnum, label="part of the day"):
+    """Part of the day an absence applies to; an absence without a code has none (`None`)."""
+
+    MORNING = "VM"
+    AFTERNOON = "NM"
+
+
+@dataclass(config=_config)
+class StudentNote:  # pylint: disable=too-many-instance-attributes  # mirrors the API payload
+    """
+    One line of the pupil's file in the pupil-follow-up system (LVS); `private` lines are meant for staff only.
+
+    `pupil_id` is only the numeric middle part of the user id: Smartschool ids look like `<platform>_<id>_<role>`
+    (e.g. `49_10880_2`), which is what the queries (`StudentNotes(user_id=...)`) take.
+    The name and title are left out of `repr()`: they are personal content.
+    """
+
+    item_id: Annotated[int, Field(validation_alias="itemID")]
+    group_id: Annotated[int, Field(validation_alias="groupID")]
+    pupil_id: Annotated[int, Field(validation_alias="pupilID")]
+    cat_id: Annotated[int, Field(validation_alias="catID")]
+    cat_name: OptionalString
+    date: DateTime
+    viewed: bool
+    private: bool
+    school_year: Annotated[OptionalString, Field(validation_alias="schoolyear")]
+    study_direction: Annotated[OptionalString, Field(validation_alias="studierichting")]
+    # Personal content: out of logs and tracebacks. The server may leave these elements out (e.g. on a private line).
+    title: OptionalString = Field(default="", repr=False)
+    author: OptionalString = Field(default="", repr=False)
+    author_reverse: OptionalString = Field(default="", repr=False)
+
+
+@dataclass(config=_config)
+class StudentAbsence:  # pylint: disable=too-many-instance-attributes  # mirrors the API payload
+    """One absence code of the pupil."""
+
+    absent_id: Annotated[int, Field(validation_alias="absentID")]
+    code: OptionalString
+    description: Annotated[OptionalString, Field(validation_alias="desc")]
+    date: Date
+    color: OptionalString
+    part_of_day: Annotated[PartOfDay | None, BeforeValidator(lambda v: v or None), Field(validation_alias="pod")]  # empty: no part of the day
+    school_year: Annotated[OptionalString, Field(validation_alias="schoolyear")]
+    info: OptionalString = Field(default="", repr=False)  # free text: personal content
+
+
+class StudentNoteParamType(IntEnum):
+    """The `StudentNoteParam.param_type` values that `StudentNoteDetail` interprets. Other (school-specific) types occur too."""
+
+    TEXT = 2
+    SELECT = 4
+    ATTACHMENTS = 6
+    DATE = 7
+    INSTRUCTION = 8
+
+
+@dataclass(config=_config)
+class StudentNoteParam:
+    """
+    One parameter of a `StudentNote`.
+
+    The `param_id` is school-specific: interpret a parameter by `param_type` (see `StudentNoteParamType`; it stays an `int`
+    because other types occur) and `title`. An absent value is empty: only the `StudentNoteDetail` accessors say whether a parameter exists.
+    """
+
+    param_id: Annotated[int, Field(validation_alias="paramID")]
+    param_type: Annotated[int, Field(validation_alias="paramType")]
+    title: OptionalString
+    value: OptionalString = Field(default="", repr=False)
+    option_value: OptionalString = Field(default="", validation_alias="optionvalue", repr=False)
+
+
+@dataclass(config=_config)
+class StudentNoteAttachment:
+    """One file attached to a `StudentNote`, as listed in its attachments parameter (`{"<file id>": {...}}`)."""
+
+    file_id: int
+    file_name: OptionalString = Field(default="", repr=False)  # personal content
+    file_mime: OptionalString = ""
+    file_wopi: bool = False
+    file_hash: OptionalString = ""
+
+
+@dataclass(config=_config)
+class StudentNoteDetail:
+    """The parameters of one `StudentNote`, as sent; `StudentNoteDetails` yields the subclass that interprets them."""
+
+    item_id: int
+    params: list[StudentNoteParam] = Field(default_factory=list, repr=False)  # personal content
