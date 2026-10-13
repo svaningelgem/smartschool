@@ -9,6 +9,7 @@ from typing import Generic, TypeVar
 from _typeshed import DataclassInstance
 
 from ._common import xml_to_dict as xml_to_dict
+from ._exceptions import SmartSchoolRequestError as SmartSchoolRequestError
 from ._session import SessionMixin as SessionMixin
 
 _ItemT_co = TypeVar("_ItemT_co", bound="DataclassInstance", covariant=True)

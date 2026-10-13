@@ -11,6 +11,7 @@ __all__ = [
     "SmartSchoolException",
     "SmartSchoolJsonError",
     "SmartSchoolParsingError",
+    "SmartSchoolRequestError",
 ]
 
 @dataclass
@@ -22,6 +23,7 @@ class SmartSchoolException(Exception):
 class SmartSchoolAuthenticationError(SmartSchoolException): ...
 class SmartSchoolParsingError(SmartSchoolException): ...
 class SmartSchoolAttachmentUploadError(SmartSchoolException): ...
+class SmartSchoolRequestError(SmartSchoolException): ...
 
 @dataclass
 class SmartSchoolCoAccountsUnavailableError(SmartSchoolException):

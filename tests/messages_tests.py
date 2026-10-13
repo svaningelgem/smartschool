@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import pytest
 from pytest_mock import MockerFixture
 from requests_mock import Mocker
 
@@ -13,6 +14,7 @@ from smartschool import (
     MessageMoveToArchive,
     MessageMoveToTrash,
     Smartschool,
+    SmartSchoolRequestError,
 )
 
 _DISPATCHER_URL = "https://site/?module=Messages&file=dispatcher"
@@ -89,6 +91,14 @@ def test_empty_inbox_returns_empty_iterator(session: Smartschool, requests_mock:
     requests_mock.post(_DISPATCHER_URL, text="")
 
     assert not list(MessageHeaders(session))
+
+
+def test_error_answer_raises_request_error(session: Smartschool):
+    """A 200 error document (e.g. no access to the module) raises instead of reading as an empty inbox."""
+    with pytest.raises(SmartSchoolRequestError) as exc_info:
+        list(MessageHeaders(session))
+
+    assert exc_info.value.message == "Synthetic: no access to this part"
 
 
 def test_messages_force_authentication_before_posting(session: Smartschool, mocker: MockerFixture):

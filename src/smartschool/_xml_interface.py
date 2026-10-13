@@ -11,6 +11,7 @@ from xml.sax.saxutils import quoteattr
 from pydantic import AliasChoices
 
 from ._common import xml_to_dict
+from ._exceptions import SmartSchoolRequestError
 from ._session import SessionMixin
 
 
@@ -118,6 +119,9 @@ class SmartschoolXML(ABC, SessionMixin, Generic[_ItemT_co]):
         text = response.text.strip()
         if text:  # an empty body means an empty result set (e.g. an empty inbox)
             root = ET.fromstring(text)
+            if root.findtext(".//status") == "error":
+                raise SmartSchoolRequestError(root.findtext(".//message") or "unknown error")
+
             as_obj = self._object_to_instantiate
             for el in root.findall(self._xpath):
                 as_dict = xml_to_dict(el)

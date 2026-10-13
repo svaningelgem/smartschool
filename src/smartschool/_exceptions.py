@@ -6,6 +6,7 @@ __all__ = [
     "SmartSchoolException",
     "SmartSchoolJsonError",
     "SmartSchoolParsingError",
+    "SmartSchoolRequestError",
 ]
 
 from dataclasses import dataclass
@@ -33,6 +34,10 @@ class SmartSchoolParsingError(SmartSchoolException):
 
 class SmartSchoolAttachmentUploadError(SmartSchoolException):
     """Indicates an error while uploading a message attachment."""
+
+
+class SmartSchoolRequestError(SmartSchoolException):
+    """The server answered a request with an error document instead of data."""
 
 
 @dataclass
