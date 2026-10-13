@@ -678,6 +678,7 @@ class PartOfDay(StrEnum):
     Part of the day an absence applies to.
 
     A school-specific code that isn't known here is kept as an ad-hoc member with a warning, instead of failing the whole list.
+    An absence without a code has no part of the day (`None`).
     """
 
     MORNING = "VM"
@@ -730,7 +731,7 @@ class StudentAbsence:  # pylint: disable=too-many-instance-attributes  # mirrors
     date: EpochDate
     info: OptionalString
     color: OptionalString
-    part_of_day: Annotated[PartOfDay, BeforeValidator(lambda v: v or ""), Field(validation_alias="pod")]
+    part_of_day: Annotated[PartOfDay | None, BeforeValidator(lambda v: v or None), Field(validation_alias="pod")]  # empty: no part of the day
     school_year: Annotated[OptionalString, Field(validation_alias="schoolyear")]
 
 
@@ -782,7 +783,11 @@ class StudentNoteDetail:
 
     @property
     def text(self) -> str | None:
-        """The free text of an announcement without HTML."""
+        """
+        The free text of an announcement without HTML.
+
+        `None` only means the note has no such parameter: an empty text (e.g. `<p></p>`) gives `""`.
+        """
         html = self.text_html
         return html_to_text(html) if html is not None else None
 

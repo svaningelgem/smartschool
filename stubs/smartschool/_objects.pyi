@@ -591,7 +591,7 @@ class StudentAbsence:
     date: EpochDate
     info: OptionalString
     color: OptionalString
-    part_of_day: PartOfDay
+    part_of_day: PartOfDay | None
     school_year: OptionalString
 
 class StudentNoteParamType(IntEnum):

@@ -1,5 +1,6 @@
 import dataclasses
 import json
+import logging
 import xml.etree.ElementTree as ET
 from datetime import date, datetime
 from urllib.parse import parse_qs
@@ -169,11 +170,18 @@ def test_absences_happy_flow(session: Smartschool):
     assert second.info == "Synthetic info"
 
 
-def test_unknown_parts_of_the_day_are_kept(session: Smartschool):
+def test_unknown_parts_of_the_day_are_kept(session: Smartschool, caplog):
     unknown, empty = StudentAbsences(session)
+    warnings = [r.getMessage() for r in caplog.records if r.levelno == logging.WARNING]
 
     assert unknown.part_of_day == "XX"
-    assert empty.part_of_day == ""
+    assert empty.part_of_day is None
+    assert warnings == ["Unknown part of the day 'XX', please report it"]  # the empty code stays quiet
+
+
+def test_an_empty_part_of_the_day_is_none_without_a_warning(caplog):
+    assert _absence(date(2025, 10, 6), part_of_day="").part_of_day is None  # a raw API value
+    assert not caplog.records
 
 
 def test_a_part_of_the_day_must_be_a_string():
@@ -361,6 +369,10 @@ def test_epoch_seconds_that_are_not_a_date_are_rejected(value):
         ("  spaced \n  out\t text  ", "spaced out text"),
         ("tail<div>x</div>", "tail\nx"),
         ("<p>a|b</p>", "a|b"),
+        ("a\x00b", "ab"),  # the internal separator can't be injected
+        ("<tr><td>a</td><td>b</td></tr>", "a\nb"),  # every cell is its own line
+        ("Hallo <font color='red'>rode</font> <strike>x</strike> <big>b</big> <tt>t</tt> <label>l</label> wereld", "Hallo rode x b t l wereld"),
+        ("<p></p>", ""),
         ("", ""),
     ],
 )

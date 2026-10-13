@@ -159,15 +159,15 @@ def bs4_html(html: str | bytes | Response) -> BeautifulSoup:
 
 # Every other tag (p, div, section, hr, dd, li, td, br, ...) is a block that starts and ends a line.
 _INLINE_TAGS = {
-    "a", "abbr", "b", "bdi", "bdo", "cite", "code", "data", "del", "dfn", "em", "i", "img", "ins", "kbd", "mark", "q", "s", "samp", "small",
-    "span", "strong", "sub", "sup", "time", "u", "var", "wbr",
+    "a", "abbr", "b", "bdi", "bdo", "cite", "code", "data", "del", "dfn", "em", "font", "i", "img", "ins", "kbd", "label", "mark", "q", "s", "samp", "small",
+    "span", "strike", "strong", "sub", "sup", "time", "tt", "u", "var", "wbr", "big",
 }  # fmt: skip
 _BREAK = "\x00"
 
 
 def html_to_text(html: str) -> str:
     """Plain text of an HTML fragment: inline text stays together, blocks and `<br>` become lines (BeautifulSoup already skips script/style)."""
-    soup = bs4_html(html)
+    soup = bs4_html(html.replace(_BREAK, ""))  # the separator must not come from the input
     for tag in soup.find_all(lambda t: t.name not in _INLINE_TAGS):
         tag.insert_before(_BREAK)
         tag.insert_after(_BREAK)
