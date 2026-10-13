@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABC
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 from urllib.parse import urlencode
 
 from . import _objects as objects
@@ -80,18 +80,15 @@ class MessageHeaders(_MessagesPoster, SmartschoolXmlNoCache[objects.ShortMessage
 
     """
 
+    _subsystem: ClassVar[str] = "postboxes"
+    _action: ClassVar[str] = "message list"
+    _xpath: ClassVar[str] = ".//messages/message"
+    _object_to_instantiate: ClassVar[type[objects.ShortMessage]] = objects.ShortMessage
+
     box_type: BoxType = BoxType.INBOX
     sort_by: SortField = SortField.DATE
     sort_order: SortOrder = SortOrder.DESC
     already_seen_message_ids: list[int] | None = field(default_factory=list)
-
-    @property
-    def _subsystem(self) -> str:
-        return "postboxes"
-
-    @property
-    def _action(self) -> str:
-        return "message list"
 
     @property
     def _params(self) -> dict:
@@ -105,26 +102,16 @@ class MessageHeaders(_MessagesPoster, SmartschoolXmlNoCache[objects.ShortMessage
             "layout": "new",
         }
 
-    @property
-    def _xpath(self) -> str:
-        return ".//messages/message"
-
-    @property
-    def _object_to_instantiate(self) -> type[objects.ShortMessage]:
-        return objects.ShortMessage
-
 
 # Cannot have `@dataclass`
 class _FetchOneMessage(_MessagesPoster, SmartschoolXML[_ItemT_co], ABC):  # pylint: disable=too-few-public-methods  # query object: iterate or get()
+    _subsystem: ClassVar[str] = "postboxes"
+
     def __init__(self, session: Smartschool, msg_id: int, box_type: BoxType = BoxType.INBOX):
         super().__init__(session=session)
 
         self.msg_id = msg_id
         self.box_type = box_type
-
-    @property
-    def _subsystem(self) -> str:
-        return "postboxes"
 
     @property
     def _params(self) -> dict:
@@ -155,17 +142,9 @@ class Message(_FetchOneMessage[objects.FullMessage]):  # pylint: disable=too-few
 
     """
 
-    @property
-    def _action(self) -> str:
-        return "show message"
-
-    @property
-    def _xpath(self) -> str:
-        return ".//data/message"
-
-    @property
-    def _object_to_instantiate(self) -> type[objects.FullMessage]:
-        return objects.FullMessage
+    _action: ClassVar[str] = "show message"
+    _xpath: ClassVar[str] = ".//data/message"
+    _object_to_instantiate: ClassVar[type[objects.FullMessage]] = objects.FullMessage
 
     def _post_process_element(self, element: dict) -> None:
         for modify_this in ["receivers", "ccreceivers", "bccreceivers"]:
@@ -201,31 +180,15 @@ class Attachments(_FetchOneMessage[Attachment]):  # pylint: disable=too-few-publ
 
     """
 
-    @property
-    def _action(self) -> str:
-        return "attachment list"
-
-    @property
-    def _xpath(self) -> str:
-        return ".//attachmentlist/attachment"
-
-    @property
-    def _object_to_instantiate(self) -> type[Attachment]:
-        return Attachment
+    _action: ClassVar[str] = "attachment list"
+    _xpath: ClassVar[str] = ".//attachmentlist/attachment"
+    _object_to_instantiate: ClassVar[type[Attachment]] = Attachment
 
 
 class MarkMessageUnread(_FetchOneMessage[objects.MessageChanged]):  # pylint: disable=too-few-public-methods  # query object: iterate or get()
-    @property
-    def _action(self) -> str:
-        return "mark message unread"
-
-    @property
-    def _xpath(self) -> str:
-        return ".//data/message"
-
-    @property
-    def _object_to_instantiate(self) -> type[objects.MessageChanged]:
-        return objects.MessageChanged
+    _action: ClassVar[str] = "mark message unread"
+    _xpath: ClassVar[str] = ".//data/message"
+    _object_to_instantiate: ClassVar[type[objects.MessageChanged]] = objects.MessageChanged
 
     @property
     def _params(self) -> dict:
@@ -239,21 +202,13 @@ class MarkMessageUnread(_FetchOneMessage[objects.MessageChanged]):  # pylint: di
 
 # Cannot have `@dataclass`
 class AdjustMessageLabel(_FetchOneMessage[objects.MessageChanged]):  # pylint: disable=too-few-public-methods  # query object: iterate or get()
+    _action: ClassVar[str] = "save msglabel"
+    _xpath: ClassVar[str] = ".//data/message"
+    _object_to_instantiate: ClassVar[type[objects.MessageChanged]] = objects.MessageChanged
+
     def __init__(self, session: Smartschool, msg_id: int, box_type: BoxType = BoxType.INBOX, label: MessageLabel = MessageLabel.NO_FLAG):
         super().__init__(session, msg_id, box_type)
         self.label = label
-
-    @property
-    def _action(self) -> str:
-        return "save msglabel"
-
-    @property
-    def _xpath(self) -> str:
-        return ".//data/message"
-
-    @property
-    def _object_to_instantiate(self) -> type[objects.MessageChanged]:
-        return objects.MessageChanged
 
     @property
     def _params(self) -> dict:
@@ -302,26 +257,15 @@ class MessageMoveToArchive(SessionMixin):
 
 # Cannot have `@dataclass`
 class MessageMoveToTrash(_MessagesPoster, SmartschoolXmlNoCache[objects.MessageDeletionStatus]):  # pylint: disable=too-few-public-methods  # query object: iterate or get()
+    _subsystem: ClassVar[str] = "postboxes"
+    _action: ClassVar[str] = "quick delete"
+    _xpath: ClassVar[str] = ".//data/details"
+    _object_to_instantiate: ClassVar[type[objects.MessageDeletionStatus]] = objects.MessageDeletionStatus
+
     def __init__(self, session: Smartschool, msg_id: int):
         super().__init__(session=session)
 
         self.msg_id = msg_id
-
-    @property
-    def _subsystem(self) -> str:
-        return "postboxes"
-
-    @property
-    def _action(self) -> str:
-        return "quick delete"
-
-    @property
-    def _xpath(self) -> str:
-        return ".//data/details"
-
-    @property
-    def _object_to_instantiate(self) -> type[objects.MessageDeletionStatus]:
-        return objects.MessageDeletionStatus
 
     @property
     def _params(self) -> dict:
