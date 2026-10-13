@@ -16,8 +16,8 @@ from smartschool import (
     SmartSchoolAuthenticationError,
     SmartSchoolException,
     TopNavCourses,
-    create_filesystem_safe_filename,
 )
+from smartschool._common import create_filesystem_safe_filename
 
 if TYPE_CHECKING:
     from smartschool import CourseCondensed

@@ -20,8 +20,8 @@ from smartschool import (
     StudentNoteParam,
     StudentNoteParamType,
     StudentNotes,
-    convert_to_datetime,
 )
+from smartschool._common import convert_to_datetime
 
 _QUERIES = (StudentNotes, StudentAbsences)
 
