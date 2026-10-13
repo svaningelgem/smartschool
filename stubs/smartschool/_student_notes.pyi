@@ -3,7 +3,6 @@ import abc
 from abc import ABC
 from dataclasses import dataclass
 from datetime import date, datetime
-from typing import Any
 
 from pydantic.dataclasses import dataclass as pydantic_dataclass
 
@@ -34,9 +33,9 @@ class StudentNoteDetail(objects.StudentNoteDetail):
     @property
     def date(self) -> datetime | None: ...
     @property
-    def measure(self) -> str: ...
+    def choice(self) -> str: ...
     @property
-    def attachments(self) -> list[Any]: ...
+    def attachments(self) -> list[objects.StudentNoteAttachment]: ...
     @property
     def fields(self) -> dict[str, str]: ...
 

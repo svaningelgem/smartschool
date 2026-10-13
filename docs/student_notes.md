@@ -59,14 +59,15 @@ detail = StudentNoteDetails(session, item_id=note.item_id).get()
 
 print(detail.text)      # an announcement's free text, as plain text
 print(detail.text_html) # the same text as the HTML Smartschool sends
-print(detail.measure)   # the chosen disciplinary measure, "" when there is none
+print(detail.choice)    # the label chosen in the first select (e.g. the measure taken), "" when there is none
 print(detail.date)      # only for categories that have a date parameter, else None
 print(detail.fields)    # every other parameter by title, e.g. the teacher
-print(detail.attachments)
+print(detail.attachments)  # StudentNoteAttachment records: file_id, file_name, file_mime, file_wopi, file_hash
 ```
 
 `detail.params` is the complete list of parameters (`StudentNoteParam`, with a `param_type` you can compare to `StudentNoteParamType`);
-the properties interpret the first parameter of each type, and a second one of the same type shows up in `fields`.
+the properties interpret the first parameter of each type, and a second one of the same type shows up in `fields` (a select by its
+label; the option ids stay in `params`).
 A note without parameters gives a detail with `params == []`. The values of the parameters are left out of `repr()`.
 
 An announcement ("mededeling") has no date parameter: use `note.date`.

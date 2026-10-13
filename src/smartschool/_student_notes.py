@@ -4,9 +4,10 @@ import json
 from abc import ABC
 from dataclasses import dataclass
 from datetime import date, timedelta
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import TYPE_CHECKING, ClassVar
 
 from logprise import logger
+from pydantic import ValidationError
 from pydantic.dataclasses import dataclass as pydantic_dataclass
 
 from . import _objects as objects
@@ -127,33 +128,38 @@ class StudentNoteDetail(objects.StudentNoteDetail):
         return convert_to_datetime(param.value) if param and param.value else None
 
     @property
-    def measure(self) -> str:
-        """The text of the disciplinary measure ("ordemaatregel") that was chosen; empty when there is none."""
-        param = self._first(StudentNoteParamType.MEASURE)
+    def choice(self) -> str:
+        """The label chosen in the first select parameter (the measure of an "ordemaatregel", for instance); empty when there is none."""
+        param = self._first(StudentNoteParamType.SELECT)
         return param.option_value if param else ""
 
     @property
-    def attachments(self) -> list[Any]:
-        """The attachments, as decoded from the JSON Smartschool sends; an empty list when there are none."""
+    def attachments(self) -> list[objects.StudentNoteAttachment]:
+        """The files attached to the note (Smartschool sends `{"<file id>": {...}}`, or `[]`); an empty list when there are none."""
         param = self._first(StudentNoteParamType.ATTACHMENTS)
         if not param or not param.option_value:
             return []
         try:
             decoded = json.loads(param.option_value)
-        except json.JSONDecodeError:
+            files = decoded.items() if isinstance(decoded, dict) else []
+            return [objects.StudentNoteAttachment(file_id=file_id, **info) for file_id, info in files]
+        except (json.JSONDecodeError, TypeError, ValidationError):
             logger.warning("Cannot decode the attachments of note {}", self.item_id)
             return []
-        return decoded if isinstance(decoded, list) else []
 
     @property
     def fields(self) -> dict[str, str]:
-        """Every parameter the other properties don't show (e.g. the teacher, or a second date) by title; with equal titles the last wins."""
+        """
+        Every parameter the other properties don't show (e.g. the teacher, or a second date) by title; a select by its label.
+
+        With equal titles the last wins; the option ids behind a label stay in `params`.
+        """
         consumed = {
             p.param_id
-            for t in (StudentNoteParamType.TEXT, StudentNoteParamType.MEASURE, StudentNoteParamType.ATTACHMENTS, StudentNoteParamType.DATE)
+            for t in (StudentNoteParamType.TEXT, StudentNoteParamType.SELECT, StudentNoteParamType.ATTACHMENTS, StudentNoteParamType.DATE)
             if (p := self._first(t))
         }
-        return {p.title: p.value for p in self.params if p.param_id not in consumed and p.param_type != StudentNoteParamType.INSTRUCTION}
+        return {p.title: p.option_value or p.value for p in self.params if p.param_id not in consumed and p.param_type != StudentNoteParamType.INSTRUCTION}
 
 
 @dataclass(kw_only=True)

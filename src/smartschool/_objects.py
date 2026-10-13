@@ -727,17 +727,17 @@ class StudentAbsence:  # pylint: disable=too-many-instance-attributes  # mirrors
     code: OptionalString
     description: Annotated[OptionalString, Field(validation_alias="desc")]
     date: Date
-    info: OptionalString
     color: OptionalString
     part_of_day: Annotated[PartOfDay | None, BeforeValidator(lambda v: v or None), Field(validation_alias="pod")]  # empty: no part of the day
     school_year: Annotated[OptionalString, Field(validation_alias="schoolyear")]
+    info: OptionalString = Field(default="", repr=False)  # free text: personal content
 
 
 class StudentNoteParamType(IntEnum):
     """The `StudentNoteParam.param_type` values that `StudentNoteDetail` interprets. Other (school-specific) types occur too."""
 
     TEXT = 2
-    MEASURE = 4
+    SELECT = 4
     ATTACHMENTS = 6
     DATE = 7
     INSTRUCTION = 8
@@ -757,6 +757,17 @@ class StudentNoteParam:
     title: OptionalString
     value: OptionalString = Field(default="", repr=False)
     option_value: OptionalString = Field(default="", validation_alias="optionvalue", repr=False)
+
+
+@dataclass(config=_config)
+class StudentNoteAttachment:
+    """One file attached to a `StudentNote`, as listed in its attachments parameter (`{"<file id>": {...}}`)."""
+
+    file_id: int
+    file_name: OptionalString = Field(default="", repr=False)  # personal content
+    file_mime: OptionalString = ""
+    file_wopi: bool = False
+    file_hash: OptionalString = ""
 
 
 @dataclass(config=_config)

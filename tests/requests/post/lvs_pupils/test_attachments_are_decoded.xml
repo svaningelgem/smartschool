@@ -14,7 +14,7 @@
                             <paramType>6</paramType>
                             <title>Bijlagen</title>
                             <value>files</value>
-                            <optionvalue>[{&quot;name&quot;:&quot;synthetic.pdf&quot;,&quot;fileID&quot;:42}]</optionvalue>
+                            <optionvalue>{&quot;42&quot;:{&quot;fileName&quot;:&quot;synthetic.pdf&quot;,&quot;fileMime&quot;:&quot;application/pdf&quot;,&quot;fileWopi&quot;:false,&quot;fileHash&quot;:&quot;0123abcd&quot;}}</optionvalue>
                             <sortorder>1</sortorder>
                         </item>
                     </items>

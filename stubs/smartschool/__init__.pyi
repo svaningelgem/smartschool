@@ -106,6 +106,7 @@ from ._objects import SkoreWorkYear as SkoreWorkYear
 from ._objects import Student as Student
 from ._objects import StudentAbsence as StudentAbsence
 from ._objects import StudentNote as StudentNote
+from ._objects import StudentNoteAttachment as StudentNoteAttachment
 from ._objects import StudentNoteParam as StudentNoteParam
 from ._objects import StudentNoteParamType as StudentNoteParamType
 from ._objects import StudentSupportLink as StudentSupportLink
@@ -228,6 +229,7 @@ __all__ = [
     "StudentAbsence",
     "StudentAbsences",
     "StudentNote",
+    "StudentNoteAttachment",
     "StudentNoteDetail",
     "StudentNoteDetails",
     "StudentNoteParam",

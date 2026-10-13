@@ -588,14 +588,14 @@ class StudentAbsence:
     code: OptionalString
     description: OptionalString
     date: Date
-    info: OptionalString
     color: OptionalString
     part_of_day: PartOfDay | None
     school_year: OptionalString
+    info: OptionalString = ""
 
 class StudentNoteParamType(IntEnum):
     TEXT = 2
-    MEASURE = 4
+    SELECT = 4
     ATTACHMENTS = 6
     DATE = 7
     INSTRUCTION = 8
@@ -607,6 +607,14 @@ class StudentNoteParam:
     title: OptionalString
     value: OptionalString = ""
     option_value: OptionalString = ""
+
+@dataclass(config=_config)
+class StudentNoteAttachment:
+    file_id: int
+    file_name: OptionalString = ""
+    file_mime: OptionalString = ""
+    file_wopi: bool = False
+    file_hash: OptionalString = ""
 
 @dataclass(config=_config)
 class StudentNoteDetail:

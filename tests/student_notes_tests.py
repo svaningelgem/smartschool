@@ -14,6 +14,7 @@ from smartschool import (
     SmartSchoolParsingError,
     StudentAbsence,
     StudentAbsences,
+    StudentNoteAttachment,
     StudentNoteDetail,
     StudentNoteDetails,
     StudentNoteParam,
@@ -168,6 +169,7 @@ def test_absences_happy_flow(session: Smartschool):
 
     assert second.part_of_day is PartOfDay.AFTERNOON
     assert second.info == "Synthetic info"
+    assert "Synthetic info" not in repr(second)  # free text: personal content
 
 
 def test_unknown_parts_of_the_day_are_kept(session: Smartschool, caplog):
@@ -257,14 +259,14 @@ def test_details_of_an_announcement(session: Smartschool, requests_mock):
     assert detail.text == "Synthetic: morgen gaan we naar het museum.\nNeem een lunchpakket mee & drinken.\nTot dan!"
     assert detail.fields == {"Leerkracht": "Voorbeeld Vera"}  # the fixed instruction (type 8) is ignored
     assert detail.date is None  # an announcement has no date parameter
-    assert detail.measure == ""
+    assert detail.choice == ""
     assert detail.attachments == []
 
 
 def test_a_measure_and_a_date(session: Smartschool):
     detail = StudentNoteDetails(session, item_id=5002).get()
 
-    assert detail.measure == "2de keer: schriftelijke mededeling"
+    assert detail.choice == "2de keer: schriftelijke mededeling"
     assert detail.date == datetime.fromisoformat("2025-01-15T10:00:00+01:00")
     assert detail.fields == {"Leerkracht": "Proef Peter"}
     assert detail.text_html == ""
@@ -285,7 +287,7 @@ def test_a_single_param_is_still_a_list(session: Smartschool):
 
     assert [p.title for p in detail.params] == ["Leerkracht"]
     assert detail.params[0].param_type == 1  # a type that isn't in `StudentNoteParamType`
-    assert detail.measure == ""
+    assert detail.choice == ""
     assert detail.attachments == []  # no attachments parameter at all
 
 
@@ -294,7 +296,7 @@ def test_no_params_gives_a_detail_without_params(session: Smartschool):
 
     assert detail.item_id == 5002
     assert detail.params == []
-    assert (detail.text, detail.date, detail.measure, detail.attachments, detail.fields) == ("", None, "", [], {})
+    assert (detail.text, detail.date, detail.choice, detail.attachments, detail.fields) == ("", None, "", [], {})
 
 
 def test_an_empty_answer_has_no_detail(session: Smartschool):
@@ -302,14 +304,17 @@ def test_an_empty_answer_has_no_detail(session: Smartschool):
 
 
 def test_attachments_are_decoded(session: Smartschool):
-    assert StudentNoteDetails(session, item_id=5001).get().attachments == [{"name": "synthetic.pdf", "fileID": 42}]
+    (attachment,) = StudentNoteDetails(session, item_id=5001).get().attachments
+
+    assert attachment == StudentNoteAttachment(file_id=42, file_name="synthetic.pdf", file_mime="application/pdf", file_wopi=False, file_hash="0123abcd")
+    assert "synthetic.pdf" not in repr(attachment)  # personal content
 
 
 def test_broken_attachments_are_ignored(session: Smartschool):
     assert StudentNoteDetails(session, item_id=5001).get().attachments == []
 
 
-def test_attachments_that_are_not_a_list_are_ignored(session: Smartschool):
+def test_attachments_that_are_not_files_are_ignored(session: Smartschool):
     assert StudentNoteDetails(session, item_id=5001).get().attachments == []
 
 
@@ -326,8 +331,10 @@ def test_the_first_parameter_of_a_type_wins_and_the_others_stay_visible(session:
 
     assert detail.date == datetime.fromisoformat("2025-01-15T10:00:00+01:00")  # "Van", not "Tot"
     assert detail.text_html == "<p>eerste</p>"
-    assert detail.fields == {"Tot": "1737000000", "Tweede tekst": "<p>tweede</p>"}
-    assert [p.title for p in detail.params] == ["Van", "Tot", "Eerste tekst", "Tweede tekst"]
+    assert detail.choice == "Eerste keuze"  # the label, not the option id
+    assert detail.fields == {"Tot": "1737000000", "Tweede tekst": "<p>tweede</p>", "Tweede keuze": "Andere keuze"}
+    assert [p.title for p in detail.params] == ["Van", "Tot", "Eerste tekst", "Tweede tekst", "Keuze", "Tweede keuze"]
+    assert [p.value for p in detail.params if p.param_type == StudentNoteParamType.SELECT] == ["3", "5"]  # the option ids stay in params
 
 
 def test_repr_hides_the_personal_content_of_a_detail(session: Smartschool):
