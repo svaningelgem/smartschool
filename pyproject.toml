@@ -42,6 +42,7 @@ dev = [
     "commitizen",
     "mypy>=2.4.0",
     "keyring>=24,<26",
+    "ty>=0.0.86",
 ]
 
 [tool.uv]
