@@ -31,6 +31,9 @@ class _PupilOverview(SmartschoolXmlNoCache[_ItemT_co], ABC):
     """`getUserData` returns the notes and the absences of a pupil in one answer: both views share its request."""
 
     _url: ClassVar[str] = _DISPATCHER
+    _subsystem: ClassVar[str] = "lvs_pupils"
+    _action: ClassVar[str] = "getUserData"
+
     user_id: str = ""
     """The full Smartschool user id (`<platform>_<id>_<role>`, e.g. `49_10880_2`), sent as is. Empty: the logged-in user."""
     group_id: int = 0
@@ -38,14 +41,6 @@ class _PupilOverview(SmartschoolXmlNoCache[_ItemT_co], ABC):
     """Start of the period (default: everything)."""
     until: date | None = None
     """End of the period (default: a year from today)."""
-
-    @property
-    def _subsystem(self) -> str:
-        return "lvs_pupils"
-
-    @property
-    def _action(self) -> str:
-        return "getUserData"
 
     @property
     def _params(self) -> dict:
@@ -79,13 +74,8 @@ class StudentNotes(_PupilOverview[objects.StudentNote]):
 
     """
 
-    @property
-    def _xpath(self) -> str:
-        return ".//notes/note"
-
-    @property
-    def _object_to_instantiate(self) -> type[objects.StudentNote]:
-        return objects.StudentNote
+    _xpath: ClassVar[str] = ".//notes/note"
+    _object_to_instantiate: ClassVar[type[objects.StudentNote]] = objects.StudentNote
 
 
 @dataclass
@@ -103,13 +93,8 @@ class StudentAbsences(_PupilOverview[objects.StudentAbsence]):
 
     """
 
-    @property
-    def _xpath(self) -> str:
-        return ".//absents/absent"
-
-    @property
-    def _object_to_instantiate(self) -> type[objects.StudentAbsence]:
-        return objects.StudentAbsence
+    _xpath: ClassVar[str] = ".//absents/absent"
+    _object_to_instantiate: ClassVar[type[objects.StudentAbsence]] = objects.StudentAbsence
 
 
 @pydantic_dataclass
@@ -187,27 +172,16 @@ class StudentNoteDetails(SmartschoolXmlNoCache[StudentNoteDetail]):
     """
 
     _url: ClassVar[str] = _DISPATCHER
+    _subsystem: ClassVar[str] = "lvs_pupils"
+    _action: ClassVar[str] = "getItemParams"
+    _xpath: ClassVar[str] = ".//items"
+    _object_to_instantiate: ClassVar[type[StudentNoteDetail]] = StudentNoteDetail
+
     item_id: int
-
-    @property
-    def _subsystem(self) -> str:
-        return "lvs_pupils"
-
-    @property
-    def _action(self) -> str:
-        return "getItemParams"
 
     @property
     def _params(self) -> dict:
         return {"userID": 0, "itemID": self.item_id}
-
-    @property
-    def _xpath(self) -> str:
-        return ".//items"
-
-    @property
-    def _object_to_instantiate(self) -> type[StudentNoteDetail]:
-        return StudentNoteDetail
 
     def _post_process_element(self, element: dict) -> None:
         items = element.pop("item", None) or []  # <items/> arrives as {}; a single <item> is not a list
