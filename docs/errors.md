@@ -8,6 +8,7 @@ All exceptions inherit from `SmartSchoolException`.
 SmartSchoolException
 ├── SmartSchoolAuthenticationError
 ├── SmartSchoolParsingError
+├── SmartSchoolRequestError
 └── SmartSchoolDownloadError
     └── SmartSchoolJsonError
 ```
@@ -18,6 +19,7 @@ SmartSchoolException
 |-----------|------|
 | `SmartSchoolAuthenticationError` | Login failed, max attempts reached, or 2FA misconfigured |
 | `SmartSchoolParsingError` | Unexpected HTML/data format from Smartschool |
+| `SmartSchoolRequestError` | Server answered with an error document instead of data, e.g. no access to that module (`message` is the server's text) |
 | `SmartSchoolDownloadError` | HTTP error during file download (includes `response` and `status_code`) |
 | `SmartSchoolJsonError` | API returned invalid JSON (includes `response`) |
 

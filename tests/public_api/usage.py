@@ -15,8 +15,8 @@ from smartschool import (
     Smartschool,
     SmartschoolHours,
     SmartschoolLessons,
-    create_filesystem_safe_path,
 )
+from smartschool._common import create_filesystem_safe_path
 
 
 def query_classes_can_be_instantiated(session: Smartschool) -> None:

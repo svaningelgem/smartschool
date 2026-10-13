@@ -55,13 +55,21 @@ def _password_from_keyring(service: str, username: str) -> str:
     return password
 
 
+@dataclass(frozen=True, kw_only=True)
 class Credentials:
-    username: str = ""
-    password: str = ""
-    mfa: str = ""
-    main_url: str = ""
+    """
+    The base of every credentials type: a frozen dataclass, like its subclasses, so their field overrides stay read-only.
 
-    other_info: dict | None = None
+    Keyword-only, so a subclass only takes positional arguments for the fields it redeclares itself (AppCredentials does).
+    """
+
+    # Same order as `required_fields`: subclasses inherit it.
+    username: str = ""
+    password: str = field(default="", repr=False)
+    main_url: str = ""
+    mfa: str = field(default="", repr=False)
+
+    other_info: dict | None = field(default=None, repr=False)
 
     def validate(self) -> None:
         error = []

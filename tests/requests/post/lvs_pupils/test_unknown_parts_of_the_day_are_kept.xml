@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- synthetic: invented pupil, teachers, titles and dates; not a recording of a real Smartschool answer -->
+<server>
+    <response>
+        <status>ok</status>
+        <actions>
+            <action>
+                <subsystem>lvs_pupils</subsystem>
+                <command>renderPupilAllNotes</command>
+                <data>
+                    <notes/>
+                    <absents>
+                        <absent>
+                            <absentID>7001</absentID>
+                            <code>Z</code>
+                            <desc>Ziek</desc>
+                            <date>1759701600</date>
+                            <info/>
+                            <color>#aabbcc</color>
+                            <pod>XX</pod>
+                            <schoolyear>2025-2026</schoolyear>
+                        </absent>
+                        <absent>
+                            <absentID>7002</absentID>
+                            <code>B</code>
+                            <desc>Begrafenis</desc>
+                            <date>1759788000</date>
+                            <info>Synthetic info</info>
+                            <color>#aabbcc</color>
+                            <pod/>
+                            <schoolyear>2025-2026</schoolyear>
+                        </absent>
+                    </absents>
+                    <dates>{&quot;2025-2026&quot;:[]}</dates>
+                    <skore_rights>
+                        <viewLvsItems>1</viewLvsItems>
+                        <viewAbsents>1</viewAbsents>
+                    </skore_rights>
+                    <evals/>
+                    <messages/>
+                    <smartsignals/>
+                </data>
+            </action>
+        </actions>
+    </response>
+</server>

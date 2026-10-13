@@ -5,20 +5,8 @@ from ._agenda import SmartschoolHours as SmartschoolHours
 from ._agenda import SmartschoolLessons as SmartschoolLessons
 from ._agenda import SmartschoolMomentInfos as SmartschoolMomentInfos
 from ._common import IsSaved as IsSaved
-from ._common import as_float as as_float
-from ._common import bs4_html as bs4_html
-from ._common import convert_to_date as convert_to_date
-from ._common import convert_to_datetime as convert_to_datetime
-from ._common import create_filesystem_safe_filename as create_filesystem_safe_filename
-from ._common import create_filesystem_safe_path as create_filesystem_safe_path
-from ._common import fill_form as fill_form
-from ._common import get_all_values_from_form as get_all_values_from_form
-from ._common import natural_sort as natural_sort
-from ._common import parse_mime_type as parse_mime_type
-from ._common import parse_size as parse_size
 from ._common import save as save
 from ._common import send_email as send_email
-from ._common import xml_to_dict as xml_to_dict
 from ._courses import CourseCondensed as CourseCondensed
 from ._courses import CourseList as CourseList
 from ._courses import Courses as Courses
@@ -39,6 +27,7 @@ from ._exceptions import SmartSchoolDownloadError as SmartSchoolDownloadError
 from ._exceptions import SmartSchoolException as SmartSchoolException
 from ._exceptions import SmartSchoolJsonError as SmartSchoolJsonError
 from ._exceptions import SmartSchoolParsingError as SmartSchoolParsingError
+from ._exceptions import SmartSchoolRequestError as SmartSchoolRequestError
 from ._future_tasks import FutureTasks as FutureTasks
 from ._intradesk import Intradesk as Intradesk
 from ._intradesk import IntradeskFile as IntradeskFile
@@ -84,6 +73,7 @@ from ._objects import MessageChanged as MessageChanged
 from ._objects import MessageDeletionStatus as MessageDeletionStatus
 from ._objects import MessageSearchGroup as MessageSearchGroup
 from ._objects import MessageSearchUser as MessageSearchUser
+from ._objects import PartOfDay as PartOfDay
 from ._objects import PercentageGraphic as PercentageGraphic
 from ._objects import Period as Period
 from ._objects import PersonDescription as PersonDescription
@@ -102,6 +92,11 @@ from ._objects import SchoolClass as SchoolClass
 from ._objects import ShortMessage as ShortMessage
 from ._objects import SkoreWorkYear as SkoreWorkYear
 from ._objects import Student as Student
+from ._objects import StudentAbsence as StudentAbsence
+from ._objects import StudentNote as StudentNote
+from ._objects import StudentNoteAttachment as StudentNoteAttachment
+from ._objects import StudentNoteParam as StudentNoteParam
+from ._objects import StudentNoteParamType as StudentNoteParamType
 from ._objects import StudentSupportLink as StudentSupportLink
 from ._objects import Teacher as Teacher
 from ._objects import TextGraphic as TextGraphic
@@ -115,6 +110,10 @@ from ._reports import Reports as Reports
 from ._results import Result as Result
 from ._results import Results as Results
 from ._session import Smartschool as Smartschool
+from ._student_notes import StudentAbsences as StudentAbsences
+from ._student_notes import StudentNoteDetail as StudentNoteDetail
+from ._student_notes import StudentNoteDetails as StudentNoteDetails
+from ._student_notes import StudentNotes as StudentNotes
 from ._student_support import StudentSupportLinks as StudentSupportLinks
 
 __all__ = [
@@ -175,6 +174,7 @@ __all__ = [
     "MyDocsFile",
     "MyDocsFolder",
     "MyDocsItem",
+    "PartOfDay",
     "PathCredentials",
     "PercentageGraphic",
     "Period",
@@ -207,6 +207,7 @@ __all__ = [
     "SmartSchoolException",
     "SmartSchoolJsonError",
     "SmartSchoolParsingError",
+    "SmartSchoolRequestError",
     "Smartschool",
     "SmartschoolHours",
     "SmartschoolLessons",
@@ -214,6 +215,15 @@ __all__ = [
     "SortField",
     "SortOrder",
     "Student",
+    "StudentAbsence",
+    "StudentAbsences",
+    "StudentNote",
+    "StudentNoteAttachment",
+    "StudentNoteDetail",
+    "StudentNoteDetails",
+    "StudentNoteParam",
+    "StudentNoteParamType",
+    "StudentNotes",
     "StudentSupportLink",
     "StudentSupportLinks",
     "Teacher",
@@ -221,18 +231,6 @@ __all__ = [
     "TopNavCourses",
     "UserCapabilities",
     "UserSeeProperties",
-    "as_float",
-    "bs4_html",
-    "convert_to_date",
-    "convert_to_datetime",
-    "create_filesystem_safe_filename",
-    "create_filesystem_safe_path",
-    "fill_form",
-    "get_all_values_from_form",
-    "natural_sort",
-    "parse_mime_type",
-    "parse_size",
     "save",
     "send_email",
-    "xml_to_dict",
 ]

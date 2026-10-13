@@ -46,6 +46,7 @@ for course in Courses(session):
 | **Schedule** | `SmartschoolLessons`, `SmartschoolHours` | Daily schedules, class periods |
 | **Planner** | `PlannedElements`, `FutureTasks` | Assignments, deadlines, activities |
 | **Support** | `StudentSupportLinks` | School support resources |
+| **Student notes** | `StudentNotes`, `StudentAbsences`, `StudentNoteDetails` | Follow-up notes and absences registered by the school |
 
 ## Documentation
 
@@ -59,6 +60,7 @@ Detailed usage guides with examples:
 - [Messages](docs/messages.md) - Inbox, compose/send, attachments, and message management
 - [Schedule & Agenda](docs/schedule.md) - Lessons, hours, and moment info
 - [Planner & Tasks](docs/planner.md) - Planned elements and future tasks
+- [Student notes & absences](docs/student_notes.md) - Follow-up notes and absences registered by the school
 - [Error Handling](docs/errors.md) - Exception types and handling patterns
 
 ## Development

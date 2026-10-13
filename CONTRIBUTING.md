@@ -111,7 +111,7 @@ Implementation lives in **private, underscore-prefixed modules**
 **relative** imports (`from ._objects import …`), never the absolute
 `from smartschool._objects import …` form — keep it consistent across the
 package. These modules are not part of the public API, so never import from
-`smartschool._something` in user-facing code, the bundled scripts, or the docs.
+`smartschool._something` in user-facing code or the docs.
 
 When you add a new public class, function, or enum:
 
@@ -120,8 +120,11 @@ When you add a new public class, function, or enum:
 3. If a public function returns or accepts it, it **must** be re-exported too —
    a user should never have to reach into a private module to name a type.
 
-Tests and scripts import from `smartschool` as well; the only exception is unit
-tests that deliberately exercise a private internal (e.g. `_build_alias_map`).
+Tests and scripts import from `smartschool` as well. Two exceptions: unit tests
+that deliberately exercise a private internal (e.g. `_build_alias_map`), and the
+helpers in `_common.py` that exist for sibling modules (`natural_sort`,
+`bs4_html`, the `convert_to_*` functions, …). Those are not re-exported, so tests
+and scripts import them from `smartschool._common`.
 
 ## Commits & pull requests
 

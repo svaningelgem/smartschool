@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- synthetic: invented pupil, teachers, titles and dates; not a recording of a real Smartschool answer -->
+<server>
+    <response>
+        <status>ok</status>
+        <actions>
+            <action>
+                <subsystem>lvs_pupils</subsystem>
+                <command>renderPupilAllNotes</command>
+                <data>
+                    <notes>
+                        <note>
+                            <itemID>5001</itemID>
+                            <groupID>1001</groupID>
+                            <pupilID>9001</pupilID>
+                            <catID>11</catID>
+                            <catName>Mededeling</catName>
+                            <date>1759389300</date>
+                            <authorSex>f</authorSex>
+                            <viewed>1</viewed>
+                            <private>0</private>
+                            <schoolyear>2025-2026</schoolyear>
+                            <studierichting>Synthetic Richting</studierichting>
+                            <assigned>0</assigned>
+                            <assignees/>
+                            <bulkID>0</bulkID>
+                            <isNew>0</isNew>
+                            <itemGroupID>0</itemGroupID>
+                            <originalCreate>1759389300</originalCreate>
+                            <right>{&quot;follow&quot;:-1,&quot;del&quot;:-1,&quot;edit&quot;:-1}</right>
+                            <histories/>
+                            <items/>
+                        </note>
+                    </notes>
+                    <absents/>
+                    <dates>{&quot;2025-2026&quot;:[]}</dates>
+                    <skore_rights>
+                        <viewLvsItems>1</viewLvsItems>
+                        <viewAbsents>1</viewAbsents>
+                    </skore_rights>
+                    <evals/>
+                    <messages/>
+                    <smartsignals/>
+                </data>
+            </action>
+        </actions>
+    </response>
+</server>

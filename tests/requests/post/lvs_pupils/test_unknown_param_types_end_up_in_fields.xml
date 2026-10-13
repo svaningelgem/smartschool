@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- synthetic: invented teacher, texts and dates; not a recording of a real Smartschool answer -->
+<server>
+    <response>
+        <status>ok</status>
+        <actions>
+            <action>
+                <subsystem>lvs_pupils</subsystem>
+                <command>renderPupilNoteParams</command>
+                <data>
+                    <items>
+                        <item>
+                            <paramID>721</paramID>
+                            <paramType>5</paramType>
+                            <title>Synthetic veld</title>
+                            <value>waarde</value>
+                            <optionvalue/>
+                            <sortorder>1</sortorder>
+                        </item>
+                        <item>
+                            <paramID>722</paramID>
+                            <paramType>3</paramType>
+                            <title>Leeg veld</title>
+                            <value/>
+                            <optionvalue/>
+                            <sortorder>1</sortorder>
+                        </item>
+                    </items>
+                </data>
+            </action>
+        </actions>
+    </response>
+</server>

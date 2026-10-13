@@ -1,21 +1,5 @@
 from ._agenda import AgendaLesson, AgendaPoster, SmartschoolHours, SmartschoolLessons, SmartschoolMomentInfos
-from ._common import (
-    IsSaved,
-    as_float,
-    bs4_html,
-    convert_to_date,
-    convert_to_datetime,
-    create_filesystem_safe_filename,
-    create_filesystem_safe_path,
-    fill_form,
-    get_all_values_from_form,
-    natural_sort,
-    parse_mime_type,
-    parse_size,
-    save,
-    send_email,
-    xml_to_dict,
-)
+from ._common import IsSaved, save, send_email
 from ._courses import CourseCondensed, CourseList, Courses, DocumentOrFolderItem, FileItem, FolderItem, InternetShortcut, TopNavCourses
 from ._credentials import AppCredentials, Credentials, EnvCredentials, KeyringCredentials, PathCredentials
 from ._exceptions import (
@@ -26,6 +10,7 @@ from ._exceptions import (
     SmartSchoolException,
     SmartSchoolJsonError,
     SmartSchoolParsingError,
+    SmartSchoolRequestError,
 )
 from ._future_tasks import FutureTasks
 from ._intradesk import Intradesk, IntradeskFile, IntradeskFolder, IntradeskItem
@@ -68,6 +53,7 @@ from ._objects import (
     MessageDeletionStatus,
     MessageSearchGroup,
     MessageSearchUser,
+    PartOfDay,
     PercentageGraphic,
     Period,
     PersonDescription,
@@ -86,6 +72,11 @@ from ._objects import (
     ShortMessage,
     SkoreWorkYear,
     Student,
+    StudentAbsence,
+    StudentNote,
+    StudentNoteAttachment,
+    StudentNoteParam,
+    StudentNoteParamType,
     StudentSupportLink,
     Teacher,
     TextGraphic,
@@ -97,6 +88,7 @@ from ._planner import ApplicableAssignmentTypes, PlannedElements
 from ._reports import Report, Reports
 from ._results import Result, Results
 from ._session import Smartschool
+from ._student_notes import StudentAbsences, StudentNoteDetail, StudentNoteDetails, StudentNotes
 from ._student_support import StudentSupportLinks
 
 # pylint: disable=duplicate-code  # the re-export list restates each module's __all__
@@ -158,6 +150,7 @@ __all__ = [
     "MyDocsFile",
     "MyDocsFolder",
     "MyDocsItem",
+    "PartOfDay",
     "PathCredentials",
     "PercentageGraphic",
     "Period",
@@ -190,6 +183,7 @@ __all__ = [
     "SmartSchoolException",
     "SmartSchoolJsonError",
     "SmartSchoolParsingError",
+    "SmartSchoolRequestError",
     "Smartschool",
     "SmartschoolHours",
     "SmartschoolLessons",
@@ -197,6 +191,15 @@ __all__ = [
     "SortField",
     "SortOrder",
     "Student",
+    "StudentAbsence",
+    "StudentAbsences",
+    "StudentNote",
+    "StudentNoteAttachment",
+    "StudentNoteDetail",
+    "StudentNoteDetails",
+    "StudentNoteParam",
+    "StudentNoteParamType",
+    "StudentNotes",
     "StudentSupportLink",
     "StudentSupportLinks",
     "Teacher",
@@ -204,18 +207,6 @@ __all__ = [
     "TopNavCourses",
     "UserCapabilities",
     "UserSeeProperties",
-    "as_float",
-    "bs4_html",
-    "convert_to_date",
-    "convert_to_datetime",
-    "create_filesystem_safe_filename",
-    "create_filesystem_safe_path",
-    "fill_form",
-    "get_all_values_from_form",
-    "natural_sort",
-    "parse_mime_type",
-    "parse_size",
     "save",
     "send_email",
-    "xml_to_dict",
 ]
