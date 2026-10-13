@@ -40,6 +40,7 @@ from ._exceptions import SmartSchoolDownloadError as SmartSchoolDownloadError
 from ._exceptions import SmartSchoolException as SmartSchoolException
 from ._exceptions import SmartSchoolJsonError as SmartSchoolJsonError
 from ._exceptions import SmartSchoolParsingError as SmartSchoolParsingError
+from ._exceptions import SmartSchoolRequestError as SmartSchoolRequestError
 from ._future_tasks import FutureTasks as FutureTasks
 from ._intradesk import Intradesk as Intradesk
 from ._intradesk import IntradeskFile as IntradeskFile
@@ -219,6 +220,7 @@ __all__ = [
     "SmartSchoolException",
     "SmartSchoolJsonError",
     "SmartSchoolParsingError",
+    "SmartSchoolRequestError",
     "Smartschool",
     "SmartschoolHours",
     "SmartschoolLessons",
