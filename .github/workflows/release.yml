@@ -78,6 +78,21 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           uv run --no-sync cz changelog "$VERSION" --dry-run --template .github/changelog/release_notes.md.j2 > release-notes.md
+          # Credit the authors of the released PRs, other than the repository owner and bots.
+          declare -A prs_by_author
+          for pr in $(grep -oE '\(#[0-9]+\)' release-notes.md | tr -d '(#)' | sort -un); do
+            author=$(gh pr view "$pr" --json author --jq .author.login 2>/dev/null || true)  # an issue number has no PR
+            [ -z "$author" ] && continue
+            [ "$author" = "$GITHUB_REPOSITORY_OWNER" ] && continue
+            case "$author" in *"[bot]") continue ;; esac
+            prs_by_author[$author]+="#$pr, "
+          done
+          if [ "${#prs_by_author[@]}" -gt 0 ]; then
+            printf '\n### 🙏 Contributors\n\n' >> release-notes.md
+            for author in $(printf '%s\n' "${!prs_by_author[@]}" | sort); do
+              printf -- '- @%s (%s)\n' "$author" "${prs_by_author[$author]%, }" >> release-notes.md
+            done
+          fi
           # Only the installable distributions; the *.publish.attestation files the
           # PyPI publish step drops into dist/ live on PyPI, not the GitHub release.
           gh release create "$VERSION" dist/*.whl dist/*.tar.gz --title "$VERSION" --notes-file release-notes.md
