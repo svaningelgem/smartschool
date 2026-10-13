@@ -21,9 +21,10 @@ notes. The query accepts keyword-only arguments:
 
 | Argument | Default | Meaning |
 |----------|---------|---------|
-| `pupil_id` | the logged-in user | The full user id string, in the form `<platform>_<id>_<role>` (e.g. `49_10880_2`), sent as is |
+| `user_id` | `""`: the logged-in user | The full user id string, in the form `<platform>_<id>_<role>` (e.g. `49_10880_2`), sent as is |
 | `group_id` | `0` | The class group id |
-| `since` | everything | Only ask for the period starting at this `date` |
+| `since` | everything | Start of the period (a `date`) |
+| `until` | a year from today | End of the period (a `date`) |
 
 ```python
 from datetime import date
@@ -31,8 +32,8 @@ from datetime import date
 notes = StudentNotes(session, since=date(2025, 9, 1))
 ```
 
-`StudentNote.pupil_id` is only the numeric middle part of the user id.
-The `title` and `author` are left out of `repr()` so they don't end up in logs or tracebacks.
+`StudentNote.pupil_id` is something else than `user_id`: only the numeric middle part of the user id.
+The `title` and the author's name are left out of `repr()` so they don't end up in logs or tracebacks.
 
 ## Absences
 
@@ -43,7 +44,7 @@ for absence in StudentAbsences(session):
     print(f"{absence.date} {absence.part_of_day}: {absence.description}")
 ```
 
-`part_of_day` is `VM` (morning) or `NM` (afternoon).
+`part_of_day` is a `PartOfDay` (`MORNING` = `VM`, `AFTERNOON` = `NM`), a `str` that stays a plain string in JSON; an unknown school-specific code is kept as is.
 
 ## Details of one note
 
@@ -59,9 +60,13 @@ print(detail.text)      # an announcement's free text, as plain text
 print(detail.text_html) # the same text as the HTML Smartschool sends
 print(detail.measure)   # the chosen disciplinary measure, if any
 print(detail.date)      # only for categories that have a date parameter
-print(detail.fields)    # other plain parameters by title, e.g. the teacher
+print(detail.fields)    # every other parameter by title, e.g. the teacher
 print(detail.attachments)
 ```
+
+`detail.params` is the complete list of parameters (`StudentNoteParam`, with a `param_type` you can compare to `StudentNoteParamType`);
+the properties interpret the first parameter of each type, and a second one of the same type shows up in `fields`.
+A note without parameters gives a detail with `params == []`. The values of the parameters are left out of `repr()`.
 
 An announcement ("mededeling") has no date parameter: use `note.date`.
 Reading the details does not mark a note as viewed.

@@ -22,11 +22,13 @@ class _StudentNotesPoster:  # pylint: disable=too-few-public-methods  # mixin pi
 class _PupilOverview(_StudentNotesPoster, SmartschoolXmlNoCache[_ItemT_co], ABC):
     """`getUserData` returns the notes and the absences of a pupil in one answer: both views share its request."""
 
-    pupil_id: str | None = None
-    """The pupil to query. Defaults (also when empty) to the logged-in user. The full id, e.g. `49_10880_2`, is sent as is."""
+    user_id: str = ""
+    """The full Smartschool user id (`<platform>_<id>_<role>`, e.g. `49_10880_2`), sent as is. Empty: the logged-in user."""
     group_id: int = 0
     since: date | None = None
-    """Only ask for the period starting here (default: everything)."""
+    """Start of the period (default: everything)."""
+    until: date | None = None
+    """End of the period (default: a year from today)."""
 
     @property
     def _subsystem(self) -> str:
@@ -38,11 +40,13 @@ class _PupilOverview(_StudentNotesPoster, SmartschoolXmlNoCache[_ItemT_co], ABC)
 
     @property
     def _params(self) -> dict:
+        since = self.since or _EARLIEST
+        until = self.until or date.today() + timedelta(days=366)
         return {
-            "userID": self.pupil_id or self.session.authenticated_user["id"],
+            "userID": self.user_id or self.session.authenticated_user["id"],
             "groupID": self.group_id,
             "toolbarType": "main",
-            "syRange": json.dumps({"from": (self.since or _EARLIEST).isoformat(), "until": (date.today() + timedelta(days=366)).isoformat()}),
+            "syRange": json.dumps({"from": since.strftime("%Y-%m-%d"), "until": until.strftime("%Y-%m-%d")}),
             "viewAllFilter": "[]",
             "filterData": "0",
         }
@@ -130,14 +134,13 @@ class StudentNoteDetails(_StudentNotesPoster, SmartschoolXmlNoCache[objects.Stud
 
     @property
     def _xpath(self) -> str:
-        return ".//items[item]"
+        return ".//items"
 
     @property
     def _object_to_instantiate(self) -> type[objects.StudentNoteDetail]:
         return objects.StudentNoteDetail
 
     def _post_process_element(self, element: dict) -> None:
-        # A single <item> is not parsed as a list.
-        items = element["item"]
+        items = element.pop("item", None) or []  # <items/> arrives as {}; a single <item> is not a list
         element["params"] = items if isinstance(items, list) else [items]
         element["item_id"] = self.item_id

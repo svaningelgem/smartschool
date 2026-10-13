@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import sys
 from datetime import date, datetime
+from enum import IntEnum
 from functools import cached_property
 from typing import Annotated, Any, Literal
 
@@ -672,13 +673,35 @@ class Report:
     schoolyear_label: String = Field()
 
 
+class PartOfDay(StrEnum):
+    """
+    Part of the day an absence applies to.
+
+    A school-specific code that isn't known here is kept as an ad-hoc member with a warning, instead of failing the whole list.
+    """
+
+    MORNING = "VM"
+    AFTERNOON = "NM"
+
+    @classmethod
+    def _missing_(cls, value: object) -> PartOfDay | None:
+        if not isinstance(value, str):
+            return None
+        logger.warning("Unknown part of the day {!r}, please report it", value)
+        member = str.__new__(cls, value)
+        member._name_ = value.upper()
+        member._value_ = value
+        return member
+
+
 @dataclass(config=_config)
 class StudentNote:  # pylint: disable=too-many-instance-attributes  # mirrors the API payload
     """
     One line of the pupil's file in the pupil-follow-up system (LVS); `private` lines are meant for staff only.
 
     `pupil_id` is only the numeric middle part of the user id: Smartschool ids look like `<platform>_<id>_<role>`
-    (e.g. `49_10880_2`), and the queries (`StudentNotes(pupil_id=...)`) take that full string.
+    (e.g. `49_10880_2`), which is what the queries (`StudentNotes(user_id=...)`) take.
+    The name and title are left out of `repr()`: they are personal content.
     """
 
     item_id: Annotated[int, Field(validation_alias="itemID")]
@@ -687,19 +710,19 @@ class StudentNote:  # pylint: disable=too-many-instance-attributes  # mirrors th
     cat_id: Annotated[int, Field(validation_alias="catID")]
     cat_name: OptionalString
     date: EpochDateTime
-    author_reverse: OptionalString
     viewed: bool
     private: bool
     school_year: Annotated[OptionalString, Field(validation_alias="schoolyear")]
     study_direction: Annotated[OptionalString, Field(validation_alias="studierichting")]
-    # Personal content: keep it out of logs and tracebacks.
+    # Personal content: out of logs and tracebacks. The server may leave these elements out (e.g. on a private line).
     title: OptionalString = Field(default="", repr=False)
     author: OptionalString = Field(default="", repr=False)
+    author_reverse: OptionalString = Field(default="", repr=False)
 
 
 @dataclass(config=_config)
 class StudentAbsence:  # pylint: disable=too-many-instance-attributes  # mirrors the API payload
-    """One absence code of the pupil. `part_of_day` is `VM` (morning) or `NM` (afternoon)."""
+    """One absence code of the pupil."""
 
     absent_id: Annotated[int, Field(validation_alias="absentID")]
     code: OptionalString
@@ -707,64 +730,78 @@ class StudentAbsence:  # pylint: disable=too-many-instance-attributes  # mirrors
     date: EpochDate
     info: OptionalString
     color: OptionalString
-    part_of_day: Annotated[OptionalString, Field(validation_alias="pod")]
+    part_of_day: Annotated[PartOfDay, BeforeValidator(lambda v: v or ""), Field(validation_alias="pod")]
     school_year: Annotated[OptionalString, Field(validation_alias="schoolyear")]
+
+
+class StudentNoteParamType(IntEnum):
+    """The `StudentNoteParam.param_type` values that `StudentNoteDetail` interprets. Other (school-specific) types occur too."""
+
+    TEXT = 2
+    MEASURE = 4
+    ATTACHMENTS = 6
+    DATE = 7
+    INSTRUCTION = 8
 
 
 @dataclass(config=_config)
 class StudentNoteParam:
-    """One parameter of a `StudentNote`. The `param_id` is school-specific: interpret a parameter by `param_type` and `title`."""
+    """
+    One parameter of a `StudentNote`.
+
+    The `param_id` is school-specific: interpret a parameter by `param_type` (see `StudentNoteParamType`; it stays an `int`
+    because other types occur) and `title`. An absent value is empty: only the `StudentNoteDetail` accessors say whether a parameter exists.
+    """
 
     param_id: Annotated[int, Field(validation_alias="paramID")]
     param_type: Annotated[int, Field(validation_alias="paramType")]
     title: OptionalString
-    value: str | None = Field(default=None, repr=False)
-    option_value: str | None = Field(default=None, validation_alias="optionvalue", repr=False)
-
-
-# `StudentNoteParam.param_type` values that `StudentNoteDetail` interprets.
-_PARAM_TEXT, _PARAM_MEASURE, _PARAM_ATTACHMENTS, _PARAM_DATE, _PARAM_INSTRUCTION = 2, 4, 6, 7, 8
-_HANDLED_PARAM_TYPES = (_PARAM_TEXT, _PARAM_MEASURE, _PARAM_ATTACHMENTS, _PARAM_DATE, _PARAM_INSTRUCTION)
+    value: OptionalString = Field(default="", repr=False)
+    option_value: OptionalString = Field(default="", validation_alias="optionvalue", repr=False)
 
 
 @dataclass(config=_config)
 class StudentNoteDetail:
-    """The content of one `StudentNote`, interpreted from its parameters. Which parameters exist differs per category."""
+    """
+    The content of one `StudentNote`, interpreted from its parameters. Which parameters exist differs per category.
+
+    `params` is the complete view; the properties interpret the first parameter of each type.
+    """
 
     item_id: int
     params: list[StudentNoteParam] = Field(default_factory=list, repr=False)  # personal content
 
-    def _first(self, param_type: int) -> StudentNoteParam | None:
+    def _first(self, param_type: StudentNoteParamType) -> StudentNoteParam | None:
         return next((p for p in self.params if p.param_type == param_type), None)
 
     @property
     def text_html(self) -> str | None:
         """The free text of an announcement, as the HTML Smartschool sends it."""
-        param = self._first(_PARAM_TEXT)
+        param = self._first(StudentNoteParamType.TEXT)
         return param.value if param else None
 
     @property
     def text(self) -> str | None:
         """The free text of an announcement without HTML."""
         html = self.text_html
-        return html_to_text(html) if html else None
+        return html_to_text(html) if html is not None else None
 
     @property
     def date(self) -> datetime | None:
         """The date parameter, for categories that have one (an announcement doesn't: use `StudentNote.date`)."""
-        param = self._first(_PARAM_DATE)
-        return convert_epoch_to_datetime(param.value) if param else None
+        param = self._first(StudentNoteParamType.DATE)
+        return convert_epoch_to_datetime(param.value) if param and param.value else None
 
     @property
     def measure(self) -> str | None:
         """The text of the disciplinary measure ("ordemaatregel") that was chosen, if any."""
-        param = self._first(_PARAM_MEASURE)
+        param = self._first(StudentNoteParamType.MEASURE)
         return param.option_value if param else None
 
     @property
     def attachments(self) -> list[Any]:
         """The attachments, as decoded from the JSON Smartschool sends; an empty list when there are none."""
-        param = self._first(_PARAM_ATTACHMENTS)
+        param = self._first(StudentNoteParamType.ATTACHMENTS)
         if not param or not param.option_value:
             return []
         try:
@@ -776,5 +813,10 @@ class StudentNoteDetail:
 
     @property
     def fields(self) -> dict[str, str]:
-        """The remaining plain parameters by title (e.g. the teacher); the fixed instruction text is left out."""
-        return {p.title: p.value or "" for p in self.params if p.param_type not in _HANDLED_PARAM_TYPES}
+        """Every parameter the other properties don't show (e.g. the teacher, or a second date) by title; with equal titles the last wins."""
+        consumed = {
+            p.param_id
+            for t in (StudentNoteParamType.TEXT, StudentNoteParamType.MEASURE, StudentNoteParamType.ATTACHMENTS, StudentNoteParamType.DATE)
+            if (p := self._first(t))
+        }
+        return {p.title: p.value for p in self.params if p.param_id not in consumed and p.param_type != StudentNoteParamType.INSTRUCTION}

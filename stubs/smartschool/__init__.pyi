@@ -7,12 +7,14 @@ from ._agenda import SmartschoolMomentInfos as SmartschoolMomentInfos
 from ._common import IsSaved as IsSaved
 from ._common import as_float as as_float
 from ._common import bs4_html as bs4_html
+from ._common import convert_epoch_to_datetime as convert_epoch_to_datetime
 from ._common import convert_to_date as convert_to_date
 from ._common import convert_to_datetime as convert_to_datetime
 from ._common import create_filesystem_safe_filename as create_filesystem_safe_filename
 from ._common import create_filesystem_safe_path as create_filesystem_safe_path
 from ._common import fill_form as fill_form
 from ._common import get_all_values_from_form as get_all_values_from_form
+from ._common import html_to_text as html_to_text
 from ._common import natural_sort as natural_sort
 from ._common import parse_mime_type as parse_mime_type
 from ._common import parse_size as parse_size
@@ -84,6 +86,7 @@ from ._objects import MessageChanged as MessageChanged
 from ._objects import MessageDeletionStatus as MessageDeletionStatus
 from ._objects import MessageSearchGroup as MessageSearchGroup
 from ._objects import MessageSearchUser as MessageSearchUser
+from ._objects import PartOfDay as PartOfDay
 from ._objects import PercentageGraphic as PercentageGraphic
 from ._objects import Period as Period
 from ._objects import PersonDescription as PersonDescription
@@ -106,6 +109,7 @@ from ._objects import StudentAbsence as StudentAbsence
 from ._objects import StudentNote as StudentNote
 from ._objects import StudentNoteDetail as StudentNoteDetail
 from ._objects import StudentNoteParam as StudentNoteParam
+from ._objects import StudentNoteParamType as StudentNoteParamType
 from ._objects import StudentSupportLink as StudentSupportLink
 from ._objects import Teacher as Teacher
 from ._objects import TextGraphic as TextGraphic
@@ -182,6 +186,7 @@ __all__ = [
     "MyDocsFile",
     "MyDocsFolder",
     "MyDocsItem",
+    "PartOfDay",
     "PathCredentials",
     "PercentageGraphic",
     "Period",
@@ -227,6 +232,7 @@ __all__ = [
     "StudentNoteDetail",
     "StudentNoteDetails",
     "StudentNoteParam",
+    "StudentNoteParamType",
     "StudentNotes",
     "StudentSupportLink",
     "StudentSupportLinks",
@@ -237,12 +243,14 @@ __all__ = [
     "UserSeeProperties",
     "as_float",
     "bs4_html",
+    "convert_epoch_to_datetime",
     "convert_to_date",
     "convert_to_datetime",
     "create_filesystem_safe_filename",
     "create_filesystem_safe_path",
     "fill_form",
     "get_all_values_from_form",
+    "html_to_text",
     "natural_sort",
     "parse_mime_type",
     "parse_size",

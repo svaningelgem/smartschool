@@ -27,12 +27,14 @@ __all__ = [
     "IsSaved",
     "as_float",
     "bs4_html",
+    "convert_epoch_to_datetime",
     "convert_to_date",
     "convert_to_datetime",
     "create_filesystem_safe_filename",
     "create_filesystem_safe_path",
     "fill_form",
     "get_all_values_from_form",
+    "html_to_text",
     "natural_sort",
     "parse_mime_type",
     "parse_size",
@@ -155,16 +157,18 @@ def bs4_html(html: str | bytes | Response) -> BeautifulSoup:
     return BeautifulSoup(html, features="html.parser")
 
 
-_BLOCK_TAGS = ["p", "div", "li", "ul", "ol", "tr", "td", "th", "blockquote", "h1", "h2", "h3", "h4", "h5", "h6"]
+# Every other tag (p, div, section, hr, dd, li, td, br, ...) is a block that starts and ends a line.
+_INLINE_TAGS = {
+    "a", "abbr", "b", "bdi", "bdo", "cite", "code", "data", "del", "dfn", "em", "i", "img", "ins", "kbd", "mark", "q", "s", "samp", "small",
+    "span", "strong", "sub", "sup", "time", "u", "var", "wbr",
+}  # fmt: skip
 _BREAK = "\x00"
 
 
 def html_to_text(html: str) -> str:
     """Plain text of an HTML fragment: inline text stays together, blocks and `<br>` become lines (BeautifulSoup already skips script/style)."""
     soup = bs4_html(html)
-    for tag in soup.find_all("br"):
-        tag.insert_before(_BREAK)
-    for tag in soup.find_all(_BLOCK_TAGS):
+    for tag in soup.find_all(lambda t: t.name not in _INLINE_TAGS):
         tag.insert_before(_BREAK)
         tag.insert_after(_BREAK)
 
@@ -322,10 +326,13 @@ def convert_to_datetime(x: str | String | date | datetime | None) -> datetime:
     raise SmartSchoolParsingError(f"Cannot convert '{x}' to `datetime`")
 
 
-def convert_epoch_to_datetime(x: str | float | None) -> datetime:
+def convert_epoch_to_datetime(x: str | float | date | datetime | None) -> datetime:
     """Convert epoch-seconds (as the LVS module sends them) to an aware `datetime` in Smartschool's own timezone."""
+    if isinstance(x, date):  # a datetime is a date too
+        return convert_to_datetime(x)
+
     try:
-        return datetime.fromtimestamp(int(x), tz=ZoneInfo("Europe/Brussels"))  # ty: ignore[invalid-argument-type]  # None is caught below
+        return datetime.fromtimestamp(float(x), tz=ZoneInfo("Europe/Brussels"))  # ty: ignore[invalid-argument-type]  # None is caught below
     except (TypeError, ValueError, OverflowError, OSError) as exc:
         raise SmartSchoolParsingError(f"Cannot convert '{x}' to `datetime`") from exc
 

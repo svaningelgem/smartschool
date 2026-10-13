@@ -13,9 +13,10 @@ class _StudentNotesPoster: ...
 
 @dataclass(kw_only=True)
 class _PupilOverview(_StudentNotesPoster, SmartschoolXmlNoCache[_ItemT_co], ABC, metaclass=abc.ABCMeta):
-    pupil_id: str | None = None
+    user_id: str = ""
     group_id: int = 0
     since: date | None = None
+    until: date | None = None
 
 @dataclass
 class StudentNotes(_PupilOverview[objects.StudentNote]): ...
