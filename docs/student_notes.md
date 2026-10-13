@@ -58,8 +58,8 @@ detail = StudentNoteDetails(session, item_id=note.item_id).get()
 
 print(detail.text)      # an announcement's free text, as plain text
 print(detail.text_html) # the same text as the HTML Smartschool sends
-print(detail.measure)   # the chosen disciplinary measure, if any
-print(detail.date)      # only for categories that have a date parameter
+print(detail.measure)   # the chosen disciplinary measure, "" when there is none
+print(detail.date)      # only for categories that have a date parameter, else None
 print(detail.fields)    # every other parameter by title, e.g. the teacher
 print(detail.attachments)
 ```
@@ -74,6 +74,7 @@ Reading the details does not mark a note as viewed.
 ## Caveats
 
 - This is an undocumented interface. Categories, parameters and their ids differ per school and can change without notice, so the details are
-  interpreted by type and title, and unknown fields are ignored. All `StudentNoteDetail` properties are optional.
+  interpreted by type and title, and unknown parameters land in `fields`. A property whose parameter is missing is empty
+  (`""`, `[]`, `{}`); only `date` is `None` then.
 - What a pupil gets to see is decided by the server; `private` is only marked, not filtered.
 - Read-only: nothing here can change a note.

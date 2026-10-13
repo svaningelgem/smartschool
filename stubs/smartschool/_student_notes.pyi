@@ -2,12 +2,15 @@
 import abc
 from abc import ABC
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime
+from typing import Any
+
+from pydantic.dataclasses import dataclass as pydantic_dataclass
 
 from . import _objects as objects
 from ._xml_interface import SmartschoolXmlNoCache, _ItemT_co
 
-__all__ = ["StudentAbsences", "StudentNoteDetails", "StudentNotes"]
+__all__ = ["StudentAbsences", "StudentNoteDetail", "StudentNoteDetails", "StudentNotes"]
 
 class _StudentNotesPoster: ...
 
@@ -24,6 +27,21 @@ class StudentNotes(_PupilOverview[objects.StudentNote]): ...
 @dataclass
 class StudentAbsences(_PupilOverview[objects.StudentAbsence]): ...
 
+@pydantic_dataclass
+class StudentNoteDetail(objects.StudentNoteDetail):
+    @property
+    def text_html(self) -> str: ...
+    @property
+    def text(self) -> str: ...
+    @property
+    def date(self) -> datetime | None: ...
+    @property
+    def measure(self) -> str: ...
+    @property
+    def attachments(self) -> list[Any]: ...
+    @property
+    def fields(self) -> dict[str, str]: ...
+
 @dataclass(kw_only=True)
-class StudentNoteDetails(_StudentNotesPoster, SmartschoolXmlNoCache[objects.StudentNoteDetail]):
+class StudentNoteDetails(_StudentNotesPoster, SmartschoolXmlNoCache[StudentNoteDetail]):
     item_id: int

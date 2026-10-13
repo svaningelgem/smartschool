@@ -1,18 +1,17 @@
 from __future__ import annotations
 
-import json
 import sys
 from datetime import date, datetime
 from enum import IntEnum
 from functools import cached_property
-from typing import Annotated, Any, Literal
+from typing import Annotated, Literal
 
 from logprise import logger
 from pydantic import AliasChoices, BeforeValidator, ConfigDict, StringConstraints
 from pydantic.alias_generators import to_camel
 from pydantic.dataclasses import Field, dataclass
 
-from ._common import as_float, convert_epoch_to_datetime, convert_to_date, convert_to_datetime, html_to_text
+from ._common import as_float, convert_to_date, convert_to_datetime
 
 if sys.version_info >= (3, 11):
     from enum import StrEnum
@@ -23,6 +22,32 @@ else:  # pragma: no cover
         __str__ = str.__str__
 
 
+class MissingStrEnum(StrEnum):
+    """
+    A `StrEnum` that keeps an unknown (school-specific) code as an ad-hoc member, with a warning, instead of failing the record.
+
+    Subclasses say how the warning names the value: `class PartOfDay(MissingStrEnum, label="part of the day")`.
+    (A plain class constant would become an enum member, hence the class keyword.)
+    """
+
+    _label: str
+
+    def __init_subclass__(cls, *, label: str = "value", **kwargs) -> None:
+        super().__init_subclass__(**kwargs)
+        cls._label = label
+
+    @classmethod
+    def _missing_(cls, value: object) -> MissingStrEnum | None:
+        if not isinstance(value, str):
+            return None
+        logger.warning("Unknown {} {!r}, please report it", cls._label, value)
+        member = str.__new__(cls, value)
+        member._name_ = value.upper()
+        member._value_ = value
+        cls._value2member_map_[value] = member  # the next lookup finds it, without a warning
+        return member
+
+
 String = Annotated[str, StringConstraints(strip_whitespace=True)]
 # `(?i)` inline flag = case-insensitive; pydantic-v2 StringConstraints over the legacy
 # constr(pattern=...) form (which static analysers using v1 stubs misread).
@@ -31,15 +56,13 @@ UUID = Annotated[str, StringConstraints(pattern=r"(?i)^[0-9a-f]{8}-[0-9a-f]{4}-[
 Url = String
 Date = Annotated[date, BeforeValidator(convert_to_date)]
 DateTime = Annotated[datetime, BeforeValidator(convert_to_datetime)]
-EpochDateTime = Annotated[datetime, BeforeValidator(convert_epoch_to_datetime)]
-EpochDate = Annotated[date, BeforeValidator(lambda v: convert_epoch_to_datetime(v).date())]
 # An empty XML leaf arrives as None.
 OptionalString = Annotated[String, BeforeValidator(lambda v: v or "")]
 
 _config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
 
-class GraphicColor(StrEnum):
+class GraphicColor(MissingStrEnum, label="graphic color"):
     """
     Colors emitted by Smartschool for ``PercentageGraphic`` / ``TextGraphic``.
 
@@ -83,16 +106,6 @@ class GraphicColor(StrEnum):
     VIOLET = "violet"
     WATERMELON = "watermelon"
     YELLOW = "yellow"
-
-    @classmethod
-    def _missing_(cls, value: object) -> GraphicColor | None:
-        if not isinstance(value, str):
-            return None
-        logger.warning("Unknown graphic color {!r}, please report it", value)
-        member = str.__new__(cls, value)
-        member._name_ = value.upper()
-        member._value_ = value
-        return member
 
 
 class ResultType(StrEnum):
@@ -673,26 +686,11 @@ class Report:
     schoolyear_label: String = Field()
 
 
-class PartOfDay(StrEnum):
-    """
-    Part of the day an absence applies to.
-
-    A school-specific code that isn't known here is kept as an ad-hoc member with a warning, instead of failing the whole list.
-    An absence without a code has no part of the day (`None`).
-    """
+class PartOfDay(MissingStrEnum, label="part of the day"):
+    """Part of the day an absence applies to; an absence without a code has none (`None`)."""
 
     MORNING = "VM"
     AFTERNOON = "NM"
-
-    @classmethod
-    def _missing_(cls, value: object) -> PartOfDay | None:
-        if not isinstance(value, str):
-            return None
-        logger.warning("Unknown part of the day {!r}, please report it", value)
-        member = str.__new__(cls, value)
-        member._name_ = value.upper()
-        member._value_ = value
-        return member
 
 
 @dataclass(config=_config)
@@ -710,7 +708,7 @@ class StudentNote:  # pylint: disable=too-many-instance-attributes  # mirrors th
     pupil_id: Annotated[int, Field(validation_alias="pupilID")]
     cat_id: Annotated[int, Field(validation_alias="catID")]
     cat_name: OptionalString
-    date: EpochDateTime
+    date: DateTime
     viewed: bool
     private: bool
     school_year: Annotated[OptionalString, Field(validation_alias="schoolyear")]
@@ -728,7 +726,7 @@ class StudentAbsence:  # pylint: disable=too-many-instance-attributes  # mirrors
     absent_id: Annotated[int, Field(validation_alias="absentID")]
     code: OptionalString
     description: Annotated[OptionalString, Field(validation_alias="desc")]
-    date: EpochDate
+    date: Date
     info: OptionalString
     color: OptionalString
     part_of_day: Annotated[PartOfDay | None, BeforeValidator(lambda v: v or None), Field(validation_alias="pod")]  # empty: no part of the day
@@ -763,65 +761,7 @@ class StudentNoteParam:
 
 @dataclass(config=_config)
 class StudentNoteDetail:
-    """
-    The content of one `StudentNote`, interpreted from its parameters. Which parameters exist differs per category.
-
-    `params` is the complete view; the properties interpret the first parameter of each type.
-    """
+    """The parameters of one `StudentNote`, as sent; `StudentNoteDetails` yields the subclass that interprets them."""
 
     item_id: int
     params: list[StudentNoteParam] = Field(default_factory=list, repr=False)  # personal content
-
-    def _first(self, param_type: StudentNoteParamType) -> StudentNoteParam | None:
-        return next((p for p in self.params if p.param_type == param_type), None)
-
-    @property
-    def text_html(self) -> str | None:
-        """The free text of an announcement, as the HTML Smartschool sends it."""
-        param = self._first(StudentNoteParamType.TEXT)
-        return param.value if param else None
-
-    @property
-    def text(self) -> str | None:
-        """
-        The free text of an announcement without HTML.
-
-        `None` only means the note has no such parameter: an empty text (e.g. `<p></p>`) gives `""`.
-        """
-        html = self.text_html
-        return html_to_text(html) if html is not None else None
-
-    @property
-    def date(self) -> datetime | None:
-        """The date parameter, for categories that have one (an announcement doesn't: use `StudentNote.date`)."""
-        param = self._first(StudentNoteParamType.DATE)
-        return convert_epoch_to_datetime(param.value) if param and param.value else None
-
-    @property
-    def measure(self) -> str | None:
-        """The text of the disciplinary measure ("ordemaatregel") that was chosen, if any."""
-        param = self._first(StudentNoteParamType.MEASURE)
-        return param.option_value if param else None
-
-    @property
-    def attachments(self) -> list[Any]:
-        """The attachments, as decoded from the JSON Smartschool sends; an empty list when there are none."""
-        param = self._first(StudentNoteParamType.ATTACHMENTS)
-        if not param or not param.option_value:
-            return []
-        try:
-            decoded = json.loads(param.option_value)
-        except json.JSONDecodeError:
-            logger.warning("Cannot decode the attachments of note {}", self.item_id)
-            return []
-        return decoded if isinstance(decoded, list) else []
-
-    @property
-    def fields(self) -> dict[str, str]:
-        """Every parameter the other properties don't show (e.g. the teacher, or a second date) by title; with equal titles the last wins."""
-        consumed = {
-            p.param_id
-            for t in (StudentNoteParamType.TEXT, StudentNoteParamType.MEASURE, StudentNoteParamType.ATTACHMENTS, StudentNoteParamType.DATE)
-            if (p := self._first(t))
-        }
-        return {p.title: p.value for p in self.params if p.param_id not in consumed and p.param_type != StudentNoteParamType.INSTRUCTION}

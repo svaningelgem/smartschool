@@ -19,7 +19,7 @@ from smartschool import (
     StudentNoteParam,
     StudentNoteParamType,
     StudentNotes,
-    convert_epoch_to_datetime,
+    convert_to_datetime,
 )
 
 _QUERIES = (StudentNotes, StudentAbsences)
@@ -179,6 +179,14 @@ def test_unknown_parts_of_the_day_are_kept(session: Smartschool, caplog):
     assert warnings == ["Unknown part of the day 'XX', please report it"]  # the empty code stays quiet
 
 
+def test_an_unknown_part_of_the_day_is_one_member_that_warns_once(caplog):
+    first, second = PartOfDay("YY"), PartOfDay("YY")
+
+    assert first is second
+    assert first not in set(PartOfDay)  # not promoted to a real member
+    assert [r.getMessage() for r in caplog.records if r.levelno == logging.WARNING] == ["Unknown part of the day 'YY', please report it"]
+
+
 def test_an_empty_part_of_the_day_is_none_without_a_warning(caplog):
     assert _absence(date(2025, 10, 6), part_of_day="").part_of_day is None  # a raw API value
     assert not caplog.records
@@ -249,7 +257,7 @@ def test_details_of_an_announcement(session: Smartschool, requests_mock):
     assert detail.text == "Synthetic: morgen gaan we naar het museum.\nNeem een lunchpakket mee & drinken.\nTot dan!"
     assert detail.fields == {"Leerkracht": "Voorbeeld Vera"}  # the fixed instruction (type 8) is ignored
     assert detail.date is None  # an announcement has no date parameter
-    assert detail.measure is None
+    assert detail.measure == ""
     assert detail.attachments == []
 
 
@@ -259,8 +267,8 @@ def test_a_measure_and_a_date(session: Smartschool):
     assert detail.measure == "2de keer: schriftelijke mededeling"
     assert detail.date == datetime.fromisoformat("2025-01-15T10:00:00+01:00")
     assert detail.fields == {"Leerkracht": "Proef Peter"}
-    assert detail.text_html is None
-    assert detail.text is None
+    assert detail.text_html == ""
+    assert detail.text == ""
     assert "schriftelijke" not in repr(detail)  # the measure is personal content
     assert "schriftelijke" not in repr(detail.params)
 
@@ -277,7 +285,7 @@ def test_a_single_param_is_still_a_list(session: Smartschool):
 
     assert [p.title for p in detail.params] == ["Leerkracht"]
     assert detail.params[0].param_type == 1  # a type that isn't in `StudentNoteParamType`
-    assert detail.measure is None
+    assert detail.measure == ""
     assert detail.attachments == []  # no attachments parameter at all
 
 
@@ -286,7 +294,7 @@ def test_no_params_gives_a_detail_without_params(session: Smartschool):
 
     assert detail.item_id == 5002
     assert detail.params == []
-    assert (detail.text, detail.date, detail.measure, detail.attachments, detail.fields) == (None, None, None, [], {})
+    assert (detail.text, detail.date, detail.measure, detail.attachments, detail.fields) == ("", None, "", [], {})
 
 
 def test_an_empty_answer_has_no_detail(session: Smartschool):
@@ -343,14 +351,14 @@ def test_repr_hides_the_personal_content_of_a_detail(session: Smartschool):
     ],
 )
 def test_epoch_seconds_are_brussels_time(value, expected):
-    assert convert_epoch_to_datetime(value) == datetime.fromisoformat(expected)
-    assert convert_epoch_to_datetime(value).utcoffset() == datetime.fromisoformat(expected).utcoffset()
+    assert convert_to_datetime(value) == datetime.fromisoformat(expected)
+    assert convert_to_datetime(value).utcoffset() == datetime.fromisoformat(expected).utcoffset()
 
 
-@pytest.mark.parametrize("value", [None, "", "yesterday", 10**30])
+@pytest.mark.parametrize("value", ["", "yesterday", 10**30])
 def test_epoch_seconds_that_are_not_a_date_are_rejected(value):
     with pytest.raises(SmartSchoolParsingError):
-        convert_epoch_to_datetime(value)
+        convert_to_datetime(value)
 
 
 @pytest.mark.parametrize(

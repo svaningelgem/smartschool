@@ -7,7 +7,6 @@ from ._agenda import SmartschoolMomentInfos as SmartschoolMomentInfos
 from ._common import IsSaved as IsSaved
 from ._common import as_float as as_float
 from ._common import bs4_html as bs4_html
-from ._common import convert_epoch_to_datetime as convert_epoch_to_datetime
 from ._common import convert_to_date as convert_to_date
 from ._common import convert_to_datetime as convert_to_datetime
 from ._common import create_filesystem_safe_filename as create_filesystem_safe_filename
@@ -107,7 +106,6 @@ from ._objects import SkoreWorkYear as SkoreWorkYear
 from ._objects import Student as Student
 from ._objects import StudentAbsence as StudentAbsence
 from ._objects import StudentNote as StudentNote
-from ._objects import StudentNoteDetail as StudentNoteDetail
 from ._objects import StudentNoteParam as StudentNoteParam
 from ._objects import StudentNoteParamType as StudentNoteParamType
 from ._objects import StudentSupportLink as StudentSupportLink
@@ -124,6 +122,7 @@ from ._results import Result as Result
 from ._results import Results as Results
 from ._session import Smartschool as Smartschool
 from ._student_notes import StudentAbsences as StudentAbsences
+from ._student_notes import StudentNoteDetail as StudentNoteDetail
 from ._student_notes import StudentNoteDetails as StudentNoteDetails
 from ._student_notes import StudentNotes as StudentNotes
 from ._student_support import StudentSupportLinks as StudentSupportLinks
@@ -243,7 +242,6 @@ __all__ = [
     "UserSeeProperties",
     "as_float",
     "bs4_html",
-    "convert_epoch_to_datetime",
     "convert_to_date",
     "convert_to_datetime",
     "create_filesystem_safe_filename",

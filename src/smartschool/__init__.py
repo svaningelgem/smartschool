@@ -3,7 +3,6 @@ from ._common import (
     IsSaved,
     as_float,
     bs4_html,
-    convert_epoch_to_datetime,
     convert_to_date,
     convert_to_datetime,
     create_filesystem_safe_filename,
@@ -91,7 +90,6 @@ from ._objects import (
     Student,
     StudentAbsence,
     StudentNote,
-    StudentNoteDetail,
     StudentNoteParam,
     StudentNoteParamType,
     StudentSupportLink,
@@ -105,7 +103,7 @@ from ._planner import ApplicableAssignmentTypes, PlannedElements
 from ._reports import Report, Reports
 from ._results import Result, Results
 from ._session import Smartschool
-from ._student_notes import StudentAbsences, StudentNoteDetails, StudentNotes
+from ._student_notes import StudentAbsences, StudentNoteDetail, StudentNoteDetails, StudentNotes
 from ._student_support import StudentSupportLinks
 
 # pylint: disable=duplicate-code  # the re-export list restates each module's __all__
@@ -224,7 +222,6 @@ __all__ = [
     "UserSeeProperties",
     "as_float",
     "bs4_html",
-    "convert_epoch_to_datetime",
     "convert_to_date",
     "convert_to_datetime",
     "create_filesystem_safe_filename",

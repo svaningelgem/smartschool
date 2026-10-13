@@ -4,11 +4,22 @@ import json
 from abc import ABC
 from dataclasses import dataclass
 from datetime import date, timedelta
+from typing import TYPE_CHECKING, Any
+
+from logprise import logger
+from pydantic.dataclasses import dataclass as pydantic_dataclass
 
 from . import _objects as objects
+from ._common import convert_to_datetime, html_to_text
+from ._objects import StudentNoteParamType
 from ._xml_interface import SmartschoolXmlNoCache, _ItemT_co
 
-__all__ = ["StudentAbsences", "StudentNoteDetails", "StudentNotes"]
+if TYPE_CHECKING:
+    from datetime import datetime
+
+    from ._objects import StudentNoteParam
+
+__all__ = ["StudentAbsences", "StudentNoteDetail", "StudentNoteDetails", "StudentNotes"]
 
 # Smartschool wants a date range; this one reaches back before any pupil's file starts.
 _EARLIEST = date(2000, 1, 1)
@@ -103,8 +114,67 @@ class StudentAbsences(_PupilOverview[objects.StudentAbsence]):
         return objects.StudentAbsence
 
 
+@pydantic_dataclass
+class StudentNoteDetail(objects.StudentNoteDetail):
+    """
+    The content of one `StudentNote`, interpreted from its parameters. Which parameters exist differs per category.
+
+    `params` is the complete view; the properties interpret the first parameter of each type. A property whose parameter
+    is missing answers empty (`""`, `[]`, `{}`); only `date` is `None` then.
+    """
+
+    def _first(self, param_type: StudentNoteParamType) -> StudentNoteParam | None:
+        return next((p for p in self.params if p.param_type == param_type), None)
+
+    @property
+    def text_html(self) -> str:
+        """The free text of an announcement as the HTML Smartschool sends it; empty when the note has none."""
+        param = self._first(StudentNoteParamType.TEXT)
+        return param.value if param else ""
+
+    @property
+    def text(self) -> str:
+        """The free text of an announcement without HTML; empty when the note has none."""
+        return html_to_text(self.text_html)
+
+    @property
+    def date(self) -> datetime | None:
+        """The date parameter, for categories that have one (an announcement doesn't: use `StudentNote.date`)."""
+        param = self._first(StudentNoteParamType.DATE)
+        return convert_to_datetime(param.value) if param and param.value else None
+
+    @property
+    def measure(self) -> str:
+        """The text of the disciplinary measure ("ordemaatregel") that was chosen; empty when there is none."""
+        param = self._first(StudentNoteParamType.MEASURE)
+        return param.option_value if param else ""
+
+    @property
+    def attachments(self) -> list[Any]:
+        """The attachments, as decoded from the JSON Smartschool sends; an empty list when there are none."""
+        param = self._first(StudentNoteParamType.ATTACHMENTS)
+        if not param or not param.option_value:
+            return []
+        try:
+            decoded = json.loads(param.option_value)
+        except json.JSONDecodeError:
+            logger.warning("Cannot decode the attachments of note {}", self.item_id)
+            return []
+        return decoded if isinstance(decoded, list) else []
+
+    @property
+    def fields(self) -> dict[str, str]:
+        """Every parameter the other properties don't show (e.g. the teacher, or a second date) by title; with equal titles the last wins."""
+        consumed = {
+            p.param_id
+            for t in (StudentNoteParamType.TEXT, StudentNoteParamType.MEASURE, StudentNoteParamType.ATTACHMENTS, StudentNoteParamType.DATE)
+            if (p := self._first(t))
+        }
+        return {p.title: p.value for p in self.params if p.param_id not in consumed and p.param_type != StudentNoteParamType.INSTRUCTION}
+
+
 @dataclass(kw_only=True)
-class StudentNoteDetails(_StudentNotesPoster, SmartschoolXmlNoCache[objects.StudentNoteDetail]):
+class StudentNoteDetails(_StudentNotesPoster, SmartschoolXmlNoCache[StudentNoteDetail]):
     """
     The content of one `StudentNote`: it yields a single `StudentNoteDetail`.
 
@@ -137,8 +207,8 @@ class StudentNoteDetails(_StudentNotesPoster, SmartschoolXmlNoCache[objects.Stud
         return ".//items"
 
     @property
-    def _object_to_instantiate(self) -> type[objects.StudentNoteDetail]:
-        return objects.StudentNoteDetail
+    def _object_to_instantiate(self) -> type[StudentNoteDetail]:
+        return StudentNoteDetail
 
     def _post_process_element(self, element: dict) -> None:
         items = element.pop("item", None) or []  # <items/> arrives as {}; a single <item> is not a list

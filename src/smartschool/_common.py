@@ -27,7 +27,6 @@ __all__ = [
     "IsSaved",
     "as_float",
     "bs4_html",
-    "convert_epoch_to_datetime",
     "convert_to_date",
     "convert_to_datetime",
     "create_filesystem_safe_filename",
@@ -298,7 +297,10 @@ def xml_to_dict(element, *, depth: int = 0):
     return result
 
 
-def convert_to_datetime(x: str | String | date | datetime | None) -> datetime:
+_BRUSSELS = ZoneInfo("Europe/Brussels")
+
+
+def convert_to_datetime(x: str | String | float | date | datetime | None) -> datetime:
     if x is None:
         return datetime.now().astimezone()
 
@@ -316,39 +318,28 @@ def convert_to_datetime(x: str | String | date | datetime | None) -> datetime:
         "%Y-%m-%d",
     ]
 
-    for fmt in possible_formats:
-        with contextlib.suppress(ValueError):
-            parsed = datetime.strptime(x, fmt)
-            if parsed.tzinfo is None:
-                return parsed.astimezone()
-            return parsed
+    if isinstance(x, str):
+        for fmt in possible_formats:
+            with contextlib.suppress(ValueError):
+                parsed = datetime.strptime(x, fmt)
+                if parsed.tzinfo is None:
+                    return parsed.astimezone()
+                return parsed
+
+    # Epoch seconds (the LVS module sends these): an instant, shown in Smartschool's own timezone.
+    with contextlib.suppress(TypeError, ValueError, OverflowError, OSError):
+        return datetime.fromtimestamp(float(x), tz=_BRUSSELS)
 
     raise SmartSchoolParsingError(f"Cannot convert '{x}' to `datetime`")
 
 
-def convert_epoch_to_datetime(x: str | float | date | datetime | None) -> datetime:
-    """Convert epoch-seconds (as the LVS module sends them) to an aware `datetime` in Smartschool's own timezone."""
-    if isinstance(x, date):  # a datetime is a date too
-        return convert_to_datetime(x)
-
-    try:
-        return datetime.fromtimestamp(float(x), tz=ZoneInfo("Europe/Brussels"))  # ty: ignore[invalid-argument-type]  # None is caught below
-    except (TypeError, ValueError, OverflowError, OSError) as exc:
-        raise SmartSchoolParsingError(f"Cannot convert '{x}' to `datetime`") from exc
-
-
-def convert_to_date(x: str | String | date | datetime | None) -> date:
-    if x is None:
-        return date.today()
-    if isinstance(x, datetime):
+def convert_to_date(x: str | String | float | date | datetime | None) -> date:
+    if isinstance(x, datetime):  # a naive one keeps its own day
         return x.date()
-    if isinstance(x, date):
-        return x
-
-    with contextlib.suppress(ValueError):
-        return datetime.strptime(x, "%Y-%m-%d").date()
-
-    raise SmartSchoolParsingError(f"Cannot convert '{x}' to `date`")
+    try:
+        return convert_to_datetime(x).date()
+    except SmartSchoolParsingError as exc:
+        raise SmartSchoolParsingError(f"Cannot convert '{x}' to `date`") from exc
 
 
 def parse_size(size_str: str | float | None) -> float | None:

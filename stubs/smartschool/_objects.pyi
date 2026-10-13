@@ -2,31 +2,30 @@
 from datetime import date, datetime
 from enum import Enum, IntEnum
 from functools import cached_property as cached_property
-from typing import Any, Literal
+from typing import Literal
 
 from _typeshed import Incomplete
 from pydantic.dataclasses import dataclass
 
 from ._common import as_float as as_float
-from ._common import convert_epoch_to_datetime as convert_epoch_to_datetime
 from ._common import convert_to_date as convert_to_date
 from ._common import convert_to_datetime as convert_to_datetime
-from ._common import html_to_text as html_to_text
 
 class StrEnum(str, Enum):
     __str__ = ...
+
+class MissingStrEnum(StrEnum):
+    def __init_subclass__(cls, *, label: str = "value", **kwargs) -> None: ...
 
 String = str
 UUID = str
 Url = String
 Date = date
 DateTime = datetime
-EpochDateTime = datetime
-EpochDate = date
 OptionalString = str
 _config: Incomplete
 
-class GraphicColor(StrEnum):
+class GraphicColor(MissingStrEnum, label="graphic color"):
     AQUA = "aqua"
     BEACH = "beach"
     BLACK = "black"
@@ -563,7 +562,7 @@ class Report:
     class_: SchoolClass
     schoolyear_label: String
 
-class PartOfDay(StrEnum):
+class PartOfDay(MissingStrEnum, label="part of the day"):
     MORNING = "VM"
     AFTERNOON = "NM"
 
@@ -574,7 +573,7 @@ class StudentNote:
     pupil_id: int
     cat_id: int
     cat_name: OptionalString
-    date: EpochDateTime
+    date: DateTime
     viewed: bool
     private: bool
     school_year: OptionalString
@@ -588,7 +587,7 @@ class StudentAbsence:
     absent_id: int
     code: OptionalString
     description: OptionalString
-    date: EpochDate
+    date: Date
     info: OptionalString
     color: OptionalString
     part_of_day: PartOfDay | None
@@ -613,16 +612,3 @@ class StudentNoteParam:
 class StudentNoteDetail:
     item_id: int
     params: list[StudentNoteParam] = ...
-
-    @property
-    def text_html(self) -> str | None: ...
-    @property
-    def text(self) -> str | None: ...
-    @property
-    def date(self) -> datetime | None: ...
-    @property
-    def measure(self) -> str | None: ...
-    @property
-    def attachments(self) -> list[Any]: ...
-    @property
-    def fields(self) -> dict[str, str]: ...
