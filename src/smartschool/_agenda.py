@@ -69,21 +69,10 @@ class SmartschoolLessons(AgendaPoster[AgendaLesson]):
     - someSubjectsEmpty
     """
 
-    @property
-    def _xpath(self) -> str:
-        return ".//lesson"
-
-    @property
-    def _object_to_instantiate(self) -> type[AgendaLesson]:
-        return AgendaLesson
-
-    @property
-    def _subsystem(self) -> str:
-        return "agenda"
-
-    @property
-    def _action(self) -> str:
-        return "get lessons"
+    _subsystem: ClassVar[str] = "agenda"
+    _action: ClassVar[str] = "get lessons"
+    _xpath: ClassVar[str] = ".//lesson"
+    _object_to_instantiate: ClassVar[type[AgendaLesson]] = AgendaLesson
 
     @property
     def _params(self) -> dict:
@@ -118,21 +107,10 @@ class SmartschoolHours(AgendaPoster[objects.AgendaHour]):
     - title: how it is called in the agenda
     """
 
-    @property
-    def _xpath(self) -> str:
-        return ".//hour"
-
-    @property
-    def _object_to_instantiate(self) -> type[objects.AgendaHour]:
-        return objects.AgendaHour
-
-    @property
-    def _subsystem(self) -> str:
-        return "grid"
-
-    @property
-    def _action(self) -> str:
-        return "get hours"
+    _subsystem: ClassVar[str] = "grid"
+    _action: ClassVar[str] = "get hours"
+    _xpath: ClassVar[str] = ".//hour"
+    _object_to_instantiate: ClassVar[type[objects.AgendaHour]] = objects.AgendaHour
 
     @property
     def _params(self) -> dict:
@@ -159,28 +137,17 @@ class SmartschoolMomentInfos(AgendaPoster[objects.AgendaMomentInfo]):  # pylint:
     - title: how it is called in the agenda
     """
 
+    _subsystem: ClassVar[str] = "agenda"
+    _action: ClassVar[str] = "get moment info"
+    _xpath: ClassVar[str] = ".//class"
+    _object_to_instantiate: ClassVar[type[objects.AgendaMomentInfo]] = objects.AgendaMomentInfo
+
     def __init__(self, session: Smartschool, moment_id: str):
         super().__init__(session=session)
 
         self._moment_id = str(moment_id).strip()
         if not self._moment_id:
             raise ValueError("Please provide a valid MomentID")
-
-    @property
-    def _xpath(self) -> str:
-        return ".//class"
-
-    @property
-    def _object_to_instantiate(self) -> type[objects.AgendaMomentInfo]:
-        return objects.AgendaMomentInfo
-
-    @property
-    def _subsystem(self) -> str:
-        return "agenda"
-
-    @property
-    def _action(self) -> str:
-        return "get moment info"
 
     @property
     def _params(self) -> dict:
