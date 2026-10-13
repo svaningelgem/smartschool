@@ -102,6 +102,10 @@ from ._objects import SchoolClass as SchoolClass
 from ._objects import ShortMessage as ShortMessage
 from ._objects import SkoreWorkYear as SkoreWorkYear
 from ._objects import Student as Student
+from ._objects import StudentAbsence as StudentAbsence
+from ._objects import StudentNote as StudentNote
+from ._objects import StudentNoteDetail as StudentNoteDetail
+from ._objects import StudentNoteParam as StudentNoteParam
 from ._objects import StudentSupportLink as StudentSupportLink
 from ._objects import Teacher as Teacher
 from ._objects import TextGraphic as TextGraphic
@@ -115,6 +119,9 @@ from ._reports import Reports as Reports
 from ._results import Result as Result
 from ._results import Results as Results
 from ._session import Smartschool as Smartschool
+from ._student_notes import StudentAbsences as StudentAbsences
+from ._student_notes import StudentNoteDetails as StudentNoteDetails
+from ._student_notes import StudentNotes as StudentNotes
 from ._student_support import StudentSupportLinks as StudentSupportLinks
 
 __all__ = [
@@ -214,6 +221,13 @@ __all__ = [
     "SortField",
     "SortOrder",
     "Student",
+    "StudentAbsence",
+    "StudentAbsences",
+    "StudentNote",
+    "StudentNoteDetail",
+    "StudentNoteDetails",
+    "StudentNoteParam",
+    "StudentNotes",
     "StudentSupportLink",
     "StudentSupportLinks",
     "Teacher",

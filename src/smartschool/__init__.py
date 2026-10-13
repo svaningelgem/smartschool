@@ -86,6 +86,10 @@ from ._objects import (
     ShortMessage,
     SkoreWorkYear,
     Student,
+    StudentAbsence,
+    StudentNote,
+    StudentNoteDetail,
+    StudentNoteParam,
     StudentSupportLink,
     Teacher,
     TextGraphic,
@@ -97,6 +101,7 @@ from ._planner import ApplicableAssignmentTypes, PlannedElements
 from ._reports import Report, Reports
 from ._results import Result, Results
 from ._session import Smartschool
+from ._student_notes import StudentAbsences, StudentNoteDetails, StudentNotes
 from ._student_support import StudentSupportLinks
 
 # pylint: disable=duplicate-code  # the re-export list restates each module's __all__
@@ -197,6 +202,13 @@ __all__ = [
     "SortField",
     "SortOrder",
     "Student",
+    "StudentAbsence",
+    "StudentAbsences",
+    "StudentNote",
+    "StudentNoteDetail",
+    "StudentNoteDetails",
+    "StudentNoteParam",
+    "StudentNotes",
     "StudentSupportLink",
     "StudentSupportLinks",
     "Teacher",

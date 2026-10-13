@@ -2,14 +2,16 @@
 from datetime import date, datetime
 from enum import Enum
 from functools import cached_property as cached_property
-from typing import Literal
+from typing import Any, Literal
 
 from _typeshed import Incomplete
 from pydantic.dataclasses import dataclass
 
 from ._common import as_float as as_float
+from ._common import convert_epoch_to_datetime as convert_epoch_to_datetime
 from ._common import convert_to_date as convert_to_date
 from ._common import convert_to_datetime as convert_to_datetime
+from ._common import html_to_text as html_to_text
 
 class StrEnum(str, Enum):
     __str__ = ...
@@ -19,6 +21,9 @@ UUID = str
 Url = String
 Date = date
 DateTime = datetime
+EpochDateTime = datetime
+EpochDate = date
+OptionalString = str
 _config: Incomplete
 
 class GraphicColor(StrEnum):
@@ -557,3 +562,56 @@ class Report:
     download_url: Url
     class_: SchoolClass
     schoolyear_label: String
+
+@dataclass(config=_config)
+class StudentNote:
+    item_id: int
+    group_id: int
+    pupil_id: int
+    cat_id: int
+    cat_name: OptionalString
+    date: EpochDateTime
+    author_reverse: OptionalString
+    viewed: bool
+    private: bool
+    school_year: OptionalString
+    study_direction: OptionalString
+    title: OptionalString = ""
+    author: OptionalString = ""
+
+@dataclass(config=_config)
+class StudentAbsence:
+    absent_id: int
+    code: OptionalString
+    description: OptionalString
+    date: EpochDate
+    info: OptionalString
+    color: OptionalString
+    part_of_day: OptionalString
+    school_year: OptionalString
+
+@dataclass(config=_config)
+class StudentNoteParam:
+    param_id: int
+    param_type: int
+    title: OptionalString
+    value: str | None = None
+    option_value: str | None = None
+
+@dataclass(config=_config)
+class StudentNoteDetail:
+    item_id: int
+    params: list[StudentNoteParam] = ...
+
+    @property
+    def text_html(self) -> str | None: ...
+    @property
+    def text(self) -> str | None: ...
+    @property
+    def date(self) -> datetime | None: ...
+    @property
+    def measure(self) -> str | None: ...
+    @property
+    def attachments(self) -> list[Any]: ...
+    @property
+    def fields(self) -> dict[str, str]: ...

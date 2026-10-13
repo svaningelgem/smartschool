@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- synthetic: invented teacher, texts and dates; not a recording of a real Smartschool answer -->
+<server>
+    <response>
+        <status>ok</status>
+        <actions>
+            <action>
+                <subsystem>lvs_pupils</subsystem>
+                <command>renderPupilNoteParams</command>
+                <data>
+                    <items>
+                        <item>
+                            <paramID>701</paramID>
+                            <paramType>1</paramType>
+                            <title>Leerkracht</title>
+                            <value>Voorbeeld Vera</value>
+                            <optionvalue/>
+                            <sortorder>1</sortorder>
+                        </item>
+                        <item>
+                            <paramID>702</paramID>
+                            <paramType>2</paramType>
+                            <title>Mededeling</title>
+                            <value>&lt;p&gt;Synthetic: morgen gaan we naar het museum.&lt;/p&gt;&lt;p&gt;Neem een &lt;strong&gt;lunchpakket&lt;/strong&gt; mee &amp;amp; drinken.&lt;br&gt;Tot dan!&lt;/p&gt;</value>
+                            <optionvalue/>
+                            <sortorder>2</sortorder>
+                        </item>
+                        <item>
+                            <paramID>703</paramID>
+                            <paramType>8</paramType>
+                            <title>Reageren op deze mededeling is niet mogelijk</title>
+                            <value/>
+                            <optionvalue>1</optionvalue>
+                            <sortorder>3</sortorder>
+                        </item>
+                        <item>
+                            <paramID>704</paramID>
+                            <paramType>6</paramType>
+                            <title>Bijlagen</title>
+                            <value>files</value>
+                            <optionvalue>[]</optionvalue>
+                            <sortorder>4</sortorder>
+                        </item>
+                    </items>
+                </data>
+            </action>
+        </actions>
+    </response>
+</server>

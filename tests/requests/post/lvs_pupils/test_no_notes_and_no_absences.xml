@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- synthetic: invented pupil, teachers, titles and dates; not a recording of a real Smartschool answer -->
+<server>
+    <response>
+        <status>ok</status>
+        <actions>
+            <action>
+                <subsystem>lvs_pupils</subsystem>
+                <command>renderPupilAllNotes</command>
+                <data>
+                    <notes/>
+                    <absents/>
+                    <dates>{&quot;2025-2026&quot;:[]}</dates>
+                    <skore_rights>
+                        <viewLvsItems>1</viewLvsItems>
+                        <viewAbsents>1</viewAbsents>
+                    </skore_rights>
+                    <evals/>
+                    <messages/>
+                    <smartsignals/>
+                </data>
+            </action>
+        </actions>
+    </response>
+</server>

@@ -15,6 +15,7 @@ from enum import Enum, auto
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal, overload
 from urllib.parse import parse_qs, quote_plus, urlparse
+from zoneinfo import ZoneInfo
 
 from bs4 import BeautifulSoup, FeatureNotFound
 from logprise import logger
@@ -152,6 +153,23 @@ def bs4_html(html: str | bytes | Response) -> BeautifulSoup:
         return BeautifulSoup(html, features="lxml")
 
     return BeautifulSoup(html, features="html.parser")
+
+
+_BLOCK_TAGS = ["p", "div", "li", "ul", "ol", "tr", "td", "th", "blockquote", "h1", "h2", "h3", "h4", "h5", "h6"]
+_BREAK = "\x00"
+
+
+def html_to_text(html: str) -> str:
+    """Plain text of an HTML fragment: inline text stays together, blocks and `<br>` become lines (BeautifulSoup already skips script/style)."""
+    soup = bs4_html(html)
+    for tag in soup.find_all("br"):
+        tag.insert_before(_BREAK)
+    for tag in soup.find_all(_BLOCK_TAGS):
+        tag.insert_before(_BREAK)
+        tag.insert_after(_BREAK)
+
+    text = re.sub(r"\s+", " ", soup.get_text())
+    return "\n".join(line for part in text.split(_BREAK) if (line := part.strip()))
 
 
 def parse_smsc_vars(text: str) -> dict:
@@ -302,6 +320,14 @@ def convert_to_datetime(x: str | String | date | datetime | None) -> datetime:
             return parsed
 
     raise SmartSchoolParsingError(f"Cannot convert '{x}' to `datetime`")
+
+
+def convert_epoch_to_datetime(x: str | float | None) -> datetime:
+    """Convert epoch-seconds (as the LVS module sends them) to an aware `datetime` in Smartschool's own timezone."""
+    try:
+        return datetime.fromtimestamp(int(x), tz=ZoneInfo("Europe/Brussels"))  # ty: ignore[invalid-argument-type]  # None is caught below
+    except (TypeError, ValueError, OverflowError, OSError) as exc:
+        raise SmartSchoolParsingError(f"Cannot convert '{x}' to `datetime`") from exc
 
 
 def convert_to_date(x: str | String | date | datetime | None) -> date:
