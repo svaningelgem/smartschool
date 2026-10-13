@@ -5,12 +5,13 @@ from typing import ClassVar
 
 __all__ = ["AppCredentials", "Credentials", "EnvCredentials", "KeyringCredentials", "PathCredentials"]
 
+@dataclass(frozen=True, kw_only=True)
 class Credentials:
-    username: str
-    password: str
-    mfa: str
-    main_url: str
-    other_info: dict | None
+    username: str = ""
+    password: str = ""
+    main_url: str = ""
+    mfa: str = ""
+    other_info: dict | None = None
 
     def validate(self) -> None: ...
     def as_dict(self) -> dict[str, str | dict]: ...
