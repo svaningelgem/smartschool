@@ -32,7 +32,7 @@ from datetime import date
 notes = StudentNotes(session, since=date(2025, 9, 1))
 ```
 
-`StudentNote.pupil_id` is something else than `user_id`: only the numeric middle part of the user id.
+`StudentNote.pupil_id` is not the `user_id`: it is only the numeric middle part of the user id.
 The `title` and the author's name are left out of `repr()` so they don't end up in logs or tracebacks.
 
 ## Absences
@@ -44,7 +44,8 @@ for absence in StudentAbsences(session):
     print(f"{absence.date} {absence.part_of_day}: {absence.description}")
 ```
 
-`part_of_day` is a `PartOfDay` (`MORNING` = `VM`, `AFTERNOON` = `NM`), a `str` that stays a plain string in JSON; an unknown school-specific code is kept as is.
+`part_of_day` is a `PartOfDay` (`MORNING` = `VM`, `AFTERNOON` = `NM`), a `str` that stays a plain string in JSON; an unknown school-specific code is
+kept as is (with one warning), and an absence without a code has `None`.
 
 ## Details of one note
 
