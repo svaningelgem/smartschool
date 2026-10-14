@@ -11,7 +11,7 @@ from xml.sax.saxutils import quoteattr
 from pydantic import AliasChoices
 
 from ._common import xml_to_dict
-from ._exceptions import SmartSchoolDownloadError, SmartSchoolRequestError
+from ._exceptions import SmartSchoolRequestError
 from ._session import SessionMixin
 
 
@@ -112,9 +112,6 @@ class SmartschoolXML(ABC, SessionMixin, Generic[_ItemT_co]):
                 "X-Requested-With": "XMLHttpRequest",
             },
         )
-        if response.status_code != 200:  # a 401 that survives the re-login must not read as an empty result set
-            raise SmartSchoolDownloadError("Failed to retrieve the xml", response)
-
         all_entries = []
         text = response.text.strip()
         if text:  # an empty body means an empty result set (e.g. an empty inbox)

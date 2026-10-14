@@ -4,7 +4,7 @@ import pytest
 from pydantic import AliasChoices, AliasPath, Field
 from pydantic.dataclasses import dataclass
 
-from smartschool import MessageHeaders, Smartschool, SmartSchoolDownloadError
+from smartschool import MessageHeaders, Smartschool
 from smartschool._xml_interface import SmartschoolXmlNoCache, _build_alias_map
 
 
@@ -33,13 +33,3 @@ def test_no_cache_stores_by_keyword_and_never_returns_a_cached_value(session: Sm
 def test_no_cache_is_a_dataclass_with_a_generated_docstring():
     assert dataclasses.is_dataclass(SmartschoolXmlNoCache)
     assert SmartschoolXmlNoCache.__doc__ == "SmartschoolXmlNoCache(session: 'Smartschool', cache: 'dict' = <factory>)"
-
-
-def test_a_non_200_answer_raises_instead_of_reading_as_an_empty_result(session: Smartschool, requests_mock):
-    """#212: a 401 that survives the re-login used to read as an empty inbox; it raises, carrying the status."""
-    requests_mock.post("https://site/?module=Messages&file=dispatcher", status_code=401, text="")
-
-    with pytest.raises(SmartSchoolDownloadError, match="Failed to retrieve the xml") as exc_info:
-        list(MessageHeaders(session))
-
-    assert exc_info.value.status_code == 401

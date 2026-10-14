@@ -89,12 +89,13 @@ class Smartschool(Session, DevTracingMixin):
 
     def _handle_auth_redirect(self, response: Response) -> Response:
         """
-        Run the login/verification/2fa chain when the response is an auth page.
+        Run the login/verification/2fa chain when the response is an auth page or a bare 401.
 
-        Returns the incoming response unchanged if it's not on an auth URL, so
-        callers can invoke this on any response without gating themselves.
+        The XML dispatchers answer a dead session with a 401 instead of redirecting (an empty
+        200 when #165 was written), so that case fetches the login page itself. Any other
+        response is returned unchanged, so callers can invoke this without gating themselves.
         """
-        if not self._is_auth_url(response.url):
+        if not self._is_auth_url(response.url) and response.status_code != 401:
             return response
 
         if self._login_attempts >= self._max_login_attempts:
@@ -103,6 +104,8 @@ class Smartschool(Session, DevTracingMixin):
         logger.debug("Auth redirect detected: {}", response.url)
         self._login_attempts += 1
 
+        if not self._is_auth_url(response.url):  # a bare 401: fetch the login page ourselves
+            response = self._make_traced_request(super().request, "GET", self.create_url("/login"))
         if response.url.endswith("/login"):
             response = self._do_login(response)
         if response.url.endswith("/account-verification"):
@@ -164,19 +167,17 @@ class Smartschool(Session, DevTracingMixin):
 
         response = self._make_traced_request(super().request, method, full_url, **kwargs)
 
-        # A login page means the session is dead. So does a bare 401: the XML
-        # dispatchers don't redirect (an empty 200 when #165 was written, a 401
-        # since #212), so fetch the login page to enter the auth chain.
-        auth_needed = self._is_auth_url(response.url)
-        if response.status_code == 401:
-            response = self._make_traced_request(super().request, "GET", self.create_url("/login"))
-            auth_needed = True
+        # Drive the auth chain when the response is a login page or a bare 401
+        # (a no-op otherwise), remembering that it fired so the caller's
+        # request is redone afterwards.
+        auth_needed = self._is_auth_url(response.url) or response.status_code == 401
         response = self._handle_auth_redirect(response)
 
-        # Redo the caller's request once logged in, unless they were driving
-        # the auth flow themselves (e.g. session.get("/login")).
+        # Redo the caller's request once logged in — unless the caller was
+        # driving the auth flow themselves (e.g. session.get("/login")). Going
+        # through here again lets the attempt cap raise when the login doesn't stick.
         if auth_needed and not self._is_auth_url(full_url):
-            response = self._make_traced_request(super().request, method, full_url, **kwargs)
+            return self.request(method, full_url, **kwargs)
 
         if not self._is_auth_url(response.url):
             self._reset_login_attempts()
