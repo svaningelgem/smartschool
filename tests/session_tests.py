@@ -243,6 +243,28 @@ class TestAuthenticationFlow:
         protected_calls = [r for r in requests_mock.request_history if r.url == target]
         assert len(protected_calls) == 2
 
+    def test_a_401_logs_in_and_retries_the_original_request_once(self, session: Smartschool, requests_mock):
+        """A dead session gets a bare 401 from the XML dispatchers instead of a login redirect (#212): log in, then redo the request."""
+        target = "https://site/api/v1/protected"
+        requests_mock.get(target, [{"status_code": 401, "text": ""}, {"status_code": 200, "text": "authorized"}])
+
+        response = session.get("/api/v1/protected")
+
+        assert response.status_code == 200
+        assert response.text == "authorized"
+        assert len([r for r in requests_mock.request_history if r.url == target]) == 2
+
+    def test_a_401_that_survives_the_login_is_the_answer(self, session: Smartschool, requests_mock):
+        """When the server still says 401 after a login, the caller gets that 401, not the login page."""
+        target = "https://site/api/v1/forbidden"
+        requests_mock.get(target, status_code=401, text="")
+
+        response = session.get("/api/v1/forbidden")
+
+        assert response.status_code == 401
+        assert response.url == target
+        assert len([r for r in requests_mock.request_history if r.url == target]) == 2
+
     def test_max_login_attempts_exceeded(self, session):
         """Should raise error when max login attempts exceeded."""
         session._login_attempts = 3  # pylint: disable=protected-access  # white-box test

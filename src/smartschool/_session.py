@@ -74,11 +74,10 @@ class Smartschool(Session, DevTracingMixin):
 
     def ensure_authenticated(self) -> None:
         """
-        Make sure the session is logged in, triggering the lazy login when needed.
+        Log in up front when this session has not seen its user yet.
 
-        Handy before hitting an endpoint that answers unauthenticated requests with an
-        empty 200 instead of redirecting to ``/login`` (e.g. the XML message dispatcher),
-        where the transparent auth chain in :meth:`request` never fires.
+        A session that dies later is logged in again by :meth:`request`, which treats a
+        bare 401 like a redirect to ``/login``.
         """
         _ = self.authenticated_user
 
@@ -163,20 +162,20 @@ class Smartschool(Session, DevTracingMixin):
         # Convert relative URLs to absolute
         full_url = self.create_url(url) if not url.startswith("http") else url
 
-        # Make the request
         response = self._make_traced_request(super().request, method, full_url, **kwargs)
 
-        # Drive the auth chain if the response landed on a login page. The
-        # call is a no-op for non-auth responses, so no pre-check is needed
-        # here — but we still need to remember whether auth actually fired,
-        # so we can redo the caller's original request afterwards.
-        auth_redirected = self._is_auth_url(response.url)
+        # A login page means the session is dead. So does a bare 401: the XML
+        # dispatchers don't redirect (an empty 200 when #165 was written, a 401
+        # since #212), so fetch the login page to enter the auth chain.
+        auth_needed = self._is_auth_url(response.url)
+        if response.status_code == 401:
+            response = self._make_traced_request(super().request, "GET", self.create_url("/login"))
+            auth_needed = True
         response = self._handle_auth_redirect(response)
 
-        # If auth was triggered mid-request, redo the caller's original call
-        # now that we're logged in — unless the caller was explicitly driving
+        # Redo the caller's request once logged in, unless they were driving
         # the auth flow themselves (e.g. session.get("/login")).
-        if auth_redirected and not self._is_auth_url(full_url):
+        if auth_needed and not self._is_auth_url(full_url):
             response = self._make_traced_request(super().request, method, full_url, **kwargs)
 
         if not self._is_auth_url(response.url):

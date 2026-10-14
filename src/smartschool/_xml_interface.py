@@ -11,7 +11,7 @@ from xml.sax.saxutils import quoteattr
 from pydantic import AliasChoices
 
 from ._common import xml_to_dict
-from ._exceptions import SmartSchoolRequestError
+from ._exceptions import SmartSchoolDownloadError, SmartSchoolRequestError
 from ._session import SessionMixin
 
 
@@ -100,9 +100,7 @@ class SmartschoolXML(ABC, SessionMixin, Generic[_ItemT_co]):
         with contextlib.suppress(KeyError):
             return self._get_from_cache()
 
-        # The XML dispatcher answers an empty 200 (not a login redirect) to an
-        # unauthenticated session, so the transparent auth chain in
-        # Session.request never fires. Force the lazy login before POSTing.
+        # Logs in on a cold cache; a session that dies later gets a 401 below, which `request` answers with a login and a retry.
         self.session.ensure_authenticated()
 
         response = self.session.post(
@@ -114,6 +112,8 @@ class SmartschoolXML(ABC, SessionMixin, Generic[_ItemT_co]):
                 "X-Requested-With": "XMLHttpRequest",
             },
         )
+        if response.status_code != 200:  # a 401 that survives the re-login must not read as an empty result set
+            raise SmartSchoolDownloadError("Failed to retrieve the xml", response)
 
         all_entries = []
         text = response.text.strip()
