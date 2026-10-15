@@ -1,3 +1,7 @@
+## 0.12.1 (2026-10-15)
+- fix: log in again when a dead session is answered with a 401 (#219)
+
+
 ## 0.12.0 (2026-10-14)
 - feat: read the pupil-follow-up (LVS) notes and absences (#212)
 - fix: raise SmartSchoolRequestError on an XML error answer instead of returning nothing (#217)
