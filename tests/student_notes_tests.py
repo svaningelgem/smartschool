@@ -3,6 +3,7 @@ import json
 import logging
 import xml.etree.ElementTree as ET
 from datetime import date, datetime
+from pathlib import Path
 from urllib.parse import parse_qs
 
 import pytest
@@ -148,6 +149,14 @@ def test_no_notes_and_no_absences(session: Smartschool):
 
 def test_an_empty_body_is_an_empty_result(session: Smartschool):
     assert not list(StudentNotes(session))
+
+
+def test_a_dead_session_logs_in_again_and_still_lists_the_notes(session: Smartschool, requests_mock):
+    """#212: a cached user file with expired cookies gets an empty 401 from the dispatcher, which used to read as no notes."""
+    fixture = Path(__file__).parent / "requests/post/lvs_pupils/getUserData.xml"
+    requests_mock.post("https://site/?module=LVS&file=dispatcher", [{"status_code": 401, "text": ""}, {"text": fixture.read_text(encoding="utf8")}])
+
+    assert [n.item_id for n in StudentNotes(session)] == [5001, 5002, 5003]
 
 
 def test_only_absences(session: Smartschool):

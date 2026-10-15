@@ -74,11 +74,10 @@ class Smartschool(Session, DevTracingMixin):
 
     def ensure_authenticated(self) -> None:
         """
-        Make sure the session is logged in, triggering the lazy login when needed.
+        Log in up front when this session has not seen its user yet.
 
-        Handy before hitting an endpoint that answers unauthenticated requests with an
-        empty 200 instead of redirecting to ``/login`` (e.g. the XML message dispatcher),
-        where the transparent auth chain in :meth:`request` never fires.
+        A session that dies later is logged in again by :meth:`request`, which treats a
+        bare 401 like a redirect to ``/login``.
         """
         _ = self.authenticated_user
 
@@ -90,12 +89,13 @@ class Smartschool(Session, DevTracingMixin):
 
     def _handle_auth_redirect(self, response: Response) -> Response:
         """
-        Run the login/verification/2fa chain when the response is an auth page.
+        Run the login/verification/2fa chain when the response is an auth page or a bare 401.
 
-        Returns the incoming response unchanged if it's not on an auth URL, so
-        callers can invoke this on any response without gating themselves.
+        The XML dispatchers answer a dead session with a 401 instead of redirecting (an empty
+        200 when #165 was written), so that case fetches the login page itself. Any other
+        response is returned unchanged, so callers can invoke this without gating themselves.
         """
-        if not self._is_auth_url(response.url):
+        if not self._is_auth_url(response.url) and response.status_code != 401:
             return response
 
         if self._login_attempts >= self._max_login_attempts:
@@ -104,6 +104,8 @@ class Smartschool(Session, DevTracingMixin):
         logger.debug("Auth redirect detected: {}", response.url)
         self._login_attempts += 1
 
+        if not self._is_auth_url(response.url):  # a bare 401: fetch the login page ourselves
+            response = self._make_traced_request(super().request, "GET", self.create_url("/login"))
         if response.url.endswith("/login"):
             response = self._do_login(response)
         if response.url.endswith("/account-verification"):
@@ -163,21 +165,19 @@ class Smartschool(Session, DevTracingMixin):
         # Convert relative URLs to absolute
         full_url = self.create_url(url) if not url.startswith("http") else url
 
-        # Make the request
         response = self._make_traced_request(super().request, method, full_url, **kwargs)
 
-        # Drive the auth chain if the response landed on a login page. The
-        # call is a no-op for non-auth responses, so no pre-check is needed
-        # here — but we still need to remember whether auth actually fired,
-        # so we can redo the caller's original request afterwards.
-        auth_redirected = self._is_auth_url(response.url)
+        # Drive the auth chain when the response is a login page or a bare 401
+        # (a no-op otherwise), remembering that it fired so the caller's
+        # request is redone afterwards.
+        auth_needed = self._is_auth_url(response.url) or response.status_code == 401
         response = self._handle_auth_redirect(response)
 
-        # If auth was triggered mid-request, redo the caller's original call
-        # now that we're logged in — unless the caller was explicitly driving
-        # the auth flow themselves (e.g. session.get("/login")).
-        if auth_redirected and not self._is_auth_url(full_url):
-            response = self._make_traced_request(super().request, method, full_url, **kwargs)
+        # Redo the caller's request once logged in — unless the caller was
+        # driving the auth flow themselves (e.g. session.get("/login")). Going
+        # through here again lets the attempt cap raise when the login doesn't stick.
+        if auth_needed and not self._is_auth_url(full_url):
+            return self.request(method, full_url, **kwargs)
 
         if not self._is_auth_url(response.url):
             self._reset_login_attempts()
