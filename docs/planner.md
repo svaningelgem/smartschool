@@ -43,7 +43,14 @@ for element in elements:
 The `plannedElementType` field indicates the type:
 - `planned-assignments` - Assignments with courses, participants, and locations
 - `planned-to-dos` - Personal to-do items (may not have courses/participants)
-- `planned-placeholders` - Placeholder events
+- `planned-lessons` - Lessons in the timetable; the name is the lesson's subject
+- `planned-placeholders` - Timetable slots without content
+
+By default only assignments and to-dos are fetched. Pass `element_types` to choose, e.g. the timetable:
+
+```python
+timetable = PlannedElements(session, element_types=("planned-lessons", "planned-placeholders"))
+```
 
 ## Future Tasks
 

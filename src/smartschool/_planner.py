@@ -25,8 +25,24 @@ class ApplicableAssignmentTypes(SessionMixin, Iterable[ApplicableAssignmentType]
 
 @dataclass
 class PlannedElements(SessionMixin, Iterable[PlannedElement]):
+    """
+    The elements in the planner of the logged-in user between `from_date` and `till_date`.
+
+    `element_types` picks what the planner returns; the default is the assignments and to-dos. Other types the planner
+    knows include `planned-lessons` (the timetable, with each lesson's subject as its name) and `planned-placeholders`
+    (timetable slots without content).
+
+    Example:
+    -------
+    >>> for lesson in PlannedElements(session, element_types=("planned-lessons",)):
+    >>>     print(lesson.period.date_time_from, lesson.courses[0].name, lesson.name)
+    2025-05-06 08:30:00+02:00 Wiskunde Tweedegraadsvergelijkingen
+
+    """
+
     from_date: date = field(default_factory=lambda: datetime.now(tz=ZoneInfo("Europe/Brussels")).replace(hour=0, minute=0, second=0, microsecond=0))
     till_date: date | None = None
+    element_types: tuple[str, ...] = ("planned-assignments", "planned-to-dos")
 
     def __post_init__(self):
         if self.till_date is None:
@@ -36,7 +52,7 @@ class PlannedElements(SessionMixin, Iterable[PlannedElement]):
         assert self.till_date is not None  # set in __post_init__
         data = self.session.json(
             f"/planner/api/v1/planned-elements/user/{self.session.authenticated_user['id']}",
-            data={"from": self.from_date.isoformat(), "to": self.till_date.isoformat(), "types": "planned-assignments,planned-to-dos"},
+            data={"from": self.from_date.isoformat(), "to": self.till_date.isoformat(), "types": ",".join(self.element_types)},
         )
         for element in data:
             yield PlannedElement(**element)
