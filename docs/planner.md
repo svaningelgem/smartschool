@@ -2,7 +2,8 @@
 
 ## Planned Elements
 
-Scheduled assignments, activities, and to-dos from the Smartschool planner.
+Everything in the Smartschool planner: assignments and to-dos by default, and on request the timetable, meetings and
+lesson-free days.
 
 ```python
 from datetime import date
@@ -10,19 +11,18 @@ from smartschool import Smartschool, PathCredentials, PlannedElements
 
 session = Smartschool(PathCredentials())
 
-# Default: today + 34 days
+# Default: the assignments and to-dos of today + 34 days
 for element in PlannedElements(session):
-    print(f"{element.name} ({element.plannedElementType})")
-    print(f"  From: {element.period.dateTimeFrom}")
-    print(f"  To:   {element.period.dateTimeTo}")
+    print(f"{element.name} ({element.planned_element_type})")
+    print(f"  From: {element.period.date_time_from}")
+    print(f"  To:   {element.period.date_time_to}")
     print(f"  Color: {element.color}")
 
     if element.courses:
         print(f"  Courses: {', '.join(c.name for c in element.courses)}")
 
-    if element.organisers:
-        for user in element.organisers.users:
-            print(f"  Organiser: {user.name.startingWithFirstName}")
+    for user in element.organisers.users:
+        print(f"  Organiser: {user.name.starting_with_first_name}")
 ```
 
 ### Custom Date Range
@@ -40,7 +40,7 @@ for element in elements:
 
 ### Element Types
 
-The `plannedElementType` field indicates the type:
+`element_types` picks what is fetched, and `planned_element_type` says what each element is:
 - `planned-assignments` - Assignments with courses, participants, and locations
 - `planned-to-dos` - Personal to-do items (may not have courses/participants)
 - `planned-lessons` - Lessons in the timetable; the name is the lesson's subject
@@ -63,7 +63,8 @@ everything = PlannedElements(session, element_types=())
 Smartschool has no call that lists the types, and refuses a request naming one it does not know. Besides the ones above it
 accepts `planned-activities`, `planned-generics`, `planned-lesson-clusters`, `planned-lesson-cluster-assignments`,
 `planned-lesson-cluster-lessons`, `planned-lesson-cluster-moments`, `planned-partner-elements`, `planned-routines`,
-`planned-school-activities` and `private-planned-elements`.
+`planned-school-activities` and `private-planned-elements`. Why the library keeps no list of its own is written down in
+[this decision](decisions/planner-element-types.md).
 
 ## Future Tasks
 
