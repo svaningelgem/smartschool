@@ -1,6 +1,6 @@
 <!-- Title: Conventional Commits, e.g. "fix: keep the session alive after a 401". -->
 
-<!-- First line, written by you and not generated: what is this, and what is it for? -->
+> <!-- Replace this comment with one line, written by you and not generated: what is this, and what is it for? -->
 
 
 <!--
