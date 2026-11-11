@@ -48,16 +48,18 @@ for element in elements:
 - `planned-lesson-free-days` - Holidays and other days without lessons (no organisers)
 - `planned-meetings` - Meetings
 
-By default only assignments and to-dos are fetched. Pass `element_types` to choose, e.g. the timetable:
+By default only assignments and to-dos are fetched. Pass `element_types` to choose: one type name, or several, e.g. the
+timetable:
 
 ```python
+lessons = PlannedElements(session, element_types="planned-lessons")
 timetable = PlannedElements(session, element_types=("planned-lessons", "planned-placeholders"))
 ```
 
-An empty tuple fetches everything the planner has:
+Nothing (`None` or an empty tuple) fetches everything the planner has:
 
 ```python
-everything = PlannedElements(session, element_types=())
+everything = PlannedElements(session, element_types=None)
 ```
 
 Smartschool has no call that lists the types, and refuses a request naming one it does not know. Besides the ones above it

@@ -35,6 +35,19 @@ def test_planned_elements_asks_for_the_requested_element_types(session: Smartsch
     assert requests_mock.last_request.qs["types"] == ["planned-lessons,planned-placeholders"]
 
 
+@pytest.mark.parametrize(
+    ("element_types", "expected"),
+    [
+        ("planned-lessons", ("planned-lessons",)),
+        (["planned-lessons", "planned-meetings"], ("planned-lessons", "planned-meetings")),
+        (None, ()),
+        ("", ()),
+    ],
+)
+def test_planned_elements_takes_one_type_several_or_none(session: Smartschool, element_types, expected):
+    assert PlannedElements(session, element_types=element_types).element_types == expected
+
+
 @time_machine.travel("2026-11-11")
 def test_planned_elements_without_element_types_fetches_everything(session: Smartschool, requests_mock):
     """Without a filter the planner returns every type, such as a lesson-free day, which has no organisers."""
