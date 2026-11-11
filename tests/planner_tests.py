@@ -1,9 +1,18 @@
+import json
 from datetime import date
+from pathlib import Path
 
 import pytest
 import time_machine
 
-from smartschool import ApplicableAssignmentTypes, PlannedElements, Smartschool
+from smartschool import (
+    ApplicableAssignmentTypes,
+    PlannedElementLocation,
+    PlannedElements,
+    PlannedElementTextLocation,
+    PlannedElementUnknownLocation,
+    Smartschool,
+)
 
 
 @time_machine.travel("2025-05-06")
@@ -56,6 +65,37 @@ def test_planned_elements_without_element_types_fetches_everything(session: Smar
     assert "types" not in requests_mock.last_request.qs
     assert [element.planned_element_type for element in sut] == ["planned-lesson-free-days"]
     assert sut[0].organisers.users == []
+
+
+@time_machine.travel("2026-11-11")
+def test_planned_elements_reads_a_location_entered_as_free_text(session: Smartschool):
+    """A school activity can take place somewhere that is typed in instead of picked from the school's rooms."""
+    sut = list(PlannedElements(session, element_types="planned-school-activities"))
+
+    [location] = sut[0].locations
+    assert isinstance(location, PlannedElementTextLocation)
+    assert location.text == "Sports hall"
+
+
+@time_machine.travel("2025-05-06")
+def test_planned_elements_reads_a_room_as_before(session: Smartschool):
+    location = next(location for element in PlannedElements(session, till_date=date(2025, 5, 7)) for location in element.locations)
+
+    assert isinstance(location, PlannedElementLocation)
+    assert location.title
+
+
+def test_planned_elements_keeps_a_kind_of_location_it_does_not_know(session: Smartschool, requests_mock):
+    """A new kind of location must not break the listing: it is kept by its type alone."""
+    fixture = Path(__file__).parent / "requests/get/planner/api/v1/planned-elements/user/49_10880_2/7966cae8d297.json"
+    element = json.loads(fixture.read_text(encoding="utf8"))[0]
+    element["locations"] = [{"type": "brand-new-kind", "platformId": 49, "platformName": "Example school", "somethingElse": 1}]
+    requests_mock.get("https://site/planner/api/v1/planned-elements/user/49_10880_2", json=[element])
+
+    [location] = next(iter(PlannedElements(session))).locations
+
+    assert isinstance(location, PlannedElementUnknownLocation)
+    assert location.type == "brand-new-kind"
 
 
 def test_applicable_assignment_types(session: Smartschool):

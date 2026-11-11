@@ -68,6 +68,22 @@ accepts `planned-activities`, `planned-generics`, `planned-lesson-clusters`, `pl
 `planned-school-activities` and `private-planned-elements`. Why the library keeps no list of its own is written down in
 [this decision](decisions/planner-element-types.md).
 
+### Locations
+
+A location is either a room from the school's list or a place that was typed in:
+
+```python
+from smartschool import PlannedElementLocation, PlannedElementTextLocation
+
+for location in element.locations:
+    if isinstance(location, PlannedElementLocation):
+        print(location.title)  # a room
+    elif isinstance(location, PlannedElementTextLocation):
+        print(location.text)  # typed in as free text
+```
+
+A kind of location the library does not know yet comes as a `PlannedElementUnknownLocation`, which only carries its `type`.
+
 ## Future Tasks
 
 Upcoming assignments and deadlines grouped by day and course.

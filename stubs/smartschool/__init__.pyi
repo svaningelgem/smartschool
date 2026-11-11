@@ -87,6 +87,8 @@ from ._objects import PlannedElementLocation as PlannedElementLocation
 from ._objects import PlannedElementOrganisers as PlannedElementOrganisers
 from ._objects import PlannedElementParticipants as PlannedElementParticipants
 from ._objects import PlannedElementPeriod as PlannedElementPeriod
+from ._objects import PlannedElementTextLocation as PlannedElementTextLocation
+from ._objects import PlannedElementUnknownLocation as PlannedElementUnknownLocation
 from ._objects import ProjectGoal as ProjectGoal
 from ._objects import ResultDetails as ResultDetails
 from ._objects import ResultType as ResultType
@@ -192,6 +194,8 @@ __all__ = [
     "PlannedElementOrganisers",
     "PlannedElementParticipants",
     "PlannedElementPeriod",
+    "PlannedElementTextLocation",
+    "PlannedElementUnknownLocation",
     "PlannedElements",
     "ProjectGoal",
     "RecipientType",
