@@ -56,6 +56,10 @@ class Smartschool(Session, DevTracingMixin):
             # This will trigger a simple webcall that triggers a login when needed, setting the authenticated_user
             _ = self.platform_id
         if self._authenticated_user is None:
+            # No login was needed (the cached cookies are still valid), so the login chain never parsed the user:
+            # every page carries it, so read it from the homepage.
+            self._parse_login_information(self.get("/"))
+        if self._authenticated_user is None:
             raise ValueError("Could not retrieve authenticated user information")
 
         return self._authenticated_user
@@ -273,7 +277,7 @@ class Smartschool(Session, DevTracingMixin):
         """Parse authenticated user information from response."""
         html = bs4_html(response)
         for script in html.select("script"):
-            if script.get("src") or "extend" not in script.text:
+            if script.get("src"):
                 continue
 
             smsc_vars = parse_smsc_vars(script.text)

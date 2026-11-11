@@ -7,6 +7,26 @@ import yaml
 
 from smartschool import Smartschool, SmartSchoolAuthenticationError, SmartSchoolDownloadError, SmartSchoolJsonError
 
+# How current Smartschool pages embed the SMSC vars: no `$.extend(...)` any more, the JS-escaped JSON goes to an IIFE.
+CURRENT_USER_SCRIPTS = r"""
+<script type="text/javascript" src="/smsc/js/app.js"></script>
+<script type="text/javascript">
+(function (data) {
+    if (data && typeof data === 'object') {
+        window.smscMergeJsVariables(window.SMSC, data);
+    }
+})(JSON.parse('{"vars":{"authenticatedUser":{"id":"49_10880_2"}}}'));
+</script>
+"""
+CURRENT_HOMEPAGE = f"<html><body>{CURRENT_USER_SCRIPTS}</body></html>"
+CURRENT_VERIFICATION_PAGE = f"""<html><body>
+<form name="account_verification_form" method="post">
+    <input type="text" name="security_question_answer" />
+    <input type="submit" value="Verify" />
+</form>
+{CURRENT_USER_SCRIPTS}
+</body></html>"""
+
 
 def test_smartschool_not_started_yet(tmp_path, mocker):
     mocker.patch.object(Path, "home", return_value=tmp_path)
@@ -89,6 +109,22 @@ class TestSmartschoolAuthentication:
 
         with pytest.raises(ValueError, match="Could not retrieve authenticated user information"):
             session.ensure_authenticated()
+
+    def test_login_reads_the_user_from_a_current_verification_page(self, session: Smartschool, requests_mock):
+        """The account-verification page no longer wraps the user in `$.extend(...)`; the login must still pick it up."""
+        session._authenticated_user = None  # pylint: disable=protected-access  # white-box test
+        requests_mock.get("https://site/account-verification", text=CURRENT_VERIFICATION_PAGE)
+
+        session.get("/login")
+
+        assert session.authenticated_user["id"] == "49_10880_2"
+
+    def test_authenticated_user_is_read_from_the_homepage_when_no_login_is_needed(self, session: Smartschool, requests_mock):
+        """Valid cached cookies skip the login chain, so the user comes from the homepage instead."""
+        session._authenticated_user = None  # pylint: disable=protected-access  # white-box test
+        requests_mock.get("https://site/", text=CURRENT_HOMEPAGE)
+
+        assert session.authenticated_user["id"] == "49_10880_2"
 
     def test_authenticated_user_setter_with_data(self, session, authenticated_user_data):
         """Should save authenticated user data to file."""
