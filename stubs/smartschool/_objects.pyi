@@ -217,11 +217,11 @@ class Result:
 
 @dataclass(config=_config, kw_only=True)
 class ResultDetails:
+    central_tendencies: list[String] = ...
     teachers: list[Teacher]
     date_changed: DateTime
     user_changed: Teacher
     class_: SchoolClass
-    central_tendencies: list[String] = ...
 
 @dataclass(config=_config, kw_only=True)
 class CourseCondensed:

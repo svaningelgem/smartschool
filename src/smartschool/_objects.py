@@ -302,12 +302,11 @@ class Result:  # pylint: disable=too-many-instance-attributes  # mirrors the API
 
 @dataclass(config=_config, kw_only=True)
 class ResultDetails:
+    central_tendencies: list[String] = Field(default_factory=list)  # a project has none
     teachers: list[Teacher]
     date_changed: DateTime
     user_changed: Teacher
     class_: SchoolClass = Field(validation_alias=AliasChoices("class", "class_"))
-
-    central_tendencies: list[String] = Field(default_factory=list)  # a project has none
 
 
 @dataclass(config=_config, kw_only=True)
