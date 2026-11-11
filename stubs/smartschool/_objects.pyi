@@ -521,8 +521,23 @@ class PlannedElementLocation:
     number: String
     title: String
     icon: String
-    type: String
+    type: Literal["mini-db-item"]
     selectable: bool
+
+@dataclass(config=_config, kw_only=True)
+class PlannedElementTextLocation:
+    type: Literal["text"]
+    text: String
+    platform_id: int
+    platform_name: String
+
+@dataclass(config=_config, kw_only=True)
+class PlannedElementUnknownLocation:
+    type: String = ""
+
+    def __post_init__(self) -> None: ...
+
+PlannedElementAnyLocation = PlannedElementLocation | PlannedElementTextLocation | PlannedElementUnknownLocation
 
 @dataclass(config=_config, kw_only=True)
 class PlannedElementJoinIds:
@@ -554,7 +569,7 @@ class PlannedElement:
     participants: PlannedElementParticipants | None = None
     is_participant: bool = False
     courses: list[PlannedElementCourse] = ...
-    locations: list[PlannedElementLocation] = ...
+    locations: list[PlannedElementAnyLocation] = ...
     assignment_type: PlannedElementAssignmentType | None = None
     resolved_status: String = ""
     online_session: String | None = None

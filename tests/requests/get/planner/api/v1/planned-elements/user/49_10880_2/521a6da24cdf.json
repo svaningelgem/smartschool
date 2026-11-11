@@ -1,0 +1,100 @@
+[
+  {
+    "id": "00000000-0000-0000-0000-000000000001",
+    "platformId": 49,
+    "name": "School activity",
+    "icon": "palette2",
+    "period": {
+      "dateTimeFrom": "2026-11-17T08:30:00+01:00",
+      "dateTimeTo": "2026-11-17T12:00:00+01:00",
+      "wholeDay": false,
+      "deadline": false
+    },
+    "organisers": {
+      "users": [
+        {
+          "id": "49_1_0",
+          "pictureHash": "initials_TT",
+          "pictureUrl": "https://example.com/picture.png",
+          "description": {
+            "startingWithFirstName": "",
+            "startingWithLastName": ""
+          },
+          "name": {
+            "startingWithFirstName": "First Teacher",
+            "startingWithLastName": "Teacher First"
+          },
+          "sort": "teacher-first",
+          "deleted": false
+        }
+      ],
+      "groups": []
+    },
+    "participants": {
+      "users": [],
+      "groups": [
+        {
+          "identifier": "49_1",
+          "id": "49_1",
+          "platformId": 49,
+          "name": "Everyone",
+          "type": "G",
+          "icon": "users2",
+          "sort": "Everyone"
+        }
+      ],
+      "userRoles": [],
+      "groupFilters": {
+        "filters": [],
+        "additionalUsers": []
+      }
+    },
+    "capabilities": {
+      "canUserTrash": false,
+      "canUserRestoreFromTrash": false,
+      "canUserDelete": false,
+      "canUserEdit": false,
+      "canUserChangePublicInfo": false,
+      "canUserReplace": false,
+      "canUserAddReservations": false,
+      "canUserReschedule": false,
+      "canUserChangeUserColor": true,
+      "canUserChangeUserViewMetadata": false,
+      "canUserLinkToDo": false,
+      "canUserDuplicate": false,
+      "canUserChangeOrganisers": false,
+      "canUserChangeParticipants": false,
+      "canUserChangeParticipantGroupFilters": false,
+      "canUserChangeLocations": false,
+      "canUserSeeProperties": {
+        "id": true,
+        "platformId": true,
+        "name": true,
+        "icon": true,
+        "period": true,
+        "organisers": true,
+        "participants": true,
+        "capabilities": true,
+        "plannedElementType": true,
+        "locations": true
+      }
+    },
+    "plannedElementType": "planned-school-activities",
+    "locations": [
+      {
+        "type": "text",
+        "text": "Sports hall",
+        "platformId": 49,
+        "platformName": "Example school"
+      }
+    ],
+    "sort": "20261117000000_0_Everyone_School activity",
+    "unconfirmed": false,
+    "pinned": false,
+    "color": "yellow-200",
+    "joinIds": {
+      "from": "00000000-0000-0000-0000-000000000002",
+      "to": "00000000-0000-0000-0000-000000000003"
+    }
+  }
+]

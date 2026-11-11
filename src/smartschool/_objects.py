@@ -637,14 +637,43 @@ class PlannedElementCourse:
 
 @dataclass(config=_config, kw_only=True)
 class PlannedElementLocation:  # pylint: disable=too-many-instance-attributes  # mirrors the API payload
+    """A room picked from the school's list."""
+
     id: UUID
     platform_id: int
     platform_name: String
     number: String
     title: String
     icon: String
-    type: String
+    type: Literal["mini-db-item"]
     selectable: bool
+
+
+@dataclass(config=_config, kw_only=True)
+class PlannedElementTextLocation:
+    """A location typed in as free text."""
+
+    type: Literal["text"]
+    text: String
+    platform_id: int
+    platform_name: String
+
+
+@dataclass(config=_config, kw_only=True)
+class PlannedElementUnknownLocation:
+    """A kind of location this library does not know yet: only its type is kept."""
+
+    type: String = ""
+
+    def __post_init__(self) -> None:
+        logger.warning("Unknown kind of planner location {!r}, please report it", self.type)
+
+
+# `type` picks the model; a location it does not name, or that does not fit its model, is kept as an unknown one.
+PlannedElementAnyLocation = Annotated[
+    Annotated[PlannedElementLocation | PlannedElementTextLocation, Field(discriminator="type")] | PlannedElementUnknownLocation,
+    Field(union_mode="left_to_right"),
+]
 
 
 @dataclass(config=_config, kw_only=True)
@@ -680,7 +709,7 @@ class PlannedElement:  # pylint: disable=too-many-instance-attributes  # mirrors
     participants: PlannedElementParticipants | None = None
     is_participant: bool = False
     courses: list[PlannedElementCourse] = Field(default_factory=list)
-    locations: list[PlannedElementLocation] = Field(default_factory=list)
+    locations: list[PlannedElementAnyLocation] = Field(default_factory=list)
     assignment_type: PlannedElementAssignmentType | None = None
     resolved_status: String = ""
     online_session: String | None = None

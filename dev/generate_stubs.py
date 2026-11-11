@@ -91,6 +91,8 @@ def _strip_private_members(stub: ast.Module, module: types.ModuleType) -> None:
 
 def _type_source(annotation: object, module: types.ModuleType, imports: set[str]) -> str:
     """Source for a resolved type, recording the imports it needs."""
+    if typing.get_origin(annotation) is typing.Annotated:  # a member with metadata of its own, such as a nested discriminated union
+        return _type_source(typing.get_args(annotation)[0], module, imports)
     if typing.get_origin(annotation) in (typing.Union, types.UnionType):
         return " | ".join(_type_source(arg, module, imports) for arg in typing.get_args(annotation))
     if not isinstance(annotation, type):
