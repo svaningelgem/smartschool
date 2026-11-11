@@ -28,27 +28,6 @@ VERIFICATION_PAGE = f"""<html><body>
 {USER_SCRIPTS}
 </body></html>"""
 
-# How Smartschool pages embed the SMSC vars: the JS-escaped JSON goes to an IIFE.
-# Cut down from a real page to the one entry the login reads.
-USER_SCRIPTS = r"""
-<script type="text/javascript" src="/smsc/js/app.js"></script>
-<script type="text/javascript">
-                (function (data) {
-            if (data && typeof data === 'object') {
-                window.smscMergeJsVariables(window.SMSC, data);
-            }
-        })(JSON.parse('{"vars":{"authenticatedUser":{"id":"49_10880_2"}}}'));
-    </script>
-"""
-HOMEPAGE = f"<html><body>{USER_SCRIPTS}</body></html>"
-VERIFICATION_PAGE = f"""<html><body>
-<form name="account_verification_form" method="post">
-    <input type="text" name="security_question_answer" />
-    <input type="submit" value="Verify" />
-</form>
-{USER_SCRIPTS}
-</body></html>"""
-
 
 def test_smartschool_not_started_yet(tmp_path, mocker):
     mocker.patch.object(Path, "home", return_value=tmp_path)
