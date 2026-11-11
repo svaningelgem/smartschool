@@ -87,6 +87,21 @@ class TestSmartschoolInitialization:
         """Should construct URL correctly."""
         assert session._url == "https://site"  # pylint: disable=protected-access  # white-box test
 
+    def test_platform_id_is_read_from_the_user_id(self, session, requests_mock):
+        """The user's id starts with the platform, so a known user needs no request and no courses."""
+        assert session.platform_id == 49
+        assert not requests_mock.called
+
+    def test_platform_id_copes_with_a_numeric_user_id(self, session, authenticated_user_data):
+        session.authenticated_user = authenticated_user_data
+
+        assert session.platform_id == 12345
+
+    def test_platform_id_can_be_overridden(self, session):
+        session.platform_id = 12
+
+        assert session.platform_id == 12
+
 
 class TestSmartschoolAuthentication:
     """Test authentication flow and user management."""
@@ -126,6 +141,16 @@ class TestSmartschoolAuthentication:
         requests_mock.get("https://site/", text=HOMEPAGE)
 
         assert session.authenticated_user["id"] == "49_10880_2"
+
+    def test_authenticated_user_raises_a_download_error_when_the_homepage_is_down(self, session: Smartschool, requests_mock):
+        """An outage is not an authentication problem: the failed response is raised like any other failed request."""
+        session._authenticated_user = None  # pylint: disable=protected-access  # white-box test
+        requests_mock.get("https://site/", status_code=503)
+
+        with pytest.raises(SmartSchoolDownloadError) as error:
+            _ = session.authenticated_user
+
+        assert error.value.status_code == 503
 
     def test_authenticated_user_setter_with_data(self, session, authenticated_user_data):
         """Should save authenticated user data to file."""
@@ -409,25 +434,6 @@ def test_no_auth_file(tmp_path, mocker):
     sut = Smartschool()
     assert sut._authenticated_user_file is None  # pylint: disable=protected-access  # white-box test
     sut.authenticated_user = None
-
-
-def test_parse_login_information_continue_branch(mocker, tmp_path):
-    """A script with a src, or without the SMSC vars, leaves the user unset."""
-    mocker.patch.object(Path, "home", return_value=tmp_path)
-    parser = Smartschool()
-
-    mock_response = mocker.Mock()
-    mock_html = mocker.Mock()
-    mock_html.select.return_value = [
-        mocker.Mock(get=lambda x: "some-src.js", text="some script"),  # has src
-        mocker.Mock(get=lambda x: None, text="no SMSC vars here"),
-    ]
-
-    mocker.patch("smartschool._session.bs4_html", return_value=mock_html)
-
-    parser._parse_login_information(mock_response)  # pylint: disable=protected-access  # white-box test
-
-    assert parser._authenticated_user is None  # pylint: disable=protected-access  # white-box test
 
 
 def test_authenticated_user_logs_in_when_the_session_is_dead(session, requests_mock):

@@ -54,7 +54,10 @@ class Smartschool(Session, DevTracingMixin):
     def authenticated_user(self) -> dict:
         if self._authenticated_user is None:
             # Every page carries the user; fetching the homepage also logs in when needed.
-            self._parse_login_information(self.get("/"))
+            response = self.get("/")
+            if response.status_code != 200:
+                raise SmartSchoolDownloadError("Failed to retrieve the homepage", response)
+            self._parse_login_information(response)
         if self._authenticated_user is None:
             raise ValueError("Could not retrieve authenticated user information")
 
@@ -189,8 +192,8 @@ class Smartschool(Session, DevTracingMixin):
 
     @cached_property
     def platform_id(self) -> int:
-        courses = self.json("/course-list/api/v1/courses")
-        return courses[0]["platformId"]
+        """Smartschool ids look like `<platform>_<id>_<role>`, so the user's id starts with the platform."""
+        return int(str(self.authenticated_user["id"]).partition("_")[0])
 
     def json(self, url, method: str = "get", **kwargs) -> dict:
         """Handle JSON responses with potential double encoding."""
@@ -271,11 +274,7 @@ class Smartschool(Session, DevTracingMixin):
 
     def _parse_login_information(self, response: Response) -> None:
         """Parse authenticated user information from response."""
-        html = bs4_html(response)
-        for script in html.select("script"):
-            if script.get("src"):
-                continue
-
+        for script in bs4_html(response).select("script"):
             smsc_vars = parse_smsc_vars(script.text)
             if "authenticatedUser" in smsc_vars:
                 self.authenticated_user = smsc_vars["authenticatedUser"]
