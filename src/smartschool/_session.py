@@ -128,7 +128,14 @@ class Smartschool(Session, DevTracingMixin):
     def cache_path(self) -> Path:
         p = Path.home() / ".cache/smartschool"
         if self.creds:
-            p /= self.creds.username
+            unscoped = p / self.creds.username  # a cache without the school in its path
+            p = p / self.creds.main_url / self.creds.username
+            if unscoped.is_dir() and not p.exists():
+                p.parent.mkdir(parents=True, exist_ok=True)
+                with contextlib.suppress(OSError):  # another process adopted it first
+                    unscoped.rename(p)
+                    # It can hold the user of another school with this username: read it again.
+                    (p / "authenticated_user.yml").unlink(missing_ok=True)
 
         p.mkdir(parents=True, exist_ok=True)
 
