@@ -98,7 +98,7 @@ class StudentAbsences(_PupilOverview[objects.StudentAbsence]):
     _object_to_instantiate: ClassVar[type[objects.StudentAbsence]] = objects.StudentAbsence
 
 
-@pydantic_dataclass
+@pydantic_dataclass(kw_only=True)
 class StudentNoteDetail(objects.StudentNoteDetail):
     """
     The content of one `StudentNote`, interpreted from its parameters. Which parameters exist differs per category.
