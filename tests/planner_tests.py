@@ -31,7 +31,7 @@ def test_planned_elements_till_date(session: Smartschool):
 def test_planned_elements_asks_for_the_requested_element_types(session: Smartschool, requests_mock):
     requests_mock.get("https://site/planner/api/v1/planned-elements/user/49_10880_2", json=[])
 
-    assert list(PlannedElements(session, element_types=("planned-lessons", "planned-placeholders"))) == []
+    assert not list(PlannedElements(session, element_types=("planned-lessons", "planned-placeholders")))
     assert requests_mock.last_request.qs["types"] == ["planned-lessons,planned-placeholders"]
 
 
