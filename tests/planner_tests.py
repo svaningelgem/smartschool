@@ -1,9 +1,11 @@
-from datetime import date
+import json
+from datetime import date, datetime, timedelta, timezone
+from pathlib import Path
 
 import pytest
 import time_machine
 
-from smartschool import ApplicableAssignmentTypes, PlannedElements, Smartschool
+from smartschool import ApplicableAssignmentTypes, PlannedElement, PlannedElementDetails, PlannedElements, Smartschool
 
 
 @time_machine.travel("2025-05-06")
@@ -70,3 +72,120 @@ def test_applicable_assignment_types(session: Smartschool):
     assert obj.name == "-"
     assert obj.platform_id == 49
     assert obj.weight == pytest.approx(1.0)
+
+
+PDF = b"%PDF-1.4 dummy\n"
+LESSON = Path(__file__).parent / "requests/get/planner/api/v1/planned-lessons/49/5f0c2a1e-7b3d-4c8e-9a61-2d4e8f1b3c70.json"
+
+
+def _lesson() -> PlannedElement:
+    return PlannedElement(**json.loads(LESSON.read_text(encoding="utf8")))
+
+
+def test_planned_element_details(session: Smartschool):
+    sut = PlannedElementDetails(session, element=_lesson()).get()
+
+    assert sut.planned_element_type == "planned-lessons"
+    assert sut.courses[0].name == "Dummy"
+    assert sut.public_info == "<p>Lees hoofdstuk 3 voor de volgende les.</p>"
+    assert not sut.capabilities.can_user_restore_from_trash
+
+    assert len(sut.attachments) == 1
+    assert sut.attachments[0].file_name == "hoofdstuk3.pdf"
+    assert sut.attachments[0].file_size == 123456
+    assert sut.attachments[0].mime_type == "application/pdf"
+
+    assert len(sut.weblinks) == 1
+    assert sut.weblinks[0].name == "Oefeningen"
+    assert sut.weblinks[0].url == "https://example.com/oefeningen"
+
+    assert len(sut.goals) == 1
+    assert sut.goals[0].leerplan_id == "6a2c4e8f-0b1d-4f3a-9c5e-7d9b1f3a5c7e"
+
+    # What a lesson leaves empty or out
+    assert sut.info == ""
+    assert sut.private_info == ""
+    assert sut.reservations == []
+    assert sut.date_created is None
+    assert sut.visibility is None
+    assert sut.repeat_options is None
+    assert sut.calendars == []
+    assert sut.extra_organisers.users == []
+    assert sut.invite_statuses == []
+
+
+def test_planned_element_details_of_an_assignment(session: Smartschool, requests_mock):
+    data = json.loads(LESSON.read_text(encoding="utf8"))
+    data["plannedElementType"] = "planned-assignments"
+    data["icon"] = "book_yellow"
+    data["dateCreated"] = "2026-10-01T14:03:00+02:00"
+    data["visibility"] = {"afterDate": "2026-10-02T08:00:00+02:00"}
+    data["showPresenceChoices"] = True
+    data["reservations"] = [{"reservationId": 11, "reservationPlatformId": 49, "itemId": 22, "itemPlatformId": 49}]
+    requests_mock.get(f"https://site/planner/api/v1/planned-assignments/49/{data['id']}", json=data)
+
+    sut = PlannedElementDetails(session, element=PlannedElement(**data)).get()
+
+    assert sut.icon == "book_yellow"
+    assert sut.date_created == datetime(2026, 10, 1, 14, 3, tzinfo=timezone(timedelta(hours=2)))
+    assert sut.visibility is not None
+    assert sut.visibility.after_date == datetime(2026, 10, 2, 8, tzinfo=timezone(timedelta(hours=2)))
+    assert sut.show_presence_choices
+    assert not sut.presence_saved
+    assert sut.reservations[0].item_id == 22
+
+
+def test_planned_element_details_fetches_once(session: Smartschool, requests_mock):
+    details = PlannedElementDetails(session, element=_lesson())
+
+    details.get()
+    details.files()
+
+    assert requests_mock.call_count == 1
+
+
+def test_planned_element_files_download(session: Smartschool, tmp_path: Path):
+    sut = PlannedElementDetails(session, element=_lesson()).files()
+
+    assert [file.filename for file in sut] == ["hoofdstuk3.pdf"]
+    assert sut[0].download() == PDF
+    assert sut[0].download_to_dir(tmp_path).read_bytes() == PDF
+
+
+def test_planned_element_details_of_a_recurring_meeting(session: Smartschool, requests_mock):
+    """An occurrence of a recurring meeting is fetched through its original element and date."""
+    data = json.loads(LESSON.read_text(encoding="utf8"))
+    data["plannedElementType"] = "planned-meetings"
+    data["recurrence"] = {
+        "originalPlannedElementId": "9d4f2b6a-8c1e-4a3f-b5d7-2e6c8a0f4b19",
+        "originalRecurrenceDate": "2026-11-12T10:00:00+01:00",
+    }
+    user = data["organisers"]["users"][0]
+    data["info"] = "<p>Overleg over het project.</p>"
+    data["privacy"] = "private"
+    data["repeatOptions"] = {"frequency": "daily", "interval": 1, "monthWeek": 0, "until": "2026-11-30", "weekdays": []}
+    data["calendars"] = [{"userId": user["id"], "type": "user", "color": "violet-200", "info": user}]
+    data["extraOrganisers"] = {"users": [user]}
+    data["extraParticipants"] = {"users": [user]}
+    data["inviteStatuses"] = [{"userId": user["id"], "status": "pending", "isException": False}]
+    url = "https://site/planner/api/v1/planned-meetings/49/9d4f2b6a-8c1e-4a3f-b5d7-2e6c8a0f4b19_2026-11-12T10:00:00+01:00"
+    requests_mock.get(url, json=data)
+
+    sut = PlannedElementDetails(session, element=PlannedElement(**data)).get()
+
+    assert sut.planned_element_type == "planned-meetings"
+    assert sut.recurrence is not None
+    assert sut.recurrence.original_recurrence_date == "2026-11-12T10:00:00+01:00"
+
+    assert sut.info == "<p>Overleg over het project.</p>"
+    assert sut.privacy == "private"
+    assert sut.repeat_options is not None
+    assert sut.repeat_options.frequency == "daily"
+    assert sut.repeat_options.interval == 1
+    assert sut.repeat_options.until == date(2026, 11, 30)
+    assert sut.calendars[0].info.id == user["id"]
+    assert sut.calendars[0].color == "violet-200"
+    assert sut.extra_organisers.users[0].id == user["id"]
+    assert sut.extra_participants.users[0].id == user["id"]
+    assert sut.invite_statuses[0].status == "pending"
+    assert not sut.invite_statuses[0].is_exception

@@ -44,7 +44,7 @@ for course in Courses(session):
 | **Results** | `Results`, `Reports`, `Periods` | Grades, evaluations, report cards |
 | **Messages** | `MessageHeaders`, `Message`, `Attachments`, `MessageComposerForm`, `RecipientType` | Inbox/outbox, compose, attachments, labels |
 | **Schedule** | `SmartschoolLessons`, `SmartschoolHours` | Daily schedules, class periods |
-| **Planner** | `PlannedElements`, `FutureTasks` | Assignments, to-dos, the timetable, meetings, deadlines |
+| **Planner** | `PlannedElements`, `PlannedElementDetails`, `FutureTasks` | Assignments, to-dos, the timetable, meetings, deadlines |
 | **Support** | `StudentSupportLinks` | School support resources |
 | **Student notes** | `StudentNotes`, `StudentAbsences`, `StudentNoteDetails` | Follow-up notes and absences registered by the school |
 

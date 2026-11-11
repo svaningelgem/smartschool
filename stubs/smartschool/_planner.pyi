@@ -2,11 +2,13 @@
 from collections.abc import Iterable, Iterator
 from dataclasses import dataclass
 from datetime import date
+from functools import cached_property
 
-from ._objects import ApplicableAssignmentType, PlannedElement
+from ._common import DownloadableFile
+from ._objects import ApplicableAssignmentType, PlannedElement, PlannedElementAttachment, PlannedElementDetail
 from ._session import SessionMixin
 
-__all__ = ["ApplicableAssignmentTypes", "PlannedElements"]
+__all__ = ["ApplicableAssignmentTypes", "PlannedElementDetails", "PlannedElementFile", "PlannedElements"]
 
 @dataclass
 class ApplicableAssignmentTypes(SessionMixin, Iterable[ApplicableAssignmentType]):
@@ -20,3 +22,18 @@ class PlannedElements(SessionMixin, Iterable[PlannedElement]):
 
     def __post_init__(self) -> None: ...
     def __iter__(self) -> Iterator[PlannedElement]: ...
+
+@dataclass
+class PlannedElementFile(DownloadableFile, SessionMixin):
+    attachment: PlannedElementAttachment
+    download_url: str
+
+    @cached_property
+    def filename(self) -> str: ...
+
+@dataclass
+class PlannedElementDetails(SessionMixin):
+    element: PlannedElement
+
+    def get(self) -> PlannedElementDetail: ...
+    def files(self) -> list[PlannedElementFile]: ...
