@@ -87,6 +87,11 @@ class TestSmartschoolInitialization:
         """Should construct URL correctly."""
         assert session._url == "https://site"  # pylint: disable=protected-access  # white-box test
 
+    def test_platform_id_is_read_from_the_user_id(self, session, requests_mock):
+        """The user's id starts with the platform, so a known user needs no request and no courses."""
+        assert session.platform_id == 49
+        assert not requests_mock.called
+
 
 class TestSmartschoolAuthentication:
     """Test authentication flow and user management."""

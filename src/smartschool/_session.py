@@ -187,10 +187,10 @@ class Smartschool(Session, DevTracingMixin):
 
         return response
 
-    @cached_property
+    @property
     def platform_id(self) -> int:
-        courses = self.json("/course-list/api/v1/courses")
-        return courses[0]["platformId"]
+        """Smartschool ids look like `<platform>_<id>_<role>`, so the user's id starts with the platform."""
+        return int(self.authenticated_user["id"].split("_")[0])
 
     def json(self, url, method: str = "get", **kwargs) -> dict:
         """Handle JSON responses with potential double encoding."""
