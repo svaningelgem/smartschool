@@ -58,6 +58,7 @@ from ._objects import ApplicableAssignmentType as ApplicableAssignmentType
 from ._objects import Component as Component
 from ._objects import Course as Course
 from ._objects import CourseGraphic as CourseGraphic
+from ._objects import CurriculumGoal as CurriculumGoal
 from ._objects import DateRange as DateRange
 from ._objects import Feedback as Feedback
 from ._objects import FeedbackFull as FeedbackFull
@@ -86,6 +87,7 @@ from ._objects import PlannedElementLocation as PlannedElementLocation
 from ._objects import PlannedElementOrganisers as PlannedElementOrganisers
 from ._objects import PlannedElementParticipants as PlannedElementParticipants
 from ._objects import PlannedElementPeriod as PlannedElementPeriod
+from ._objects import ProjectGoal as ProjectGoal
 from ._objects import ResultDetails as ResultDetails
 from ._objects import ResultType as ResultType
 from ._objects import SchoolClass as SchoolClass
@@ -136,6 +138,7 @@ __all__ = [
     "CourseList",
     "Courses",
     "Credentials",
+    "CurriculumGoal",
     "DateRange",
     "DocumentOrFolderItem",
     "EnvCredentials",
@@ -190,6 +193,7 @@ __all__ = [
     "PlannedElementParticipants",
     "PlannedElementPeriod",
     "PlannedElements",
+    "ProjectGoal",
     "RecipientType",
     "Report",
     "Reports",

@@ -301,12 +301,32 @@ class Result:  # pylint: disable=too-many-instance-attributes  # mirrors the API
 
 
 @dataclass(config=_config, kw_only=True)
+class CurriculumGoal:
+    goal_id: UUID
+    leerplan_id: UUID
+    leerplan_key: String
+
+
+@dataclass(config=_config, kw_only=True)
+class ProjectGoal:
+    """How a project went for one goal of the curriculum."""
+
+    goal: CurriculumGoal
+    graphic: ResultGraphic
+    feedback: list[Feedback]
+    feedbacks: list[FeedbackFull]
+
+
+@dataclass(config=_config, kw_only=True)
 class ResultDetails:
     central_tendencies: list[String] = Field(default_factory=list)  # a project has none
     teachers: list[Teacher]
     date_changed: DateTime
     user_changed: Teacher
     class_: SchoolClass = Field(validation_alias=AliasChoices("class", "class_"))
+    # Only a project has these: its mark per goal, and the scale those marks are taken from.
+    project_goals: list[ProjectGoal] = Field(default_factory=list)
+    scales: list[ResultGraphic] = Field(default_factory=list)
 
 
 @dataclass(config=_config, kw_only=True)

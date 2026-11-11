@@ -30,6 +30,24 @@ Results are paginated (50 per page) and lazy-loaded as you iterate.
 `result.type` is `normal`, `project` or `project-with-rubrics`. A project is graded per goal: its own graphic is an icon,
 and its details have no central tendencies.
 
+### Project Results
+
+The marks of a project are in its details: one per curriculum goal, taken from the scale that comes with it.
+
+```python
+from smartschool import ResultType
+
+for result in Results(session):
+    if result.type == ResultType.PROJECT and result.details:
+        print(result.name)
+        for project_goal in result.details.project_goals:
+            mark = project_goal.graphic
+            print(f"  {project_goal.goal.leerplan_key}: {mark.value} ({mark.description})")
+        print(f"  Scale: {[scale.value for scale in result.details.scales]}")
+```
+
+A goal is identified by `goal_id`, `leerplan_id` and `leerplan_key`; its text is not part of the result.
+
 ### Result Details
 
 Each result can fetch additional details on demand:
