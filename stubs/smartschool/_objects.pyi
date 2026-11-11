@@ -67,12 +67,12 @@ class ResultType(StrEnum):
     PROJECT = "project"
     PROJECT_WITH_RUBRICS = "project-with-rubrics"
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class CourseGraphic:
     type: Literal["icon", "image"]
     value: String
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class PercentageGraphic:
     type: Literal["percentage"]
     color: GraphicColor
@@ -86,14 +86,14 @@ class PercentageGraphic:
     @property
     def percentage(self) -> float: ...
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class TextGraphic:
     type: Literal["text"]
     color: GraphicColor
     value: String
     description: String
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class IconGraphic:
     type: Literal["icon"]
     color: String | None = None
@@ -102,12 +102,12 @@ class IconGraphic:
 
 ResultGraphic = PercentageGraphic | TextGraphic | IconGraphic
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class PersonDescription:
     starting_with_first_name: String = ""
     starting_with_last_name: String = ""
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class _User:
     id: String
     picture_hash: String
@@ -117,7 +117,7 @@ class _User:
     sort: String
     deleted: bool = False
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class _Group:
     identifier: String
     id: String
@@ -127,17 +127,17 @@ class _Group:
     icon: String
     sort: String
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class DateRange:
     start: DateTime
     end: DateTime
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class SkoreWorkYear:
     id: int
     date_range: DateRange
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class SchoolClass:
     identifier: String
     id: int
@@ -146,7 +146,7 @@ class SchoolClass:
     type: String
     icon: String
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class Period:
     id: int
     name: String
@@ -155,19 +155,19 @@ class Period:
     is_active: bool
     class_: SchoolClass
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class Component:
     id: int
     name: String
     abbreviation: String
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class Teacher(_User): ...
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class Student(_User): ...
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class Course:
     id: int
     name: String
@@ -180,12 +180,12 @@ class Course:
 
     def __str__(self) -> str: ...
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class Feedback:
     text: String
     user: Teacher
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class FeedbackFull:
     attachments: list[String]
     changed_at: DateTime
@@ -196,7 +196,7 @@ class FeedbackFull:
     teacher: Teacher
     text: String
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class Result:
     identifier: String
     type: ResultType
@@ -215,7 +215,7 @@ class Result:
     deleted: bool = False
     details: ResultDetails | None = None
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class ResultDetails:
     teachers: list[Teacher]
     date_changed: DateTime
@@ -223,7 +223,7 @@ class ResultDetails:
     class_: SchoolClass
     central_tendencies: list[String] = ...
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class CourseCondensed:
     name: String
     teacher: String
@@ -233,7 +233,7 @@ class CourseCondensed:
     descr: String = ""
     icon: String = ""
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class FutureTaskOneTask:
     label: String
     description: String
@@ -253,12 +253,12 @@ class FutureTaskOneTask:
     date: Date
     hour_id: String
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class FutureTaskOneItem:
     tasks: list[FutureTaskOneTask]
     materials: list[String]
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class FutureTaskOneCourse:
     lesson_id: String
     hour_id: String
@@ -266,20 +266,20 @@ class FutureTaskOneCourse:
     course_title: String
     items: FutureTaskOneItem
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class FutureTaskOneDay:
     date: Date
     pretty_date: String
     courses: list[FutureTaskOneCourse]
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class AgendaHour:
     hour_id: String
     start: String
     end: String
     title: String
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class AgendaLesson:
     moment_id: String
     lesson_id: String
@@ -310,7 +310,7 @@ class AgendaLesson:
     freeday_icon: String
     some_subjects_empty: String | None
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class AgendaMomentInfoAssignment:
     start_assignment: String
     start: String
@@ -323,7 +323,7 @@ class AgendaMomentInfoAssignment:
     assignment_info: String
     assignment_deadline: String
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class AgendaMomentInfo:
     class_name: String
     subject: String
@@ -331,7 +331,7 @@ class AgendaMomentInfo:
     moment_id: String
     assignments: list[AgendaMomentInfoAssignment]
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class StudentSupportLink:
     id: String
     name: String
@@ -341,7 +341,7 @@ class StudentSupportLink:
     clean_link: String
     is_visible: bool
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class ShortMessage:
     id: int
     from_image: Url
@@ -360,7 +360,7 @@ class ShortMessage:
     from_: String
     colored_flag: int = 0
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class FullMessage:
     id: int
     to: String | None
@@ -386,7 +386,7 @@ class FullMessage:
     from_: String
     colored_flag: int = 0
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class Attachment:
     file_id: int
     name: String
@@ -396,18 +396,18 @@ class Attachment:
     wopi_allowed: bool
     order: int
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class MessageChanged:
     id: int
     new: int
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class MessageDeletionStatus:
     msg_id: int
     box_type: String
     is_deleted: bool
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class MessageSearchUser:
     user_id: int
     value: String
@@ -418,7 +418,7 @@ class MessageSearchUser:
     schoolname: String | None = None
     picture: Url | None = None
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class MessageSearchGroup:
     group_id: int
     value: String
@@ -426,29 +426,29 @@ class MessageSearchGroup:
     icon: String | None = None
     description: String | None = None
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class PlannedElementPeriod:
     date_time_from: datetime
     date_time_to: datetime
     whole_day: bool
     deadline: bool
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class PlannedElementOrganisers:
     users: list[_User] = ...
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class GroupFilters:
     filters: list
     additional_users: list[_User]
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class PlannedElementParticipants:
     groups: list[_Group]
     users: list[_User]
     group_filters: GroupFilters
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class UserSeeProperties:
     id: bool
     platform_id: bool
@@ -462,7 +462,7 @@ class UserSeeProperties:
     courses: bool = False
     locations: bool = False
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class UserCapabilities:
     can_user_trash: bool
     can_user_restore_from_trash: bool
@@ -483,12 +483,12 @@ class UserCapabilities:
     can_user_see_video_call: bool = False
     can_user_manage_video_call: bool = False
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class PlannedElementCourseCluster:
     id: int
     name: String
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class PlannedElementCourse:
     id: UUID
     platform_id: int
@@ -498,7 +498,7 @@ class PlannedElementCourse:
     course_cluster: PlannedElementCourseCluster | None
     is_visible: bool
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class PlannedElementLocation:
     id: UUID
     platform_id: int
@@ -509,12 +509,12 @@ class PlannedElementLocation:
     type: String
     selectable: bool
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class PlannedElementJoinIds:
     from_: String
     to: String
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class PlannedElementAssignmentType:
     id: UUID
     name: String
@@ -522,7 +522,7 @@ class PlannedElementAssignmentType:
     is_visible: bool
     weight: int
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class PlannedElement:
     id: UUID
     platform_id: int
@@ -544,7 +544,7 @@ class PlannedElement:
     resolved_status: String = ""
     online_session: String | None = None
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class ApplicableAssignmentType:
     id: UUID
     platform_id: int
@@ -553,7 +553,7 @@ class ApplicableAssignmentType:
     is_visible: bool
     weight: float
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class Report:
     id: int
     name: String
@@ -567,7 +567,7 @@ class PartOfDay(MissingStrEnum, label="part of the day"):
     MORNING = "VM"
     AFTERNOON = "NM"
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class StudentNote:
     item_id: int
     group_id: int
@@ -583,7 +583,7 @@ class StudentNote:
     author: OptionalString = ""
     author_reverse: OptionalString = ""
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class StudentAbsence:
     absent_id: int
     code: OptionalString
@@ -601,7 +601,7 @@ class StudentNoteParamType(IntEnum):
     DATE = 7
     INSTRUCTION = 8
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class StudentNoteParam:
     param_id: int
     param_type: int
@@ -609,7 +609,7 @@ class StudentNoteParam:
     value: OptionalString = ""
     option_value: OptionalString = ""
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class StudentNoteAttachment:
     file_id: int
     file_name: OptionalString = ""
@@ -617,7 +617,7 @@ class StudentNoteAttachment:
     file_wopi: bool = False
     file_hash: OptionalString = ""
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class StudentNoteDetail:
     item_id: int
     params: list[StudentNoteParam] = ...
