@@ -45,6 +45,27 @@ The `plannedElementType` field indicates the type:
 - `planned-to-dos` - Personal to-do items (may not have courses/participants)
 - `planned-placeholders` - Placeholder events
 
+### Details of an Element
+
+The list only holds the headers of each element. `PlannedElementDetails` fetches its detail view, which adds
+the teacher's info for the pupils ("Info voor de leerling", as HTML), the attachments, the weblinks and the
+linked curriculum goals.
+
+```python
+from pathlib import Path
+from smartschool import PlannedElementDetails
+
+for element in PlannedElements(session):
+    details = PlannedElementDetails(session, element=element)
+    detail = details.get()
+
+    print(detail.public_info)
+    for link in detail.weblinks:
+        print(f"  {link.name}: {link.url}")
+    for attachment in detail.attachments:
+        Path(attachment.file_name).write_bytes(details.download(attachment))
+```
+
 ## Future Tasks
 
 Upcoming assignments and deadlines grouped by day and course.

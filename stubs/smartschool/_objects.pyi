@@ -544,6 +544,33 @@ class PlannedElement:
     online_session: String | None = None
 
 @dataclass(config=_config)
+class PlannedElementAttachment:
+    id: String
+    file_name: String
+    file_size: int
+    mime_type: String
+
+@dataclass(config=_config)
+class PlannedElementWeblink:
+    id: String
+    name: String
+    url: Url
+    icon: String = ""
+
+@dataclass(config=_config)
+class PlannedElementGoal:
+    id: String
+    leerplan_id: String
+    type: String
+
+@dataclass(config=_config)
+class PlannedElementDetail(PlannedElement):
+    public_info: OptionalString = ""
+    attachments: list[PlannedElementAttachment] = ...
+    weblinks: list[PlannedElementWeblink] = ...
+    goals: list[PlannedElementGoal] = ...
+
+@dataclass(config=_config)
 class ApplicableAssignmentType:
     id: UUID
     platform_id: int

@@ -79,13 +79,17 @@ from ._objects import Period as Period
 from ._objects import PersonDescription as PersonDescription
 from ._objects import PlannedElement as PlannedElement
 from ._objects import PlannedElementAssignmentType as PlannedElementAssignmentType
+from ._objects import PlannedElementAttachment as PlannedElementAttachment
 from ._objects import PlannedElementCourse as PlannedElementCourse
 from ._objects import PlannedElementCourseCluster as PlannedElementCourseCluster
+from ._objects import PlannedElementDetail as PlannedElementDetail
+from ._objects import PlannedElementGoal as PlannedElementGoal
 from ._objects import PlannedElementJoinIds as PlannedElementJoinIds
 from ._objects import PlannedElementLocation as PlannedElementLocation
 from ._objects import PlannedElementOrganisers as PlannedElementOrganisers
 from ._objects import PlannedElementParticipants as PlannedElementParticipants
 from ._objects import PlannedElementPeriod as PlannedElementPeriod
+from ._objects import PlannedElementWeblink as PlannedElementWeblink
 from ._objects import ResultDetails as ResultDetails
 from ._objects import ResultType as ResultType
 from ._objects import SchoolClass as SchoolClass
@@ -104,6 +108,7 @@ from ._objects import UserCapabilities as UserCapabilities
 from ._objects import UserSeeProperties as UserSeeProperties
 from ._periods import Periods as Periods
 from ._planner import ApplicableAssignmentTypes as ApplicableAssignmentTypes
+from ._planner import PlannedElementDetails as PlannedElementDetails
 from ._planner import PlannedElements as PlannedElements
 from ._reports import Report as Report
 from ._reports import Reports as Reports
@@ -182,13 +187,18 @@ __all__ = [
     "PersonDescription",
     "PlannedElement",
     "PlannedElementAssignmentType",
+    "PlannedElementAttachment",
     "PlannedElementCourse",
     "PlannedElementCourseCluster",
+    "PlannedElementDetail",
+    "PlannedElementDetails",
+    "PlannedElementGoal",
     "PlannedElementJoinIds",
     "PlannedElementLocation",
     "PlannedElementOrganisers",
     "PlannedElementParticipants",
     "PlannedElementPeriod",
+    "PlannedElementWeblink",
     "PlannedElements",
     "RecipientType",
     "Report",

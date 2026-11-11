@@ -666,6 +666,44 @@ class PlannedElement:  # pylint: disable=too-many-instance-attributes  # mirrors
 
 
 @dataclass(config=_config)
+class PlannedElementAttachment:
+    """A file attached to a planned element; fetch its content with `PlannedElementDetails.download`."""
+
+    id: String
+    file_name: String
+    file_size: int
+    mime_type: String
+
+
+@dataclass(config=_config)
+class PlannedElementWeblink:
+    id: String
+    name: String
+    url: Url
+    icon: String = ""
+
+
+@dataclass(config=_config)
+class PlannedElementGoal:
+    """A curriculum goal linked to a planned element: only the references, the goal's text lives in the curriculum."""
+
+    id: String
+    leerplan_id: String
+    type: String
+
+
+@dataclass(config=_config)
+class PlannedElementDetail(PlannedElement):
+    """A planned element with what only its detail view holds: the teacher's info for the pupils, attachments, links and goals."""
+
+    public_info: OptionalString = ""
+    """HTML, shown in Smartschool as 'Info voor de leerling'."""
+    attachments: list[PlannedElementAttachment] = Field(default_factory=list)
+    weblinks: list[PlannedElementWeblink] = Field(default_factory=list)
+    goals: list[PlannedElementGoal] = Field(default_factory=list)
+
+
+@dataclass(config=_config)
 class ApplicableAssignmentType:
     id: UUID
     platform_id: int

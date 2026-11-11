@@ -1,0 +1,169 @@
+{
+  "id": "5f0c2a1e-7b3d-4c8e-9a61-2d4e8f1b3c70",
+  "platformId": 49,
+  "period": {
+    "dateTimeFrom": "2025-05-06T09:15:00+02:00",
+    "dateTimeTo": "2025-05-06T10:05:00+02:00",
+    "wholeDay": false,
+    "deadline": false
+  },
+  "organisers": {
+    "users": [
+      {
+        "id": "49_8933_0",
+        "pictureHash": "initials_IW",
+        "pictureUrl": "https://userpicture20.smartschool.be/User/Userimage/hashimage/hash/initials_IW/plain/1/res/128",
+        "description": {
+          "startingWithFirstName": "",
+          "startingWithLastName": ""
+        },
+        "name": {
+          "startingWithFirstName": "Iris Wittevrongel",
+          "startingWithLastName": "Wittevrongel Iris"
+        },
+        "sort": "wittevrongel-iris",
+        "deleted": false
+      }
+    ]
+  },
+  "participants": {
+    "groups": [
+      {
+        "identifier": "49_4522",
+        "id": "49_4522",
+        "platformId": 49,
+        "name": "4CHU",
+        "type": "K",
+        "icon": "briefcase",
+        "sort": "4CHU"
+      },
+      {
+        "identifier": "49_6634",
+        "id": "49_6634",
+        "platformId": 49,
+        "name": "4CNW",
+        "type": "K",
+        "icon": "briefcase",
+        "sort": "4CNW"
+      }
+    ],
+    "users": [],
+    "groupFilters": {
+      "filters": [],
+      "additionalUsers": []
+    }
+  },
+  "plannedElementType": "planned-lessons",
+  "isParticipant": true,
+  "capabilities": {
+    "canUserTrash": false,
+    "canUserRestoreFromTrash": false,
+    "canUserDelete": false,
+    "canUserEdit": false,
+    "canUserReplace": false,
+    "canUserEditPresence": false,
+    "canUserReschedule": false,
+    "canUserChangeOrganisers": false,
+    "canUserChangeParticipants": false,
+    "canUserChangeParticipantGroupFilters": false,
+    "canUserChangeCourses": false,
+    "canUserChangeLocations": false,
+    "canUserChangeUserColor": true,
+    "canUserChangeUserViewMetadata": true,
+    "canUserSeeProperties": {
+      "id": true,
+      "platformId": true,
+      "period": true,
+      "organisers": true,
+      "participants": true,
+      "plannedElementType": true,
+      "isParticipant": true,
+      "capabilities": true,
+      "courses": true,
+      "locations": true
+    }
+  },
+  "courses": [
+    {
+      "id": "4637d7f7-52de-48b7-ab91-3c6fd4a0abf9",
+      "platformId": 49,
+      "name": "Dummy",
+      "scheduleCodes": [
+        "GO2"
+      ],
+      "icon": "angel",
+      "courseCluster": {
+        "id": 43,
+        "name": "Levensbeschouwing (Godsdienst of Niet-confessionele zedenleer)"
+      },
+      "isVisible": true
+    }
+  ],
+  "locations": [
+    {
+      "id": "cb15a596-f526-4df1-bb6f-9b7639984172",
+      "platformId": 49,
+      "platformName": "Paridaensinstituut",
+      "number": "",
+      "title": "G.2.06",
+      "icon": "classroom_green",
+      "type": "mini-db-item",
+      "selectable": true
+    }
+  ],
+  "sort": "20250506091500_8_4CHU_",
+  "unconfirmed": false,
+  "pinned": false,
+  "color": "aqua-200",
+  "joinIds": {
+    "from": "fd512466-45b8-56b2-ab13-30c94ff46de1",
+    "to": "8e010bd0-718c-58ab-9fc8-462b701f52e6"
+  },
+  "name": "",
+  "icon": "",
+  "info": "",
+  "publicInfo": "<p>Lees hoofdstuk 3 voor de volgende les.</p>",
+  "privateInfo": "",
+  "attachments": [
+    {
+      "id": "7c1d9e42-3a6b-4f0e-8d25-91b4c6e2a0f3",
+      "fileName": "hoofdstuk3.pdf",
+      "fileSize": 123456,
+      "mimeType": "application/pdf",
+      "visibility": {
+        "option": "always",
+        "daysAfterEnd": null
+      }
+    }
+  ],
+  "weblinks": [
+    {
+      "id": "b2e4f6a8-1c3d-4e5f-9a7b-0d2c4e6f8a1b",
+      "name": "Oefeningen",
+      "url": "https://example.com/oefeningen",
+      "icon": "link",
+      "visibility": {
+        "option": "always",
+        "daysAfterEnd": null
+      }
+    }
+  ],
+  "goals": [
+    {
+      "id": "3e8a1f5c-9b2d-4c7e-a6f0-1d3b5e7c9a2f",
+      "leerplanId": "6a2c4e8f-0b1d-4f3a-9c5e-7d9b1f3a5c7e",
+      "type": "goal"
+    }
+  ],
+  "deeplinks": [],
+  "partnerWeblinks": [],
+  "plannedToDos": [],
+  "albums": [],
+  "labels": [],
+  "reminders": [],
+  "reservations": [],
+  "miniDBItems": [],
+  "courseLinks": [],
+  "presenceSaved": false,
+  "showPresenceChoices": false
+}
