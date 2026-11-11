@@ -129,6 +129,19 @@ def test_missing_graphic_color_raises():
         PercentageGraphic(type="percentage", color=None, value=50, description="5/10")  # ty: ignore[invalid-argument-type]  # invalid on purpose
 
 
+def test_project_results(session: Smartschool, requests_mock):
+    """A project is graded per goal: its own graphic is an icon and its details carry no central tendencies."""
+    project_file = Path(__file__).parent / "requests/get/results/api/v1/evaluations/project.json"
+    requests_mock.get("https://site/results/api/v1/evaluations/?pageNumber=1&itemsOnPage=50", content=project_file.read_bytes())
+
+    result = next(iter(Results(session)))
+
+    assert result.type == ResultType.PROJECT
+    assert isinstance(result.graphic, IconGraphic)
+    assert result.details is not None
+    assert result.details.central_tendencies == []
+
+
 def test_unknown_result_type_raises(session: Smartschool, requests_mock):
     """Strict enum: unknown result types must fail loudly."""
     payload = [{**_minimal_result_payload(), "type": "brand-new-type"}]
