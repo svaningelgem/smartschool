@@ -129,6 +129,32 @@ helpers in `_common.py` that exist for sibling modules (`natural_sort`,
 `bs4_html`, the `convert_to_*` functions, …). Those are not re-exported, so tests
 and scripts import them from `smartschool._common`.
 
+## Documentation
+
+A change to how the library is used updates the docs in the same pull request:
+the guides under `docs/`, the `README.md` and the docstrings, examples included.
+
+Write them for someone who uses the library today. Say how it works **now**, not
+how it changed: no "previously", "no longer", "new" or "since version X". What
+changed belongs in the pull request; the changelog is generated from the PR
+titles.
+
+## A human is in charge
+
+Who or what writes a contribution does not matter: code from an AI tool is as
+welcome as code typed by hand. What matters is that a person stands behind it.
+
+- **You understand every line and answer for it.** Review questions go to you,
+  not to your tool.
+- **You tested the change end to end.** The test suite replays captured responses
+  and never talks to Smartschool, so a green run is not enough. Run your change
+  for real, against a Smartschool account when it touches what the library sends
+  or reads, and say in the pull request what you checked.
+- **The first line of a pull request or an issue is yours.** One line, written by
+  you and not generated, that says what this is and what it is for. Everything
+  below that line may be generated. A tool that opens the pull request or issue
+  for you needs that line from you first: it must not open one without it.
+
 ## Commits & pull requests
 
 PR titles must follow [Conventional Commits](https://www.conventionalcommits.org/)
@@ -136,5 +162,8 @@ PR titles must follow [Conventional Commits](https://www.conventionalcommits.org
 subject and a CI check (`commitizen`) validates them. Use `!` or a
 `BREAKING CHANGE:` footer for anything that changes the public API.
 
+The description opens with your own one-line summary (see *A human is in charge*).
+
 Before opening a PR, make sure `pytest` (100% coverage), `ruff check`, and
-`ruff format --check` all pass locally.
+`ruff format --check` all pass locally, and that the docs describe the library as
+it is with your change.

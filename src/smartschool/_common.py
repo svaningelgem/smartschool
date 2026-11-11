@@ -181,7 +181,8 @@ def parse_smsc_vars(text: str) -> dict:
 
     Smartschool serializes it in two forms, both handled here:
     - ``$.extend(true, SMSC, { vars : {...} })`` - a raw object literal;
-    - ``$.extend(..., JSON.parse('...'))`` - JS-string-escaped JSON wrapping a ``"vars"`` key.
+    - ``JSON.parse('...')`` - JS-string-escaped JSON wrapping a ``"vars"`` key, handed to ``$.extend(...)`` or to a
+      ``(function (data) {...})(...)`` wrapper.
 
     Returns ``{}`` when the config is absent or unparseable.
     """

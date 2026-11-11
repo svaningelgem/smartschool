@@ -95,6 +95,8 @@ Contributions welcome! See **[CONTRIBUTING.md](CONTRIBUTING.md)** for the full g
 - Code is formatted: `uv run ruff format .`
 - Linting passes: `uv run ruff check .`
 - Type stubs are updated: `./restub`
+- The docs describe the library as it is with your change
+- The first line of your pull request is written by you, whatever wrote the rest
 
 ## Support
 
