@@ -44,9 +44,12 @@ def test_applicable_assignment_types(session: Smartschool):
     assert obj.weight == pytest.approx(1.0)
 
 
+PDF = b"%PDF-1.4 dummy\n"
+LESSON = Path(__file__).parent / "requests/get/planner/api/v1/planned-lessons/49/5f0c2a1e-7b3d-4c8e-9a61-2d4e8f1b3c70.json"
+
+
 def _lesson() -> PlannedElement:
-    path = Path(__file__).parent / "requests/get/planner/api/v1/planned-lessons/49/5f0c2a1e-7b3d-4c8e-9a61-2d4e8f1b3c70.json"
-    return PlannedElement(**json.loads(path.read_text(encoding="utf8")))
+    return PlannedElement(**json.loads(LESSON.read_text(encoding="utf8")))
 
 
 def test_planned_element_details(session: Smartschool):
@@ -55,6 +58,7 @@ def test_planned_element_details(session: Smartschool):
     assert sut.planned_element_type == "planned-lessons"
     assert sut.courses[0].name == "Dummy"
     assert sut.public_info == "<p>Lees hoofdstuk 3 voor de volgende les.</p>"
+    assert not sut.capabilities.can_user_restore_from_trash
 
     assert len(sut.attachments) == 1
     assert sut.attachments[0].file_name == "hoofdstuk3.pdf"
@@ -69,9 +73,36 @@ def test_planned_element_details(session: Smartschool):
     assert sut.goals[0].leerplan_id == "6a2c4e8f-0b1d-4f3a-9c5e-7d9b1f3a5c7e"
 
 
-def test_planned_element_details_download(session: Smartschool):
+def test_planned_element_details_fetches_once(session: Smartschool, requests_mock):
     details = PlannedElementDetails(session, element=_lesson())
 
-    sut = details.download(details.get().attachments[0])
+    details.get()
+    details.files()
 
-    assert sut == b"%PDF-1.4 dummy\n"
+    assert requests_mock.call_count == 1
+
+
+def test_planned_element_files_download(session: Smartschool, tmp_path: Path):
+    sut = PlannedElementDetails(session, element=_lesson()).files()
+
+    assert [file.filename for file in sut] == ["hoofdstuk3.pdf"]
+    assert sut[0].download() == PDF
+    assert sut[0].download_to_dir(tmp_path).read_bytes() == PDF
+
+
+def test_planned_element_details_of_a_recurring_meeting(session: Smartschool, requests_mock):
+    """An occurrence of a recurring meeting is fetched through its original element and date."""
+    data = json.loads(LESSON.read_text(encoding="utf8"))
+    data["plannedElementType"] = "planned-meetings"
+    data["recurrence"] = {
+        "originalPlannedElementId": "9d4f2b6a-8c1e-4a3f-b5d7-2e6c8a0f4b19",
+        "originalRecurrenceDate": "2026-11-12T10:00:00+01:00",
+    }
+    url = "https://site/planner/api/v1/planned-meetings/49/9d4f2b6a-8c1e-4a3f-b5d7-2e6c8a0f4b19_2026-11-12T10:00:00+01:00"
+    requests_mock.get(url, json=data)
+
+    sut = PlannedElementDetails(session, element=PlannedElement(**data)).get()
+
+    assert sut.planned_element_type == "planned-meetings"
+    assert sut.recurrence is not None
+    assert sut.recurrence.original_recurrence_date == "2026-11-12T10:00:00+01:00"

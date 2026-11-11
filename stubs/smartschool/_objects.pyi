@@ -464,13 +464,13 @@ class UserSeeProperties:
 @dataclass(config=_config)
 class UserCapabilities:
     can_user_trash: bool
-    can_user_restore_from_trash: bool
     can_user_delete: bool
     can_user_edit: bool
     can_user_replace: bool
     can_user_reschedule: bool
     can_user_change_user_color: bool
     can_user_see_properties: UserSeeProperties
+    can_user_restore_from_trash: bool = False
     can_user_edit_presence: bool = False
     can_user_change_user_view_metadata: bool = False
     can_user_change_organisers: bool = False
@@ -522,6 +522,11 @@ class PlannedElementAssignmentType:
     weight: int
 
 @dataclass(config=_config)
+class PlannedElementRecurrence:
+    original_planned_element_id: String
+    original_recurrence_date: String
+
+@dataclass(config=_config)
 class PlannedElement:
     id: UUID
     platform_id: int
@@ -542,6 +547,7 @@ class PlannedElement:
     assignment_type: PlannedElementAssignmentType | None = None
     resolved_status: String = ""
     online_session: String | None = None
+    recurrence: PlannedElementRecurrence | None = None
 
 @dataclass(config=_config)
 class PlannedElementAttachment:

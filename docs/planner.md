@@ -49,7 +49,7 @@ The `plannedElementType` field indicates the type:
 
 The list only holds the headers of each element. `PlannedElementDetails` fetches its detail view, which adds
 the teacher's info for the pupils ("Info voor de leerling", as HTML), the attachments, the weblinks and the
-linked curriculum goals.
+linked curriculum goals. `files()` gives the attachments as files to download.
 
 ```python
 from pathlib import Path
@@ -62,8 +62,8 @@ for element in PlannedElements(session):
     print(detail.public_info)
     for link in detail.weblinks:
         print(f"  {link.name}: {link.url}")
-    for attachment in detail.attachments:
-        Path(attachment.file_name).write_bytes(details.download(attachment))
+    for file in details.files():
+        file.download_to_dir(Path("downloads"))
 ```
 
 ## Future Tasks

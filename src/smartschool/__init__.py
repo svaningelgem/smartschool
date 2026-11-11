@@ -69,6 +69,7 @@ from ._objects import (
     PlannedElementOrganisers,
     PlannedElementParticipants,
     PlannedElementPeriod,
+    PlannedElementRecurrence,
     PlannedElementWeblink,
     ResultDetails,
     ResultType,
@@ -88,7 +89,7 @@ from ._objects import (
     UserSeeProperties,
 )
 from ._periods import Periods
-from ._planner import ApplicableAssignmentTypes, PlannedElementDetails, PlannedElements
+from ._planner import ApplicableAssignmentTypes, PlannedElementDetails, PlannedElementFile, PlannedElements
 from ._reports import Report, Reports
 from ._results import Result, Results
 from ._session import Smartschool
@@ -167,12 +168,14 @@ __all__ = [
     "PlannedElementCourseCluster",
     "PlannedElementDetail",
     "PlannedElementDetails",
+    "PlannedElementFile",
     "PlannedElementGoal",
     "PlannedElementJoinIds",
     "PlannedElementLocation",
     "PlannedElementOrganisers",
     "PlannedElementParticipants",
     "PlannedElementPeriod",
+    "PlannedElementRecurrence",
     "PlannedElementWeblink",
     "PlannedElements",
     "RecipientType",

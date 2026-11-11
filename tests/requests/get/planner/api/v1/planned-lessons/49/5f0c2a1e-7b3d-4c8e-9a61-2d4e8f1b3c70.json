@@ -57,7 +57,6 @@
   "isParticipant": true,
   "capabilities": {
     "canUserTrash": false,
-    "canUserRestoreFromTrash": false,
     "canUserDelete": false,
     "canUserEdit": false,
     "canUserReplace": false,
@@ -81,7 +80,11 @@
       "capabilities": true,
       "courses": true,
       "locations": true
-    }
+    },
+    "canUserAddAttachments": false,
+    "canUserAddWeblink": false,
+    "canUserRename": false,
+    "canUserSeeHistory": false
   },
   "courses": [
     {

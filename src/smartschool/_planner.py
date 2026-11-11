@@ -3,19 +3,22 @@ from __future__ import annotations
 from collections.abc import Iterable
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
+from functools import cached_property
 from typing import TYPE_CHECKING
 from zoneinfo import ZoneInfo
 
+from ._common import DownloadableFile, create_filesystem_safe_filename
 from ._objects import ApplicableAssignmentType, PlannedElement, PlannedElementDetail
 from ._session import SessionMixin
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
     from datetime import date
+    from pathlib import Path
 
     from ._objects import PlannedElementAttachment
 
-__all__ = ["ApplicableAssignmentTypes", "PlannedElementDetails", "PlannedElements"]
+__all__ = ["ApplicableAssignmentTypes", "PlannedElementDetails", "PlannedElementFile", "PlannedElements"]
 
 
 @dataclass
@@ -45,22 +48,40 @@ class PlannedElements(SessionMixin, Iterable[PlannedElement]):
 
 
 @dataclass
+class PlannedElementFile(DownloadableFile, SessionMixin):
+    """An attachment of a planned element, as a file to download."""
+
+    attachment: PlannedElementAttachment
+    download_url: str = field(repr=False)
+
+    @cached_property
+    def filename(self) -> str:
+        return create_filesystem_safe_filename(self.attachment.file_name)
+
+    def _real_download(self, target: Path | None) -> bytes | Path:
+        response = self.session.get(self.download_url)
+        response.raise_for_status()
+        return self._write_or_return(response.content, target)
+
+
+@dataclass
 class PlannedElementDetails(SessionMixin):
     """
-    The detail view of one planned element (a lesson or an assignment) from `PlannedElements`.
+    The detail view of one planned element from `PlannedElements`.
 
     The list only holds the headers; the detail adds the teacher's info for the pupils ('Info voor de leerling'),
     the attachments, the weblinks and the linked curriculum goals.
 
     To reproduce: open the planner and click a lesson; watch the XHR calls (`/planner/api/v1/<type>/<platform>/<id>`).
+    An occurrence of a recurring meeting is addressed by its original element and date instead of its own id.
 
     Example:
     -------
-    >>> detail = PlannedElementDetails(session, element=lesson).get()
-    >>> print(detail.public_info)
+    >>> details = PlannedElementDetails(session, element=lesson)
+    >>> print(details.get().public_info)
     <p>Lees hoofdstuk 3 voor de volgende les.</p>
-    >>> for attachment in detail.attachments:
-    >>>     Path(attachment.file_name).write_bytes(PlannedElementDetails(session, element=lesson).download(attachment))
+    >>> for file in details.files():
+    >>>     file.download_to_dir(Path("downloads"))
 
     """
 
@@ -68,10 +89,23 @@ class PlannedElementDetails(SessionMixin):
 
     @property
     def _url(self) -> str:
-        return f"/planner/api/v1/{self.element.planned_element_type}/{self.element.platform_id}/{self.element.id}"
+        element = self.element
+        if (recurrence := element.recurrence) is not None:
+            element_id = f"{recurrence.original_planned_element_id}_{recurrence.original_recurrence_date}"
+        else:
+            element_id = str(element.id)
+        return f"/planner/api/v1/{element.planned_element_type}/{element.platform_id}/{element_id}"
 
-    def get(self) -> PlannedElementDetail:
+    @cached_property
+    def _detail(self) -> PlannedElementDetail:
         return PlannedElementDetail(**self.session.json(self._url))
 
-    def download(self, attachment: PlannedElementAttachment) -> bytes:
-        return self.session.get(f"{self._url}/attachments/{attachment.id}/download").content
+    def get(self) -> PlannedElementDetail:
+        return self._detail
+
+    def files(self) -> list[PlannedElementFile]:
+        """The attachments, ready to download."""
+        return [
+            PlannedElementFile(session=self.session, attachment=attachment, download_url=f"{self._url}/attachments/{attachment.id}/download")
+            for attachment in self._detail.attachments
+        ]

@@ -89,6 +89,7 @@ from ._objects import PlannedElementLocation as PlannedElementLocation
 from ._objects import PlannedElementOrganisers as PlannedElementOrganisers
 from ._objects import PlannedElementParticipants as PlannedElementParticipants
 from ._objects import PlannedElementPeriod as PlannedElementPeriod
+from ._objects import PlannedElementRecurrence as PlannedElementRecurrence
 from ._objects import PlannedElementWeblink as PlannedElementWeblink
 from ._objects import ResultDetails as ResultDetails
 from ._objects import ResultType as ResultType
@@ -109,6 +110,7 @@ from ._objects import UserSeeProperties as UserSeeProperties
 from ._periods import Periods as Periods
 from ._planner import ApplicableAssignmentTypes as ApplicableAssignmentTypes
 from ._planner import PlannedElementDetails as PlannedElementDetails
+from ._planner import PlannedElementFile as PlannedElementFile
 from ._planner import PlannedElements as PlannedElements
 from ._reports import Report as Report
 from ._reports import Reports as Reports
@@ -192,12 +194,14 @@ __all__ = [
     "PlannedElementCourseCluster",
     "PlannedElementDetail",
     "PlannedElementDetails",
+    "PlannedElementFile",
     "PlannedElementGoal",
     "PlannedElementJoinIds",
     "PlannedElementLocation",
     "PlannedElementOrganisers",
     "PlannedElementParticipants",
     "PlannedElementPeriod",
+    "PlannedElementRecurrence",
     "PlannedElementWeblink",
     "PlannedElements",
     "RecipientType",
