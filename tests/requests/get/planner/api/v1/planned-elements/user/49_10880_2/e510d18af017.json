@@ -1,0 +1,66 @@
+[
+  {
+    "id": "00000000-0000-0000-0000-000000000001",
+    "platformId": 49,
+    "name": "Holiday",
+    "icon": "reminder_ribbon_black",
+    "participants": {
+      "users": [],
+      "groups": [
+        {
+          "identifier": "49_1",
+          "id": "49_1",
+          "platformId": 49,
+          "name": "Everyone",
+          "type": "G",
+          "icon": "users_relation",
+          "sort": "Everyone"
+        }
+      ],
+      "userRoles": [],
+      "groupFilters": {
+        "filters": [],
+        "additionalUsers": []
+      }
+    },
+    "period": {
+      "dateTimeFrom": "2026-11-11T08:00:00+01:00",
+      "dateTimeTo": "2026-11-11T08:30:00+01:00",
+      "wholeDay": true,
+      "deadline": false
+    },
+    "plannedElementType": "planned-lesson-free-days",
+    "capabilities": {
+      "canUserTrash": false,
+      "canUserRestoreFromTrash": false,
+      "canUserDelete": false,
+      "canUserEdit": false,
+      "canUserChangePublicInfo": false,
+      "canUserReplace": false,
+      "canUserReschedule": false,
+      "canUserChangeUserColor": true,
+      "canUserChangeUserViewMetadata": false,
+      "canUserLinkToDo": false,
+      "canUserDuplicate": false,
+      "canUserChangeParticipants": false,
+      "canUserSeeProperties": {
+        "id": true,
+        "platformId": true,
+        "name": true,
+        "icon": true,
+        "participants": true,
+        "period": true,
+        "plannedElementType": true,
+        "capabilities": true
+      }
+    },
+    "sort": "20261111000000_0_Everyone_Holiday",
+    "unconfirmed": false,
+    "pinned": false,
+    "color": "mint-200",
+    "joinIds": {
+      "from": "00000000-0000-0000-0000-000000000002",
+      "to": "00000000-0000-0000-0000-000000000003"
+    }
+  }
+]

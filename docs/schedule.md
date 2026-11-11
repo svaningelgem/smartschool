@@ -4,6 +4,9 @@
 
 Retrieve the lesson schedule for a given date range (defaults to 20 days from the provided date).
 
+A school that keeps its timetable in the planner exposes it through `PlannedElements`: see
+[Planner & Tasks](planner.md#element-types).
+
 ```python
 from datetime import date, timedelta
 from smartschool import Smartschool, PathCredentials, SmartschoolLessons
