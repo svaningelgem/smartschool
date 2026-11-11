@@ -5,7 +5,28 @@ import pytest
 import requests
 import yaml
 
-from smartschool import Smartschool, SmartSchoolAuthenticationError, SmartSchoolDownloadError, SmartSchoolJsonError
+from smartschool import AppCredentials, Smartschool, SmartSchoolAuthenticationError, SmartSchoolDownloadError, SmartSchoolJsonError
+
+# How Smartschool pages embed the SMSC vars: the JS-escaped JSON goes to an IIFE.
+# Cut down from a real page to the one entry the login reads.
+USER_SCRIPTS = r"""
+<script type="text/javascript" src="/smsc/js/app.js"></script>
+<script type="text/javascript">
+                (function (data) {
+            if (data && typeof data === 'object') {
+                window.smscMergeJsVariables(window.SMSC, data);
+            }
+        })(JSON.parse('\u007B\u0022vars\u0022\u003A\u007B\u0022authenticatedUser\u0022\u003A\u007B\u0022id\u0022\u003A\u002249_10880_2\u0022\u007D\u007D\u007D'));
+    </script>
+"""
+HOMEPAGE = f"<html><body>{USER_SCRIPTS}</body></html>"
+VERIFICATION_PAGE = f"""<html><body>
+<form name="account_verification_form" method="post">
+    <input type="text" name="security_question_answer" />
+    <input type="submit" value="Verify" />
+</form>
+{USER_SCRIPTS}
+</body></html>"""
 
 
 def test_smartschool_not_started_yet(tmp_path, mocker):
@@ -66,6 +87,21 @@ class TestSmartschoolInitialization:
         """Should construct URL correctly."""
         assert session._url == "https://site"  # pylint: disable=protected-access  # white-box test
 
+    def test_platform_id_is_read_from_the_user_id(self, session, requests_mock):
+        """The user's id starts with the platform, so a known user needs no request and no courses."""
+        assert session.platform_id == 49
+        assert not requests_mock.called
+
+    def test_platform_id_copes_with_a_numeric_user_id(self, session, authenticated_user_data):
+        session.authenticated_user = authenticated_user_data
+
+        assert session.platform_id == 12345
+
+    def test_platform_id_can_be_overridden(self, session):
+        session.platform_id = 12
+
+        assert session.platform_id == 12
+
 
 class TestSmartschoolAuthentication:
     """Test authentication flow and user management."""
@@ -89,6 +125,32 @@ class TestSmartschoolAuthentication:
 
         with pytest.raises(ValueError, match="Could not retrieve authenticated user information"):
             session.ensure_authenticated()
+
+    def test_login_reads_the_user_from_the_verification_page(self, session: Smartschool, requests_mock):
+        """The login chain picks the user up from the account-verification page."""
+        session._authenticated_user = None  # pylint: disable=protected-access  # white-box test
+        requests_mock.get("https://site/account-verification", text=VERIFICATION_PAGE)
+
+        session.get("/login")
+
+        assert session.authenticated_user["id"] == "49_10880_2"
+
+    def test_authenticated_user_is_read_from_the_homepage_when_no_login_is_needed(self, session: Smartschool, requests_mock):
+        """Valid cached cookies skip the login chain, so the user comes from the homepage."""
+        session._authenticated_user = None  # pylint: disable=protected-access  # white-box test
+        requests_mock.get("https://site/", text=HOMEPAGE)
+
+        assert session.authenticated_user["id"] == "49_10880_2"
+
+    def test_authenticated_user_raises_a_download_error_when_the_homepage_is_down(self, session: Smartschool, requests_mock):
+        """An outage is not an authentication problem: the failed response is raised like any other failed request."""
+        session._authenticated_user = None  # pylint: disable=protected-access  # white-box test
+        requests_mock.get("https://site/", status_code=503)
+
+        with pytest.raises(SmartSchoolDownloadError) as error:
+            _ = session.authenticated_user
+
+        assert error.value.status_code == 503
 
     def test_authenticated_user_setter_with_data(self, session, authenticated_user_data):
         """Should save authenticated user data to file."""
@@ -374,38 +436,12 @@ def test_no_auth_file(tmp_path, mocker):
     sut.authenticated_user = None
 
 
-def test_parse_login_information_continue_branch(mocker, tmp_path):
-    """Test continue branch when script has src or no 'extend' in text."""
-    mocker.patch.object(Path, "home", return_value=tmp_path)
-    parser = Smartschool()
-
-    # Mock response with scripts that should be skipped
-    mock_response = mocker.Mock()
-    mock_html = mocker.Mock()
-    mock_html.select.return_value = [
-        mocker.Mock(get=lambda x: "some-src.js", text="some script"),  # has src
-        mocker.Mock(get=lambda x: None, text="no extend keyword here"),  # no 'extend'
-    ]
-
-    mocker.patch("smartschool._session.bs4_html", return_value=mock_html)
-
-    parser._parse_login_information(mock_response)  # pylint: disable=protected-access  # white-box test
-
-    # Should not set authenticated_user since all scripts are skipped
-    assert parser._authenticated_user is None  # pylint: disable=protected-access  # white-box test
-
-
-def test_authenticated_user_returned_when_platform_id_populates_it(session, mocker):
-    """authenticated_user lazily hits platform_id; if that login populates the user, it is returned."""
+def test_authenticated_user_logs_in_when_the_session_is_dead(session, requests_mock):
+    """authenticated_user lazily fetches the homepage; a dead session is logged in first, and the homepage's user is returned."""
     session._authenticated_user = None  # pylint: disable=protected-access  # white-box test
+    requests_mock.get("https://site/", [{"status_code": 302, "headers": {"Location": "/login"}}, {"text": HOMEPAGE}])
 
-    def _populate(*_args, **_kwargs):
-        session._authenticated_user = {"id": "49_populated"}  # pylint: disable=protected-access  # white-box test
-        return 49
-
-    mocker.patch.object(Smartschool, "platform_id", new_callable=mocker.PropertyMock, side_effect=_populate)
-
-    assert session.authenticated_user == {"id": "49_populated"}
+    assert session.authenticated_user["id"] == "49_10880_2"
 
 
 def test_cookies_saved_when_response_stays_on_auth_url(session, requests_mock):
@@ -431,3 +467,32 @@ def test_credential_less_session_reports_the_same_error_everywhere(session_no_cr
     ):
         with pytest.raises(RuntimeError, match=r"Smartschool instance must have valid credentials\."):
             call()
+
+
+def _session_on(main_url: str) -> Smartschool:
+    return Smartschool(AppCredentials(username="bumba", password="delu", main_url=main_url, mfa="1234-56-78"))
+
+
+def test_a_username_on_two_schools_keeps_two_caches(tmp_path, mocker):
+    mocker.patch.object(Path, "home", return_value=tmp_path)
+    _session_on("a.smartschool.be").authenticated_user = {"id": "12_345_1"}
+
+    other_school = _session_on("b.smartschool.be")
+
+    assert other_school.cache_path == tmp_path / ".cache/smartschool/b.smartschool.be/bumba"
+    assert other_school._authenticated_user is None  # pylint: disable=protected-access  # white-box test
+
+
+def test_a_cache_without_a_school_in_its_path_is_adopted(tmp_path, mocker):
+    """Saved state moves along; the cached user is read again, as it can be the one of another school."""
+    mocker.patch.object(Path, "home", return_value=tmp_path)
+    unscoped = tmp_path / ".cache/smartschool/bumba"
+    (unscoped / "_punten/Frans").mkdir(parents=True)
+    (unscoped / "_punten/Frans/1.json").write_text("{}", encoding="utf8")
+    (unscoped / "authenticated_user.yml").write_text("id: '12_345_1'", encoding="utf8")
+
+    session = _session_on("site")
+
+    assert (session.cache_path / "_punten/Frans/1.json").exists()
+    assert session._authenticated_user is None  # pylint: disable=protected-access  # white-box test
+    assert not unscoped.exists()

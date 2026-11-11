@@ -181,7 +181,8 @@ def parse_smsc_vars(text: str) -> dict:
 
     Smartschool serializes it in two forms, both handled here:
     - ``$.extend(true, SMSC, { vars : {...} })`` - a raw object literal;
-    - ``$.extend(..., JSON.parse('...'))`` - JS-string-escaped JSON wrapping a ``"vars"`` key.
+    - ``JSON.parse('...')`` - JS-string-escaped JSON wrapping a ``"vars"`` key, handed to ``$.extend(...)`` or to a
+      ``(function (data) {...})(...)`` wrapper.
 
     Returns ``{}`` when the config is absent or unparseable.
     """
@@ -193,11 +194,12 @@ def parse_smsc_vars(text: str) -> dict:
     # single-quoted string cannot contain a raw quote), and (?:;\s*)? keeps the trailing
     # whitespace runs separated so no two quantifiers compete for the same characters.
     if match := re.search(r"JSON\s*\.\s*parse\s*\(\s*'([^']*)'\s*\)\s*\)\s*(?:;\s*)?$", text, flags=re.IGNORECASE):
-        unescaped = re.sub(r"\\u([0-9a-fA-F]{4})", lambda m: chr(int(m.group(1), 16)), match.group(1))
+        # One left-to-right pass: in `\\u00e9` the backslash is the escaped character, and the `u00e9` behind it is the JSON's own text.
+        unescaped = re.sub(r"\\(?:u([0-9a-fA-F]{4})|(.))", lambda m: chr(int(m[1], 16)) if m[1] else m[2], match.group(1))
         # dict() raises on any non-mapping shape (data not subscriptable, "vars" absent or not
         # a mapping), collapsing all malformed payloads into the {} fallback below.
         with contextlib.suppress(json.JSONDecodeError, TypeError, KeyError):
-            data = json.loads(unescaped.replace("\\\\", "\\"))
+            data = json.loads(unescaped)
             return dict(data["vars"])
 
     return {}

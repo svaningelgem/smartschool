@@ -53,8 +53,11 @@ class Smartschool(Session, DevTracingMixin):
     @property
     def authenticated_user(self) -> dict:
         if self._authenticated_user is None:
-            # This will trigger a simple webcall that triggers a login when needed, setting the authenticated_user
-            _ = self.platform_id
+            # Every page carries the user; fetching the homepage also logs in when needed.
+            response = self.get("/")
+            if response.status_code != 200:
+                raise SmartSchoolDownloadError("Failed to retrieve the homepage", response)
+            self._parse_login_information(response)
         if self._authenticated_user is None:
             raise ValueError("Could not retrieve authenticated user information")
 
@@ -125,7 +128,14 @@ class Smartschool(Session, DevTracingMixin):
     def cache_path(self) -> Path:
         p = Path.home() / ".cache/smartschool"
         if self.creds:
-            p /= self.creds.username
+            unscoped = p / self.creds.username  # a cache without the school in its path
+            p = p / self.creds.main_url / self.creds.username
+            if unscoped.is_dir() and not p.exists():
+                p.parent.mkdir(parents=True, exist_ok=True)
+                with contextlib.suppress(OSError):  # another process adopted it first
+                    unscoped.rename(p)
+                    # It can hold the user of another school with this username: read it again.
+                    (p / "authenticated_user.yml").unlink(missing_ok=True)
 
         p.mkdir(parents=True, exist_ok=True)
 
@@ -189,8 +199,8 @@ class Smartschool(Session, DevTracingMixin):
 
     @cached_property
     def platform_id(self) -> int:
-        courses = self.json("/course-list/api/v1/courses")
-        return courses[0]["platformId"]
+        """Smartschool ids look like `<platform>_<id>_<role>`, so the user's id starts with the platform."""
+        return int(str(self.authenticated_user["id"]).partition("_")[0])
 
     def json(self, url, method: str = "get", **kwargs) -> dict:
         """Handle JSON responses with potential double encoding."""
@@ -271,11 +281,7 @@ class Smartschool(Session, DevTracingMixin):
 
     def _parse_login_information(self, response: Response) -> None:
         """Parse authenticated user information from response."""
-        html = bs4_html(response)
-        for script in html.select("script"):
-            if script.get("src") or "extend" not in script.text:
-                continue
-
+        for script in bs4_html(response).select("script"):
             smsc_vars = parse_smsc_vars(script.text)
             if "authenticatedUser" in smsc_vars:
                 self.authenticated_user = smsc_vars["authenticatedUser"]
