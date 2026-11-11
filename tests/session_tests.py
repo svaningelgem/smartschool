@@ -5,7 +5,7 @@ import pytest
 import requests
 import yaml
 
-from smartschool import Smartschool, SmartSchoolAuthenticationError, SmartSchoolDownloadError, SmartSchoolJsonError
+from smartschool import AppCredentials, Smartschool, SmartSchoolAuthenticationError, SmartSchoolDownloadError, SmartSchoolJsonError
 
 # How Smartschool pages embed the SMSC vars: the JS-escaped JSON goes to an IIFE.
 # Cut down from a real page to the one entry the login reads.
@@ -467,3 +467,32 @@ def test_credential_less_session_reports_the_same_error_everywhere(session_no_cr
     ):
         with pytest.raises(RuntimeError, match=r"Smartschool instance must have valid credentials\."):
             call()
+
+
+def _session_on(main_url: str) -> Smartschool:
+    return Smartschool(AppCredentials(username="bumba", password="delu", main_url=main_url, mfa="1234-56-78"))
+
+
+def test_a_username_on_two_schools_keeps_two_caches(tmp_path, mocker):
+    mocker.patch.object(Path, "home", return_value=tmp_path)
+    _session_on("a.smartschool.be").authenticated_user = {"id": "12_345_1"}
+
+    other_school = _session_on("b.smartschool.be")
+
+    assert other_school.cache_path == tmp_path / ".cache/smartschool/b.smartschool.be/bumba"
+    assert other_school._authenticated_user is None  # pylint: disable=protected-access  # white-box test
+
+
+def test_a_cache_without_a_school_in_its_path_is_adopted(tmp_path, mocker):
+    """Saved state moves along; the cached user is read again, as it can be the one of another school."""
+    mocker.patch.object(Path, "home", return_value=tmp_path)
+    unscoped = tmp_path / ".cache/smartschool/bumba"
+    (unscoped / "_punten/Frans").mkdir(parents=True)
+    (unscoped / "_punten/Frans/1.json").write_text("{}", encoding="utf8")
+    (unscoped / "authenticated_user.yml").write_text("id: '12_345_1'", encoding="utf8")
+
+    session = _session_on("site")
+
+    assert (session.cache_path / "_punten/Frans/1.json").exists()
+    assert session._authenticated_user is None  # pylint: disable=protected-access  # white-box test
+    assert not unscoped.exists()

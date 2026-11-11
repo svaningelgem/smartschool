@@ -116,6 +116,11 @@ The `mfa` field supports two formats:
 pip install smartschool[mfa]
 ```
 
+## Where the session is kept
+
+Cookies, the logged-in user and the state that `save()` compares against live in
+`~/.cache/smartschool/<main_url>/<username>/`: one directory per school and account.
+
 ## Dev Tracing
 
 For debugging API interactions, enable dev tracing:
@@ -124,4 +129,4 @@ For debugging API interactions, enable dev tracing:
 session = Smartschool(PathCredentials(), dev_tracing=True)
 ```
 
-This writes detailed request/response traces to the cache directory.
+This writes detailed request/response traces to that directory.
