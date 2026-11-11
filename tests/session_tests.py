@@ -16,7 +16,7 @@ USER_SCRIPTS = r"""
             if (data && typeof data === 'object') {
                 window.smscMergeJsVariables(window.SMSC, data);
             }
-        })(JSON.parse('{"vars":{"authenticatedUser":{"id":"49_10880_2"}}}'));
+        })(JSON.parse('\u007B\u0022vars\u0022\u003A\u007B\u0022authenticatedUser\u0022\u003A\u007B\u0022id\u0022\u003A\u002249_10880_2\u0022\u007D\u007D\u007D'));
     </script>
 """
 HOMEPAGE = f"<html><body>{USER_SCRIPTS}</body></html>"

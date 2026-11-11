@@ -791,7 +791,7 @@ def test_parse_smsc_vars_decodes_a_json_unicode_escape():
             if (data && typeof data === 'object') {
                 window.smscMergeJsVariables(window.SMSC, data);
             }
-        })(JSON.parse('{"vars":{"config":{"availablePlannedToDoIcons":[{"icon":"icon_fill_star","searchvalues":["star","\\u00e9toile"]}]}}}'));
+        })(JSON.parse('\u007B\u0022vars\u0022\u003A\u007B\u0022config\u0022\u003A\u007B\u0022availablePlannedToDoIcons\u0022\u003A\u005B\u007B\u0022icon\u0022\u003A\u0022icon_fill_star\u0022,\u0022searchvalues\u0022\u003A\u005B\u0022star\u0022,\u0022\\u00e9toile\u0022\u005D\u007D\u005D\u007D\u007D\u007D'));
     """
 
     assert parse_smsc_vars(script) == {"config": {"availablePlannedToDoIcons": [{"icon": "icon_fill_star", "searchvalues": ["star", "étoile"]}]}}
