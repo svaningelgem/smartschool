@@ -542,7 +542,7 @@ class PlannedElementPeriod:
 
 @dataclass(config=_config)
 class PlannedElementOrganisers:
-    users: list[_User]
+    users: list[_User] = Field(default_factory=list)
 
 
 @dataclass(config=_config)
@@ -563,10 +563,10 @@ class UserSeeProperties:  # pylint: disable=too-many-instance-attributes  # mirr
     id: bool
     platform_id: bool
     period: bool
-    organisers: bool
     planned_element_type: bool
     capabilities: bool
 
+    organisers: bool = False
     name: bool = False
     participants: bool = False
     is_participant: bool = False
@@ -646,7 +646,6 @@ class PlannedElement:  # pylint: disable=too-many-instance-attributes  # mirrors
     id: UUID
     platform_id: int
     period: PlannedElementPeriod
-    organisers: PlannedElementOrganisers
     planned_element_type: String
     capabilities: UserCapabilities
     sort: String
@@ -655,6 +654,7 @@ class PlannedElement:  # pylint: disable=too-many-instance-attributes  # mirrors
     color: String
     join_ids: PlannedElementJoinIds
 
+    organisers: PlannedElementOrganisers = Field(default_factory=PlannedElementOrganisers)
     name: String = ""
     participants: PlannedElementParticipants | None = None
     is_participant: bool = False

@@ -28,9 +28,9 @@ class PlannedElements(SessionMixin, Iterable[PlannedElement]):
     """
     The elements in the planner of the logged-in user between `from_date` and `till_date`.
 
-    `element_types` picks what the planner returns; the default is the assignments and to-dos. Other types the planner
-    knows include `planned-lessons` (the timetable, with each lesson's subject as its name) and `planned-placeholders`
-    (timetable slots without content).
+    `element_types` picks what the planner returns; the default is the assignments and to-dos, an empty tuple asks for
+    everything. Other types the planner knows include `planned-lessons` (the timetable, with each lesson's subject as
+    its name) and `planned-placeholders` (timetable slots without content).
 
     Example:
     -------
@@ -50,9 +50,9 @@ class PlannedElements(SessionMixin, Iterable[PlannedElement]):
 
     def __iter__(self) -> Iterator[PlannedElement]:
         assert self.till_date is not None  # set in __post_init__
-        data = self.session.json(
-            f"/planner/api/v1/planned-elements/user/{self.session.authenticated_user['id']}",
-            data={"from": self.from_date.isoformat(), "to": self.till_date.isoformat(), "types": ",".join(self.element_types)},
-        )
-        for element in data:
+        params = {"from": self.from_date.isoformat(), "to": self.till_date.isoformat()}
+        if self.element_types:
+            params["types"] = ",".join(self.element_types)
+
+        for element in self.session.json(f"/planner/api/v1/planned-elements/user/{self.session.authenticated_user['id']}", data=params):
             yield PlannedElement(**element)

@@ -434,7 +434,7 @@ class PlannedElementPeriod:
 
 @dataclass(config=_config)
 class PlannedElementOrganisers:
-    users: list[_User]
+    users: list[_User] = ...
 
 @dataclass(config=_config)
 class GroupFilters:
@@ -452,9 +452,9 @@ class UserSeeProperties:
     id: bool
     platform_id: bool
     period: bool
-    organisers: bool
     planned_element_type: bool
     capabilities: bool
+    organisers: bool = False
     name: bool = False
     participants: bool = False
     is_participant: bool = False
@@ -526,7 +526,6 @@ class PlannedElement:
     id: UUID
     platform_id: int
     period: PlannedElementPeriod
-    organisers: PlannedElementOrganisers
     planned_element_type: String
     capabilities: UserCapabilities
     sort: String
@@ -534,6 +533,7 @@ class PlannedElement:
     pinned: bool
     color: String
     join_ids: PlannedElementJoinIds
+    organisers: PlannedElementOrganisers = ...
     name: String = ""
     participants: PlannedElementParticipants | None = None
     is_participant: bool = False

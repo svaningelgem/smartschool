@@ -1,5 +1,4 @@
 from datetime import date
-from pathlib import Path
 
 import pytest
 import time_machine
@@ -29,15 +28,21 @@ def test_planned_elements_till_date(session: Smartschool):
     assert sut[0].unconfirmed
 
 
-@time_machine.travel("2025-05-06")
 def test_planned_elements_asks_for_the_requested_element_types(session: Smartschool, requests_mock):
-    placeholders = Path(__file__).parent / "requests/get/planner/api/v1/planned-elements/user/49_10880_2/7966cae8d297.json"
-    requests_mock.get("https://site/planner/api/v1/planned-elements/user/49_10880_2", text=placeholders.read_text(encoding="utf8"))
+    requests_mock.get("https://site/planner/api/v1/planned-elements/user/49_10880_2", json=[])
 
-    sut = list(PlannedElements(session, element_types=("planned-lessons", "planned-placeholders")))
-
+    assert list(PlannedElements(session, element_types=("planned-lessons", "planned-placeholders"))) == []
     assert requests_mock.last_request.qs["types"] == ["planned-lessons,planned-placeholders"]
-    assert [element.planned_element_type for element in sut] == ["planned-placeholders"]
+
+
+@time_machine.travel("2026-11-11")
+def test_planned_elements_without_element_types_fetches_everything(session: Smartschool, requests_mock):
+    """Without a filter the planner returns every type, such as a lesson-free day, which has no organisers."""
+    sut = list(PlannedElements(session, element_types=()))
+
+    assert "types" not in requests_mock.last_request.qs
+    assert [element.planned_element_type for element in sut] == ["planned-lesson-free-days"]
+    assert sut[0].organisers.users == []
 
 
 def test_applicable_assignment_types(session: Smartschool):
