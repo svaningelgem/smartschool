@@ -5,27 +5,30 @@
 Retrieve grades and evaluations with teacher feedback.
 
 ```python
-from smartschool import Smartschool, PathCredentials, Results
+from smartschool import Smartschool, PathCredentials, PercentageGraphic, Results
 
 session = Smartschool(PathCredentials())
 
 for result in Results(session):
-    points = result.graphic.achieved_points
-    total = result.graphic.total_points
-    pct = result.graphic.percentage
-
-    print(f"{result.name}: {points}/{total} ({pct:.1%})")
+    graphic = result.graphic
+    if isinstance(graphic, PercentageGraphic):
+        print(f"{result.name}: {graphic.achieved_points}/{graphic.total_points} ({graphic.percentage:.1%})")
+    else:  # a text grade, or the icon of a project
+        print(f"{result.name}: {graphic.value}")
     print(f"  Date: {result.date}")
-    print(f"  Teacher: {result.gradebookOwner.name.startingWithFirstName}")
+    print(f"  Teacher: {result.gradebook_owner.name.starting_with_first_name}")
     print(f"  Course: {', '.join(c.name for c in result.courses)}")
     print(f"  Period: {result.period.name}")
 
     # Teacher feedback
     for fb in result.feedback:
-        print(f"  Feedback: {fb.user.name.startingWithFirstName}: {fb.text}")
+        print(f"  Feedback: {fb.user.name.starting_with_first_name}: {fb.text}")
 ```
 
 Results are paginated (50 per page) and lazy-loaded as you iterate.
+
+`result.type` is `normal`, `project` or `project-with-rubrics`. A project is graded per goal: its own graphic is an icon,
+and its details have no central tendencies.
 
 ### Result Details
 
@@ -35,9 +38,9 @@ Each result can fetch additional details on demand:
 result = list(Results(session))[0]
 details = result.details  # Lazy-loaded on first access
 
-print(f"Teachers: {[t.name.startingWithFirstName for t in details.teachers]}")
-print(f"Changed by: {details.userChanged.name.startingWithFirstName}")
-print(f"Date changed: {details.dateChanged}")
+print(f"Teachers: {[t.name.starting_with_first_name for t in details.teachers]}")
+print(f"Changed by: {details.user_changed.name.starting_with_first_name}")
+print(f"Date changed: {details.date_changed}")
 ```
 
 ## Reports
@@ -49,7 +52,7 @@ from smartschool import Reports
 from pathlib import Path
 
 for report in Reports(session):
-    print(f"{report.name} ({report.schoolyearLabel}) - {report.date}")
+    print(f"{report.name} ({report.schoolyear_label}) - {report.date}")
 
     # Download report
     pdf_bytes = report.download()
@@ -64,6 +67,6 @@ Academic terms and grading periods.
 from smartschool import Periods
 
 for period in Periods(session):
-    print(f"{period.name} (active: {period.isActive})")
-    print(f"  School year: {period.skoreWorkYear.dateRange.start} - {period.skoreWorkYear.dateRange.end}")
+    print(f"{period.name} (active: {period.is_active})")
+    print(f"  School year: {period.skore_work_year.date_range.start} - {period.skore_work_year.date_range.end}")
 ```

@@ -1,0 +1,176 @@
+{
+    "identifier": "1000_2000_0_project_100010",
+    "type": "project",
+    "name": "project measuring and drawing",
+    "graphic": {
+        "type": "icon",
+        "color": "steel",
+        "value": "target_lpd_steel",
+        "description": null
+    },
+    "date": "2026-01-15T00:00:00+01:00",
+    "gradebookOwner": {
+        "id": "1000_3000_0",
+        "pictureHash": "initials_TT",
+        "pictureUrl": "https://example.com/picture.png",
+        "description": {
+            "startingWithFirstName": "",
+            "startingWithLastName": ""
+        },
+        "name": {
+            "startingWithFirstName": "First Teacher",
+            "startingWithLastName": "Teacher First"
+        },
+        "sort": "teacher-first",
+        "deleted": false
+    },
+    "component": {
+        "id": 1,
+        "name": "Daily work",
+        "abbreviation": "DW"
+    },
+    "courses": [
+        {
+            "id": 1,
+            "name": "Course",
+            "graphic": {
+                "type": "icon",
+                "value": "basketball"
+            },
+            "teachers": [
+                {
+                    "id": "1000_3000_0",
+                    "pictureHash": "initials_TT",
+                    "pictureUrl": "https://example.com/picture.png",
+                    "description": {
+                        "startingWithFirstName": "",
+                        "startingWithLastName": ""
+                    },
+                    "name": {
+                        "startingWithFirstName": "First Teacher",
+                        "startingWithLastName": "Teacher First"
+                    },
+                    "sort": "teacher-first",
+                    "deleted": false
+                }
+            ],
+            "class": {
+                "identifier": "1000_10",
+                "id": 10,
+                "platformId": 1000,
+                "name": "1A",
+                "type": "K",
+                "icon": "briefcase"
+            },
+            "skoreClassId": 10,
+            "parentCourseId": 2,
+            "skoreWorkYear": {
+                "id": 1,
+                "dateRange": {
+                    "start": "2026-09-01T00:00:00+02:00",
+                    "end": "2027-08-31T00:00:00+02:00"
+                }
+            }
+        }
+    ],
+    "period": {
+        "id": 1,
+        "name": "Period 1",
+        "icon": "cal_purple_generic_week",
+        "class": {
+            "identifier": "1000_10",
+            "id": 10,
+            "platformId": 1000,
+            "name": "1A",
+            "type": "K",
+            "icon": "briefcase"
+        },
+        "skoreWorkYear": {
+            "id": 1,
+            "dateRange": {
+                "start": "2026-09-01T00:00:00+02:00",
+                "end": "2027-08-31T00:00:00+02:00"
+            }
+        },
+        "isActive": true
+    },
+    "feedback": [],
+    "feedbacks": [],
+    "availabilityDate": "2026-01-20T16:00:00+01:00",
+    "isPublished": true,
+    "doesCount": true,
+    "details": {
+        "projectGoals": [
+            {
+                "goal": {
+                    "goalId": "00000000-0000-0000-0000-000000000001",
+                    "leerplanId": "00000000-0000-0000-0000-000000000002",
+                    "leerplanKey": "AAAA-AA-AAAAA"
+                },
+                "graphic": {
+                    "type": "text",
+                    "color": "grass",
+                    "value": "Good",
+                    "description": "Achieved"
+                },
+                "feedback": [],
+                "feedbacks": []
+            }
+        ],
+        "scales": [
+            {
+                "type": "text",
+                "color": "red",
+                "value": "Low",
+                "description": "Not achieved"
+            },
+            {
+                "type": "text",
+                "color": "orange",
+                "value": "Fair",
+                "description": "Partly achieved"
+            }
+        ],
+        "class": {
+            "identifier": "1000_10",
+            "id": 10,
+            "platformId": 1000,
+            "name": "1A",
+            "type": "K",
+            "icon": "briefcase"
+        },
+        "teachers": [
+            {
+                "id": "1000_3000_0",
+                "pictureHash": "initials_TT",
+                "pictureUrl": "https://example.com/picture.png",
+                "description": {
+                    "startingWithFirstName": "",
+                    "startingWithLastName": ""
+                },
+                "name": {
+                    "startingWithFirstName": "First Teacher",
+                    "startingWithLastName": "Teacher First"
+                },
+                "sort": "teacher-first",
+                "deleted": false
+            }
+        ],
+        "dateChanged": "2026-01-18T09:00:00+01:00",
+        "userChanged": {
+            "id": "1000_3000_0",
+            "pictureHash": "initials_TT",
+            "pictureUrl": "https://example.com/picture.png",
+            "description": {
+                "startingWithFirstName": "",
+                "startingWithLastName": ""
+            },
+            "name": {
+                "startingWithFirstName": "First Teacher",
+                "startingWithLastName": "Teacher First"
+            },
+            "sort": "teacher-first",
+            "deleted": false
+        }
+    }
+}

@@ -117,6 +117,7 @@ class ResultType(StrEnum):
     """
 
     NORMAL = "normal"
+    PROJECT = "project"
     PROJECT_WITH_RUBRICS = "project-with-rubrics"
 
 
@@ -301,11 +302,12 @@ class Result:  # pylint: disable=too-many-instance-attributes  # mirrors the API
 
 @dataclass(config=_config)
 class ResultDetails:
-    central_tendencies: list[String]
     teachers: list[Teacher]
     date_changed: DateTime
     user_changed: Teacher
     class_: SchoolClass = Field(validation_alias=AliasChoices("class", "class_"))
+
+    central_tendencies: list[String] = Field(default_factory=list)  # a project has none
 
 
 @dataclass(config=_config)

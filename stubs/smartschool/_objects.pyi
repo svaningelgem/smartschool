@@ -64,6 +64,7 @@ class GraphicColor(MissingStrEnum, label="graphic color"):
 
 class ResultType(StrEnum):
     NORMAL = "normal"
+    PROJECT = "project"
     PROJECT_WITH_RUBRICS = "project-with-rubrics"
 
 @dataclass(config=_config)
@@ -216,11 +217,11 @@ class Result:
 
 @dataclass(config=_config)
 class ResultDetails:
-    central_tendencies: list[String]
     teachers: list[Teacher]
     date_changed: DateTime
     user_changed: Teacher
     class_: SchoolClass
+    central_tendencies: list[String] = ...
 
 @dataclass(config=_config)
 class CourseCondensed:
