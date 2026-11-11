@@ -33,6 +33,7 @@ from smartschool._common import (
     natural_sort,
     parse_mime_type,
     parse_size,
+    parse_smsc_vars,
     save_test_response,
     xml_to_dict,
 )
@@ -781,3 +782,16 @@ def test_save_test_response_survives_a_request_without_a_method_or_url(capture_r
     response = _response(None, None, headers={"content-type": "application/pdf"})
 
     assert _captured(response, capture_root) == ["none/none/response.pdf"]
+
+
+def test_parse_smsc_vars_decodes_a_json_unicode_escape():
+    """Smartschool's JSON escapes an accented character itself, so it sits behind a JS-escaped backslash (cut down from a real planner page)."""
+    script = r"""
+                (function (data) {
+            if (data && typeof data === 'object') {
+                window.smscMergeJsVariables(window.SMSC, data);
+            }
+        })(JSON.parse('{"vars":{"config":{"availablePlannedToDoIcons":[{"icon":"icon_fill_star","searchvalues":["star","\\u00e9toile"]}]}}}'));
+    """
+
+    assert parse_smsc_vars(script) == {"config": {"availablePlannedToDoIcons": [{"icon": "icon_fill_star", "searchvalues": ["star", "étoile"]}]}}
