@@ -80,16 +80,21 @@ from ._objects import PersonDescription as PersonDescription
 from ._objects import PlannedElement as PlannedElement
 from ._objects import PlannedElementAssignmentType as PlannedElementAssignmentType
 from ._objects import PlannedElementAttachment as PlannedElementAttachment
+from ._objects import PlannedElementCalendar as PlannedElementCalendar
 from ._objects import PlannedElementCourse as PlannedElementCourse
 from ._objects import PlannedElementCourseCluster as PlannedElementCourseCluster
 from ._objects import PlannedElementDetail as PlannedElementDetail
 from ._objects import PlannedElementGoal as PlannedElementGoal
+from ._objects import PlannedElementInviteStatus as PlannedElementInviteStatus
 from ._objects import PlannedElementJoinIds as PlannedElementJoinIds
 from ._objects import PlannedElementLocation as PlannedElementLocation
 from ._objects import PlannedElementOrganisers as PlannedElementOrganisers
 from ._objects import PlannedElementParticipants as PlannedElementParticipants
 from ._objects import PlannedElementPeriod as PlannedElementPeriod
 from ._objects import PlannedElementRecurrence as PlannedElementRecurrence
+from ._objects import PlannedElementRepeatOptions as PlannedElementRepeatOptions
+from ._objects import PlannedElementReservation as PlannedElementReservation
+from ._objects import PlannedElementVisibility as PlannedElementVisibility
 from ._objects import PlannedElementWeblink as PlannedElementWeblink
 from ._objects import ResultDetails as ResultDetails
 from ._objects import ResultType as ResultType
@@ -190,18 +195,23 @@ __all__ = [
     "PlannedElement",
     "PlannedElementAssignmentType",
     "PlannedElementAttachment",
+    "PlannedElementCalendar",
     "PlannedElementCourse",
     "PlannedElementCourseCluster",
     "PlannedElementDetail",
     "PlannedElementDetails",
     "PlannedElementFile",
     "PlannedElementGoal",
+    "PlannedElementInviteStatus",
     "PlannedElementJoinIds",
     "PlannedElementLocation",
     "PlannedElementOrganisers",
     "PlannedElementParticipants",
     "PlannedElementPeriod",
     "PlannedElementRecurrence",
+    "PlannedElementRepeatOptions",
+    "PlannedElementReservation",
+    "PlannedElementVisibility",
     "PlannedElementWeblink",
     "PlannedElements",
     "RecipientType",

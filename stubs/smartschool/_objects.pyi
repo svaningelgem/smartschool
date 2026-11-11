@@ -548,6 +548,39 @@ class PlannedElement:
     resolved_status: String = ""
     online_session: String | None = None
     recurrence: PlannedElementRecurrence | None = None
+    icon: String = ""
+
+@dataclass(config=_config, kw_only=True)
+class PlannedElementVisibility:
+    after_date: datetime | None = None
+
+@dataclass(config=_config, kw_only=True)
+class PlannedElementRepeatOptions:
+    frequency: String
+    interval: int
+    until: date | None = None
+    weekdays: list = ...
+    month_week: int | None = None
+
+@dataclass(config=_config, kw_only=True)
+class PlannedElementCalendar:
+    user_id: String
+    type: String
+    color: String
+    info: _User
+
+@dataclass(config=_config, kw_only=True)
+class PlannedElementInviteStatus:
+    user_id: String
+    status: String
+    is_exception: bool = False
+
+@dataclass(config=_config, kw_only=True)
+class PlannedElementReservation:
+    reservation_id: int
+    reservation_platform_id: int
+    item_id: int
+    item_platform_id: int
 
 @dataclass(config=_config, kw_only=True)
 class PlannedElementAttachment:
@@ -572,9 +605,22 @@ class PlannedElementGoal:
 @dataclass(config=_config, kw_only=True)
 class PlannedElementDetail(PlannedElement):
     public_info: OptionalString = ""
+    info: OptionalString = ""
+    private_info: OptionalString = ""
     attachments: list[PlannedElementAttachment] = ...
     weblinks: list[PlannedElementWeblink] = ...
     goals: list[PlannedElementGoal] = ...
+    reservations: list[PlannedElementReservation] = ...
+    date_created: datetime | None = None
+    visibility: PlannedElementVisibility | None = None
+    show_presence_choices: bool = False
+    presence_saved: bool = False
+    privacy: String = ""
+    repeat_options: PlannedElementRepeatOptions | None = None
+    calendars: list[PlannedElementCalendar] = ...
+    extra_organisers: PlannedElementOrganisers = ...
+    extra_participants: PlannedElementOrganisers = ...
+    invite_statuses: list[PlannedElementInviteStatus] = ...
 
 @dataclass(config=_config, kw_only=True)
 class ApplicableAssignmentType:

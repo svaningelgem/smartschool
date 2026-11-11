@@ -74,6 +74,10 @@ The list only holds the headers of each element. `PlannedElementDetails` fetches
 the teacher's info for the pupils ("Info voor de leerling", as HTML), the attachments, the weblinks and the
 linked curriculum goals. `files()` gives the attachments as files to download.
 
+Some fields only come with certain types: an assignment has `date_created` and `visibility` (from when the pupils
+see it); a meeting has its description in `info`, plus `privacy`, `repeat_options`, `calendars`, `extra_organisers`,
+`extra_participants` and `invite_statuses`; a school activity can have `info` and `reservations`.
+
 ```python
 from pathlib import Path
 from smartschool import PlannedElementDetails, PlannedElements

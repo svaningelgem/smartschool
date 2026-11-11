@@ -672,6 +672,54 @@ class PlannedElement:  # pylint: disable=too-many-instance-attributes  # mirrors
     resolved_status: String = ""
     online_session: String | None = None
     recurrence: PlannedElementRecurrence | None = None
+    icon: String = ""
+
+
+@dataclass(config=_config, kw_only=True)
+class PlannedElementVisibility:
+    """From when the pupils see an assignment."""
+
+    after_date: datetime | None = None
+
+
+@dataclass(config=_config, kw_only=True)
+class PlannedElementRepeatOptions:
+    """How a recurring meeting repeats, such as daily with an interval of 1 until a date."""
+
+    frequency: String
+    interval: int
+    until: date | None = None
+    weekdays: list = Field(default_factory=list)
+    month_week: int | None = None
+
+
+@dataclass(config=_config, kw_only=True)
+class PlannedElementCalendar:
+    """A calendar a meeting shows up in, with its owner."""
+
+    user_id: String
+    type: String
+    color: String
+    info: _User
+
+
+@dataclass(config=_config, kw_only=True)
+class PlannedElementInviteStatus:
+    """A participant's answer to a meeting invite, such as 'pending'."""
+
+    user_id: String
+    status: String
+    is_exception: bool = False
+
+
+@dataclass(config=_config, kw_only=True)
+class PlannedElementReservation:
+    """A reservation (of a room or item) linked to a planned element."""
+
+    reservation_id: int
+    reservation_platform_id: int
+    item_id: int
+    item_platform_id: int
 
 
 @dataclass(config=_config, kw_only=True)
@@ -702,14 +750,37 @@ class PlannedElementGoal:
 
 
 @dataclass(config=_config, kw_only=True)
-class PlannedElementDetail(PlannedElement):
-    """A planned element with what only its detail view holds: the teacher's info for the pupils, attachments, links and goals."""
+class PlannedElementDetail(PlannedElement):  # pylint: disable=too-many-instance-attributes  # mirrors the API payload
+    """
+    A planned element with what only its detail view holds.
+
+    That is the info for the pupils, attachments, links and goals, and per type: the creation date and visibility of
+    an assignment, and the repeat options, calendars, extra people and invite answers of a meeting.
+    """
 
     public_info: OptionalString = ""
     """HTML, shown in Smartschool as 'Info voor de leerling'."""
+    info: OptionalString = ""
+    """HTML; the description of a meeting or school activity."""
+    private_info: OptionalString = ""
+    """HTML, only filled in for whoever may see it (not for pupils)."""
     attachments: list[PlannedElementAttachment] = Field(default_factory=list)
     weblinks: list[PlannedElementWeblink] = Field(default_factory=list)
     goals: list[PlannedElementGoal] = Field(default_factory=list)
+    reservations: list[PlannedElementReservation] = Field(default_factory=list)
+
+    date_created: datetime | None = None
+    visibility: PlannedElementVisibility | None = None
+    show_presence_choices: bool = False
+    presence_saved: bool = False
+
+    privacy: String = ""
+    repeat_options: PlannedElementRepeatOptions | None = None
+    calendars: list[PlannedElementCalendar] = Field(default_factory=list)
+    extra_organisers: PlannedElementOrganisers = Field(default_factory=PlannedElementOrganisers)
+    extra_participants: PlannedElementOrganisers = Field(default_factory=PlannedElementOrganisers)
+    """Only users: a meeting's extra participants come without groups."""
+    invite_statuses: list[PlannedElementInviteStatus] = Field(default_factory=list)
 
 
 @dataclass(config=_config, kw_only=True)
