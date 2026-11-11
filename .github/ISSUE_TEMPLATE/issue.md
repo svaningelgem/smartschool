@@ -3,7 +3,7 @@ name: Issue
 about: Report a bug or ask for a feature
 ---
 
-<!-- First line, written by you and not generated: what is this, and what is it for? -->
+> <!-- Replace this comment with one line, written by you and not generated: what is this, and what is it for? -->
 
 
 <!--

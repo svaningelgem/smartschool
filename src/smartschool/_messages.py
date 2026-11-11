@@ -73,7 +73,7 @@ class MessageHeaders(_MessagesPoster, SmartschoolXmlNoCache[objects.ShortMessage
 
     Example:
     -------
-    >>> for message in MessageHeaders():
+    >>> for message in MessageHeaders(session):
     >>>     print(message.subject)
     Re: LO les
     Frans
@@ -136,7 +136,7 @@ class Message(_FetchOneMessage[objects.FullMessage]):  # pylint: disable=too-few
 
     Example:
     -------
-    >>> message: FullMessage = list(Message(123))[0]
+    >>> message = Message(session, 123).get()
     >>> message.subject
     Griezelfestijn
 
@@ -173,7 +173,7 @@ class Attachments(_FetchOneMessage[Attachment]):  # pylint: disable=too-few-publ
 
     Example:
     -------
-    >>> for attachment in Attachments(123):
+    >>> for attachment in Attachments(session, 123):
     >>>     print(attachment.name)
     Oproep figuranten en helpers.pdf
     Poster griezelfestijn.pdf

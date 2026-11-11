@@ -129,6 +129,38 @@ def test_missing_graphic_color_raises():
         PercentageGraphic(type="percentage", color=None, value=50, description="5/10")  # ty: ignore[invalid-argument-type]  # invalid on purpose
 
 
+def test_project_results(session: Smartschool, requests_mock):
+    """A project is graded per goal: its own graphic is an icon and its details carry no central tendencies."""
+    project_file = Path(__file__).parent / "requests/get/results/api/v1/evaluations/project.json"
+    requests_mock.get("https://site/results/api/v1/evaluations/?pageNumber=1&itemsOnPage=50", content=project_file.read_bytes())
+
+    result = next(iter(Results(session)))
+
+    assert result.type == ResultType.PROJECT
+    assert isinstance(result.graphic, IconGraphic)
+    assert result.details is not None
+    assert result.details.central_tendencies == []
+
+
+def test_project_result_gives_its_mark_per_goal_and_the_scale(session: Smartschool, requests_mock):
+    project_file = Path(__file__).parent / "requests/get/results/api/v1/evaluations/project.json"
+    requests_mock.get("https://site/results/api/v1/evaluations/?pageNumber=1&itemsOnPage=50", content=project_file.read_bytes())
+
+    details = next(iter(Results(session))).details
+
+    assert details is not None
+    assert [(goal.goal.leerplan_key, goal.graphic.value, goal.graphic.description) for goal in details.project_goals] == [("AAAA-AA-AAAAA", "Good", "Achieved")]
+    assert [scale.value for scale in details.scales] == ["Low", "Fair"]
+
+
+def test_other_results_have_no_project_goals(session: Smartschool):
+    details = objects.Result(**session.json("/results/api/v1/evaluations/49_10880_0_normal_769824")).details
+
+    assert details is not None
+    assert details.project_goals == []
+    assert details.scales == []
+
+
 def test_unknown_result_type_raises(session: Smartschool, requests_mock):
     """Strict enum: unknown result types must fail loudly."""
     payload = [{**_minimal_result_payload(), "type": "brand-new-type"}]

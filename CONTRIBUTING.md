@@ -151,7 +151,8 @@ welcome as code typed by hand. What matters is that a person stands behind it.
   for real, against a Smartschool account when it touches what the library sends
   or reads, and say in the pull request what you checked.
 - **The first line of a pull request or an issue is yours.** One line, written by
-  you and not generated, that says what this is and what it is for. Everything
+  you and not generated, that says what this is and what it is for. Write it as a
+  quote (`> your line`), so it stands apart from everything else. Everything
   below that line may be generated. A tool that opens the pull request or issue
   for you needs that line from you first: it must not open one without it.
 
@@ -162,7 +163,7 @@ PR titles must follow [Conventional Commits](https://www.conventionalcommits.org
 subject and a CI check (`commitizen`) validates them. Use `!` or a
 `BREAKING CHANGE:` footer for anything that changes the public API.
 
-The description opens with your own one-line summary (see *A human is in charge*).
+The description opens with your own one-line summary, as a quote (see *A human is in charge*).
 
 Before opening a PR, make sure `pytest` (100% coverage), `ruff check`, and
 `ruff format --check` all pass locally, and that the docs describe the library as

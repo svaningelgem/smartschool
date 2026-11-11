@@ -64,6 +64,7 @@ class GraphicColor(MissingStrEnum, label="graphic color"):
 
 class ResultType(StrEnum):
     NORMAL = "normal"
+    PROJECT = "project"
     PROJECT_WITH_RUBRICS = "project-with-rubrics"
 
 @dataclass(config=_config, kw_only=True)
@@ -215,12 +216,27 @@ class Result:
     details: ResultDetails | None = None
 
 @dataclass(config=_config, kw_only=True)
+class CurriculumGoal:
+    goal_id: UUID
+    leerplan_id: UUID
+    leerplan_key: String
+
+@dataclass(config=_config, kw_only=True)
+class ProjectGoal:
+    goal: CurriculumGoal
+    graphic: ResultGraphic
+    feedback: list[Feedback]
+    feedbacks: list[FeedbackFull]
+
+@dataclass(config=_config, kw_only=True)
 class ResultDetails:
-    central_tendencies: list[String]
+    central_tendencies: list[String] = ...
     teachers: list[Teacher]
     date_changed: DateTime
     user_changed: Teacher
     class_: SchoolClass
+    project_goals: list[ProjectGoal] = ...
+    scales: list[ResultGraphic] = ...
 
 @dataclass(config=_config, kw_only=True)
 class CourseCondensed:

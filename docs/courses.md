@@ -25,7 +25,7 @@ All courses via the course-list API. Always works, even when no results are avai
 from smartschool import CourseList
 
 for course in CourseList(session):
-    print(f"{course.name} (platform: {course.platformId})")
+    print(f"{course.name} (platform: {course.platform_id})")
 ```
 
 ### Courses
@@ -48,15 +48,15 @@ from smartschool import TopNavCourses, FileItem, FolderItem, InternetShortcut
 
 for course in TopNavCourses(session):
     for item in course.items:
-        if isinstance(item, FileItem):
+        if isinstance(item, InternetShortcut):  # a kind of FileItem, so it goes first
+            print(f"  [link]   {item.name} -> {item.link}")
+        elif isinstance(item, FileItem):
             print(f"  [file]   {item.filename} ({item.size_kb} KB)")
         elif isinstance(item, FolderItem):
             print(f"  [folder] {item.name}")
             # Navigate into subfolders
             for subitem in item.items:
                 print(f"    - {subitem.name}")
-        elif isinstance(item, InternetShortcut):
-            print(f"  [link]   {item.name} -> {item.link}")
 ```
 
 ## Downloading Files
@@ -64,18 +64,18 @@ for course in TopNavCourses(session):
 ```python
 from pathlib import Path
 
-# Download to a specific directory
 for course in TopNavCourses(session):
     for item in course.items:
         if isinstance(item, FileItem):
+            # Into a directory, under the file's own name
             path = item.download_to_dir(Path("downloads") / course.name)
             print(f"Saved: {path}")
 
-# Download to a specific file path
-item.download(Path("my_file.pdf"), overwrite=True)
+            # To a specific file path
+            item.download(Path("my_file.pdf"), overwrite=True)
 
-# Download as bytes (in-memory)
-content: bytes = item.download()
+            # As bytes (in-memory)
+            content: bytes = item.download()
 ```
 
 `InternetShortcut` items generate `.url` shortcut files when downloaded.

@@ -59,8 +59,8 @@ wheel with ty, pyright and mypy.
 
 `CONTRIBUTING.md` reserves the first line of a pull request or an issue for the person
 behind it. Do not open either until they have given you that line: ask for it, put it
-first, word for word, and never write or reword it yourself. Docs and docstrings describe
-the library as it is now, never how it changed.
+first as a quote (`> their line`), word for word, and never write or reword it yourself.
+Docs and docstrings describe the library as it is now, never how it changed.
 
 ## CI notes
 
