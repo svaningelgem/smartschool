@@ -76,7 +76,7 @@ linked curriculum goals. `files()` gives the attachments as files to download.
 
 ```python
 from pathlib import Path
-from smartschool import PlannedElementDetails
+from smartschool import PlannedElementDetails, PlannedElements
 
 for element in PlannedElements(session):
     details = PlannedElementDetails(session, element=element)
