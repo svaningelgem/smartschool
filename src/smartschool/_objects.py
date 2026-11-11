@@ -120,13 +120,13 @@ class ResultType(StrEnum):
     PROJECT_WITH_RUBRICS = "project-with-rubrics"
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class CourseGraphic:
     type: Literal["icon", "image"]
     value: String
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class PercentageGraphic:
     type: Literal["percentage"]
     color: GraphicColor
@@ -146,7 +146,7 @@ class PercentageGraphic:
         return self.achieved_points / self.total_points
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class TextGraphic:
     type: Literal["text"]
     color: GraphicColor
@@ -154,7 +154,7 @@ class TextGraphic:
     description: String
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class IconGraphic:
     type: Literal["icon"]
     color: String | None = None
@@ -165,13 +165,13 @@ class IconGraphic:
 ResultGraphic = Annotated[PercentageGraphic | TextGraphic | IconGraphic, Field(discriminator="type")]
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class PersonDescription:
     starting_with_first_name: String = ""
     starting_with_last_name: String = ""
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class _User:
     id: String
     picture_hash: String
@@ -182,7 +182,7 @@ class _User:
     deleted: bool = False
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class _Group:
     identifier: String
     id: String
@@ -193,19 +193,19 @@ class _Group:
     sort: String
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class DateRange:
     start: DateTime
     end: DateTime
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class SkoreWorkYear:
     id: int
     date_range: DateRange
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class SchoolClass:
     identifier: String
     id: int
@@ -215,7 +215,7 @@ class SchoolClass:
     icon: String
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class Period:
     id: int
     name: String
@@ -225,22 +225,22 @@ class Period:
     class_: SchoolClass = Field(validation_alias=AliasChoices("class", "class_"))
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class Component:
     id: int
     name: String
     abbreviation: String
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class Teacher(_User): ...
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class Student(_User): ...
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class Course:  # pylint: disable=too-many-instance-attributes  # mirrors the API payload
     id: int
     name: String
@@ -259,13 +259,13 @@ class Course:  # pylint: disable=too-many-instance-attributes  # mirrors the API
         return ret + ")"
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class Feedback:
     text: String
     user: Teacher
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class FeedbackFull:  # pylint: disable=too-many-instance-attributes  # mirrors the API payload
     attachments: list[String]
     changed_at: DateTime
@@ -277,7 +277,7 @@ class FeedbackFull:  # pylint: disable=too-many-instance-attributes  # mirrors t
     text: String
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class Result:  # pylint: disable=too-many-instance-attributes  # mirrors the API payload
     identifier: String
     type: ResultType
@@ -299,7 +299,7 @@ class Result:  # pylint: disable=too-many-instance-attributes  # mirrors the API
     details: ResultDetails | None = None
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class ResultDetails:
     central_tendencies: list[String]
     teachers: list[Teacher]
@@ -308,7 +308,7 @@ class ResultDetails:
     class_: SchoolClass = Field(validation_alias=AliasChoices("class", "class_"))
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class CourseCondensed:
     name: String
     teacher: String
@@ -321,7 +321,7 @@ class CourseCondensed:
     icon: String = Field(repr=False, default="")
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class FutureTaskOneTask:  # pylint: disable=too-many-instance-attributes  # mirrors the API payload
     label: String
     description: String
@@ -342,13 +342,13 @@ class FutureTaskOneTask:  # pylint: disable=too-many-instance-attributes  # mirr
     hour_id: Annotated[String, Field(validation_alias="hourID")]
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class FutureTaskOneItem:
     tasks: list[FutureTaskOneTask]
     materials: list[String]
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class FutureTaskOneCourse:
     lesson_id: Annotated[String, Field(validation_alias="lessonID")]
     hour_id: Annotated[String, Field(validation_alias="hourID")]
@@ -357,14 +357,14 @@ class FutureTaskOneCourse:
     items: FutureTaskOneItem
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class FutureTaskOneDay:
     date: Date
     pretty_date: String
     courses: list[FutureTaskOneCourse]
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class AgendaHour:
     hour_id: Annotated[String, Field(validation_alias="hourID")]
     start: String
@@ -372,7 +372,7 @@ class AgendaHour:
     title: String
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class AgendaLesson:  # pylint: disable=too-many-instance-attributes  # mirrors the API payload
     moment_id: Annotated[String, Field(validation_alias="momentID")]
     lesson_id: Annotated[String, Field(validation_alias="lessonID")]
@@ -404,7 +404,7 @@ class AgendaLesson:  # pylint: disable=too-many-instance-attributes  # mirrors t
     some_subjects_empty: String | None
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class AgendaMomentInfoAssignment:  # pylint: disable=too-many-instance-attributes  # mirrors the API payload
     start_assignment: String
     start: String
@@ -418,7 +418,7 @@ class AgendaMomentInfoAssignment:  # pylint: disable=too-many-instance-attribute
     assignment_deadline: String
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class AgendaMomentInfo:
     class_name: String
     subject: String
@@ -427,7 +427,7 @@ class AgendaMomentInfo:
     assignments: list[AgendaMomentInfoAssignment]
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class StudentSupportLink:
     id: String
     name: String
@@ -438,7 +438,7 @@ class StudentSupportLink:
     is_visible: bool
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class ShortMessage:  # pylint: disable=too-many-instance-attributes  # mirrors the API payload
     id: int
     from_image: Url
@@ -458,7 +458,7 @@ class ShortMessage:  # pylint: disable=too-many-instance-attributes  # mirrors t
     colored_flag: int = Field(default=0, validation_alias=AliasChoices("colored_flag", "label"))
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class FullMessage:  # pylint: disable=too-many-instance-attributes  # mirrors the API payload
     id: int
     to: String | None
@@ -485,7 +485,7 @@ class FullMessage:  # pylint: disable=too-many-instance-attributes  # mirrors th
     colored_flag: int = Field(default=0, validation_alias=AliasChoices("colored_flag", "label"))
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class Attachment:
     file_id: Annotated[int, Field(validation_alias="fileID")]
     name: String
@@ -496,20 +496,20 @@ class Attachment:
     order: int
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class MessageChanged:
     id: int
     new: int = Field(validation_alias=AliasChoices("status", "label", "new"))
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class MessageDeletionStatus:
     msg_id: Annotated[int, Field(validation_alias="msgID")]
     box_type: String
     is_deleted: bool = Field(validation_alias=AliasChoices("status", "is_deleted"))
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class MessageSearchUser:  # pylint: disable=too-many-instance-attributes  # mirrors the API payload
     user_id: Annotated[int, Field(validation_alias="userID")]
     value: String
@@ -523,7 +523,7 @@ class MessageSearchUser:  # pylint: disable=too-many-instance-attributes  # mirr
     picture: Url | None = None
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class MessageSearchGroup:
     group_id: Annotated[int, Field(validation_alias="groupID")]
     value: String
@@ -532,7 +532,7 @@ class MessageSearchGroup:
     description: String | None = None
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class PlannedElementPeriod:
     date_time_from: datetime
     date_time_to: datetime
@@ -540,25 +540,25 @@ class PlannedElementPeriod:
     deadline: bool
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class PlannedElementOrganisers:
     users: list[_User] = Field(default_factory=list)
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class GroupFilters:
     filters: list
     additional_users: list[_User]
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class PlannedElementParticipants:
     groups: list[_Group]
     users: list[_User]
     group_filters: GroupFilters
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class UserSeeProperties:  # pylint: disable=too-many-instance-attributes  # mirrors the API payload
     id: bool
     platform_id: bool
@@ -574,7 +574,7 @@ class UserSeeProperties:  # pylint: disable=too-many-instance-attributes  # mirr
     locations: bool = False
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class UserCapabilities:  # pylint: disable=too-many-instance-attributes  # mirrors the API payload
     can_user_trash: bool
     can_user_restore_from_trash: bool
@@ -597,13 +597,13 @@ class UserCapabilities:  # pylint: disable=too-many-instance-attributes  # mirro
     can_user_manage_video_call: bool = False
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class PlannedElementCourseCluster:
     id: int
     name: String
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class PlannedElementCourse:
     id: UUID
     platform_id: int
@@ -614,7 +614,7 @@ class PlannedElementCourse:
     is_visible: bool
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class PlannedElementLocation:  # pylint: disable=too-many-instance-attributes  # mirrors the API payload
     id: UUID
     platform_id: int
@@ -626,13 +626,13 @@ class PlannedElementLocation:  # pylint: disable=too-many-instance-attributes  #
     selectable: bool
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class PlannedElementJoinIds:
     from_: String = Field(validation_alias=AliasChoices("from", "from_"))
     to: String = Field()
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class PlannedElementAssignmentType:
     id: UUID
     name: String
@@ -641,7 +641,7 @@ class PlannedElementAssignmentType:
     weight: int
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class PlannedElement:  # pylint: disable=too-many-instance-attributes  # mirrors the API payload
     id: UUID
     platform_id: int
@@ -665,7 +665,7 @@ class PlannedElement:  # pylint: disable=too-many-instance-attributes  # mirrors
     online_session: String | None = None
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class ApplicableAssignmentType:
     id: UUID
     platform_id: int
@@ -675,7 +675,7 @@ class ApplicableAssignmentType:
     weight: float
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class Report:
     id: int
     name: String
@@ -693,7 +693,7 @@ class PartOfDay(MissingStrEnum, label="part of the day"):
     AFTERNOON = "NM"
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class StudentNote:  # pylint: disable=too-many-instance-attributes  # mirrors the API payload
     """
     One line of the pupil's file in the pupil-follow-up system (LVS); `private` lines are meant for staff only.
@@ -719,7 +719,7 @@ class StudentNote:  # pylint: disable=too-many-instance-attributes  # mirrors th
     author_reverse: OptionalString = Field(default="", repr=False)
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class StudentAbsence:  # pylint: disable=too-many-instance-attributes  # mirrors the API payload
     """One absence code of the pupil."""
 
@@ -743,7 +743,7 @@ class StudentNoteParamType(IntEnum):
     INSTRUCTION = 8
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class StudentNoteParam:
     """
     One parameter of a `StudentNote`.
@@ -759,7 +759,7 @@ class StudentNoteParam:
     option_value: OptionalString = Field(default="", validation_alias="optionvalue", repr=False)
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class StudentNoteAttachment:
     """One file attached to a `StudentNote`, as listed in its attachments parameter (`{"<file id>": {...}}`)."""
 
@@ -770,7 +770,7 @@ class StudentNoteAttachment:
     file_hash: OptionalString = ""
 
 
-@dataclass(config=_config)
+@dataclass(config=_config, kw_only=True)
 class StudentNoteDetail:
     """The parameters of one `StudentNote`, as sent; `StudentNoteDetails` yields the subclass that interprets them."""
 

@@ -36,6 +36,9 @@ How the codebase is meant to read and evolve:
 ### Style
 
 - Prefer `@dataclass` over a hand-written `__init__`.
+- The models parsed from Smartschool's answers are keyword-only:
+  `@dataclass(config=_config, kw_only=True)`. A positional argument would silently
+  land in another field once a model gains or moves one; a test checks every model.
 - Imports go at the top of the file, never inline — the only exception is
   breaking a real circular import.
 - Internal modules use relative imports (`from ._objects import …`); user-facing
