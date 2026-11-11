@@ -38,9 +38,10 @@ Each result can fetch additional details on demand:
 result = list(Results(session))[0]
 details = result.details  # Lazy-loaded on first access
 
-print(f"Teachers: {[t.name.starting_with_first_name for t in details.teachers]}")
-print(f"Changed by: {details.user_changed.name.starting_with_first_name}")
-print(f"Date changed: {details.date_changed}")
+if details:
+    print(f"Teachers: {[t.name.starting_with_first_name for t in details.teachers]}")
+    print(f"Changed by: {details.user_changed.name.starting_with_first_name}")
+    print(f"Date changed: {details.date_changed}")
 ```
 
 ## Reports
@@ -55,8 +56,9 @@ for report in Reports(session):
     print(f"{report.name} ({report.schoolyear_label}) - {report.date}")
 
     # Download report
-    pdf_bytes = report.download()
-    Path(f"reports/{report.name}.pdf").write_bytes(pdf_bytes)
+    target = Path("reports") / f"{report.name}.pdf"
+    target.parent.mkdir(exist_ok=True)
+    target.write_bytes(report.download())
 ```
 
 ## Periods

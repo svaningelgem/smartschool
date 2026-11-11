@@ -38,35 +38,14 @@ class SmartschoolLessons(AgendaPoster[AgendaLesson]):
 
     To reproduce: open the agenda, one of the XHR calls is this one.
 
-    This includes (for an example check the tests):
-    - momentID: a unique identifier for this specific lesson
-    - lessonID: a group id
-    - hourID: link to `AgendaHours`
+    Each lesson is an `AgendaLesson`. Among its fields:
+    - moment_id: a unique identifier for this specific lesson
+    - lesson_id: a group id
+    - hour_id: link to `SmartschoolHours`
     - date: YYYY-mm-dd
     - subject: explanation by the teacher
-    - course
-    - courseTitle
     - classroom: what classroom this is in
-    - classroomTitle: same as `classroom`?
     - teacher: name of the teacher (Lastname + initial of firstname)
-    - teacherTitle:
-    - klassen
-    - klassenTitle
-    - classIDs
-    - bothStartStatus
-    - assignmentEndStatus
-    - testDeadlineStatus
-    - noteStatus
-    - note
-    - date_listview
-    - hour
-    - activity
-    - activityID
-    - color
-    - hourValue
-    - components_hidden
-    - freedayIcon
-    - someSubjectsEmpty
     """
 
     _subsystem: ClassVar[str] = "agenda"
@@ -100,8 +79,8 @@ class SmartschoolHours(AgendaPoster[objects.AgendaHour]):
 
     To reproduce: open the agenda, one of the XHR calls is this one.
 
-    This includes (for an example check the tests):
-    - hourID: unique identifier for this period
+    Each period is an `AgendaHour`:
+    - hour_id: unique identifier for this period
     - start: HH:MM starting time
     - end: HH:MM ending time
     - title: how it is called in the agenda
@@ -130,11 +109,12 @@ class SmartschoolMomentInfos(AgendaPoster[objects.AgendaMomentInfo]):  # pylint:
 
     To reproduce: open the agenda, click on a yellow/red book. This is the XHR call that appears.
 
-    This includes (for an example check the tests):
-    - hourID: unique identifier for this period
-    - start: HH:MM starting time
-    - end: HH:MM ending time
-    - title: how it is called in the agenda
+    Each entry is an `AgendaMomentInfo`:
+    - class_name: the class the moment is for
+    - subject: explanation by the teacher
+    - materials: what to bring, when given
+    - moment_id: the lesson this belongs to
+    - assignments: the tasks and tests attached to the moment
     """
 
     _subsystem: ClassVar[str] = "agenda"

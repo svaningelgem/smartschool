@@ -39,7 +39,7 @@ class Results(SessionMixin, Iterable[Result]):
 
     Example:
     -------
-    >>> for result in Results():
+    >>> for result in Results(session):
     >>>     print(result.name)
     Repetitie hoofdstuk 1
 
