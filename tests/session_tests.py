@@ -8,15 +8,16 @@ import yaml
 from smartschool import Smartschool, SmartSchoolAuthenticationError, SmartSchoolDownloadError, SmartSchoolJsonError
 
 # How current Smartschool pages embed the SMSC vars: no `$.extend(...)` any more, the JS-escaped JSON goes to an IIFE.
+# Cut down from a real page to the one entry the login reads.
 CURRENT_USER_SCRIPTS = r"""
 <script type="text/javascript" src="/smsc/js/app.js"></script>
 <script type="text/javascript">
-(function (data) {
-    if (data && typeof data === 'object') {
-        window.smscMergeJsVariables(window.SMSC, data);
-    }
-})(JSON.parse('{"vars":{"authenticatedUser":{"id":"49_10880_2"}}}'));
-</script>
+                (function (data) {
+            if (data && typeof data === 'object') {
+                window.smscMergeJsVariables(window.SMSC, data);
+            }
+        })(JSON.parse('{"vars":{"authenticatedUser":{"id":"49_10880_2"}}}'));
+    </script>
 """
 CURRENT_HOMEPAGE = f"<html><body>{CURRENT_USER_SCRIPTS}</body></html>"
 CURRENT_VERIFICATION_PAGE = f"""<html><body>
@@ -411,37 +412,30 @@ def test_no_auth_file(tmp_path, mocker):
 
 
 def test_parse_login_information_continue_branch(mocker, tmp_path):
-    """Test continue branch when script has src or no 'extend' in text."""
+    """A script with a src, or without the SMSC vars, leaves the user unset."""
     mocker.patch.object(Path, "home", return_value=tmp_path)
     parser = Smartschool()
 
-    # Mock response with scripts that should be skipped
     mock_response = mocker.Mock()
     mock_html = mocker.Mock()
     mock_html.select.return_value = [
         mocker.Mock(get=lambda x: "some-src.js", text="some script"),  # has src
-        mocker.Mock(get=lambda x: None, text="no extend keyword here"),  # no 'extend'
+        mocker.Mock(get=lambda x: None, text="no SMSC vars here"),
     ]
 
     mocker.patch("smartschool._session.bs4_html", return_value=mock_html)
 
     parser._parse_login_information(mock_response)  # pylint: disable=protected-access  # white-box test
 
-    # Should not set authenticated_user since all scripts are skipped
     assert parser._authenticated_user is None  # pylint: disable=protected-access  # white-box test
 
 
-def test_authenticated_user_returned_when_platform_id_populates_it(session, mocker):
-    """authenticated_user lazily hits platform_id; if that login populates the user, it is returned."""
+def test_authenticated_user_logs_in_when_the_session_is_dead(session, requests_mock):
+    """authenticated_user lazily fetches the homepage; a dead session is logged in first, and the homepage's user is returned."""
     session._authenticated_user = None  # pylint: disable=protected-access  # white-box test
+    requests_mock.get("https://site/", [{"status_code": 302, "headers": {"Location": "/login"}}, {"text": CURRENT_HOMEPAGE}])
 
-    def _populate(*_args, **_kwargs):
-        session._authenticated_user = {"id": "49_populated"}  # pylint: disable=protected-access  # white-box test
-        return 49
-
-    mocker.patch.object(Smartschool, "platform_id", new_callable=mocker.PropertyMock, side_effect=_populate)
-
-    assert session.authenticated_user == {"id": "49_populated"}
+    assert session.authenticated_user["id"] == "49_10880_2"
 
 
 def test_cookies_saved_when_response_stays_on_auth_url(session, requests_mock):

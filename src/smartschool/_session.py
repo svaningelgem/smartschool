@@ -53,11 +53,7 @@ class Smartschool(Session, DevTracingMixin):
     @property
     def authenticated_user(self) -> dict:
         if self._authenticated_user is None:
-            # This will trigger a simple webcall that triggers a login when needed, setting the authenticated_user
-            _ = self.platform_id
-        if self._authenticated_user is None:
-            # No login was needed (the cached cookies are still valid), so the login chain never parsed the user:
-            # every page carries it, so read it from the homepage.
+            # Every page carries the user; fetching the homepage also logs in when needed.
             self._parse_login_information(self.get("/"))
         if self._authenticated_user is None:
             raise ValueError("Could not retrieve authenticated user information")
