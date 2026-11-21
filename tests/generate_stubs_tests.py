@@ -107,6 +107,33 @@ def test_stub_keeps_pydantic_models_constructible(tmp_path: Path):
     assert [ast.unparse(member) for member in teacher.body] == ["name: Name", "nickname: Name = ''"]
 
 
+def test_stub_flattens_a_union_alias_with_a_discriminated_union_inside(tmp_path: Path):
+    stub = _stub_of(
+        tmp_path,
+        """
+        from typing import Annotated, Literal
+
+        from pydantic.dataclasses import Field, dataclass
+
+        @dataclass
+        class Room:
+            type: Literal["room"]
+
+        @dataclass
+        class Text:
+            type: Literal["text"]
+
+        @dataclass
+        class Unknown:
+            type: str = ""
+
+        Location = Annotated[Annotated[Room | Text, Field(discriminator="type")] | Unknown, Field(union_mode="left_to_right")]
+        """,
+    )
+
+    assert "Location = Room | Text | Unknown" in [ast.unparse(node) for node in stub.body]
+
+
 def test_stub_keeps_a_typing_only_import_that_a_string_bound_refers_to(tmp_path: Path):
     stub = _stub_of(
         tmp_path,

@@ -95,6 +95,8 @@ from ._objects import PlannedElementPeriod as PlannedElementPeriod
 from ._objects import PlannedElementRecurrence as PlannedElementRecurrence
 from ._objects import PlannedElementRepeatOptions as PlannedElementRepeatOptions
 from ._objects import PlannedElementReservation as PlannedElementReservation
+from ._objects import PlannedElementTextLocation as PlannedElementTextLocation
+from ._objects import PlannedElementUnknownLocation as PlannedElementUnknownLocation
 from ._objects import PlannedElementVisibility as PlannedElementVisibility
 from ._objects import PlannedElementWeblink as PlannedElementWeblink
 from ._objects import ProjectGoal as ProjectGoal
@@ -214,6 +216,8 @@ __all__ = [
     "PlannedElementRecurrence",
     "PlannedElementRepeatOptions",
     "PlannedElementReservation",
+    "PlannedElementTextLocation",
+    "PlannedElementUnknownLocation",
     "PlannedElementVisibility",
     "PlannedElementWeblink",
     "PlannedElements",
