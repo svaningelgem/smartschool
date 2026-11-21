@@ -12,6 +12,9 @@ class FutureTasks(SessionMixin):
     """
     Class that interfaces the retrieval of any task that needs to be made in the near future.
 
+    These are the tasks of the agenda. A school that works with the planner has none here: `PlannedElements` returns its
+    assignments and to-dos.
+
     Example:
     -------
     >>> for day in FutureTasks(session):
