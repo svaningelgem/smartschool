@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 from zoneinfo import ZoneInfo
 
 from ._common import DownloadableFile, create_filesystem_safe_filename
+from ._exceptions import SmartSchoolDownloadError
 from ._objects import ApplicableAssignmentType, PlannedElement, PlannedElementDetail
 from ._session import SessionMixin
 
@@ -79,7 +80,8 @@ class PlannedElementFile(DownloadableFile, SessionMixin):
 
     def _real_download(self, target: Path | None) -> bytes | Path:
         response = self.session.get(self.download_url)
-        response.raise_for_status()
+        if response.status_code != 200:
+            raise SmartSchoolDownloadError("Failed to download the attachment", response)
         return self._write_or_return(response.content, target)
 
 

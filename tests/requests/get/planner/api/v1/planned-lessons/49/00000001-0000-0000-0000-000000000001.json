@@ -1,0 +1,194 @@
+{
+  "id": "00000001-0000-0000-0000-000000000001",
+  "platformId": 49,
+  "name": "Chapter 3",
+  "icon": "document_observation",
+  "info": "",
+  "privateInfo": "",
+  "publicInfo": "",
+  "period": {
+    "dateTimeFrom": "2026-10-12T11:10:00+02:00",
+    "dateTimeTo": "2026-10-12T12:00:00+02:00",
+    "wholeDay": false,
+    "deadline": false
+  },
+  "organisers": {
+    "users": [
+      {
+        "id": "49_1001_0",
+        "pictureHash": "initials_FT",
+        "pictureUrl": "https://userpicture20.smartschool.be/User/Userimage/hashimage/hash/initials_FT/plain/1/res/128",
+        "description": {
+          "startingWithFirstName": "",
+          "startingWithLastName": ""
+        },
+        "name": {
+          "startingWithFirstName": "First Teacher",
+          "startingWithLastName": "Teacher First"
+        },
+        "sort": "teacher-first",
+        "deleted": false
+      }
+    ],
+    "groups": []
+  },
+  "participants": {
+    "users": [],
+    "groups": [
+      {
+        "identifier": "49_101",
+        "id": "49_101",
+        "platformId": 49,
+        "name": "1A",
+        "type": "K",
+        "icon": "briefcase",
+        "sort": "1A"
+      }
+    ],
+    "userRoles": [],
+    "groupFilters": {
+      "filters": [],
+      "additionalUsers": []
+    }
+  },
+  "miniDBItems": [],
+  "labels": [],
+  "attachments": [
+    {
+      "id": "00000001-0000-0000-0000-000000000002",
+      "fileName": "chapter 3.docx",
+      "fileSize": 14560,
+      "mimeType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "visibility": {
+        "option": "always",
+        "daysAfterEnd": null
+      }
+    }
+  ],
+  "courses": [
+    {
+      "id": "00000001-0000-0000-0000-000000000003",
+      "platformId": 49,
+      "name": "Mathematics",
+      "scheduleCodes": [
+        "MATH"
+      ],
+      "icon": "schoolbord",
+      "courseCluster": null,
+      "isVisible": true
+    }
+  ],
+  "courseLinks": [],
+  "locations": [
+    {
+      "id": "00000001-0000-0000-0000-000000000004",
+      "platformId": 49,
+      "platformName": "Example school",
+      "number": "",
+      "title": "A.1.01",
+      "icon": "",
+      "type": "mini-db-item",
+      "selectable": true
+    }
+  ],
+  "goals": [],
+  "weblinks": [],
+  "partnerWeblinks": [],
+  "deeplinks": [],
+  "reservations": [],
+  "isParticipant": true,
+  "albums": [],
+  "capabilities": {
+    "canUserAddAttachments": false,
+    "canUserRemoveAttachment": false,
+    "canUserChangeGoals": false,
+    "canUserAddWeblink": false,
+    "canUserChangeWeblink": false,
+    "canUserRemoveWeblink": false,
+    "canUserAddDeeplinks": false,
+    "canUserDeleteDeeplink": false,
+    "canUserChangeMiniDbItems": false,
+    "canUserAddPartnerWeblink": false,
+    "canUserRemovePartnerWeblink": false,
+    "canUserEditVisibilityOfPartnerWeblink": false,
+    "canUserAddReminder": false,
+    "canUserTrash": false,
+    "canUserDelete": false,
+    "canUserEdit": false,
+    "canUserChangePrivateInfo": false,
+    "canUserChangePublicInfo": false,
+    "canUserReplace": false,
+    "canUserEditPresence": false,
+    "canUserAddReservations": false,
+    "canUserReschedule": false,
+    "canUserChangeOrganisers": false,
+    "canUserChangeParticipants": false,
+    "canUserChangeParticipantGroupFilters": false,
+    "canUserChangeCourses": false,
+    "canUserChangeCourseLinks": false,
+    "canUserChangeLabels": false,
+    "canUserChangeLocations": false,
+    "canUserChangeUserColor": true,
+    "canUserChangeUserViewMetadata": true,
+    "canUserEditVisibilityOfAttachment": false,
+    "canUserEditVisibilityOfWeblink": false,
+    "canUserCreateAlbum": false,
+    "canUserEditAlbum": false,
+    "canUserCreateVideoCall": false,
+    "canUserSeeVideoCall": true,
+    "canUserManageVideoCall": false,
+    "canUserSaveInSourceModule": false,
+    "canUserSeeDetailsOfParticipants": false,
+    "canUserSeeHistory": false,
+    "canUserSendAMessageToOneOfTheOrganisers": true,
+    "canUserLinkToDo": true,
+    "canUserRename": false,
+    "canUserChangeIcon": false,
+    "canUserDuplicate": false,
+    "canUserSeeProperties": {
+      "id": true,
+      "platformId": true,
+      "name": true,
+      "icon": true,
+      "info": false,
+      "privateInfo": false,
+      "publicInfo": true,
+      "period": true,
+      "organisers": true,
+      "participants": true,
+      "miniDBItems": false,
+      "labels": false,
+      "attachments": true,
+      "courses": true,
+      "courseLinks": true,
+      "locations": true,
+      "goals": true,
+      "weblinks": true,
+      "partnerWeblinks": true,
+      "deeplinks": true,
+      "reservations": true,
+      "isParticipant": true,
+      "albums": true,
+      "capabilities": true,
+      "presenceSaved": true,
+      "showPresenceChoices": true,
+      "onlineSession": true,
+      "plannedElementType": true,
+      "plannedToDos": true
+    }
+  },
+  "presenceSaved": false,
+  "showPresenceChoices": true,
+  "onlineSession": null,
+  "plannedElementType": "planned-lessons",
+  "plannedToDos": [],
+  "sort": "20261012111000_4_1A_Chapter 3",
+  "unconfirmed": false,
+  "pinned": false,
+  "color": "aqua-200",
+  "reminders": [],
+  "joinIds": {
+    "from": "00000001-0000-0000-0000-000000000005",
+    "to": "00000001-0000-0000-0000-000000000006"
+  }
+}

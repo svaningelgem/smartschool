@@ -594,11 +594,35 @@ class PlannedElementRepeatOptions:
     month_week: int | None = None
 
 @dataclass(config=_config, kw_only=True)
-class PlannedElementCalendar:
+class PlannedElementUserCalendar:
+    type: Literal["user"]
     user_id: String
-    type: String
     color: String
     info: _User
+
+@dataclass(config=_config, kw_only=True)
+class PlannedElementCalendarInfo:
+    id: UUID
+    platform_id: int
+    name: String
+    color: String
+    visible: bool
+
+@dataclass(config=_config, kw_only=True)
+class PlannedElementPlatformCalendar:
+    type: Literal["platform"]
+    id: UUID
+    platform_id: int
+    platform_name: String
+    info: PlannedElementCalendarInfo
+
+@dataclass(config=_config, kw_only=True)
+class PlannedElementUnknownCalendar:
+    type: String = ""
+
+    def __post_init__(self) -> None: ...
+
+PlannedElementAnyCalendar = PlannedElementUserCalendar | PlannedElementPlatformCalendar | PlannedElementUnknownCalendar
 
 @dataclass(config=_config, kw_only=True)
 class PlannedElementInviteStatus:
@@ -648,7 +672,7 @@ class PlannedElementDetail(PlannedElement):
     presence_saved: bool = False
     privacy: String = ""
     repeat_options: PlannedElementRepeatOptions | None = None
-    calendars: list[PlannedElementCalendar] = ...
+    calendars: list[PlannedElementAnyCalendar] = ...
     extra_organisers: PlannedElementOrganisers = ...
     extra_participants: PlannedElementOrganisers = ...
     invite_statuses: list[PlannedElementInviteStatus] = ...

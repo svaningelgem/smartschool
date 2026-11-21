@@ -1,0 +1,156 @@
+{
+  "id": "00000004-0000-0000-0000-000000000001",
+  "platformId": 49,
+  "name": "Sports week",
+  "icon": "fire",
+  "info": "<p>Monday: tournament in the sports hall.</p>",
+  "publicInfo": "<p>Monday: tournament in the sports hall.</p>",
+  "period": {
+    "dateTimeFrom": "2026-11-23T08:00:00+01:00",
+    "dateTimeTo": "2026-11-27T08:30:00+01:00",
+    "wholeDay": true,
+    "deadline": false
+  },
+  "repeatOptions": null,
+  "calendars": [
+    {
+      "type": "platform",
+      "platformId": 49,
+      "platformName": "Example school",
+      "id": "00000004-0000-0000-0000-000000000002",
+      "info": {
+        "platformId": 49,
+        "id": "00000004-0000-0000-0000-000000000002",
+        "name": "School calendar",
+        "visible": true,
+        "color": "purple-500"
+      }
+    }
+  ],
+  "organisers": {
+    "users": [
+      {
+        "id": "49_1001_0",
+        "pictureHash": "initials_FT",
+        "pictureUrl": "https://userpicture20.smartschool.be/User/Userimage/hashimage/hash/initials_FT/plain/1/res/128",
+        "description": {
+          "startingWithFirstName": "",
+          "startingWithLastName": ""
+        },
+        "name": {
+          "startingWithFirstName": "First Teacher",
+          "startingWithLastName": "Teacher First"
+        },
+        "sort": "teacher-first",
+        "deleted": false
+      }
+    ]
+  },
+  "extraOrganisers": {
+    "users": [
+      {
+        "id": "49_1001_0",
+        "pictureHash": "initials_FT",
+        "pictureUrl": "https://userpicture20.smartschool.be/User/Userimage/hashimage/hash/initials_FT/plain/1/res/128",
+        "description": {
+          "startingWithFirstName": "",
+          "startingWithLastName": ""
+        },
+        "name": {
+          "startingWithFirstName": "First Teacher",
+          "startingWithLastName": "Teacher First"
+        },
+        "sort": "teacher-first",
+        "deleted": false
+      }
+    ]
+  },
+  "extraParticipants": {
+    "users": []
+  },
+  "inviteStatuses": [],
+  "locations": [],
+  "reservations": [
+    {
+      "reservationId": 1001,
+      "reservationPlatformId": 49,
+      "itemId": 11,
+      "itemPlatformId": 50
+    },
+    {
+      "reservationId": 1002,
+      "reservationPlatformId": 49,
+      "itemId": 11,
+      "itemPlatformId": 50
+    }
+  ],
+  "weblinks": [],
+  "attachments": [],
+  "capabilities": {
+    "canUserAddAttachments": false,
+    "canUserRemoveAttachment": false,
+    "canUserAddWeblink": false,
+    "canUserChangeWeblink": false,
+    "canUserRemoveWeblink": false,
+    "canUserTrash": false,
+    "canUserDelete": false,
+    "canUserEdit": false,
+    "canUserChangePublicInfo": false,
+    "canUserReplace": false,
+    "canUserAddReservations": false,
+    "canUserReschedule": false,
+    "canUserChangeLocations": false,
+    "canUserSeeDetails": true,
+    "canUserChangeUserColor": true,
+    "canUserChangeUserViewMetadata": false,
+    "canUserChangeRepeatOptions": false,
+    "canUserEditVisibilityOfAttachment": false,
+    "canUserEditVisibilityOfWeblink": false,
+    "canUserChangePrivacy": false,
+    "canUserCreateVideoCall": false,
+    "canUserSeeVideoCall": true,
+    "canUserManageVideoCall": false,
+    "canUserSeeDetailsOfParticipants": true,
+    "canUserSeeHistory": false,
+    "canUserAddReminder": true,
+    "canUserLinkToDo": false,
+    "canUserRename": false,
+    "canUserChangeIcon": false,
+    "canUserDuplicate": false,
+    "canUserSeeProperties": {
+      "id": true,
+      "platformId": true,
+      "name": true,
+      "icon": true,
+      "info": true,
+      "publicInfo": true,
+      "period": true,
+      "repeatOptions": true,
+      "calendars": true,
+      "organisers": true,
+      "extraOrganisers": true,
+      "extraParticipants": true,
+      "inviteStatuses": true,
+      "locations": true,
+      "reservations": true,
+      "weblinks": true,
+      "attachments": true,
+      "capabilities": true,
+      "onlineSession": true,
+      "privacy": true,
+      "plannedElementType": true
+    }
+  },
+  "onlineSession": null,
+  "privacy": "standard",
+  "plannedElementType": "planned-meetings",
+  "sort": "20261123000000_2__Sports week",
+  "unconfirmed": false,
+  "pinned": false,
+  "color": "purple-500",
+  "reminders": [],
+  "joinIds": {
+    "from": "00000004-0000-0000-0000-000000000003",
+    "to": "00000004-0000-0000-0000-000000000004"
+  }
+}

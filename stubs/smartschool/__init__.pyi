@@ -81,7 +81,7 @@ from ._objects import PersonDescription as PersonDescription
 from ._objects import PlannedElement as PlannedElement
 from ._objects import PlannedElementAssignmentType as PlannedElementAssignmentType
 from ._objects import PlannedElementAttachment as PlannedElementAttachment
-from ._objects import PlannedElementCalendar as PlannedElementCalendar
+from ._objects import PlannedElementCalendarInfo as PlannedElementCalendarInfo
 from ._objects import PlannedElementCourse as PlannedElementCourse
 from ._objects import PlannedElementCourseCluster as PlannedElementCourseCluster
 from ._objects import PlannedElementDetail as PlannedElementDetail
@@ -92,11 +92,14 @@ from ._objects import PlannedElementLocation as PlannedElementLocation
 from ._objects import PlannedElementOrganisers as PlannedElementOrganisers
 from ._objects import PlannedElementParticipants as PlannedElementParticipants
 from ._objects import PlannedElementPeriod as PlannedElementPeriod
+from ._objects import PlannedElementPlatformCalendar as PlannedElementPlatformCalendar
 from ._objects import PlannedElementRecurrence as PlannedElementRecurrence
 from ._objects import PlannedElementRepeatOptions as PlannedElementRepeatOptions
 from ._objects import PlannedElementReservation as PlannedElementReservation
 from ._objects import PlannedElementTextLocation as PlannedElementTextLocation
+from ._objects import PlannedElementUnknownCalendar as PlannedElementUnknownCalendar
 from ._objects import PlannedElementUnknownLocation as PlannedElementUnknownLocation
+from ._objects import PlannedElementUserCalendar as PlannedElementUserCalendar
 from ._objects import PlannedElementVisibility as PlannedElementVisibility
 from ._objects import PlannedElementWeblink as PlannedElementWeblink
 from ._objects import ProjectGoal as ProjectGoal
@@ -200,7 +203,7 @@ __all__ = [
     "PlannedElement",
     "PlannedElementAssignmentType",
     "PlannedElementAttachment",
-    "PlannedElementCalendar",
+    "PlannedElementCalendarInfo",
     "PlannedElementCourse",
     "PlannedElementCourseCluster",
     "PlannedElementDetail",
@@ -213,11 +216,14 @@ __all__ = [
     "PlannedElementOrganisers",
     "PlannedElementParticipants",
     "PlannedElementPeriod",
+    "PlannedElementPlatformCalendar",
     "PlannedElementRecurrence",
     "PlannedElementRepeatOptions",
     "PlannedElementReservation",
     "PlannedElementTextLocation",
+    "PlannedElementUnknownCalendar",
     "PlannedElementUnknownLocation",
+    "PlannedElementUserCalendar",
     "PlannedElementVisibility",
     "PlannedElementWeblink",
     "PlannedElements",

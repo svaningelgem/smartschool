@@ -744,13 +744,50 @@ class PlannedElementRepeatOptions:
 
 
 @dataclass(config=_config, kw_only=True)
-class PlannedElementCalendar:
-    """A calendar a meeting shows up in, with its owner."""
+class PlannedElementUserCalendar:
+    """The calendar of a person, with its owner."""
 
+    type: Literal["user"]
     user_id: String
-    type: String
     color: String
     info: _User
+
+
+@dataclass(config=_config, kw_only=True)
+class PlannedElementCalendarInfo:
+    id: UUID
+    platform_id: int
+    name: String
+    color: String
+    visible: bool
+
+
+@dataclass(config=_config, kw_only=True)
+class PlannedElementPlatformCalendar:
+    """A calendar of the school."""
+
+    type: Literal["platform"]
+    id: UUID
+    platform_id: int
+    platform_name: String
+    info: PlannedElementCalendarInfo
+
+
+@dataclass(config=_config, kw_only=True)
+class PlannedElementUnknownCalendar:
+    """A kind of calendar this library does not know yet: only its type is kept."""
+
+    type: String = ""
+
+    def __post_init__(self) -> None:
+        logger.warning("Unknown kind of planner calendar {!r}, please report it", self.type)
+
+
+# `type` picks the model; a calendar it does not name, or that does not fit its model, is kept as an unknown one.
+PlannedElementAnyCalendar = Annotated[
+    Annotated[PlannedElementUserCalendar | PlannedElementPlatformCalendar, Field(discriminator="type")] | PlannedElementUnknownCalendar,
+    Field(union_mode="left_to_right"),
+]
 
 
 @dataclass(config=_config, kw_only=True)
@@ -826,7 +863,7 @@ class PlannedElementDetail(PlannedElement):  # pylint: disable=too-many-instance
 
     privacy: String = ""
     repeat_options: PlannedElementRepeatOptions | None = None
-    calendars: list[PlannedElementCalendar] = Field(default_factory=list)
+    calendars: list[PlannedElementAnyCalendar] = Field(default_factory=list)
     extra_organisers: PlannedElementOrganisers = Field(default_factory=PlannedElementOrganisers)
     extra_participants: PlannedElementOrganisers = Field(default_factory=PlannedElementOrganisers)
     """Only users: a meeting's extra participants come without groups."""
