@@ -1,3 +1,16 @@
+## 0.13.0 (2026-11-22)
+- breaking change: the models can no longer be constructed with positional arguments.
+- feat: fetch the detail view of a planned element (#233)
+- feat: expose the goals and scale of a project result (#232)
+- feat: let PlannedElements fetch other planner element types (#224)
+- fix: read a planner location entered as free text (#234)
+- fix: accept project results (#229)
+- fix: decode SMSC vars that carry JSON unicode escapes (#225)
+- fix: keep one cache per school (#227)
+- fix: read the authenticated user from current Smartschool pages (#223)
+- refactor: make the response models keyword-only (#228)
+
+
 ## 0.12.1 (2026-10-15)
 - fix: log in again when a dead session is answered with a 401 (#219)
 
