@@ -84,6 +84,34 @@ for location in element.locations:
 
 A kind of location the library does not know yet comes as a `PlannedElementUnknownLocation`, which only carries its `type`.
 
+### Details of an Element
+
+The list only holds the headers of each element. `PlannedElementDetails` fetches its detail view, which adds
+the teacher's info for the pupils ("Info voor de leerling", as HTML), the attachments, the weblinks, the linked
+curriculum goals and the reservations of a room or an item. `files()` gives the attachments as files to download.
+
+Some fields only come with certain types: an assignment has `date_created` and `visibility` (from when the pupils
+see it); a meeting has its description in `info`, plus `privacy`, `repeat_options`, `calendars`, `extra_organisers`,
+`extra_participants` and `invite_statuses`; a school activity has its description in `info` as well.
+
+A calendar of a meeting is a `PlannedElementUserCalendar` (a person's) or a `PlannedElementPlatformCalendar` (the
+school's). A kind the library does not know yet comes as a `PlannedElementUnknownCalendar`, which only carries its `type`.
+
+```python
+from pathlib import Path
+from smartschool import PlannedElementDetails, PlannedElements
+
+for element in PlannedElements(session):
+    details = PlannedElementDetails(session, element=element)
+    detail = details.get()
+
+    print(detail.public_info)
+    for link in detail.weblinks:
+        print(f"  {link.name}: {link.url}")
+    for file in details.files():
+        file.download_to_dir(Path("downloads") / element.id)  # a directory per element: names can repeat
+```
+
 ## Future Tasks
 
 Upcoming assignments and deadlines grouped by day and course.

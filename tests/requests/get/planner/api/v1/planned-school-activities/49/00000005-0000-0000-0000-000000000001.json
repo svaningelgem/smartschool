@@ -1,0 +1,166 @@
+{
+  "id": "00000005-0000-0000-0000-000000000001",
+  "platformId": 49,
+  "name": "Workshop",
+  "icon": "palette2",
+  "info": "<p>Bring a pencil.</p>",
+  "publicInfo": "<p>Bring a pencil.</p>",
+  "period": {
+    "dateTimeFrom": "2026-09-24T09:00:00+02:00",
+    "dateTimeTo": "2026-09-24T10:30:00+02:00",
+    "wholeDay": false,
+    "deadline": false
+  },
+  "organisers": {
+    "users": [
+      {
+        "id": "49_1001_0",
+        "pictureHash": "initials_FT",
+        "pictureUrl": "https://userpicture20.smartschool.be/User/Userimage/hashimage/hash/initials_FT/plain/1/res/128",
+        "description": {
+          "startingWithFirstName": "",
+          "startingWithLastName": ""
+        },
+        "name": {
+          "startingWithFirstName": "First Teacher",
+          "startingWithLastName": "Teacher First"
+        },
+        "sort": "teacher-first",
+        "deleted": false
+      },
+      {
+        "id": "49_1002_0",
+        "pictureHash": "initials_ST",
+        "pictureUrl": "https://userpicture20.smartschool.be/User/Userimage/hashimage/hash/initials_ST/plain/1/res/128",
+        "description": {
+          "startingWithFirstName": "",
+          "startingWithLastName": ""
+        },
+        "name": {
+          "startingWithFirstName": "Second Teacher",
+          "startingWithLastName": "Teacher Second"
+        },
+        "sort": "teacher-second",
+        "deleted": false
+      }
+    ],
+    "groups": []
+  },
+  "participants": {
+    "users": [],
+    "groups": [
+      {
+        "identifier": "49_101",
+        "id": "49_101",
+        "platformId": 49,
+        "name": "1A",
+        "type": "G",
+        "icon": "users2",
+        "sort": "1A"
+      }
+    ],
+    "userRoles": [],
+    "groupFilters": {
+      "filters": [
+        {
+          "id": null,
+          "name": "",
+          "type": "",
+          "properties": [
+            {
+              "valueId": "49_1",
+              "name": "Workshop",
+              "propertyName": "Workshop",
+              "id": "profile_49_1"
+            }
+          ]
+        }
+      ],
+      "additionalUsers": []
+    }
+  },
+  "labels": [],
+  "attachments": [],
+  "goals": [],
+  "weblinks": [],
+  "reservations": [],
+  "locations": [
+    {
+      "type": "text",
+      "text": "Sports hall",
+      "platformId": 49,
+      "platformName": "Example school"
+    }
+  ],
+  "albums": [],
+  "banner": null,
+  "capabilities": {
+    "canUserAddAttachments": false,
+    "canUserRemoveAttachment": false,
+    "canUserChangeGoals": false,
+    "canUserAddWeblink": false,
+    "canUserChangeWeblink": false,
+    "canUserRemoveWeblink": false,
+    "canUserAddReminder": false,
+    "canUserTrash": false,
+    "canUserDelete": false,
+    "canUserEdit": false,
+    "canUserChangePublicInfo": false,
+    "canUserReplace": false,
+    "canUserReschedule": false,
+    "canUserChangeOrganisers": false,
+    "canUserChangeParticipants": false,
+    "canUserChangeParticipantGroupFilters": false,
+    "canUserChangeLocations": false,
+    "canUserEditPresence": false,
+    "canUserAddReservations": false,
+    "canUserChangeUserColor": true,
+    "canUserChangeUserViewMetadata": false,
+    "canUserEditVisibilityOfAttachment": false,
+    "canUserEditVisibilityOfWeblink": false,
+    "canUserCreateAlbum": false,
+    "canUserEditAlbum": false,
+    "canUserSeeDetailsOfParticipants": false,
+    "canUserSeeHistory": false,
+    "canUserSendAMessageToOneOfTheOrganisers": true,
+    "canUserLinkToDo": false,
+    "canUserRename": false,
+    "canUserChangeIcon": false,
+    "canUserDuplicate": false,
+    "canUserSeeProperties": {
+      "id": true,
+      "platformId": true,
+      "name": true,
+      "icon": true,
+      "info": true,
+      "publicInfo": true,
+      "period": true,
+      "organisers": true,
+      "participants": true,
+      "labels": true,
+      "attachments": true,
+      "goals": true,
+      "weblinks": true,
+      "reservations": true,
+      "locations": true,
+      "albums": true,
+      "banner": true,
+      "capabilities": true,
+      "presenceSaved": true,
+      "showPresenceChoices": true,
+      "plannedElementType": true
+    }
+  },
+  "presenceSaved": false,
+  "showPresenceChoices": true,
+  "plannedElementType": "planned-school-activities",
+  "sort": "20260924090000_1_1A_Workshop",
+  "unconfirmed": false,
+  "pinned": false,
+  "color": "yellow-200",
+  "reminders": [],
+  "joinIds": {
+    "from": "00000005-0000-0000-0000-000000000002",
+    "to": "00000005-0000-0000-0000-000000000003"
+  }
+}
