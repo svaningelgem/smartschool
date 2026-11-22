@@ -38,6 +38,9 @@ class SmartschoolLessons(AgendaPoster[AgendaLesson]):
 
     To reproduce: open the agenda, one of the XHR calls is this one.
 
+    These are the lessons of the agenda. A school that keeps its timetable in the planner has none here:
+    `PlannedElements(session, element_types="planned-lessons")` returns it.
+
     Each lesson is an `AgendaLesson`. Among its fields:
     - moment_id: a unique identifier for this specific lesson
     - lesson_id: a group id

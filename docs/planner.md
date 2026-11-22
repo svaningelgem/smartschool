@@ -114,7 +114,8 @@ for element in PlannedElements(session):
 
 ## Future Tasks
 
-Upcoming assignments and deadlines grouped by day and course.
+Upcoming assignments and deadlines grouped by day and course, as the agenda holds them. A school that works with the
+planner has none here: its assignments and to-dos are the [planned elements](#planned-elements) above.
 
 ```python
 from smartschool import FutureTasks
