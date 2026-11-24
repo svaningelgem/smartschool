@@ -68,6 +68,15 @@ accepts `planned-activities`, `planned-generics`, `planned-lesson-clusters`, `pl
 `planned-school-activities` and `private-planned-elements`. Why the library keeps no list of its own is written down in
 [this decision](decisions/planner-element-types.md).
 
+### Includes
+
+`includes` asks the planner to add related data to each element. The website asks for
+`icon,courses,locations,upload-folders,labels`. Pass one name or several; by default nothing extra is asked for.
+
+```python
+elements = PlannedElements(session, includes=("icon", "courses", "locations", "upload-folders", "labels"))
+```
+
 ### Locations
 
 A location is either a room from the school's list or a place that was typed in:
