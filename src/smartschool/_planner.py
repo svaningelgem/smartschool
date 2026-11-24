@@ -25,7 +25,7 @@ __all__ = ["ApplicableAssignmentTypes", "PlannedElementDetails", "PlannedElement
 @dataclass
 class ApplicableAssignmentTypes(SessionMixin, Iterable[ApplicableAssignmentType]):
     def __iter__(self) -> Iterator[ApplicableAssignmentType]:
-        for type_ in self.session.json("/lesson-content/api/v1/assignments/applicable-assigment-types"):
+        for type_ in self.session.json("/lesson-content/api/v1/assignments/applicable-assignment-types"):
             yield ApplicableAssignmentType(**type_)
 
 
