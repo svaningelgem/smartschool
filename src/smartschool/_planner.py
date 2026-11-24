@@ -32,7 +32,7 @@ def _as_tuple(value: str | Iterable[str] | None) -> tuple[str, ...]:
 @dataclass
 class ApplicableAssignmentTypes(SessionMixin, Iterable[ApplicableAssignmentType]):
     def __iter__(self) -> Iterator[ApplicableAssignmentType]:
-        for type_ in self.session.json("/lesson-content/api/v1/assignments/applicable-assigment-types"):
+        for type_ in self.session.json("/lesson-content/api/v1/assignments/applicable-assignment-types"):
             yield ApplicableAssignmentType(**type_)
 
 
