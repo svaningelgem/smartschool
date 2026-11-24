@@ -186,8 +186,15 @@ class Feedback:
     user: Teacher
 
 @dataclass(config=_config, kw_only=True)
+class FeedbackAttachment:
+    id: String
+    wopi_url: Url | None = None
+
+FeedbackAttachmentOrId = FeedbackAttachment
+
+@dataclass(config=_config, kw_only=True)
 class FeedbackFull:
-    attachments: list[String]
+    attachments: list[FeedbackAttachmentOrId]
     changed_at: DateTime
     created_at: DateTime
     evaluation_id: String

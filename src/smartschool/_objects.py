@@ -267,8 +267,20 @@ class Feedback:
 
 
 @dataclass(config=_config, kw_only=True)
+class FeedbackAttachment:
+    """A file attached to a teacher's feedback on a result."""
+
+    id: String
+    wopi_url: Url | None = None
+
+
+# Some schools send an attachment as an object (`{"id": ..., "wopiUrl": ...}`), others as its bare id.
+FeedbackAttachmentOrId = Annotated[FeedbackAttachment, BeforeValidator(lambda v: {"id": v} if isinstance(v, str) else v)]
+
+
+@dataclass(config=_config, kw_only=True)
 class FeedbackFull:  # pylint: disable=too-many-instance-attributes  # mirrors the API payload
-    attachments: list[String]
+    attachments: list[FeedbackAttachmentOrId]
     changed_at: DateTime
     created_at: DateTime
     evaluation_id: String
