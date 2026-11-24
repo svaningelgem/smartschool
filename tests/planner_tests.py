@@ -64,33 +64,6 @@ def test_planned_elements_takes_one_type_several_or_none(session: Smartschool, e
     assert PlannedElements(session, element_types=element_types).element_types == expected
 
 
-def test_planned_elements_asks_for_the_requested_includes(session: Smartschool, requests_mock):
-    requests_mock.get("https://site/planner/api/v1/planned-elements/user/49_10880_2", json=[])
-
-    assert not list(PlannedElements(session, includes=("icon", "courses", "locations", "upload-folders", "labels")))
-    assert requests_mock.last_request.qs["includes"] == ["icon,courses,locations,upload-folders,labels"]
-
-
-def test_planned_elements_without_includes_asks_for_none(session: Smartschool, requests_mock):
-    requests_mock.get("https://site/planner/api/v1/planned-elements/user/49_10880_2", json=[])
-
-    assert not list(PlannedElements(session))
-    assert "includes" not in requests_mock.last_request.qs
-
-
-@pytest.mark.parametrize(
-    ("includes", "expected"),
-    [
-        ("labels", ("labels",)),
-        (["icon", "labels"], ("icon", "labels")),
-        (None, ()),
-        ("", ()),
-    ],
-)
-def test_planned_elements_takes_one_include_several_or_none(session: Smartschool, includes, expected):
-    assert PlannedElements(session, includes=includes).includes == expected
-
-
 @time_machine.travel("2026-11-11")
 def test_planned_elements_without_element_types_fetches_everything(session: Smartschool, requests_mock):
     """Without a filter the planner returns every type, such as a lesson-free day, which has no organisers."""
@@ -140,13 +113,6 @@ def test_pinned_planned_elements(session: Smartschool, requests_mock):
     assert [(element.name, element.pinned) for element in sut] == [("To-do: Photo assignment", True)]
     assert sut[0].planned_element_type == "planned-to-dos"
     assert sut[0].organisers.users[0].name.starting_with_first_name == "First Parent"
-
-
-def test_pinned_planned_elements_asks_for_the_requested_includes(session: Smartschool, requests_mock):
-    requests_mock.get("https://site/planner/api/v1/planned-elements/pinned", json=[])
-
-    assert not list(PinnedPlannedElements(session, includes=["icon", "labels"]))
-    assert requests_mock.last_request.qs["includes"] == ["icon,labels"]
 
 
 def test_applicable_assignment_types(session: Smartschool):

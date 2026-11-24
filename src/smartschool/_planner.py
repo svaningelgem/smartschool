@@ -5,7 +5,6 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from functools import cached_property
 from typing import TYPE_CHECKING
-from urllib.parse import urlencode
 from zoneinfo import ZoneInfo
 
 from ._common import DownloadableFile, create_filesystem_safe_filename
@@ -21,12 +20,6 @@ if TYPE_CHECKING:
     from ._objects import PlannedElementAttachment
 
 __all__ = ["ApplicableAssignmentTypes", "PinnedPlannedElements", "PlannedElementDetails", "PlannedElementFile", "PlannedElements"]
-
-
-def _as_tuple(value: str | Iterable[str] | None) -> tuple[str, ...]:
-    """One name, several, or none (`None`, an empty string or iterable) as a tuple."""
-    value = value or ()
-    return (value,) if isinstance(value, str) else tuple(value)
 
 
 @dataclass
@@ -45,9 +38,6 @@ class PlannedElements(SessionMixin, Iterable[PlannedElement]):
     nothing (`None`, an empty tuple) asks for everything. Other types the planner knows include `planned-lessons` (the
     timetable, with each lesson's subject as its name) and `planned-placeholders` (timetable slots without content).
 
-    `includes` asks the planner to add related data to each element, the way the website does with
-    `icon,courses,locations,upload-folders,labels`: one name or several. The default (`None`, an empty tuple) adds nothing.
-
     Example:
     -------
     >>> for lesson in PlannedElements(session, element_types="planned-lessons"):
@@ -59,22 +49,19 @@ class PlannedElements(SessionMixin, Iterable[PlannedElement]):
     from_date: date = field(default_factory=lambda: datetime.now(tz=ZoneInfo("Europe/Brussels")).replace(hour=0, minute=0, second=0, microsecond=0))
     till_date: date | None = None
     element_types: str | Iterable[str] | None = ("planned-assignments", "planned-to-dos")
-    includes: str | Iterable[str] | None = None
 
     def __post_init__(self):
         if self.till_date is None:
             self.till_date = self.from_date + timedelta(days=34, seconds=-1)
 
-        self.element_types = _as_tuple(self.element_types)
-        self.includes = _as_tuple(self.includes)
+        types = self.element_types or ()
+        self.element_types = (types,) if isinstance(types, str) else tuple(types)
 
     def __iter__(self) -> Iterator[PlannedElement]:
         assert self.till_date is not None  # set in __post_init__
         params = {"from": self.from_date.isoformat(), "to": self.till_date.isoformat()}
         if self.element_types:
             params["types"] = ",".join(self.element_types)
-        if self.includes:
-            params["includes"] = ",".join(self.includes)
 
         for element in self.session.json(f"/planner/api/v1/planned-elements/user/{self.session.authenticated_user['id']}", data=params):
             yield PlannedElement(**element)
@@ -83,9 +70,7 @@ class PlannedElements(SessionMixin, Iterable[PlannedElement]):
 @dataclass
 class PinnedPlannedElements(SessionMixin, Iterable[PlannedElement]):
     """
-    The elements the logged-in user pinned in the planner, whatever their date.
-
-    `includes` asks for related data per element, as in `PlannedElements`.
+    The elements the logged-in user pinned in the planner. The call takes no date range.
 
     Example:
     -------
@@ -95,16 +80,8 @@ class PinnedPlannedElements(SessionMixin, Iterable[PlannedElement]):
 
     """
 
-    includes: str | Iterable[str] | None = None
-
-    def __post_init__(self):
-        self.includes = _as_tuple(self.includes)
-
     def __iter__(self) -> Iterator[PlannedElement]:
-        url = "/planner/api/v1/planned-elements/pinned"
-        if self.includes:
-            url += "?" + urlencode({"includes": ",".join(self.includes)})
-        for element in self.session.json(url):
+        for element in self.session.json("/planner/api/v1/planned-elements/pinned"):
             yield PlannedElement(**element)
 
 

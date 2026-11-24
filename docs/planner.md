@@ -68,18 +68,9 @@ accepts `planned-activities`, `planned-generics`, `planned-lesson-clusters`, `pl
 `planned-school-activities` and `private-planned-elements`. Why the library keeps no list of its own is written down in
 [this decision](decisions/planner-element-types.md).
 
-### Includes
+### Pinned Elements
 
-`includes` asks the planner to add related data to each element. The website asks for
-`icon,courses,locations,upload-folders,labels`. Pass one name or several; by default nothing extra is asked for.
-
-```python
-elements = PlannedElements(session, includes=("icon", "courses", "locations", "upload-folders", "labels"))
-```
-
-### Pinned elements
-
-`PinnedPlannedElements` gives the elements the user pinned in the planner, whatever their date. It takes `includes` too.
+`PinnedPlannedElements` gives the elements the user pinned in the planner. It takes no date range.
 
 ```python
 from smartschool import PinnedPlannedElements
