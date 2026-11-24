@@ -274,13 +274,9 @@ class FeedbackAttachment:
     wopi_url: Url | None = None
 
 
-# Some schools send an attachment as an object (`{"id": ..., "wopiUrl": ...}`), others as its bare id.
-FeedbackAttachmentOrId = Annotated[FeedbackAttachment, BeforeValidator(lambda v: {"id": v} if isinstance(v, str) else v)]
-
-
 @dataclass(config=_config, kw_only=True)
 class FeedbackFull:  # pylint: disable=too-many-instance-attributes  # mirrors the API payload
-    attachments: list[FeedbackAttachmentOrId]
+    attachments: list[FeedbackAttachment]
     changed_at: DateTime
     created_at: DateTime
     evaluation_id: String

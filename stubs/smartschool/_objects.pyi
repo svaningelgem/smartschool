@@ -190,11 +190,9 @@ class FeedbackAttachment:
     id: String
     wopi_url: Url | None = None
 
-FeedbackAttachmentOrId = FeedbackAttachment
-
 @dataclass(config=_config, kw_only=True)
 class FeedbackFull:
-    attachments: list[FeedbackAttachmentOrId]
+    attachments: list[FeedbackAttachment]
     changed_at: DateTime
     created_at: DateTime
     evaluation_id: String

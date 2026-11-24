@@ -68,26 +68,16 @@ def test_letter_grade_results(session: Smartschool, requests_mock):
     assert result.graphic.description == "First leaves"
 
 
-FEEDBACK_ATTACHMENTS = Path(__file__).parent / "requests/get/results/api/v1/evaluations/feedback_attachments.json"
-
-
-def test_feedback_attachment_sent_as_an_object(session: Smartschool, requests_mock):
-    """A school can send a feedback attachment as an object; it must not fail the whole page of results."""
-    requests_mock.get("https://site/results/api/v1/evaluations/?pageNumber=1&itemsOnPage=50", content=FEEDBACK_ATTACHMENTS.read_bytes())
-
-    [result] = Results(session)
-
-    assert result.feedbacks[0].attachments == [FeedbackAttachment(id="00000000-0000-0000-0000-0000000000a1", wopi_url=None)]
-
-
-def test_feedback_attachment_sent_as_its_id(session: Smartschool, requests_mock):
-    data = json.loads(FEEDBACK_ATTACHMENTS.read_text(encoding="utf8"))
-    data[0]["feedbacks"][0]["attachments"] = ["00000000-0000-0000-0000-0000000000a1"]
+def test_feedback_attachment(session: Smartschool, requests_mock):
+    """A feedback with an attachment must not fail the whole page of results."""
+    letter_file = Path(__file__).parent / "requests/get/results/api/v1/evaluations/letter_grades.json"
+    data = json.loads(letter_file.read_text(encoding="utf8"))
+    data[1]["feedbacks"][0]["attachments"] = [{"id": "00000000-0000-0000-0000-0000000000a1", "wopiUrl": None}]
     requests_mock.get("https://site/results/api/v1/evaluations/?pageNumber=1&itemsOnPage=50", json=data)
 
-    [result] = Results(session)
+    result = list(Results(session))[1]
 
-    assert result.feedbacks[0].attachments == [FeedbackAttachment(id="00000000-0000-0000-0000-0000000000a1")]
+    assert result.feedbacks[0].attachments == [FeedbackAttachment(id="00000000-0000-0000-0000-0000000000a1", wopi_url=None)]
 
 
 def test_extended_result_fields(session: Smartschool, requests_mock):
