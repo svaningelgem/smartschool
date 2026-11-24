@@ -77,6 +77,17 @@ accepts `planned-activities`, `planned-generics`, `planned-lesson-clusters`, `pl
 elements = PlannedElements(session, includes=("icon", "courses", "locations", "upload-folders", "labels"))
 ```
 
+### Pinned elements
+
+`PinnedPlannedElements` gives the elements the user pinned in the planner, whatever their date. It takes `includes` too.
+
+```python
+from smartschool import PinnedPlannedElements
+
+for element in PinnedPlannedElements(session):
+    print(element.name)
+```
+
 ### Locations
 
 A location is either a room from the school's list or a place that was typed in:

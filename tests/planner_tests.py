@@ -7,6 +7,7 @@ import time_machine
 
 from smartschool import (
     ApplicableAssignmentTypes,
+    PinnedPlannedElements,
     PlannedElement,
     PlannedElementDetails,
     PlannedElementLocation,
@@ -129,6 +130,23 @@ def test_planned_elements_keeps_a_kind_of_location_it_does_not_know(session: Sma
 
     assert isinstance(location, PlannedElementUnknownLocation)
     assert location.type == "brand-new-kind"
+
+
+def test_pinned_planned_elements(session: Smartschool, requests_mock):
+    sut = list(PinnedPlannedElements(session))
+
+    assert requests_mock.last_request.path == "/planner/api/v1/planned-elements/pinned"
+    assert not requests_mock.last_request.query
+    assert [(element.name, element.pinned) for element in sut] == [("To-do: Photo assignment", True)]
+    assert sut[0].planned_element_type == "planned-to-dos"
+    assert sut[0].organisers.users[0].name.starting_with_first_name == "First Parent"
+
+
+def test_pinned_planned_elements_asks_for_the_requested_includes(session: Smartschool, requests_mock):
+    requests_mock.get("https://site/planner/api/v1/planned-elements/pinned", json=[])
+
+    assert not list(PinnedPlannedElements(session, includes=["icon", "labels"]))
+    assert requests_mock.last_request.qs["includes"] == ["icon,labels"]
 
 
 def test_applicable_assignment_types(session: Smartschool):

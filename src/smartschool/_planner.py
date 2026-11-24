@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from functools import cached_property
 from typing import TYPE_CHECKING
+from urllib.parse import urlencode
 from zoneinfo import ZoneInfo
 
 from ._common import DownloadableFile, create_filesystem_safe_filename
@@ -19,7 +20,7 @@ if TYPE_CHECKING:
 
     from ._objects import PlannedElementAttachment
 
-__all__ = ["ApplicableAssignmentTypes", "PlannedElementDetails", "PlannedElementFile", "PlannedElements"]
+__all__ = ["ApplicableAssignmentTypes", "PinnedPlannedElements", "PlannedElementDetails", "PlannedElementFile", "PlannedElements"]
 
 
 def _as_tuple(value: str | Iterable[str] | None) -> tuple[str, ...]:
@@ -76,6 +77,34 @@ class PlannedElements(SessionMixin, Iterable[PlannedElement]):
             params["includes"] = ",".join(self.includes)
 
         for element in self.session.json(f"/planner/api/v1/planned-elements/user/{self.session.authenticated_user['id']}", data=params):
+            yield PlannedElement(**element)
+
+
+@dataclass
+class PinnedPlannedElements(SessionMixin, Iterable[PlannedElement]):
+    """
+    The elements the logged-in user pinned in the planner, whatever their date.
+
+    `includes` asks for related data per element, as in `PlannedElements`.
+
+    Example:
+    -------
+    >>> for element in PinnedPlannedElements(session):
+    >>>     print(element.period.date_time_from, element.name)
+    2026-11-23 10:40:00+01:00 To-do: Photo assignment
+
+    """
+
+    includes: str | Iterable[str] | None = None
+
+    def __post_init__(self):
+        self.includes = _as_tuple(self.includes)
+
+    def __iter__(self) -> Iterator[PlannedElement]:
+        url = "/planner/api/v1/planned-elements/pinned"
+        if self.includes:
+            url += "?" + urlencode({"includes": ",".join(self.includes)})
+        for element in self.session.json(url):
             yield PlannedElement(**element)
 
 
