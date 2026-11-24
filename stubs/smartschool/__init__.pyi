@@ -61,6 +61,7 @@ from ._objects import CourseGraphic as CourseGraphic
 from ._objects import CurriculumGoal as CurriculumGoal
 from ._objects import DateRange as DateRange
 from ._objects import Feedback as Feedback
+from ._objects import FeedbackAttachment as FeedbackAttachment
 from ._objects import FeedbackFull as FeedbackFull
 from ._objects import FullMessage as FullMessage
 from ._objects import FutureTaskOneCourse as FutureTaskOneCourse
@@ -160,6 +161,7 @@ __all__ = [
     "DocumentOrFolderItem",
     "EnvCredentials",
     "Feedback",
+    "FeedbackAttachment",
     "FeedbackFull",
     "FileItem",
     "FolderItem",

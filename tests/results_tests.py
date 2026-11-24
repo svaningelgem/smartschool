@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from smartschool import GraphicColor, IconGraphic, PercentageGraphic, Result, Results, ResultType, Smartschool
+from smartschool import FeedbackAttachment, GraphicColor, IconGraphic, PercentageGraphic, Result, Results, ResultType, Smartschool
 from smartschool import _objects as objects
 
 
@@ -66,6 +66,18 @@ def test_letter_grade_results(session: Smartschool, requests_mock):
     assert result.graphic.color == "yellow"
     assert result.graphic.value == "B"
     assert result.graphic.description == "First leaves"
+
+
+def test_feedback_attachment(session: Smartschool, requests_mock):
+    """A feedback with an attachment must not fail the whole page of results."""
+    letter_file = Path(__file__).parent / "requests/get/results/api/v1/evaluations/letter_grades.json"
+    data = json.loads(letter_file.read_text(encoding="utf8"))
+    data[1]["feedbacks"][0]["attachments"] = [{"id": "00000000-0000-0000-0000-0000000000a1", "wopiUrl": None}]
+    requests_mock.get("https://site/results/api/v1/evaluations/?pageNumber=1&itemsOnPage=50", json=data)
+
+    result = list(Results(session))[1]
+
+    assert result.feedbacks[0].attachments == [FeedbackAttachment(id="00000000-0000-0000-0000-0000000000a1", wopi_url=None)]
 
 
 def test_extended_result_fields(session: Smartschool, requests_mock):
