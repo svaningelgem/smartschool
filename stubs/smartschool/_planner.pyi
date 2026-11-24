@@ -8,7 +8,7 @@ from ._common import DownloadableFile
 from ._objects import ApplicableAssignmentType, PlannedElement, PlannedElementAttachment, PlannedElementDetail
 from ._session import SessionMixin
 
-__all__ = ["ApplicableAssignmentTypes", "PlannedElementDetails", "PlannedElementFile", "PlannedElements"]
+__all__ = ["ApplicableAssignmentTypes", "PinnedPlannedElements", "PlannedElementDetails", "PlannedElementFile", "PlannedElements"]
 
 @dataclass
 class ApplicableAssignmentTypes(SessionMixin, Iterable[ApplicableAssignmentType]):
@@ -21,6 +21,10 @@ class PlannedElements(SessionMixin, Iterable[PlannedElement]):
     element_types: str | Iterable[str] | None = ...
 
     def __post_init__(self) -> None: ...
+    def __iter__(self) -> Iterator[PlannedElement]: ...
+
+@dataclass
+class PinnedPlannedElements(SessionMixin, Iterable[PlannedElement]):
     def __iter__(self) -> Iterator[PlannedElement]: ...
 
 @dataclass

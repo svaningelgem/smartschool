@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 
     from ._objects import PlannedElementAttachment
 
-__all__ = ["ApplicableAssignmentTypes", "PlannedElementDetails", "PlannedElementFile", "PlannedElements"]
+__all__ = ["ApplicableAssignmentTypes", "PinnedPlannedElements", "PlannedElementDetails", "PlannedElementFile", "PlannedElements"]
 
 
 @dataclass
@@ -64,6 +64,24 @@ class PlannedElements(SessionMixin, Iterable[PlannedElement]):
             params["types"] = ",".join(self.element_types)
 
         for element in self.session.json(f"/planner/api/v1/planned-elements/user/{self.session.authenticated_user['id']}", data=params):
+            yield PlannedElement(**element)
+
+
+@dataclass
+class PinnedPlannedElements(SessionMixin, Iterable[PlannedElement]):
+    """
+    The elements the logged-in user pinned in the planner. The call takes no date range.
+
+    Example:
+    -------
+    >>> for element in PinnedPlannedElements(session):
+    >>>     print(element.period.date_time_from, element.name)
+    2026-11-23 10:40:00+01:00 To-do: Photo assignment
+
+    """
+
+    def __iter__(self) -> Iterator[PlannedElement]:
+        for element in self.session.json("/planner/api/v1/planned-elements/pinned"):
             yield PlannedElement(**element)
 
 

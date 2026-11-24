@@ -68,6 +68,17 @@ accepts `planned-activities`, `planned-generics`, `planned-lesson-clusters`, `pl
 `planned-school-activities` and `private-planned-elements`. Why the library keeps no list of its own is written down in
 [this decision](decisions/planner-element-types.md).
 
+### Pinned Elements
+
+`PinnedPlannedElements` gives the elements the user pinned in the planner. It takes no date range.
+
+```python
+from smartschool import PinnedPlannedElements
+
+for element in PinnedPlannedElements(session):
+    print(element.name)
+```
+
 ### Locations
 
 A location is either a room from the school's list or a place that was typed in:

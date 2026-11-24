@@ -1,0 +1,70 @@
+[
+  {
+    "id": "00000006-0000-0000-0000-000000000001",
+    "platformId": 49,
+    "name": "To-do: Photo assignment",
+    "icon": "icon_fill_flag",
+    "color": "aqua-200",
+    "period": {
+      "dateTimeFrom": "2026-11-23T10:40:00+01:00",
+      "dateTimeTo": "2026-11-23T11:10:00+01:00",
+      "wholeDay": false,
+      "deadline": false
+    },
+    "organisers": {
+      "users": [
+        {
+          "id": "49_10880_2",
+          "pictureHash": "initials_FP",
+          "pictureUrl": "https://userpicture.example.be/User/Userimage/hashimage/hash/initials_FP/plain/1/res/128",
+          "description": {
+            "startingWithFirstName": "Parent of First Pupil",
+            "startingWithLastName": "Parent of Pupil First"
+          },
+          "name": {
+            "startingWithFirstName": "First Parent",
+            "startingWithLastName": "Parent First"
+          },
+          "sort": "pupil-first",
+          "deleted": false
+        }
+      ],
+      "groups": []
+    },
+    "capabilities": {
+      "canUserTrash": true,
+      "canUserRestoreFromTrash": true,
+      "canUserDelete": true,
+      "canUserEdit": true,
+      "canUserChangePublicInfo": true,
+      "canUserReplace": false,
+      "canUserReschedule": true,
+      "canUserPin": true,
+      "canUserResolve": true,
+      "canUserChangeUserColor": true,
+      "canUserLinkToDo": false,
+      "canUserDuplicate": false,
+      "canUserSeeProperties": {
+        "id": true,
+        "platformId": true,
+        "name": true,
+        "icon": true,
+        "color": true,
+        "period": true,
+        "organisers": true,
+        "capabilities": true,
+        "plannedElementType": true,
+        "resolvedStatus": true
+      }
+    },
+    "plannedElementType": "planned-to-dos",
+    "resolvedStatus": "unresolved",
+    "sort": "20261123104000_9__To-do: Photo assignment",
+    "unconfirmed": false,
+    "pinned": true,
+    "joinIds": {
+      "from": "00000006-0000-0000-0000-000000000002",
+      "to": "00000006-0000-0000-0000-000000000003"
+    }
+  }
+]

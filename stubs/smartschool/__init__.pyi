@@ -122,6 +122,7 @@ from ._objects import UserCapabilities as UserCapabilities
 from ._objects import UserSeeProperties as UserSeeProperties
 from ._periods import Periods as Periods
 from ._planner import ApplicableAssignmentTypes as ApplicableAssignmentTypes
+from ._planner import PinnedPlannedElements as PinnedPlannedElements
 from ._planner import PlannedElementDetails as PlannedElementDetails
 from ._planner import PlannedElementFile as PlannedElementFile
 from ._planner import PlannedElements as PlannedElements
@@ -202,6 +203,7 @@ __all__ = [
     "Period",
     "Periods",
     "PersonDescription",
+    "PinnedPlannedElements",
     "PlannedElement",
     "PlannedElementAssignmentType",
     "PlannedElementAttachment",

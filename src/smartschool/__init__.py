@@ -102,7 +102,7 @@ from ._objects import (
     UserSeeProperties,
 )
 from ._periods import Periods
-from ._planner import ApplicableAssignmentTypes, PlannedElementDetails, PlannedElementFile, PlannedElements
+from ._planner import ApplicableAssignmentTypes, PinnedPlannedElements, PlannedElementDetails, PlannedElementFile, PlannedElements
 from ._reports import Report, Reports
 from ._results import Result, Results
 from ._session import Smartschool
@@ -176,6 +176,7 @@ __all__ = [
     "Period",
     "Periods",
     "PersonDescription",
+    "PinnedPlannedElements",
     "PlannedElement",
     "PlannedElementAssignmentType",
     "PlannedElementAttachment",
