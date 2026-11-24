@@ -585,6 +585,9 @@ class PlannedElement:
     online_session: String | None = None
     recurrence: PlannedElementRecurrence | None = None
     icon: String = ""
+    public_info: OptionalString = ""
+    attachments: list[PlannedElementAttachment] = ...
+    weblinks: list[PlannedElementWeblink] = ...
 
 @dataclass(config=_config, kw_only=True)
 class PlannedElementVisibility:
@@ -664,11 +667,8 @@ class PlannedElementGoal:
 
 @dataclass(config=_config, kw_only=True)
 class PlannedElementDetail(PlannedElement):
-    public_info: OptionalString = ""
     info: OptionalString = ""
     private_info: OptionalString = ""
-    attachments: list[PlannedElementAttachment] = ...
-    weblinks: list[PlannedElementWeblink] = ...
     goals: list[PlannedElementGoal] = ...
     reservations: list[PlannedElementReservation] = ...
     date_created: datetime | None = None

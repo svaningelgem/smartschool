@@ -731,6 +731,10 @@ class PlannedElement:  # pylint: disable=too-many-instance-attributes  # mirrors
     online_session: String | None = None
     recurrence: PlannedElementRecurrence | None = None
     icon: String = ""
+    public_info: OptionalString = ""
+    """HTML, shown in Smartschool as 'Info voor de leerling'."""
+    attachments: list[PlannedElementAttachment] = Field(default_factory=list)
+    weblinks: list[PlannedElementWeblink] = Field(default_factory=list)
 
 
 @dataclass(config=_config, kw_only=True)
@@ -849,18 +853,14 @@ class PlannedElementDetail(PlannedElement):  # pylint: disable=too-many-instance
     """
     A planned element with what only its detail view holds.
 
-    That is the info for the pupils, attachments, links and goals, and per type: the creation date and visibility of
-    an assignment, and the repeat options, calendars, extra people and invite answers of a meeting.
+    That is the goals, reservations and meeting/assignment metadata; `public_info`, `attachments` and `weblinks` are
+    inherited from `PlannedElement`.
     """
 
-    public_info: OptionalString = ""
-    """HTML, shown in Smartschool as 'Info voor de leerling'."""
     info: OptionalString = ""
     """HTML; the description of a meeting or school activity."""
     private_info: OptionalString = ""
     """HTML, only filled in for whoever may see it (not for pupils)."""
-    attachments: list[PlannedElementAttachment] = Field(default_factory=list)
-    weblinks: list[PlannedElementWeblink] = Field(default_factory=list)
     goals: list[PlannedElementGoal] = Field(default_factory=list)
     reservations: list[PlannedElementReservation] = Field(default_factory=list)
 

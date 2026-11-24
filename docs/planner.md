@@ -79,6 +79,12 @@ for element in PinnedPlannedElements(session):
     print(element.name)
 ```
 
+### Includes
+
+`PlannedElements` asks the planner for `icon`, `courses`, `locations`, `attachments`, `weblinks`, `deeplinks`,
+`partner-weblinks`, `public-info`, `planned-to-dos`, `upload-folders`, and `labels` on every list call, so each
+`PlannedElement` already carries `public_info`, `attachments`, and `weblinks`.
+
 ### Locations
 
 A location is either a room from the school's list or a place that was typed in:
@@ -97,9 +103,9 @@ A kind of location the library does not know yet comes as a `PlannedElementUnkno
 
 ### Details of an Element
 
-The list only holds the headers of each element. `PlannedElementDetails` fetches its detail view, which adds
-the teacher's info for the pupils ("Info voor de leerling", as HTML), the attachments, the weblinks, the linked
-curriculum goals and the reservations of a room or an item. `files()` gives the attachments as files to download.
+`PlannedElementDetails` fetches the detail view of an element, which adds the linked curriculum goals, the reservations
+of a room or an item, and fields that only come with certain types. `files()` gives the attachments as files to
+download.
 
 Some fields only come with certain types: an assignment has `date_created` and `visibility` (from when the pupils
 see it); a meeting has its description in `info`, plus `privacy`, `repeat_options`, `calendars`, `extra_organisers`,

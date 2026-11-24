@@ -21,6 +21,22 @@ if TYPE_CHECKING:
 
 __all__ = ["ApplicableAssignmentTypes", "PinnedPlannedElements", "PlannedElementDetails", "PlannedElementFile", "PlannedElements"]
 
+# Sent on every list call so each element already carries its pupil info, attachments, links, to-dos, and labels
+# without a detail request per item. Asking for any `includes` drops the defaults, hence icon/courses/locations.
+_PLANNER_INCLUDES = (
+    "icon",
+    "courses",
+    "locations",
+    "attachments",
+    "weblinks",
+    "deeplinks",
+    "partner-weblinks",
+    "public-info",
+    "planned-to-dos",
+    "upload-folders",
+    "labels",
+)
+
 
 @dataclass
 class ApplicableAssignmentTypes(SessionMixin, Iterable[ApplicableAssignmentType]):
@@ -59,7 +75,11 @@ class PlannedElements(SessionMixin, Iterable[PlannedElement]):
 
     def __iter__(self) -> Iterator[PlannedElement]:
         assert self.till_date is not None  # set in __post_init__
-        params = {"from": self.from_date.isoformat(), "to": self.till_date.isoformat()}
+        params = {
+            "from": self.from_date.isoformat(),
+            "to": self.till_date.isoformat(),
+            "includes": ",".join(_PLANNER_INCLUDES),
+        }
         if self.element_types:
             params["types"] = ",".join(self.element_types)
 
