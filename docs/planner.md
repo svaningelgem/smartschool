@@ -79,11 +79,19 @@ for element in PinnedPlannedElements(session):
     print(element.name)
 ```
 
-### Includes
+### Info, Attachments and Weblinks
 
-`PlannedElements` asks the planner for `icon`, `courses`, `locations`, `attachments`, `weblinks`, `deeplinks`,
-`partner-weblinks`, `public-info`, `planned-to-dos`, `upload-folders`, and `labels` on every list call, so each
-`PlannedElement` already carries `public_info`, `attachments`, and `weblinks`.
+Each element from `PlannedElements` comes with the teacher's info for the pupils ("Info voor de leerling", as HTML),
+its attachments and its weblinks:
+
+```python
+for element in PlannedElements(session, element_types="planned-lessons"):
+    print(element.public_info)
+    for link in element.weblinks:
+        print(f"  {link.name}: {link.url}")
+```
+
+`PinnedPlannedElements` does not ask the planner for these, so a pinned element has them empty.
 
 ### Locations
 
@@ -120,11 +128,8 @@ from smartschool import PlannedElementDetails, PlannedElements
 
 for element in PlannedElements(session):
     details = PlannedElementDetails(session, element=element)
-    detail = details.get()
 
-    print(detail.public_info)
-    for link in detail.weblinks:
-        print(f"  {link.name}: {link.url}")
+    print(len(details.get().goals), "goals")
     for file in details.files():
         file.download_to_dir(Path("downloads") / element.id)  # a directory per element: names can repeat
 ```

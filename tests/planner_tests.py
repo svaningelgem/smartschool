@@ -68,17 +68,18 @@ def test_planned_elements_always_sends_includes(session: Smartschool, requests_m
     requests_mock.get("https://site/planner/api/v1/planned-elements/user/49_10880_2", json=[])
 
     assert not list(PlannedElements(session))
-    includes = set(requests_mock.last_request.qs["includes"][0].split(","))
-    assert {"icon", "courses", "locations", "attachments", "weblinks", "deeplinks", "partner-weblinks", "public-info", "planned-to-dos"} <= includes
+    assert requests_mock.last_request.qs["includes"] == [
+        "icon,courses,locations,attachments,weblinks,deeplinks,partner-weblinks,public-info,planned-to-dos,upload-folders,labels"
+    ]
 
 
-@time_machine.travel("2025-05-06")
-def test_planned_elements_carries_detail_fields_from_includes(session: Smartschool):
-    [element] = list(PlannedElements(session, till_date=date(2025, 5, 7)))
+@time_machine.travel("2026-10-12")
+def test_planned_elements_carry_the_info_attachments_and_weblinks(session: Smartschool):
+    lesson, assignment = PlannedElements(session, till_date=date(2026, 10, 14), element_types=("planned-lessons", "planned-assignments"))
 
-    assert element.public_info == "<p>Bring your textbook.</p>"
-    assert [(a.file_name, a.file_size, a.mime_type) for a in element.attachments] == [("summary.pdf", 1024, "application/pdf")]
-    assert [(w.name, w.url, w.icon) for w in element.weblinks] == [("Exercises", "https://example.com/exercises", "earth")]
+    assert [(a.file_name, a.file_size) for a in lesson.attachments] == [("chapter 4.docx", 14000)]
+    assert assignment.public_info == "<p>The exercises are behind the link.</p>"
+    assert [(w.name, w.url, w.icon) for w in assignment.weblinks] == [("Exercises", "https://example.com/exercises", "earth")]
 
 
 @time_machine.travel("2026-11-11")

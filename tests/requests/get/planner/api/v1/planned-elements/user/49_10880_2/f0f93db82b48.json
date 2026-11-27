@@ -119,31 +119,6 @@
     "joinIds": {
       "from": "fd512466-45b8-56b2-ab13-30c94ff46de1",
       "to": "8e010bd0-718c-58ab-9fc8-462b701f52e6"
-    },
-    "publicInfo": "<p>Bring your textbook.</p>",
-    "attachments": [
-      {
-        "id": "00000001-0000-0000-0000-0000000000a1",
-        "fileName": "summary.pdf",
-        "fileSize": 1024,
-        "mimeType": "application/pdf",
-        "visibility": {
-          "option": "always",
-          "daysAfterEnd": null
-        }
-      }
-    ],
-    "weblinks": [
-      {
-        "id": "00000001-0000-0000-0000-0000000000b1",
-        "name": "Exercises",
-        "url": "https://example.com/exercises",
-        "icon": "earth"
-      }
-    ],
-    "deeplinks": [],
-    "partnerWeblinks": [],
-    "plannedToDos": [],
-    "labels": []
+    }
   }
 ]

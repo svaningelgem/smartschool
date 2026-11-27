@@ -853,8 +853,8 @@ class PlannedElementDetail(PlannedElement):  # pylint: disable=too-many-instance
     """
     A planned element with what only its detail view holds.
 
-    That is the goals, reservations and meeting/assignment metadata; `public_info`, `attachments` and `weblinks` are
-    inherited from `PlannedElement`.
+    That is the goals and reservations, and per type: the description of a meeting or school activity, the creation
+    date and visibility of an assignment, and the repeat options, calendars, extra people and invite answers of a meeting.
     """
 
     info: OptionalString = ""

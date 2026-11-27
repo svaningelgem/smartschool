@@ -21,21 +21,8 @@ if TYPE_CHECKING:
 
 __all__ = ["ApplicableAssignmentTypes", "PinnedPlannedElements", "PlannedElementDetails", "PlannedElementFile", "PlannedElements"]
 
-# Sent on every list call so each element already carries its pupil info, attachments, links, to-dos, and labels
-# without a detail request per item. Asking for any `includes` drops the defaults, hence icon/courses/locations.
-_PLANNER_INCLUDES = (
-    "icon",
-    "courses",
-    "locations",
-    "attachments",
-    "weblinks",
-    "deeplinks",
-    "partner-weblinks",
-    "public-info",
-    "planned-to-dos",
-    "upload-folders",
-    "labels",
-)
+# What the list call is asked to add to each element. Naming any include replaces the default set, so icon, courses and locations are named too.
+_INCLUDES = "icon,courses,locations,attachments,weblinks,deeplinks,partner-weblinks,public-info,planned-to-dos,upload-folders,labels"
 
 
 @dataclass
@@ -53,6 +40,8 @@ class PlannedElements(SessionMixin, Iterable[PlannedElement]):
     `element_types` picks what the planner returns: one type name or several. The default is the assignments and to-dos;
     nothing (`None`, an empty tuple) asks for everything. Other types the planner knows include `planned-lessons` (the
     timetable, with each lesson's subject as its name) and `planned-placeholders` (timetable slots without content).
+
+    Each element carries the teacher's info for the pupils (`public_info`), its `attachments` and its `weblinks`.
 
     Example:
     -------
@@ -75,11 +64,7 @@ class PlannedElements(SessionMixin, Iterable[PlannedElement]):
 
     def __iter__(self) -> Iterator[PlannedElement]:
         assert self.till_date is not None  # set in __post_init__
-        params = {
-            "from": self.from_date.isoformat(),
-            "to": self.till_date.isoformat(),
-            "includes": ",".join(_PLANNER_INCLUDES),
-        }
+        params = {"from": self.from_date.isoformat(), "to": self.till_date.isoformat(), "includes": _INCLUDES}
         if self.element_types:
             params["types"] = ",".join(self.element_types)
 
@@ -128,17 +113,17 @@ class PlannedElementDetails(SessionMixin):
     """
     The detail view of one planned element from `PlannedElements`.
 
-    The list only holds the headers; the detail adds the teacher's info for the pupils ('Info voor de leerling'),
-    the attachments, the weblinks and the linked curriculum goals.
+    The element from the list already has the info for the pupils, the attachments and the weblinks; the detail adds
+    the linked curriculum goals, the reservations and the fields of its type, such as the description of a meeting.
 
     To reproduce: open the planner and click a lesson; watch the XHR calls (`/planner/api/v1/<type>/<platform>/<id>`).
     An occurrence of a recurring meeting is addressed by its original element and date instead of its own id.
 
     Example:
     -------
-    >>> details = PlannedElementDetails(session, element=lesson)
-    >>> print(details.get().public_info)
-    <p>Lees hoofdstuk 3 voor de volgende les.</p>
+    >>> details = PlannedElementDetails(session, element=meeting)
+    >>> print(details.get().info)
+    <p>Maandag: tornooi in de sporthal.</p>
     >>> for file in details.files():
     >>>     file.download_to_dir(Path("downloads"))
 

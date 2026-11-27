@@ -1,0 +1,294 @@
+[
+  {
+    "id": "00000007-0000-0000-0000-000000000001",
+    "platformId": 49,
+    "name": "Chapter 4",
+    "period": {
+      "dateTimeFrom": "2026-10-12T11:10:00+02:00",
+      "dateTimeTo": "2026-10-12T12:00:00+02:00",
+      "wholeDay": false,
+      "deadline": false
+    },
+    "organisers": {
+      "users": [
+        {
+          "id": "49_1001_0",
+          "pictureHash": "initials_FT",
+          "pictureUrl": "https://userpicture20.smartschool.be/User/Userimage/hashimage/hash/initials_FT/plain/1/res/128",
+          "description": {
+            "startingWithFirstName": "",
+            "startingWithLastName": ""
+          },
+          "name": {
+            "startingWithFirstName": "First Teacher",
+            "startingWithLastName": "Teacher First"
+          },
+          "sort": "teacher-first",
+          "deleted": false
+        }
+      ],
+      "groups": []
+    },
+    "participants": {
+      "users": [],
+      "groups": [
+        {
+          "identifier": "49_101",
+          "id": "49_101",
+          "platformId": 49,
+          "name": "1A",
+          "type": "K",
+          "icon": "briefcase",
+          "sort": "1A"
+        }
+      ],
+      "userRoles": [],
+      "groupFilters": {
+        "filters": [],
+        "additionalUsers": []
+      }
+    },
+    "isParticipant": true,
+    "capabilities": {
+      "canUserTrash": false,
+      "canUserRestoreFromTrash": false,
+      "canUserDelete": false,
+      "canUserEdit": false,
+      "canUserChangePrivateInfo": false,
+      "canUserChangePublicInfo": false,
+      "canUserReplace": false,
+      "canUserAddReservations": false,
+      "canUserReschedule": false,
+      "canUserChangeUserColor": true,
+      "canUserChangeUserViewMetadata": true,
+      "canUserCreateVideoCall": false,
+      "canUserSeeVideoCall": true,
+      "canUserManageVideoCall": false,
+      "canUserLinkToDo": true,
+      "canUserDuplicate": false,
+      "canUserChangeOrganisers": false,
+      "canUserChangeParticipants": false,
+      "canUserChangeParticipantGroupFilters": false,
+      "canUserChangeLabels": false,
+      "canUserChangeLocations": false,
+      "canUserSeeProperties": {
+        "id": true,
+        "platformId": true,
+        "name": true,
+        "period": true,
+        "organisers": true,
+        "participants": true,
+        "isParticipant": true,
+        "capabilities": true,
+        "onlineSession": true,
+        "plannedElementType": true,
+        "icon": true,
+        "courses": true,
+        "locations": true,
+        "attachments": true,
+        "weblinks": true,
+        "deeplinks": true,
+        "partnerWeblinks": true,
+        "publicInfo": true,
+        "plannedToDos": true,
+        "labels": false
+      }
+    },
+    "onlineSession": null,
+    "plannedElementType": "planned-lessons",
+    "icon": "document_observation",
+    "courses": [
+      {
+        "id": "00000007-0000-0000-0000-000000000002",
+        "platformId": 49,
+        "name": "Mathematics",
+        "scheduleCodes": [
+          "MATH"
+        ],
+        "icon": "schoolbord",
+        "courseCluster": null,
+        "isVisible": true
+      }
+    ],
+    "locations": [
+      {
+        "id": "00000007-0000-0000-0000-000000000003",
+        "platformId": 49,
+        "platformName": "Example school",
+        "number": "",
+        "title": "A.1.01",
+        "icon": "",
+        "type": "mini-db-item",
+        "selectable": true
+      }
+    ],
+    "attachments": [
+      {
+        "id": "00000007-0000-0000-0000-000000000004",
+        "fileName": "chapter 4.docx",
+        "fileSize": 14000,
+        "mimeType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "visibility": {
+          "option": "always",
+          "daysAfterEnd": null
+        }
+      }
+    ],
+    "weblinks": [],
+    "deeplinks": [],
+    "partnerWeblinks": [],
+    "publicInfo": "",
+    "plannedToDos": [],
+    "labels": [],
+    "sort": "20261012111000_4_1A_Chapter 4",
+    "unconfirmed": false,
+    "pinned": false,
+    "color": "aqua-200",
+    "joinIds": {
+      "from": "00000007-0000-0000-0000-000000000005",
+      "to": "00000007-0000-0000-0000-000000000006"
+    }
+  },
+  {
+    "id": "00000008-0000-0000-0000-000000000001",
+    "platformId": 49,
+    "name": "Make the exercises of chapter 4",
+    "assignmentType": {
+      "id": "00000008-0000-0000-0000-000000000002",
+      "name": "Opdracht",
+      "abbreviation": "OP",
+      "isVisible": true,
+      "defaultTiming": "deadline",
+      "weight": 1
+    },
+    "period": {
+      "dateTimeFrom": "2026-10-13T20:00:00+02:00",
+      "dateTimeTo": "2026-10-13T20:50:00+02:00",
+      "wholeDay": false,
+      "deadline": true
+    },
+    "organisers": {
+      "users": [
+        {
+          "id": "49_1001_0",
+          "pictureHash": "initials_FT",
+          "pictureUrl": "https://userpicture20.smartschool.be/User/Userimage/hashimage/hash/initials_FT/plain/1/res/128",
+          "description": {
+            "startingWithFirstName": "",
+            "startingWithLastName": ""
+          },
+          "name": {
+            "startingWithFirstName": "First Teacher",
+            "startingWithLastName": "Teacher First"
+          },
+          "sort": "teacher-first",
+          "deleted": false
+        }
+      ],
+      "groups": []
+    },
+    "participants": {
+      "users": [],
+      "groups": [
+        {
+          "identifier": "49_101",
+          "id": "49_101",
+          "platformId": 49,
+          "name": "1A",
+          "type": "K",
+          "icon": "briefcase",
+          "sort": "1A"
+        }
+      ],
+      "userRoles": [],
+      "groupFilters": {
+        "filters": [],
+        "additionalUsers": []
+      }
+    },
+    "isParticipant": true,
+    "capabilities": {
+      "canUserTrash": false,
+      "canUserRestoreFromTrash": false,
+      "canUserDelete": false,
+      "canUserEdit": false,
+      "canUserChangeAssignmentType": false,
+      "canUserChangePrivateInfo": false,
+      "canUserChangePublicInfo": false,
+      "canUserReplace": false,
+      "canUserAddReservations": false,
+      "canUserReschedule": false,
+      "canUserPin": false,
+      "canUserResolve": false,
+      "canUserChangeUserColor": true,
+      "canUserChangeUserViewMetadata": true,
+      "canUserCreateVideoCall": false,
+      "canUserSeeVideoCall": true,
+      "canUserManageVideoCall": false,
+      "canUserLinkToDo": true,
+      "canUserDuplicate": false,
+      "canUserChangeOrganisers": false,
+      "canUserChangeParticipants": false,
+      "canUserChangeParticipantGroupFilters": false,
+      "canUserChangeLabels": false,
+      "canUserChangeLocations": false,
+      "canUserSeeProperties": {
+        "id": true,
+        "platformId": true,
+        "name": true,
+        "assignmentType": true,
+        "period": true,
+        "organisers": true,
+        "participants": true,
+        "isParticipant": true,
+        "capabilities": true,
+        "plannedElementType": true,
+        "resolvedStatus": true,
+        "onlineSession": true,
+        "icon": true,
+        "courses": true,
+        "locations": true,
+        "attachments": true,
+        "weblinks": true,
+        "deeplinks": true,
+        "partnerWeblinks": true,
+        "publicInfo": true,
+        "plannedToDos": true,
+        "labels": false
+      }
+    },
+    "plannedElementType": "planned-assignments",
+    "resolvedStatus": "unresolved",
+    "onlineSession": null,
+    "icon": "flags_red_yellow",
+    "courses": [],
+    "locations": [],
+    "attachments": [],
+    "weblinks": [
+      {
+        "id": "00000008-0000-0000-0000-000000000003",
+        "name": "Exercises",
+        "url": "https://example.com/exercises",
+        "icon": "earth",
+        "visibility": {
+          "option": "always",
+          "daysAfterEnd": null
+        }
+      }
+    ],
+    "deeplinks": [],
+    "partnerWeblinks": [],
+    "publicInfo": "<p>The exercises are behind the link.</p>",
+    "plannedToDos": [],
+    "labels": [],
+    "sort": "20261013200000_5_1A_Make the exercises of chapter 4",
+    "unconfirmed": false,
+    "pinned": false,
+    "color": "aqua-200",
+    "participantsChangedAfterEvaluation": false,
+    "joinIds": {
+      "from": "00000008-0000-0000-0000-000000000004",
+      "to": "00000008-0000-0000-0000-000000000004"
+    }
+  }
+]
