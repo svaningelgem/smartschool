@@ -64,6 +64,24 @@ def test_planned_elements_takes_one_type_several_or_none(session: Smartschool, e
     assert PlannedElements(session, element_types=element_types).element_types == expected
 
 
+def test_planned_elements_always_sends_includes(session: Smartschool, requests_mock):
+    requests_mock.get("https://site/planner/api/v1/planned-elements/user/49_10880_2", json=[])
+
+    assert not list(PlannedElements(session))
+    assert requests_mock.last_request.qs["includes"] == [
+        "icon,courses,locations,attachments,weblinks,deeplinks,partner-weblinks,public-info,planned-to-dos,upload-folders,labels"
+    ]
+
+
+@time_machine.travel("2026-10-12")
+def test_planned_elements_carry_the_info_attachments_and_weblinks(session: Smartschool):
+    lesson, assignment = PlannedElements(session, till_date=date(2026, 10, 14), element_types=("planned-lessons", "planned-assignments"))
+
+    assert [(a.file_name, a.file_size) for a in lesson.attachments] == [("chapter 4.docx", 14000)]
+    assert assignment.public_info == "<p>The exercises are behind the link.</p>"
+    assert [(w.name, w.url, w.icon) for w in assignment.weblinks] == [("Exercises", "https://example.com/exercises", "earth")]
+
+
 @time_machine.travel("2026-11-11")
 def test_planned_elements_without_element_types_fetches_everything(session: Smartschool, requests_mock):
     """Without a filter the planner returns every type, such as a lesson-free day, which has no organisers."""
@@ -94,7 +112,7 @@ def test_planned_elements_reads_a_room_as_before(session: Smartschool):
 
 def test_planned_elements_keeps_a_kind_of_location_it_does_not_know(session: Smartschool, requests_mock):
     """A new kind of location must not break the listing: it is kept by its type alone."""
-    fixture = Path(__file__).parent / "requests/get/planner/api/v1/planned-elements/user/49_10880_2/7966cae8d297.json"
+    fixture = Path(__file__).parent / "requests/get/planner/api/v1/planned-elements/user/49_10880_2/f0f93db82b48.json"
     element = json.loads(fixture.read_text(encoding="utf8"))[0]
     element["locations"] = [{"type": "brand-new-kind", "platformId": 49, "platformName": "Example school", "somethingElse": 1}]
     requests_mock.get("https://site/planner/api/v1/planned-elements/user/49_10880_2", json=[element])

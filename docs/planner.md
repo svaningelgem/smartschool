@@ -79,6 +79,20 @@ for element in PinnedPlannedElements(session):
     print(element.name)
 ```
 
+### Info, Attachments and Weblinks
+
+Each element from `PlannedElements` comes with the teacher's info for the pupils ("Info voor de leerling", as HTML),
+its attachments and its weblinks:
+
+```python
+for element in PlannedElements(session, element_types="planned-lessons"):
+    print(element.public_info)
+    for link in element.weblinks:
+        print(f"  {link.name}: {link.url}")
+```
+
+`PinnedPlannedElements` does not ask the planner for these, so a pinned element has them empty.
+
 ### Locations
 
 A location is either a room from the school's list or a place that was typed in:
@@ -97,9 +111,9 @@ A kind of location the library does not know yet comes as a `PlannedElementUnkno
 
 ### Details of an Element
 
-The list only holds the headers of each element. `PlannedElementDetails` fetches its detail view, which adds
-the teacher's info for the pupils ("Info voor de leerling", as HTML), the attachments, the weblinks, the linked
-curriculum goals and the reservations of a room or an item. `files()` gives the attachments as files to download.
+`PlannedElementDetails` fetches the detail view of an element, which adds the linked curriculum goals, the reservations
+of a room or an item, and fields that only come with certain types. `files()` gives the attachments as files to
+download.
 
 Some fields only come with certain types: an assignment has `date_created` and `visibility` (from when the pupils
 see it); a meeting has its description in `info`, plus `privacy`, `repeat_options`, `calendars`, `extra_organisers`,
@@ -114,11 +128,8 @@ from smartschool import PlannedElementDetails, PlannedElements
 
 for element in PlannedElements(session):
     details = PlannedElementDetails(session, element=element)
-    detail = details.get()
 
-    print(detail.public_info)
-    for link in detail.weblinks:
-        print(f"  {link.name}: {link.url}")
+    print(len(details.get().goals), "goals")
     for file in details.files():
         file.download_to_dir(Path("downloads") / element.id)  # a directory per element: names can repeat
 ```
